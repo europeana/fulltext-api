@@ -1,0 +1,11 @@
+# Settings for local testing
+server.port: 8084
+
+spring:
+  application:
+    name: Fulltext API
+  data:
+    mongodb:
+      database: test
+      repositories:
+        enabled: true
