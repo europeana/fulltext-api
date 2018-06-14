@@ -27,32 +27,33 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class FTAnnotation {
 
     @Id
-    private String  id;
+    private String  id;             // annotationId
     private String  types;
     private String  language;
     private Integer textStart;
     private Integer textEnd;
     private Integer targetX;
-
     private Integer targetY;
     private Integer targetW;
     private Integer targetH;
+    private String  pageId;         // {datasetId}/{recordId}/{FulltextResourceAbout}
 
 
     // No args Constructor
 
     public FTAnnotation(String id, String types, String language,
                         Integer textStart, Integer textEnd, Integer targetX,
-                        Integer targetY, Integer targetW, Integer targetH) {
-        this.id = id;
-        this.types = types;
-        this.language = language;
-        this.textStart = textStart;
-        this.textEnd = textEnd;
-        this.targetX = targetX;
-        this.targetY = targetY;
-        this.targetW = targetW;
-        this.targetH = targetH;
+                        Integer targetY, Integer targetW, Integer targetH, String pageId) {
+        this.id         = id;
+        this.types      = types;
+        this.language   = language;
+        this.textStart  = textStart;
+        this.textEnd    = textEnd;
+        this.targetX    = targetX;
+        this.targetY    = targetY;
+        this.targetW    = targetW;
+        this.targetH    = targetH;
+        this.pageId     = pageId;
     }
 
     public String getId() {
@@ -125,5 +126,13 @@ public class FTAnnotation {
 
     public void setTargetH(Integer targetH) {
         this.targetH = targetH;
+    }
+
+    public String getPageId() {
+        return pageId;
+    }
+
+    public void setPageId(String pageId) {
+        this.pageId = pageId;
     }
 }

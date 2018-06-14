@@ -22,6 +22,7 @@ import ioinformarics.oss.jackson.module.jsonld.JsonldModule;
 
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -85,7 +86,18 @@ public class FTService {
         mapper.registerModule(new JsonldModule());
     }
 
+    protected ObjectMapper getJsonMapper() {
+        return mapper;
+    }
 
+
+    public Optional<FTAnnotation> findAnnotation(String datasetId, String recordId, String annoId){
+            return ftAnnRepo.findById(datasetId + "/" + recordId + "/" + annoId);
+    }
+
+    public FTAnnotation listAllAnnotations(String datasetId, String recordId, String pageId){
+        return ftAnnRepo.findById(pageId).get();
+    }
 
     /**
      * @return FulltextConfig object containing properties and Mongo datastore
@@ -100,23 +112,36 @@ public class FTService {
      * initial Mongo and Morphia setup testing
      */
     private FTResource   ftr;
+    private FTAnnotation fta0;
     private FTAnnotation fta1;
     private FTAnnotation fta2;
 
 
-    public void do_args_method(String pinocchio){
-        annotationKnitter(pinocchio);
+    public void do_args_method(String zampano, String gelsomina){
+        final String ilMatto = "9200396/BibliographicResource_3000118436096/";
+        annotationKnitter(ilMatto, zampano, gelsomina);
+        ftAnnRepo.save(fta0);
         ftAnnRepo.save(fta1);
         ftAnnRepo.save(fta2);
 
-        resourcePunniker(pinocchio);
-//        ftr.setFTAnnotations(Stream.of(fta1, fta2).collect(Collectors.toSet()));
+        resourcePunniker(ilMatto, zampano);
+        ftr.setPageAnnotation(fta0);
         ftr.setFTAnnotations(Arrays.asList(fta1, fta2));
         ftResRepo.save(ftr);
     }
 
-    private void annotationKnitter(String headBanger){
-        this.fta1 = new FTAnnotation(headBanger + "_annotation_0001",
+    private void annotationKnitter(String ilMatto, String zampano, String gelsomina){
+        this.fta0 = new FTAnnotation(ilMatto + gelsomina + "_page",
+                                     "A",
+                                     "en",
+                                     0,
+                                     0,
+                                     0,
+                                     0,
+                                     0,
+                                     0,
+                                     ilMatto + zampano);
+        this.fta1 = new FTAnnotation(ilMatto + gelsomina + "_0001",
                                      "W",
                                      "en",
                                      1,
@@ -124,8 +149,9 @@ public class FTService {
                                      234,
                                      311,
                                      87,
-                                     16);
-        this.fta2 = new FTAnnotation(headBanger + "_annotation_0002",
+                                     16,
+                                     ilMatto + zampano);
+        this.fta2 = new FTAnnotation(ilMatto + gelsomina + "_0002",
                                      "W",
                                      "en",
                                      7,
@@ -133,15 +159,15 @@ public class FTService {
                                      304,
                                      310,
                                      127,
-                                     15);
+                                     15,
+                                     ilMatto + zampano);
     }
 
-    private void resourcePunniker(String floppyCheekiness){
-        this.ftr = new FTResource("resource_" + floppyCheekiness,
+    private void resourcePunniker(String ilMatto, String zampano){
+        this.ftr = new FTResource(ilMatto + zampano,
                                   "en",
-                                  "https://imageserver.net/resource_001.jpg",
-                                        floppyCheekiness + "Ank Amon Ammoniak - op een kaalkop staat geen haar!",
-                                  "no");
+                                  "https://imageserver.net/" + zampano + "_001.jpg",
+                                  zampano + " ende staet hier istu ghescreyphen, ghy deckschelse snoodaart!");
     }
 
 

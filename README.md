@@ -1,2 +1,2 @@
 # Fulltext
-Europeana Newspapers Fulltext API (based on Spring-Boot)
+Europeana Newspapers Fulltext API (based target Spring-Boot)

@@ -1,17 +1,17 @@
 package eu.europeana.fulltext.web;
 
+import eu.europeana.fulltext.config.FTDefinitions;
+import eu.europeana.fulltext.entity.FTAnnotation;
 import eu.europeana.fulltext.service.FTService;
 import eu.europeana.fulltext.service.exception.FTException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Optional;
 
 /**
  * Rest controller that handles incoming fulltext requests
@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletResponse;
  * Created on 27-02-2018
  */
 @RestController
+@RequestMapping("/presentation")
 public class FTController {
 
     private static final Logger LOG = LogManager.getLogger(FTController.class);
@@ -30,22 +31,43 @@ public class FTController {
     }
 
 
+
     /**
-     * Handles all list identifier requests
-     * @param metadataPrefix
-     * @param from
-     * @param until
-     * @param set
+     * Handles fetching a single annotation
      * @return
      */
-    @RequestMapping(method = {RequestMethod.GET, RequestMethod.POST},
-                    produces = MediaType.TEXT_XML_VALUE)
-    public String handleListIdentifier(@RequestParam(value = "metadataPrefix", required = true) String metadataPrefix,
-                                  @RequestParam(value = "from", required = false) String from,
-                                  @RequestParam(value = "until", required = false) String until,
-                                  @RequestParam(value = "set", required = false) String set) throws FTException {
+    @RequestMapping(value    = "/{datasetId}/{recordId}/anno/{annoID}",
+                    method   = RequestMethod.GET,
+                    produces = {MediaType.APPLICATION_JSON_VALUE, FTDefinitions.MEDIA_TYPE_JSONLD})
+    public String annotation(@PathVariable String datasetId,
+                             @PathVariable String recordId,
+                             @PathVariable String annoID,
+                             HttpServletRequest request,
+                             HttpServletResponse response) {
+        Optional<FTAnnotation> ftAnnotation = fts.findAnnotation(datasetId, recordId, annoID);
+        LOG.debug("annotation");
         return "Not implemented yet";
     }
+
+
+    /**
+     * Handles fetching all annotations for a given resource
+     * @return
+     */
+    @RequestMapping(value    = "/{datasetId}/{recordId}/annopage/{pageId}",
+                    method   = RequestMethod.GET,
+                    produces = MediaType.APPLICATION_JSON_VALUE)
+    public String annopage(@PathVariable String datasetId,
+                           @PathVariable String recordId,
+                           @PathVariable String pageId,
+                                    HttpServletRequest request,
+                                    HttpServletResponse response) {
+        fts.listAllAnnotations(datasetId, recordId, pageId);
+        LOG.debug("annopage");
+        return "Not implemented yet";
+    }
+
+
 
     /**
      * Handles test
@@ -54,12 +76,13 @@ public class FTController {
     @RequestMapping(value       = "/test",
                     method      = RequestMethod.GET,
                     produces    = MediaType.APPLICATION_JSON_VALUE)
-    public String tragawDoeKoetrrrr(@RequestParam(value = "globl", required = false) String globl,
-                       HttpServletRequest request,
+    public String tragawDoeKoetrrrr(@RequestParam(value = "zampano", required = false) String zampano,
+                                    @RequestParam(value = "gelsomina", required = false) String gelsomina,
+                                    HttpServletRequest request,
                        HttpServletResponse response) {
-        fts.do_args_method(globl);
+        fts.do_args_method(zampano, gelsomina);
         LOG.debug("TragâwdoeKoetrrrr");
-        return "Globl says: " + globl;
+        return "Globl says: " + zampano;
     }
 
 }

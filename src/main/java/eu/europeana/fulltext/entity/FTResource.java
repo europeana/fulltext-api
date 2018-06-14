@@ -33,24 +33,22 @@ import java.util.Set;
 public class FTResource {
 
     @Id
-    private String             id;
+    private String             id;              // {datasetId}/{recordId}/{FulltextResourceAbout}
     private String             language;
     private String             target;
     private String             text;
-    private String             annotationId;
+    private FTAnnotation       pageAnnotation;  // FTAnnotation
     @DBRef
-    private List<FTAnnotation> FTAnnotations;
+    private List<FTAnnotation> FTAnnotations;   // List of FTAnnotations
 
 
     // No args Constructor
 
-    public FTResource(String id, String language, String target, String text,
-                      String annotationId) {
+    public FTResource(String id, String language, String target, String text) {
         this.id = id;
         this.language = language;
         this.target = target;
         this.text = text;
-        this.annotationId = annotationId;
     }
 
     public String getId() {
@@ -85,12 +83,12 @@ public class FTResource {
         this.text = text;
     }
 
-    public String getAnnotationId() {
-        return annotationId;
+    public FTAnnotation getPageAnnotation() {
+        return pageAnnotation;
     }
 
-    public void setAnnotationId(String annotationId) {
-        this.annotationId = annotationId;
+    public void setPageAnnotation(FTAnnotation pageAnnotation) {
+        this.pageAnnotation = pageAnnotation;
     }
 
     public List<FTAnnotation> getFTAnnotations() {
