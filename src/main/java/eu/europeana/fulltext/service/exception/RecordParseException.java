@@ -15,32 +15,26 @@
  *  the Licence.
  */
 
-package eu.europeana.fulltext.model.v3;
+package eu.europeana.fulltext.service.exception;
 
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import ioinformarics.oss.jackson.module.jsonld.annotation.JsonldType;
 
-import java.io.Serializable;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
- * Created by luthien on 14/06/2018.
+ * Exception thrown on a problem parsing or serializing a resource
+ * Created by luthien on 18/06/2018.
  */
-public class AnnotationPage extends JsonLdId implements Serializable{
 
-    private static final long serialVersionUID = 3852844091029376312L;
+@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+public class RecordParseException extends FTException {
 
-    private Annotation[] items;
-
-    public AnnotationPage(String id) {
-        super(id);
+    public RecordParseException(String msg, Throwable t) {
+        super(msg, t);
     }
 
-    public Annotation[] getItems() {
-        return items;
+    public RecordParseException(String msg) {
+        super(msg);
     }
-
-    public void setItems(Annotation[] items) {
-        this.items = items;
-    }
-
 }
+

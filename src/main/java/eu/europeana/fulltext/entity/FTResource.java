@@ -17,14 +17,8 @@
 
 package eu.europeana.fulltext.entity;
 
-import org.mongodb.morphia.annotations.Entity;
 import org.mongodb.morphia.annotations.Id;
-import org.mongodb.morphia.annotations.Reference;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
-
-import java.util.List;
-import java.util.Set;
 
 /**
  * Created by luthien on 31/05/2018.
@@ -33,22 +27,35 @@ import java.util.Set;
 public class FTResource {
 
     @Id
-    private String             id;              // {datasetId}/{recordId}/{FulltextResourceAbout}
-    private String             language;
-    private String             target;
-    private String             text;
-    private FTAnnotation       pageAnnotation;  // FTAnnotation
-    @DBRef
-    private List<FTAnnotation> FTAnnotations;   // List of FTAnnotations
+    private String      id;             // resourceId
+    private String      dcType;         // type = [ "edm:WebResource", "edm:FullTextResource"] is implicitly added, not stored
+    private String      motivation;
+    private String      language;       // optional
+    private Integer     textStart;
+    private Integer     textEnd;
+    private Integer     targetX;
+    private Integer     targetY;
+    private Integer     targetW;
+    private Integer     targetH;
+    private String      pageId;         // link to parent page
 
 
     // No args Constructor
 
-    public FTResource(String id, String language, String target, String text) {
-        this.id = id;
-        this.language = language;
-        this.target = target;
-        this.text = text;
+    public FTResource(String id, String dcType, String motivation, String language,
+                      Integer textStart, Integer textEnd, Integer targetX,
+                      Integer targetY, Integer targetW, Integer targetH, String pageId) {
+        this.id         = id;
+        this.dcType     = dcType;
+        this.motivation = motivation;
+        this.language   = language;
+        this.textStart  = textStart;
+        this.textEnd    = textEnd;
+        this.targetX    = targetX;
+        this.targetY    = targetY;
+        this.targetW    = targetW;
+        this.targetH    = targetH;
+        this.pageId     = pageId;
     }
 
     public String getId() {
@@ -59,6 +66,22 @@ public class FTResource {
         this.id = id;
     }
 
+    public String getDcType() {
+        return dcType;
+    }
+
+    public void setDcType(String dcType) {
+        this.dcType = dcType;
+    }
+
+    public String getMotivation() {
+        return motivation;
+    }
+
+    public void setMotivation(String motivation) {
+        this.motivation = motivation;
+    }
+
     public String getLanguage() {
         return language;
     }
@@ -67,35 +90,59 @@ public class FTResource {
         this.language = language;
     }
 
-    public String getTarget() {
-        return target;
+    public Integer getTextStart() {
+        return textStart;
     }
 
-    public void setTarget(String target) {
-        this.target = target;
+    public void setTextStart(Integer textStart) {
+        this.textStart = textStart;
     }
 
-    public String getText() {
-        return text;
+    public Integer getTextEnd() {
+        return textEnd;
     }
 
-    public void setText(String text) {
-        this.text = text;
+    public void setTextEnd(Integer textEnd) {
+        this.textEnd = textEnd;
     }
 
-    public FTAnnotation getPageAnnotation() {
-        return pageAnnotation;
+    public Integer getTargetX() {
+        return targetX;
     }
 
-    public void setPageAnnotation(FTAnnotation pageAnnotation) {
-        this.pageAnnotation = pageAnnotation;
+    public void setTargetX(Integer targetX) {
+        this.targetX = targetX;
     }
 
-    public List<FTAnnotation> getFTAnnotations() {
-        return FTAnnotations;
+    public Integer getTargetY() {
+        return targetY;
     }
 
-    public void setFTAnnotations(List<FTAnnotation> FTAnnotations) {
-        this.FTAnnotations = FTAnnotations;
+    public void setTargetY(Integer targetY) {
+        this.targetY = targetY;
+    }
+
+    public Integer getTargetW() {
+        return targetW;
+    }
+
+    public void setTargetW(Integer targetW) {
+        this.targetW = targetW;
+    }
+
+    public Integer getTargetH() {
+        return targetH;
+    }
+
+    public void setTargetH(Integer targetH) {
+        this.targetH = targetH;
+    }
+
+    public String getPageId() {
+        return pageId;
+    }
+
+    public void setPageId(String pageId) {
+        this.pageId = pageId;
     }
 }

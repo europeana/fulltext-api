@@ -17,9 +17,10 @@
 
 package eu.europeana.fulltext.repository;
 
-import eu.europeana.fulltext.entity.FTResource;
+import eu.europeana.fulltext.entity.FTPage;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -28,13 +29,14 @@ import java.util.List;
  * Created by luthien on 31/05/2018.
  */
 @Repository
-public interface FTResourceRepository extends MongoRepository<FTResource, String> {
+@RepositoryRestResource(collectionResourceRel = "ftresource", path = "ftresource")
+public interface FTResourceRepository extends MongoRepository<FTPage, String> {
 
     //Supports native JSON query string
     @Query("{ftResource:'?0'}")
-    FTResource findFTResourceByDomain(String ftResource);
+    FTPage findFTResourceByDomain(String ftResource);
 
     @Query("{ftResource: { $regex: ?0 } })")
-    List<FTResource> findFTResourceByRegEx(String ftResource);
+    List<FTPage> findFTResourceByRegEx(String ftResource);
 
 }

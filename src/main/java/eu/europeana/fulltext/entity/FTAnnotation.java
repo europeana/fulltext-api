@@ -27,25 +27,27 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class FTAnnotation {
 
     @Id
-    private String  id;             // annotationId
-    private String  types;
-    private String  language;
-    private Integer textStart;
-    private Integer textEnd;
-    private Integer targetX;
-    private Integer targetY;
-    private Integer targetW;
-    private Integer targetH;
-    private String  pageId;         // {datasetId}/{recordId}/{FulltextResourceAbout}
+    private String      id;             // annotationId
+    private String      dcType;         // type = "AnnotationV2" and "SpecificResource" are implicitly added, not stored
+    private String      motivation;
+    private String      language;       // optional
+    private Integer     textStart;
+    private Integer     textEnd;
+    private Integer     targetX;
+    private Integer     targetY;
+    private Integer     targetW;
+    private Integer     targetH;
+    private String      pageId;         // link to parent page
 
 
     // No args Constructor
 
-    public FTAnnotation(String id, String types, String language,
+    public FTAnnotation(String id, String dcType, String motivation, String language,
                         Integer textStart, Integer textEnd, Integer targetX,
                         Integer targetY, Integer targetW, Integer targetH, String pageId) {
         this.id         = id;
-        this.types      = types;
+        this.dcType     = dcType;
+        this.motivation = motivation;
         this.language   = language;
         this.textStart  = textStart;
         this.textEnd    = textEnd;
@@ -64,12 +66,20 @@ public class FTAnnotation {
         this.id = id;
     }
 
-    public String getTypes() {
-        return types;
+    public String getDcType() {
+        return dcType;
     }
 
-    public void setTypes(String types) {
-        this.types = types;
+    public void setDcType(String dcType) {
+        this.dcType = dcType;
+    }
+
+    public String getMotivation() {
+        return motivation;
+    }
+
+    public void setMotivation(String motivation) {
+        this.motivation = motivation;
     }
 
     public String getLanguage() {

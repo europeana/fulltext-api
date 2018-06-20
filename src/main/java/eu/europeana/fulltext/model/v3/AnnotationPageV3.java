@@ -15,7 +15,7 @@
  *  the Licence.
  */
 
-package eu.europeana.fulltext.model.v2;
+package eu.europeana.fulltext.model.v3;
 
 import ioinformarics.oss.jackson.module.jsonld.annotation.JsonldType;
 
@@ -24,31 +24,22 @@ import java.io.Serializable;
 /**
  * Created by luthien on 14/06/2018.
  */
-@JsonldType("oa:SpecificResource")
-public class AnnotationBody extends JsonLdId implements Serializable{
+@JsonldType("AnnotationPage")
+public class AnnotationPageV3 extends JsonLdId implements Serializable{
 
-    private static final long serialVersionUID = -3277352172046621380L;
+    private static final long serialVersionUID = 3852844091029376312L;
+    private AnnotationV3[] items;
 
-    private String full;
-    private String language;
-
-    public AnnotationBody(String id) {
+    public AnnotationPageV3(String id) {
         super(id);
     }
 
-    public String getFull() {
-        return this.full;
+    public AnnotationV3[] getItems() {
+        return items;
     }
 
-    public void setFull(String full) {
-        this.full = full;
+    public void setItems(AnnotationV3[] items) {
+        this.items = items;
     }
 
-    public String getLanguage() {
-        return this.language;
-    }
-
-    public void setLanguage(String language) {
-        this.language = language;
-    }
 }

@@ -15,8 +15,9 @@
  *  the Licence.
  */
 
-package eu.europeana.fulltext.model.v3;
+package eu.europeana.fulltext.model.v2;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import ioinformarics.oss.jackson.module.jsonld.annotation.JsonldType;
 
 import java.io.Serializable;
@@ -24,31 +25,23 @@ import java.io.Serializable;
 /**
  * Created by luthien on 14/06/2018.
  */
-@JsonldType("oa:SpecificResource")
-public class AnnotationBody extends JsonLdId implements Serializable{
+@JsonldType(value = "sc:AnnotationList")
+@JsonPropertyOrder({"id"}) // make sure id always comes first, instead of last
+public class AnnotationPageV2 extends JsonLdId implements Serializable{
 
-    private static final long serialVersionUID = -3277352172046621380L;
+    private static final long serialVersionUID = 3852844091029376312L;
+    private AnnotationV2[] items;
 
-    private String source;
-    private String language;
-
-    public AnnotationBody(String id) {
+    public AnnotationPageV2(String id) {
         super(id);
     }
 
-    public String getSource() {
-        return this.source;
+    public AnnotationV2[] getItems() {
+        return items;
     }
 
-    public void setSource(String source) {
-        this.source = source;
+    public void setItems(AnnotationV2[] items) {
+        this.items = items;
     }
 
-    public String getLanguage() {
-        return this.language;
-    }
-
-    public void setLanguage(String language) {
-        this.language = language;
-    }
 }

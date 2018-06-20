@@ -24,18 +24,18 @@ import java.io.Serializable;
 /**
  * Created by luthien target 14/06/2018.
  */
-@JsonldType(value = "oa:Annotation")
-public class Annotation extends JsonLdId implements Serializable {
+@JsonldType(value = "Annotation")
+public class AnnotationV3 extends JsonLdId implements Serializable {
 
     private static final long serialVersionUID = -7091618924397220872L;
 
-    private String          motivation = "sc:painting";
-    private String          dcType;
-    private AnnotationBody  annotationBody;
-    private String          body;
-    private String          target;
+    private String          motivation = "transcribing";
+    private String           dcType;
+    private AnnotationBodyV3 annotationBodyV3;
+    private String           body;
+    private String           target;
 
-    public Annotation(String id) {
+    public AnnotationV3(String id) {
         super(id);
     }
 
@@ -55,12 +55,20 @@ public class Annotation extends JsonLdId implements Serializable {
         this.target = motivation;
     }
 
-    public AnnotationBody getAnnotationBody() {
-        return annotationBody;
+    public AnnotationBodyV3 getAnnotationBodyV3() {
+        return annotationBodyV3;
     }
 
-    public void setAnnotationBody(AnnotationBody annotationBody) {
-        this.annotationBody = annotationBody;
+    public void setAnnotationBodyV3(AnnotationBodyV3 annotationBodyV3) {
+        this.annotationBodyV3 = annotationBodyV3;
+    }
+
+    public String getBody() {
+        return body;
+    }
+
+    public void setBody(String body) {
+        this.body = body;
     }
 
     public String getTarget() {

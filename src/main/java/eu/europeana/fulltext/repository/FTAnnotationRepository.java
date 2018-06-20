@@ -20,6 +20,7 @@ package eu.europeana.fulltext.repository;
 import eu.europeana.fulltext.entity.FTAnnotation;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -28,6 +29,7 @@ import java.util.List;
  * Created by luthien on 31/05/2018.
  */
 @Repository
+@RepositoryRestResource(collectionResourceRel = "ftannotation", path = "ftannotation")
 public interface FTAnnotationRepository extends MongoRepository<FTAnnotation, String> {
 
 
