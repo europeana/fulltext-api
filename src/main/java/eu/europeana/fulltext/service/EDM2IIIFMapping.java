@@ -29,6 +29,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
 import static eu.europeana.fulltext.config.FTDefinitions.*;
 
@@ -62,14 +63,17 @@ public class EDM2IIIFMapping {
     private static AnnotationV2[] getAnnotationV2Array(FTAnnoPage ftAnnoPage){
         ArrayList<AnnotationV2> annoArrayList = new ArrayList<>();
         for (FTAnnotation ftAnno : ftAnnoPage.getAns()){
-            annoArrayList.add(getAnnotationV2(ftAnnoPage, ftAnno));
+            annoArrayList.add(getAnnotationV2(ftAnnoPage, ftAnno, false));
         }
         return annoArrayList.toArray(new AnnotationV2[0]);
     }
 
-    public static AnnotationV2 getAnnotationV2(FTAnnoPage ftAnnoPage, FTAnnotation ftAnno){
+    public static AnnotationV2 getAnnotationV2(FTAnnoPage ftAnnoPage, FTAnnotation ftAnno, boolean addContext){
         String       resourceIdUrl  = getResourceIdUrl(ftAnnoPage, ftAnno);
         AnnotationV2 ann            = new AnnotationV2(getAnnotationIdUrl(ftAnnoPage, ftAnno));
+        if (addContext){
+            ann.setContext(MEDIA_TYPE_IIIF_V2);
+        }
         ann.setMotivation(StringUtils.isNotBlank(ftAnno.getMotiv()) ? ftAnno.getMotiv() : V2_MOTIVATION);
         ann.setDcType(ftAnno.getDcType());
         ann.setOn(getFTTargetArray(ftAnnoPage, ftAnno));
@@ -94,15 +98,18 @@ public class EDM2IIIFMapping {
     private static AnnotationV3[] getAnnotationV3Array(FTAnnoPage ftAnnoPage){
         ArrayList<AnnotationV3> annoArrayList = new ArrayList<>();
         for (FTAnnotation ftAnno : ftAnnoPage.getAns()){
-            annoArrayList.add(getAnnotationV3(ftAnnoPage, ftAnno));
+            annoArrayList.add(getAnnotationV3(ftAnnoPage, ftAnno, false));
         }
         return annoArrayList.toArray(new AnnotationV3[0]);
     }
 
-    public static AnnotationV3 getAnnotationV3(FTAnnoPage ftAnnoPage, FTAnnotation ftAnno){
+    public static AnnotationV3 getAnnotationV3(FTAnnoPage ftAnnoPage, FTAnnotation ftAnno, boolean addContext){
         String       body = getResourceIdUrl(ftAnnoPage, ftAnno);
         AnnotationV3 ann  = new AnnotationV3(getAnnotationIdUrl(ftAnnoPage, ftAnno));
         AnnotationBodyV3 anb;
+        if (addContext){
+            ann.setContext(MEDIA_TYPE_IIIF_V3);
+        }
         ann.setMotivation(StringUtils.isNotBlank(ftAnno.getMotiv()) ? ftAnno.getMotiv() : V3_MOTIVATION);
         ann.setDcType(ftAnno.getDcType());
         if (StringUtils.isNotBlank(ftAnno.getLang())){
@@ -115,6 +122,26 @@ public class EDM2IIIFMapping {
         ann.setBody(anb);
         ann.setTarget(getFTTargetArray(ftAnnoPage, ftAnno));
         return ann;
+    }
+
+    public static AnnotationV3 getSingleAnnotationV3(FTAnnoPage ftAnnoPage, String annoId){
+        FTAnnotation ftAnno;
+        Optional<FTAnnotation> maybe = ftAnnoPage.getAns().stream().filter(o -> o.getAnId().equals(annoId)).findFirst();
+        if (maybe.isPresent()){
+            return getAnnotationV3(ftAnnoPage, maybe.get(), true);
+        } else {
+            return null; // TODO handle this better
+        }
+    }
+
+    public static AnnotationV2 getSingleAnnotationV2(FTAnnoPage ftAnnoPage, String annoId){
+        FTAnnotation ftAnno;
+        Optional<FTAnnotation> maybe = ftAnnoPage.getAns().stream().filter(o -> o.getAnId().equals(annoId)).findFirst();
+        if (maybe.isPresent()){
+            return getAnnotationV2(ftAnnoPage, maybe.get(), true);
+        } else {
+            return null; // TODO handle this better
+        }
     }
 
     private static String[] getFTTargetArray(FTAnnoPage ftAnnoPage, FTAnnotation ftAnno){

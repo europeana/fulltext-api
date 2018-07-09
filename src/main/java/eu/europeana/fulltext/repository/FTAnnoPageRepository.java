@@ -41,10 +41,10 @@ public interface FTAnnoPageRepository extends MongoRepository<FTAnnoPage, String
     @Query("{ftAnnoPage: { $regex: ?0 } })")
     List<FTAnnoPage> findFTAnnoPageByRegEx(String ftAnnoPage);
 
-    @Query("{datasetId:'?0', localId:'?1', pageId:'?2'}")
+    @Query("{'dsId':'?0', 'lcId':'?1', 'pgId':'?2'}")
     List<FTAnnoPage> findByDatasetLocalAndPageId(String datasetId, String localId, String pageId);
 
-    @Query("{datasetId:'?0', localId:'?1', ftAnnotations.annoId:'?2'}")
+    @Query("{'dsId':'?0', 'lcId':'?1', 'ans.anId':'?2'}")
     List<FTAnnoPage> findByDatasetLocalAndAnnoId(String datasetId, String localId, String annoId);
 
 

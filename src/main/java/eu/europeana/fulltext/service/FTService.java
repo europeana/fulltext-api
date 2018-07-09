@@ -16,7 +16,9 @@ import eu.europeana.fulltext.entity.FTAnnotation;
 import eu.europeana.fulltext.entity.FTResource;
 import eu.europeana.fulltext.entity.FTTarget;
 import eu.europeana.fulltext.model.v2.AnnotationPageV2;
+import eu.europeana.fulltext.model.v2.AnnotationV2;
 import eu.europeana.fulltext.model.v3.AnnotationPageV3;
+import eu.europeana.fulltext.model.v3.AnnotationV3;
 import eu.europeana.fulltext.repository.FTAnnoPageRepository;
 import eu.europeana.fulltext.repository.FTAnnotationRepository;
 import eu.europeana.fulltext.repository.FTResourceRepository;
@@ -96,18 +98,6 @@ public class FTService {
         return mapper;
     }
 
-
-    public Optional<FTAnnotation> findAnnotation(String datasetId, String recordId, String annoId){
-            return ftAnnoRepo.findById(datasetId + "/" + recordId + "/" + annoId);
-    }
-
-
-    public String getAnnotation(String datasetId, String recordId, String annoId){
-//        return ftAnnoRepo.findById(datasetId + "/" + recordId + "/" + annoId);
-        FTAnnotation res = ftAnnoRepo.findById(datasetId + "/" + recordId + "/" + annoId).get();
-        return "";
-    }
-
     public AnnotationPageV2 getAnnotationPageV2(String datasetId, String recordId, String pageId){
         FTAnnoPage ftAnnoPage = ftAPRepo.findByDatasetLocalAndPageId(datasetId, recordId, pageId).get(0);
         return generateAnnoPageV2(ftAnnoPage);
@@ -118,6 +108,16 @@ public class FTService {
         return generateAnnoPageV3(ftAnnoPage);
     }
 
+    public AnnotationV3 getAnnotationV3(String datasetId, String recordId, String annoId){
+        FTAnnoPage ftAnnoPage = ftAPRepo.findByDatasetLocalAndAnnoId(datasetId, recordId, annoId).get(0);
+        return generateAnnotationV3(ftAnnoPage, annoId);
+    }
+
+    public AnnotationV2 getAnnotationV2(String datasetId, String recordId, String annoId){
+        FTAnnoPage ftAnnoPage = ftAPRepo.findByDatasetLocalAndAnnoId(datasetId, recordId, annoId).get(0);
+        return generateAnnotationV2(ftAnnoPage, annoId);
+    }
+
     /**
      * @return FulltextConfig object containing properties and Mongo datastore
      */
@@ -126,27 +126,41 @@ public class FTService {
     }
 
 
-    private AnnotationPageV3 generateAnnoPageV3(FTAnnoPage ftRes){
+    private AnnotationPageV3 generateAnnoPageV3(FTAnnoPage ftAnnoPage){
         long start = System.currentTimeMillis();
-        AnnotationPageV3 result = EDM2IIIFMapping.getAnnotationPageV3(ftRes);
-
+        AnnotationPageV3 result = EDM2IIIFMapping.getAnnotationPageV3(ftAnnoPage);
         if (LOG.isDebugEnabled()) {
             LOG.debug("Generated in {} ms ", System.currentTimeMillis() - start);
         }
         return result;
     }
 
-    private AnnotationPageV2 generateAnnoPageV2(FTAnnoPage ftRes){
+    private AnnotationPageV2 generateAnnoPageV2(FTAnnoPage ftAnnoPage){
         long start = System.currentTimeMillis();
-        AnnotationPageV2 result = EDM2IIIFMapping.getAnnotationPageV2(ftRes);
-
+        AnnotationPageV2 result = EDM2IIIFMapping.getAnnotationPageV2(ftAnnoPage);
         if (LOG.isDebugEnabled()) {
             LOG.debug("Generated in {} ms ", System.currentTimeMillis() - start);
         }
         return result;
     }
 
+    private AnnotationV3 generateAnnotationV3(FTAnnoPage ftAnnoPage, String annoId){
+        long start = System.currentTimeMillis();
+        AnnotationV3 result = EDM2IIIFMapping.getSingleAnnotationV3(ftAnnoPage, annoId);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Generated in {} ms ", System.currentTimeMillis() - start);
+        }
+        return result;
+    }
 
+    private AnnotationV2 generateAnnotationV2(FTAnnoPage ftAnnoPage, String annoId){
+        long start = System.currentTimeMillis();
+        AnnotationV2 result = EDM2IIIFMapping.getSingleAnnotationV2(ftAnnoPage, annoId);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Generated in {} ms ", System.currentTimeMillis() - start);
+        }
+        return result;
+    }
 
     /**
      * Serialize resource from MongoDB to JSON-LD

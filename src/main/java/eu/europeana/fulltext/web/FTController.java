@@ -49,11 +49,25 @@ public class FTController {
                              @PathVariable String annoID,
                              @RequestParam(value = "format", required = false) String version,
                              HttpServletRequest request,
-                             HttpServletResponse response) {
-        String res = fts.getAnnotation(datasetId, recordId, annoID);
+                             HttpServletResponse response) throws RecordParseException {
+        LOG.debug("Retrieve Annotation: " + datasetId + "/" + recordId + "/" + annoID);
+
+        String iiifVersion = version;
+        if (iiifVersion == null) {
+            iiifVersion = versionFromAcceptHeader(request);
+        }
+
+        Object annotation;
+
 //        Optional<FTAnnotation> ftAnnotation = fts.findAnnotation(datasetId, recordId, annoID);
-        LOG.debug("annotation");
-        return "Not implemented yet";
+        if ("3".equalsIgnoreCase(iiifVersion)) {
+            annotation = fts.getAnnotationV3(datasetId, recordId, annoID);
+            response.setContentType(FTDefinitions.MEDIA_TYPE_IIIF_JSONLD_V3+";charset=UTF-8");
+        } else {
+            annotation = fts.getAnnotationV2(datasetId, recordId, annoID); // fallback option
+            response.setContentType(FTDefinitions.MEDIA_TYPE_IIIF_JSONLD_V2+";charset=UTF-8");
+        }
+        return fts.serializeResource(annotation);
     }
 
 
@@ -72,9 +86,7 @@ public class FTController {
                            HttpServletResponse response) throws RecordParseException {
         LOG.debug("Retrieve Annopage: " + datasetId + "/" + recordId + "/" + pageId);
 
-        // if no version was provided as request param, then we check the accept header for a profiles= value
         String iiifVersion = version;
-
         if (iiifVersion == null) {
             iiifVersion = versionFromAcceptHeader(request);
         }

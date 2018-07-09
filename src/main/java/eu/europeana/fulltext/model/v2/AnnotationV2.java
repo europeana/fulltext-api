@@ -17,6 +17,7 @@
 
 package eu.europeana.fulltext.model.v2;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import ioinformarics.oss.jackson.module.jsonld.annotation.JsonldType;
 
@@ -26,11 +27,13 @@ import java.io.Serializable;
  * Created by luthien on 14/06/2018.
  */
 @JsonldType(value = "oa:Annotation")
-@JsonPropertyOrder({"id"})
+@JsonPropertyOrder({"context", "id"})
 public class AnnotationV2 extends JsonLdId implements Serializable {
 
     private static final long serialVersionUID = -7091618924397220872L;
 
+    @JsonProperty("@context")
+    private String context;
     private String              motivation;
     private String              dcType;
     private AnnotationBodyV2    resource;
@@ -38,6 +41,14 @@ public class AnnotationV2 extends JsonLdId implements Serializable {
 
     public AnnotationV2(String id) {
         super(id);
+    }
+
+    public String getContext() {
+        return context;
+    }
+
+    public void setContext(String context) {
+        this.context = context;
     }
 
     public String getMotivation() {
