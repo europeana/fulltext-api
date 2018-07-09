@@ -21,6 +21,7 @@ import com.mongodb.MongoClient;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -41,6 +42,22 @@ import org.springframework.stereotype.Component;
 public class FTSettings {
 
     private Boolean suppressParseException = false; // default value if we run this outside of Spring
+
+    @Value("${iiifapi.baseurl}")
+    private String iiifApiBaseUrl;
+
+    @Value("${resource.baseurl}")
+    private String resourceBaseUrl;
+
+    @Value("${annopage.directory}")
+    private String annoPageDirectory;
+
+    @Value("${annotation.directory}")
+    private String annotationDirectory;
+
+    @Value("${target.directory}")
+    private String targetDirectory;
+
 
     // Inject an instance of Spring-Boot MongoProperties
     @Autowired
@@ -64,7 +81,6 @@ public class FTSettings {
         return datastore;
     }
 
-
     /**
      * For production we want to suppress exceptions that arise from parsing record data, but for testing/debugging we
      * want to see those exceptions
@@ -74,5 +90,23 @@ public class FTSettings {
         return suppressParseException;
     }
 
+    public String getIiifApiBaseUrl() {
+        return iiifApiBaseUrl;
+    }
 
+    public String getResourceBaseUrl() {
+        return resourceBaseUrl;
+    }
+
+    public String getAnnoPageDirectory() {
+        return annoPageDirectory;
+    }
+
+    public String getAnnotationDirectory() {
+        return annotationDirectory;
+    }
+
+    public String getTargetDirectory() {
+        return targetDirectory;
+    }
 }

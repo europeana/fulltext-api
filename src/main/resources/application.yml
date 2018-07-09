@@ -8,4 +8,4 @@ spring:
     mongodb:
       database: test
       repositories:
-        enabled: true
+        type: auto

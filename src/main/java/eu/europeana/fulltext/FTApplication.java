@@ -42,18 +42,13 @@ public class FTApplication extends SpringBootServletInitializer {
 		};
 	}
 
-	@Bean
-	public FTSettings ftSettings() {
-		return new FTSettings();
-	}
-
 	/**
 	 * FulltextService that does the actual work
 	 * @return
 	 */
 	@Bean
 	public FTService ftService() {
-		return new FTService(ftSettings());
+		return new FTService();
 	}
 
 	/**

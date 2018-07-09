@@ -17,6 +17,7 @@
 
 package eu.europeana.fulltext.service;
 
+import eu.europeana.fulltext.config.FTSettings;
 import eu.europeana.fulltext.entity.FTAnnotation;
 import eu.europeana.fulltext.entity.FTAnnoPage;
 import eu.europeana.fulltext.entity.FTTarget;
@@ -27,6 +28,8 @@ import eu.europeana.fulltext.model.v3.AnnotationBodyV3;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Optional;
@@ -43,18 +46,22 @@ import static eu.europeana.fulltext.config.FTDefinitions.*;
  *
  * Created by luthien on 18/06/2018.
  */
+@Component
 public class EDM2IIIFMapping {
+
+    private static FTSettings fts;
 
     private static final String V2_MOTIVATION = "oa:Annotation";
     private static final String V3_MOTIVATION = "transcribing";
 
     private static final Logger LOG = LogManager.getLogger(EDM2IIIFMapping.class);
 
-    private EDM2IIIFMapping() {
-        // private constructor to prevent initialization
+    @Autowired
+    private EDM2IIIFMapping(FTSettings fts) {
+        EDM2IIIFMapping.fts = fts;
     }
 
-    public static AnnotationPageV2 getAnnotationPageV2(FTAnnoPage ftAnnoPage){
+    static AnnotationPageV2 getAnnotationPageV2(FTAnnoPage ftAnnoPage){
         AnnotationPageV2 annPage = new AnnotationPageV2(getAnnoPageIdUrl(ftAnnoPage));
         annPage.setResources(getAnnotationV2Array(ftAnnoPage));
         return annPage;
@@ -68,7 +75,7 @@ public class EDM2IIIFMapping {
         return annoArrayList.toArray(new AnnotationV2[0]);
     }
 
-    public static AnnotationV2 getAnnotationV2(FTAnnoPage ftAnnoPage, FTAnnotation ftAnno, boolean addContext){
+    private static AnnotationV2 getAnnotationV2(FTAnnoPage ftAnnoPage, FTAnnotation ftAnno, boolean addContext){
         String       resourceIdUrl  = getResourceIdUrl(ftAnnoPage, ftAnno);
         AnnotationV2 ann            = new AnnotationV2(getAnnotationIdUrl(ftAnnoPage, ftAnno));
         if (addContext){
@@ -89,7 +96,7 @@ public class EDM2IIIFMapping {
         return ann;
     }
 
-    public static AnnotationPageV3 getAnnotationPageV3(FTAnnoPage ftAnnoPage){
+    static AnnotationPageV3 getAnnotationPageV3(FTAnnoPage ftAnnoPage){
         AnnotationPageV3 annPage = new AnnotationPageV3(getAnnoPageIdUrl(ftAnnoPage));
         annPage.setItems(getAnnotationV3Array(ftAnnoPage));
         return annPage;
@@ -103,7 +110,7 @@ public class EDM2IIIFMapping {
         return annoArrayList.toArray(new AnnotationV3[0]);
     }
 
-    public static AnnotationV3 getAnnotationV3(FTAnnoPage ftAnnoPage, FTAnnotation ftAnno, boolean addContext){
+    private static AnnotationV3 getAnnotationV3(FTAnnoPage ftAnnoPage, FTAnnotation ftAnno, boolean addContext){
         String       body = getResourceIdUrl(ftAnnoPage, ftAnno);
         AnnotationV3 ann  = new AnnotationV3(getAnnotationIdUrl(ftAnnoPage, ftAnno));
         AnnotationBodyV3 anb;
@@ -124,7 +131,7 @@ public class EDM2IIIFMapping {
         return ann;
     }
 
-    public static AnnotationV3 getSingleAnnotationV3(FTAnnoPage ftAnnoPage, String annoId){
+    static AnnotationV3 getSingleAnnotationV3(FTAnnoPage ftAnnoPage, String annoId){
         FTAnnotation ftAnno;
         Optional<FTAnnotation> maybe = ftAnnoPage.getAns().stream().filter(o -> o.getAnId().equals(annoId)).findFirst();
         if (maybe.isPresent()){
@@ -134,7 +141,7 @@ public class EDM2IIIFMapping {
         }
     }
 
-    public static AnnotationV2 getSingleAnnotationV2(FTAnnoPage ftAnnoPage, String annoId){
+    static AnnotationV2 getSingleAnnotationV2(FTAnnoPage ftAnnoPage, String annoId){
         FTAnnotation ftAnno;
         Optional<FTAnnotation> maybe = ftAnnoPage.getAns().stream().filter(o -> o.getAnId().equals(annoId)).findFirst();
         if (maybe.isPresent()){
@@ -164,26 +171,26 @@ public class EDM2IIIFMapping {
         if (StringUtils.isNotBlank(ftAnno.getAnResUrl())){
             return ftAnno.getAnResUrl();
         } else {
-            return RESOURCE_BASE_URL + ftAnnoPage.getDsId() + "/" + ftAnnoPage.getLcId() + "/" + ftAnnoPage.getResId();
+            return fts.getResourceBaseUrl() + ftAnnoPage.getDsId() + "/" + ftAnnoPage.getLcId() + "/" + ftAnnoPage.getResId();
         }
     }
 
     private static String getAnnoPageIdUrl(FTAnnoPage ftAnnoPage){
-        return IIIF_API_BASE_URL + ftAnnoPage.getDsId() + "/" +
-               ftAnnoPage.getLcId() + ANNOPAGE_DIR + ftAnnoPage.getPgId();
+        return fts.getIiifApiBaseUrl() + ftAnnoPage.getDsId() + "/" +
+               ftAnnoPage.getLcId() + fts.getAnnoPageDirectory() + ftAnnoPage.getPgId();
     }
 
     private static String getAnnotationIdUrl(FTAnnoPage ftAnnoPage, FTAnnotation ftAnno){
         String datasetId = StringUtils.isNotBlank(ftAnno.getAnDsId()) ? ftAnno.getAnDsId() : ftAnnoPage.getDsId();
         String localId = StringUtils.isNotBlank(ftAnno.getAnLcId()) ? ftAnno.getAnLcId() : ftAnnoPage.getLcId();
-        return IIIF_API_BASE_URL + datasetId + "/" + localId + ANNOTATION_DIR + ftAnno.getAnId();
+        return fts.getIiifApiBaseUrl() + datasetId + "/" + localId + fts.getAnnotationDirectory() + ftAnno.getAnId();
     }
 
     private static String getTargetIdBaseUrl(FTAnnoPage ftAnnoPage, FTAnnotation ftAnno){
         if (StringUtils.isNotBlank(ftAnno.getAnTgUrl())){
             return ftAnno.getAnTgUrl();
         } else {
-            return IIIF_API_BASE_URL + ftAnnoPage.getDsId() + "/" + ftAnnoPage.getLcId() + TARGET_DIR + ftAnnoPage.getTgtId();
+            return fts.getIiifApiBaseUrl() + ftAnnoPage.getDsId() + "/" + ftAnnoPage.getLcId() + fts.getTargetDirectory() + ftAnnoPage.getTgtId();
         }
     }
 }

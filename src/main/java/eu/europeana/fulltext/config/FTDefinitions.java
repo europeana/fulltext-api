@@ -17,21 +17,14 @@
 
 package eu.europeana.fulltext.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 /**
  * Created by luthien on 14/06/2018.
  */
 public class FTDefinitions {
 
-    /**
-     * Media type for json-ld
-     */
     public static final String MEDIA_TYPE_JSONLD  = "application/ld+json";
-    public static final String IIIF_API_BASE_URL  = "https://iiif.europeana.eu/presentation/";
-    public static final String RESOURCE_BASE_URL  = "https://www.europeana.eu/api/fulltext/";
-    public static final String ANNOPAGE_DIR       = "/annopage/";
-    public static final String ANNOTATION_DIR     = "/annotation/";
-    public static final String TARGET_DIR         = "/canvas/";
-
     public static final String V3_ANNO_PAGE_TYPE  = "AnnotationPage";
     public static final String V3_ANNOTATION_TYPE = "Annotation";
     public static final String V3_ANNO_BODY_TYPE  = "SpecificResource";
@@ -55,6 +48,5 @@ public class FTDefinitions {
      * Default Content-type returned on manifest requests for version 2
      */
     public static final String MEDIA_TYPE_IIIF_JSONLD_V2 = MEDIA_TYPE_JSONLD + ";profile=\""+MEDIA_TYPE_IIIF_V2+"\"";
-
 
 }

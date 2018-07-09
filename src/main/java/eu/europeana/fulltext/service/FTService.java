@@ -55,10 +55,10 @@ public class FTService {
     // create a single objectMapper for efficiency purposes (see https://github.com/FasterXML/jackson-docs/wiki/Presentation:-Jackson-Performance)
     private static ObjectMapper mapper = new ObjectMapper();
 
-    private FTSettings FTSettings;
+    @Autowired
+    private FTSettings fts;
 
-    public FTService(FTSettings FTSettings) {
-        this.FTSettings = FTSettings;
+    public FTService() {
 
         // configure jsonpath: we use jsonpath in combination with Jackson because that makes it easier to know what
         // type of objects are returned (see also https://stackoverflow.com/a/40963445)
@@ -79,7 +79,7 @@ public class FTService {
 
             @Override
             public Set<Option> options() {
-                if (FTSettings.getSuppressParseException()) {
+                if (fts.getSuppressParseException()) {
                     // we want to be fault tolerant in production, but for testing we may want to disable this option
                     return EnumSet.of(Option.SUPPRESS_EXCEPTIONS);
                 } else {
@@ -116,13 +116,6 @@ public class FTService {
     public AnnotationV2 getAnnotationV2(String datasetId, String recordId, String annoId){
         FTAnnoPage ftAnnoPage = ftAPRepo.findByDatasetLocalAndAnnoId(datasetId, recordId, annoId).get(0);
         return generateAnnotationV2(ftAnnoPage, annoId);
-    }
-
-    /**
-     * @return FulltextConfig object containing properties and Mongo datastore
-     */
-    public FTSettings getConfig() {
-        return FTSettings;
     }
 
 
@@ -179,21 +172,6 @@ public class FTService {
 
 
 
-    private String createFtAnnoPageUrl(String datasetId, String recordId, String pageId){
-        return FTDefinitions.IIIF_API_BASE_URL + "presentation/" + datasetId + "/" + recordId + "/annopage/" + pageId;
-    }
-
-    private String createTargetUrl(String datasetId, String recordId, String imageId){
-        return FTDefinitions.IIIF_API_BASE_URL + "presentation/" + datasetId + "/" + recordId + "/canvas/" + imageId;
-    }
-
-    private String createResourceUrl(String datasetId, String recordId, String fullTextId){
-        return FTDefinitions.RESOURCE_BASE_URL + datasetId + "/" + recordId + "/" + fullTextId;
-    }
-
-    private String createFtAnnoIdBase(String datasetId, String recordId){
-        return FTDefinitions.IIIF_API_BASE_URL + "presentation/" + datasetId + "/" + recordId + "/annotation/";
-    }
 
 
     /* TEST STUFF BELOW  */

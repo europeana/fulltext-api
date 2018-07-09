@@ -4,6 +4,12 @@
 This initial (v.0.1-SNAPSHOT) version implements the functionality described in §3.3 & 3.4 
 of the IIIF API Specification.
 
+
+v.0.1.1-SNAPSHOT
+Added functionality to read fulltext.properties / fulltext.user.properties
+
+
+v.0.1-SNAPSHOT
 This version offers the bare functionality only: there is no checking of credentials or mime-type.
 It neither returns the specified HTTP status codes yet.
 

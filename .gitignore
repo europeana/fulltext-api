@@ -1,3 +1,5 @@
+**/fulltext.user.properties
+
 target/
 !.mvn/wrapper/maven-wrapper.jar
 
@@ -23,4 +25,3 @@ dist/
 nbdist/
 .nb-gradle/
 
-**/fulltext.user.properties
