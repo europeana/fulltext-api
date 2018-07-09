@@ -17,6 +17,7 @@
 
 package eu.europeana.fulltext.model.v2;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import ioinformarics.oss.jackson.module.jsonld.annotation.JsonldType;
 
 import java.io.Serializable;
@@ -25,15 +26,15 @@ import java.io.Serializable;
  * Created by luthien on 14/06/2018.
  */
 @JsonldType(value = "oa:Annotation")
+@JsonPropertyOrder({"id"})
 public class AnnotationV2 extends JsonLdId implements Serializable {
 
     private static final long serialVersionUID = -7091618924397220872L;
 
-    private String              motivation = "sc:transcribing";
+    private String              motivation;
     private String              dcType;
-    private AnnotationBodyV2    annotationBodyV2;
-    private String              resource;
-    private String              on;
+    private AnnotationBodyV2    resource;
+    private String[]            on;
 
     public AnnotationV2(String id) {
         super(id);
@@ -52,30 +53,22 @@ public class AnnotationV2 extends JsonLdId implements Serializable {
     }
 
     public void setMotivation(String motivation) {
-        this.on = motivation;
+        this.motivation = motivation;
     }
 
-    public AnnotationBodyV2 getAnnotationBodyV2() {
-        return annotationBodyV2;
+    public AnnotationBodyV2 getResource() {
+        return resource;
     }
 
-    public void setAnnotationBodyV2(AnnotationBodyV2 annotationBodyV2) {
-        this.annotationBodyV2 = annotationBodyV2;
-    }
-
-    public String getResource() {
-        return this.resource;
-    }
-
-    public void setResource(String resource) {
+    public void setResource(AnnotationBodyV2 resource) {
         this.resource = resource;
     }
 
-    public String getOn() {
+    public String[] getOn() {
         return on;
     }
 
-    public void setOn(String on) {
+    public void setOn(String[] on) {
         this.on = on;
     }
 }

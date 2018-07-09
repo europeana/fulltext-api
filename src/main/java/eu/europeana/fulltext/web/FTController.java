@@ -47,6 +47,7 @@ public class FTController {
     public String annotation(@PathVariable String datasetId,
                              @PathVariable String recordId,
                              @PathVariable String annoID,
+                             @RequestParam(value = "format", required = false) String version,
                              HttpServletRequest request,
                              HttpServletResponse response) {
         String res = fts.getAnnotation(datasetId, recordId, annoID);
@@ -69,7 +70,7 @@ public class FTController {
                            @RequestParam(value = "format", required = false) String version,
                            HttpServletRequest request,
                            HttpServletResponse response) throws RecordParseException {
-        LOG.debug("annopage");
+        LOG.debug("Retrieve Annopage: " + datasetId + "/" + recordId + "/" + pageId);
 
         // if no version was provided as request param, then we check the accept header for a profiles= value
         String iiifVersion = version;

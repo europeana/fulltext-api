@@ -11,10 +11,13 @@ import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
 import com.jayway.jsonpath.spi.mapper.MappingProvider;
 import eu.europeana.fulltext.config.FTDefinitions;
 import eu.europeana.fulltext.config.FTSettings;
+import eu.europeana.fulltext.entity.FTAnnoPage;
 import eu.europeana.fulltext.entity.FTAnnotation;
-import eu.europeana.fulltext.entity.FTPage;
+import eu.europeana.fulltext.entity.FTResource;
+import eu.europeana.fulltext.entity.FTTarget;
 import eu.europeana.fulltext.model.v2.AnnotationPageV2;
 import eu.europeana.fulltext.model.v3.AnnotationPageV3;
+import eu.europeana.fulltext.repository.FTAnnoPageRepository;
 import eu.europeana.fulltext.repository.FTAnnotationRepository;
 import eu.europeana.fulltext.repository.FTResourceRepository;
 import eu.europeana.fulltext.service.exception.RecordParseException;
@@ -25,10 +28,7 @@ import org.springframework.stereotype.Service;
 import ioinformarics.oss.jackson.module.jsonld.JsonldModule;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 /**
  *
@@ -43,7 +43,10 @@ public class FTService {
     FTResourceRepository   ftResRepo;
 
     @Autowired
-    FTAnnotationRepository ftAnnRepo;
+    FTAnnotationRepository ftAnnoRepo;
+
+    @Autowired
+    FTAnnoPageRepository ftAPRepo;
 
     private static final Logger LOG = LogManager.getLogger(FTService.class);
 
@@ -95,24 +98,24 @@ public class FTService {
 
 
     public Optional<FTAnnotation> findAnnotation(String datasetId, String recordId, String annoId){
-            return ftAnnRepo.findById(datasetId + "/" + recordId + "/" + annoId);
+            return ftAnnoRepo.findById(datasetId + "/" + recordId + "/" + annoId);
     }
 
 
     public String getAnnotation(String datasetId, String recordId, String annoId){
-//        return ftAnnRepo.findById(datasetId + "/" + recordId + "/" + annoId);
-        FTAnnotation res = ftAnnRepo.findById(datasetId + "/" + recordId + "/" + annoId).get();
+//        return ftAnnoRepo.findById(datasetId + "/" + recordId + "/" + annoId);
+        FTAnnotation res = ftAnnoRepo.findById(datasetId + "/" + recordId + "/" + annoId).get();
         return "";
     }
 
     public AnnotationPageV2 getAnnotationPageV2(String datasetId, String recordId, String pageId){
-        FTPage ftPage = ftResRepo.findById(createFtResourceId(datasetId, recordId, pageId)).get();
-        return generateAnnoPageV2(ftPage);
+        FTAnnoPage ftAnnoPage = ftAPRepo.findByDatasetLocalAndPageId(datasetId, recordId, pageId).get(0);
+        return generateAnnoPageV2(ftAnnoPage);
     }
 
     public AnnotationPageV3 getAnnotationPageV3(String datasetId, String recordId, String pageId){
-        FTPage ftPage = ftResRepo.findById(createFtResourceId(datasetId, recordId, pageId)).get();
-        return generateAnnoPageV3(ftPage);
+        FTAnnoPage ftAnnoPage = ftAPRepo.findByDatasetLocalAndPageId(datasetId, recordId, pageId).get(0);
+        return generateAnnoPageV3(ftAnnoPage);
     }
 
     /**
@@ -123,7 +126,7 @@ public class FTService {
     }
 
 
-    private AnnotationPageV3 generateAnnoPageV3(FTPage ftRes){
+    private AnnotationPageV3 generateAnnoPageV3(FTAnnoPage ftRes){
         long start = System.currentTimeMillis();
         AnnotationPageV3 result = EDM2IIIFMapping.getAnnotationPageV3(ftRes);
 
@@ -133,7 +136,7 @@ public class FTService {
         return result;
     }
 
-    private AnnotationPageV2 generateAnnoPageV2(FTPage ftRes){
+    private AnnotationPageV2 generateAnnoPageV2(FTAnnoPage ftRes){
         long start = System.currentTimeMillis();
         AnnotationPageV2 result = EDM2IIIFMapping.getAnnotationPageV2(ftRes);
 
@@ -162,20 +165,20 @@ public class FTService {
 
 
 
-    private String createFtResourceId(String datasetId, String recordId, String pageId){
-        return FTDefinitions.IIIFURL + "/presentation/" + datasetId + "/" + recordId + "/annopage/" + pageId;
+    private String createFtAnnoPageUrl(String datasetId, String recordId, String pageId){
+        return FTDefinitions.IIIF_API_BASE_URL + "presentation/" + datasetId + "/" + recordId + "/annopage/" + pageId;
     }
 
     private String createTargetUrl(String datasetId, String recordId, String imageId){
-        return FTDefinitions.IIIFURL + "/presentation/" + datasetId + "/" + recordId + "/canvas/" + imageId;
+        return FTDefinitions.IIIF_API_BASE_URL + "presentation/" + datasetId + "/" + recordId + "/canvas/" + imageId;
     }
 
-    private String createSourceUrl(String datasetId, String recordId, String fullTextId){
-        return FTDefinitions.FULLTEXTURL + "/" + datasetId + "/" + recordId + "/" + fullTextId;
+    private String createResourceUrl(String datasetId, String recordId, String fullTextId){
+        return FTDefinitions.RESOURCE_BASE_URL + datasetId + "/" + recordId + "/" + fullTextId;
     }
 
     private String createFtAnnoIdBase(String datasetId, String recordId){
-        return FTDefinitions.IIIFURL + "/" + datasetId + "/" + recordId + "/annotation/";
+        return FTDefinitions.IIIF_API_BASE_URL + "presentation/" + datasetId + "/" + recordId + "/annotation/";
     }
 
 
@@ -185,52 +188,70 @@ public class FTService {
     /**
      * initial Mongo and Morphia setup testing
      */
-    private FTPage       ftr;
-    private FTAnnotation fta0;
-    private FTAnnotation fta1;
-    private FTAnnotation fta2;
+    private FTAnnoPage     pag0;
+    private List<FTTarget> tar0;
+    private List<FTTarget> tar1;
+    private List<FTTarget> tar2;
+    private FTResource     res0;
+    private FTAnnotation   ann0;
+    private FTAnnotation   ann1;
+    private FTAnnotation   ann2;
 
     public void createTestRecords(){
-        String value = "Wat wil Wickie? Wickie willah Koeckebacke!";
+        String fullText     = "Wat wil Wickie? Wickie willah Koeckebacke!";
+        String datasetId    = "9200356";
+        String localId      = "BibliographicResource_3000100331503";
+        String pageId       = "1";
+        String targetId     = "p1";
+        String resourceId   = "XPTO";
 
-        String datasetId = "9200356";
-        String recordId = "BibliographicResource_3000100331503";
-        String pageId = "1";
-        String imageId = "p1";
-        String sourceId = "XPTO";
+        tar0 = Arrays.asList(newFTTarget(0, 0, 0, 0));
+        tar1 = Arrays.asList(newFTTarget(110, 70, 30, 11),
+                             newFTTarget(144, 72, 18, 11));
+        tar2 = Arrays.asList(newFTTarget(12, 98, 23, 12));
 
-        String ftResourceId = createFtResourceId(datasetId, recordId, pageId);
-        String targetUrl    = createTargetUrl(datasetId, recordId, imageId);
-        String sourceUrl    = createSourceUrl(datasetId, recordId, sourceId);
-        String ftAnnoIdBase = createFtAnnoIdBase(datasetId, recordId);
+        res0 = saveFTResource(fullText);
 
-        fta0 = createFTAnnotation(ftAnnoIdBase + "0", "P", "transcribing", null,
-                                  0, 0, 0, 0, 0, 0, ftResourceId);
-        fta1 = createFTAnnotation(ftAnnoIdBase + "1", "W", "transcribing", "nl",
-                                  0, 2, 0, 0, 6, 10, ftResourceId);
-        fta2 = createFTAnnotation(ftAnnoIdBase + "2", "W", "transcribing", null,
-                                  4, 6, 10, 0, 7, 10, ftResourceId);
+        ann0 = newFTAnnotation("0", "page", 0, 0, res0, tar0);
+        ann1 = newFTAnnotation("1", "word", 0, 2, res0, tar1);
+        ann2 = newFTAnnotation("2", "word", 4, 6, res0, tar2, "nl");
 
-        ftr = createFTResource(ftResourceId, "en", targetUrl, sourceUrl, value);
-
-        ftAnnRepo.save(fta0);
-        ftAnnRepo.save(fta1);
-        ftAnnRepo.save(fta2);
-
-        ftr.setPageAnnotation(fta0);
-        ftr.setFTAnnotations(Arrays.asList(fta1, fta2));
-        ftResRepo.save(ftr);
+        pag0 = newFTAnnoPage(datasetId, localId, pageId, "en", resourceId, targetId);
+        pag0.setPgAn(ann0);
+        pag0.setAns(Arrays.asList(ann1, ann2));
+        ftAPRepo.save(pag0);
     }
 
-    public FTAnnotation createFTAnnotation(String id, String dcType, String motivation, String language,
-                                    Integer textStart, Integer textEnd, Integer targetX,
-                                    Integer targetY, Integer targetW, Integer targetH, String pageId){
-        return new FTAnnotation(id, dcType, motivation, language, textStart, textEnd,
-                                targetX, targetY, targetW, targetH, pageId);
+    public FTAnnoPage newFTAnnoPage(String datasetId, String localId, String pageId, String language,
+                                    String resourceId, String targetId){
+        return new FTAnnoPage(datasetId, localId, pageId, language, resourceId, targetId); }
+
+
+    public FTAnnotation newFTAnnotation(String annoId, String dcType, Integer textStart, Integer textEnd,
+                                         FTResource resource, List<FTTarget> ftTargets){
+        return new FTAnnotation(annoId, dcType, textStart, textEnd, resource, ftTargets);
     }
 
-    public FTPage createFTResource(String idUrl, String language, String targetUrl, String sourceUrl, String value) {
-        return new FTPage(idUrl, language, targetUrl, sourceUrl, value);
+    public FTAnnotation newFTAnnotation(String annoId, String dcType, Integer textStart, Integer textEnd,
+                                        FTResource resource, List<FTTarget> ftTargets, String annoLanguage){
+        return new FTAnnotation(annoId, dcType, textStart, textEnd, resource, ftTargets, annoLanguage);
+    }
+
+    public FTAnnotation saveFTAnnotation(String annoId, String dcType, Integer textStart, Integer textEnd,
+                                         FTResource resource, List<FTTarget>  ftTargets){
+        FTAnnotation fta = new FTAnnotation(annoId, dcType, textStart, textEnd, resource, ftTargets);
+        ftAnnoRepo.save(fta);
+        return fta;
+    }
+
+    public FTResource saveFTResource(String fullText) {
+        FTResource res = new FTResource(fullText);
+        ftResRepo.save(res);
+        return res;
+    }
+
+    public FTTarget newFTTarget(Integer targetX, Integer targetY, Integer targetW, Integer targetH){
+        return new FTTarget(targetX, targetY, targetW, targetH);
     }
 
 

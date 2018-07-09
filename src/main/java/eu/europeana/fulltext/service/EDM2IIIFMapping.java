@@ -18,10 +18,9 @@
 package eu.europeana.fulltext.service;
 
 import eu.europeana.fulltext.entity.FTAnnotation;
-import eu.europeana.fulltext.entity.FTPage;
-import eu.europeana.fulltext.model.v2.AnnotationBodyV2;
-import eu.europeana.fulltext.model.v2.AnnotationPageV2;
-import eu.europeana.fulltext.model.v2.AnnotationV2;
+import eu.europeana.fulltext.entity.FTAnnoPage;
+import eu.europeana.fulltext.entity.FTTarget;
+import eu.europeana.fulltext.model.v2.*;
 import eu.europeana.fulltext.model.v3.AnnotationPageV3;
 import eu.europeana.fulltext.model.v3.AnnotationV3;
 import eu.europeana.fulltext.model.v3.AnnotationBodyV3;
@@ -31,13 +30,22 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 
+import static eu.europeana.fulltext.config.FTDefinitions.*;
+
 /**
- * This class contains the methods for mapping FTAnnotation / FTPage Mongo bean objects to IIIF v2 / v3 fulltext
- * resource objects
+ * This class contains the methods for mapping FTAnnotation / FTAnnoPage Mongo bean objects to IIIF v2 / v3 fulltext
+ * resource objects.
+ *
+ * NOTE while a given value for the 'motivation' field in the Annotation class will be stored as such in Mongo, it is
+ * for now not displayed in the output. Instead, the values as specified in the EDM 2 IIIF mapping document are used;
+ * they are for now hard-coded in this class for both the V2 and V3 version of the output JSON.
  *
  * Created by luthien on 18/06/2018.
  */
 public class EDM2IIIFMapping {
+
+    private static final String V2_MOTIVATION = "oa:Annotation";
+    private static final String V3_MOTIVATION = "transcribing";
 
     private static final Logger LOG = LogManager.getLogger(EDM2IIIFMapping.class);
 
@@ -45,74 +53,110 @@ public class EDM2IIIFMapping {
         // private constructor to prevent initialization
     }
 
-    public static AnnotationPageV2 getAnnotationPageV2(FTPage ftPage){
-        AnnotationPageV2 annPage = new AnnotationPageV2(ftPage.getId());
-        annPage.setItems(getAnnotationV2Array(ftPage));
+    public static AnnotationPageV2 getAnnotationPageV2(FTAnnoPage ftAnnoPage){
+        AnnotationPageV2 annPage = new AnnotationPageV2(getAnnoPageIdUrl(ftAnnoPage));
+        annPage.setResources(getAnnotationV2Array(ftAnnoPage));
         return annPage;
     }
 
-    public static AnnotationV2 getAnnotationV2(FTAnnotation ftAnno, FTPage ftPpage){
-        String       resource  = ftPpage.getSourceUrl() + "#char=" + ftAnno.getTextStart() + "," + ftAnno.getTextEnd();
-        AnnotationV2 ann       = new AnnotationV2(ftAnno.getId());
-        ann.setMotivation(ftAnno.getMotivation());
-        ann.setDcType(ftAnno.getDcType());
-        if (StringUtils.isNotBlank(ftAnno.getLanguage())){
-            AnnotationBodyV2 anb = new AnnotationBodyV2(resource);
-            anb.setFull(ftPpage.getSourceUrl());
-            anb.setLanguage(ftAnno.getLanguage());
-            ann.setAnnotationBodyV2(anb);
-        } else {
-            ann.setResource(resource);
-        }
-        ann.setOn(ftPpage.getTargetUrl()
-                  + "#xywh="    + ftAnno.getTargetX()
-                  + ","         + ftAnno.getTargetY()
-                  + ","         + ftAnno.getTargetW()
-                  + ","         + ftAnno.getTargetH());
-        return ann;
-    }
-
-    public static AnnotationPageV3 getAnnotationPageV3(FTPage ftPage){
-        AnnotationPageV3 annPage = new AnnotationPageV3(ftPage.getId());
-        annPage.setItems(getAnnotationV3Array(ftPage));
-        return annPage;
-    }
-
-    public static AnnotationV3 getAnnotationV3(FTAnnotation ftAnno, FTPage ftPpage){
-        String       body = ftPpage.getSourceUrl() + "#char=" + ftAnno.getTextStart() + "," + ftAnno.getTextEnd();
-        AnnotationV3 ann  = new AnnotationV3(ftAnno.getId());
-        ann.setMotivation(ftAnno.getMotivation());
-        ann.setDcType(ftAnno.getDcType());
-        if (StringUtils.isNotBlank(ftAnno.getLanguage())){
-            AnnotationBodyV3 anb = new AnnotationBodyV3(body);
-            anb.setSource(ftPpage.getSourceUrl());
-            anb.setLanguage(ftAnno.getLanguage());
-            ann.setAnnotationBodyV3(anb);
-        } else {
-            ann.setBody(body);
-        }
-        ann.setTarget(ftPpage.getTargetUrl()
-                      + "#xywh="    + ftAnno.getTargetX()
-                      + ","         + ftAnno.getTargetY()
-                      + ","         + ftAnno.getTargetW()
-                      + ","         + ftAnno.getTargetH());
-        return ann;
-    }
-
-    private static AnnotationV2[] getAnnotationV2Array(FTPage ftPage){
+    private static AnnotationV2[] getAnnotationV2Array(FTAnnoPage ftAnnoPage){
         ArrayList<AnnotationV2> annoArrayList = new ArrayList<>();
-        for (FTAnnotation ftAnno : ftPage.getFTAnnotations()){
-            annoArrayList.add(getAnnotationV2(ftAnno, ftPage));
+        for (FTAnnotation ftAnno : ftAnnoPage.getAns()){
+            annoArrayList.add(getAnnotationV2(ftAnnoPage, ftAnno));
         }
         return annoArrayList.toArray(new AnnotationV2[0]);
     }
 
-    private static AnnotationV3[] getAnnotationV3Array(FTPage ftPage){
+    public static AnnotationV2 getAnnotationV2(FTAnnoPage ftAnnoPage, FTAnnotation ftAnno){
+        String       resourceIdUrl  = getResourceIdUrl(ftAnnoPage, ftAnno);
+        AnnotationV2 ann            = new AnnotationV2(getAnnotationIdUrl(ftAnnoPage, ftAnno));
+        ann.setMotivation(StringUtils.isNotBlank(ftAnno.getMotiv()) ? ftAnno.getMotiv() : V2_MOTIVATION);
+        ann.setDcType(ftAnno.getDcType());
+        ann.setOn(getFTTargetArray(ftAnnoPage, ftAnno));
+        if (StringUtils.isNotBlank(ftAnno.getLang())){
+            AnnotationFullBodyV2 anb = new AnnotationFullBodyV2(resourceIdUrl);
+            anb.setFull(getResourceIdBaseUrl(ftAnnoPage, ftAnno));
+            anb.setLanguage(ftAnno.getLang());
+            ann.setResource(anb);
+        } else {
+            AnnotationBodyV2 anb = new AnnotationBodyV2(resourceIdUrl);
+            ann.setResource(anb);
+        }
+        return ann;
+    }
+
+    public static AnnotationPageV3 getAnnotationPageV3(FTAnnoPage ftAnnoPage){
+        AnnotationPageV3 annPage = new AnnotationPageV3(getAnnoPageIdUrl(ftAnnoPage));
+        annPage.setItems(getAnnotationV3Array(ftAnnoPage));
+        return annPage;
+    }
+
+    private static AnnotationV3[] getAnnotationV3Array(FTAnnoPage ftAnnoPage){
         ArrayList<AnnotationV3> annoArrayList = new ArrayList<>();
-        for (FTAnnotation ftAnno : ftPage.getFTAnnotations()){
-            annoArrayList.add(getAnnotationV3(ftAnno, ftPage));
+        for (FTAnnotation ftAnno : ftAnnoPage.getAns()){
+            annoArrayList.add(getAnnotationV3(ftAnnoPage, ftAnno));
         }
         return annoArrayList.toArray(new AnnotationV3[0]);
     }
 
+    public static AnnotationV3 getAnnotationV3(FTAnnoPage ftAnnoPage, FTAnnotation ftAnno){
+        String       body = getResourceIdUrl(ftAnnoPage, ftAnno);
+        AnnotationV3 ann  = new AnnotationV3(getAnnotationIdUrl(ftAnnoPage, ftAnno));
+        AnnotationBodyV3 anb;
+        ann.setMotivation(StringUtils.isNotBlank(ftAnno.getMotiv()) ? ftAnno.getMotiv() : V3_MOTIVATION);
+        ann.setDcType(ftAnno.getDcType());
+        if (StringUtils.isNotBlank(ftAnno.getLang())){
+            anb = new AnnotationBodyV3(body, V3_ANNO_BODY_TYPE);
+            anb.setSource(getResourceIdBaseUrl(ftAnnoPage, ftAnno));
+            anb.setLanguage(ftAnno.getLang());
+        } else {
+            anb = new AnnotationBodyV3(body);
+        }
+        ann.setBody(anb);
+        ann.setTarget(getFTTargetArray(ftAnnoPage, ftAnno));
+        return ann;
+    }
+
+    private static String[] getFTTargetArray(FTAnnoPage ftAnnoPage, FTAnnotation ftAnno){
+        ArrayList<String> ftTargetURLList = new ArrayList<>();
+        for (FTTarget ftTarget : ftAnno.getTgs()){
+            ftTargetURLList.add(getTargetIdBaseUrl(ftAnnoPage, ftAnno) + "#xywh="
+                                + ftTarget.getX() + ","
+                                + ftTarget.getY() + ","
+                                + ftTarget.getW() + ","
+                                + ftTarget.getH());
+        }
+        return ftTargetURLList.toArray(new String[0]);
+    }
+
+    private static String getResourceIdUrl(FTAnnoPage ftAnnoPage, FTAnnotation ftAnno){
+        return getResourceIdBaseUrl(ftAnnoPage, ftAnno) + "#char=" + ftAnno.getFrom() + "," + ftAnno.getTo();
+    }
+
+    private static String getResourceIdBaseUrl(FTAnnoPage ftAnnoPage, FTAnnotation ftAnno){
+        if (StringUtils.isNotBlank(ftAnno.getAnResUrl())){
+            return ftAnno.getAnResUrl();
+        } else {
+            return RESOURCE_BASE_URL + ftAnnoPage.getDsId() + "/" + ftAnnoPage.getLcId() + "/" + ftAnnoPage.getResId();
+        }
+    }
+
+    private static String getAnnoPageIdUrl(FTAnnoPage ftAnnoPage){
+        return IIIF_API_BASE_URL + ftAnnoPage.getDsId() + "/" +
+               ftAnnoPage.getLcId() + ANNOPAGE_DIR + ftAnnoPage.getPgId();
+    }
+
+    private static String getAnnotationIdUrl(FTAnnoPage ftAnnoPage, FTAnnotation ftAnno){
+        String datasetId = StringUtils.isNotBlank(ftAnno.getAnDsId()) ? ftAnno.getAnDsId() : ftAnnoPage.getDsId();
+        String localId = StringUtils.isNotBlank(ftAnno.getAnLcId()) ? ftAnno.getAnLcId() : ftAnnoPage.getLcId();
+        return IIIF_API_BASE_URL + datasetId + "/" + localId + ANNOTATION_DIR + ftAnno.getAnId();
+    }
+
+    private static String getTargetIdBaseUrl(FTAnnoPage ftAnnoPage, FTAnnotation ftAnno){
+        if (StringUtils.isNotBlank(ftAnno.getAnTgUrl())){
+            return ftAnno.getAnTgUrl();
+        } else {
+            return IIIF_API_BASE_URL + ftAnnoPage.getDsId() + "/" + ftAnnoPage.getLcId() + TARGET_DIR + ftAnnoPage.getTgtId();
+        }
+    }
 }

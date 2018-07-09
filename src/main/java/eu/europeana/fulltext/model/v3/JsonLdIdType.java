@@ -23,27 +23,39 @@ import ioinformarics.oss.jackson.module.jsonld.annotation.JsonldId;
 import java.io.Serializable;
 
 /**
- * Created by luthien on 14/06/2018.
+ * Id and Type are common fields for Fulltext v3 types as well
+ * After the IIIF version by Patrick Ehlert
+ *
+ * @author Luthien
+ * Created on 02-07-2018
  */
-@JsonPropertyOrder({"id"}) // make sure id always comes first, instead of last
-public class JsonLdId implements Serializable {
 
-    private static final long serialVersionUID = 8639654567514332458L;
+public class JsonLdIdType implements Serializable{
 
-    @JsonldId
+    private static final long serialVersionUID = -2716881573824312952L;
+
     private String id;
+    private String type;
 
-    public JsonLdId() {
+    public JsonLdIdType() {
         // empty constructor to make it also deserializable (see SonarQube squid:S2055)
     }
 
-    public JsonLdId(String id) {
+    public JsonLdIdType(String id) {
         this.id = id;
+    }
+
+    public JsonLdIdType(String id, String type) {
+        this.id = id;
+        this.type = type;
     }
 
     public String getId() {
         return id;
     }
 
+    public String getType() {
+        return type;
+    }
 }
 

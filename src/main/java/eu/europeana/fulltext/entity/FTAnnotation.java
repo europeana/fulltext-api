@@ -17,53 +17,70 @@
 
 package eu.europeana.fulltext.entity;
 
+import org.bson.types.ObjectId;
 import org.mongodb.morphia.annotations.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+
+import java.util.List;
 
 /**
  * Created by luthien on 31/05/2018.
  */
-@Document(collection = "fulltextAnnotation")
+//@Document(collection = "ftAnnotation")
 public class FTAnnotation {
 
     @Id
-    private String      id;             // annotationId
-    private String      dcType;         // type = "AnnotationV2" and "SpecificResource" are implicitly added, not stored
-    private String      motivation;
-    private String      language;       // optional
-    private Integer     textStart;
-    private Integer     textEnd;
-    private Integer     targetX;
-    private Integer     targetY;
-    private Integer     targetW;
-    private Integer     targetH;
-    private String      pageId;         // link to parent page
+    private ObjectId       _id;    // Mongo ObjectId
+    private String         anId;   // IIIF_API_BASE_URL/               /            /annotation/{anId}
 
+    private String         dcType;
+    private String         motiv;  // can be stored but is initially not used for output
+    private String         lang;   // optional
+    @DBRef
+    private FTResource     res;    // implements the AnnotationBody
+    private Integer        from;
+    private Integer        to;
+    private List<FTTarget> tgs;    // Only the coordinates. Can be multiple e.g. in case of abbreviated words
 
-    // No args Constructor
+    // parameters below are only used when the Annotation's datasetId and /or localId differ from
+    // the other Annotations for this AnnoPage. It is unknown if this occurs, but providing the possibility in any case.
+    private String anDsId;         // IIIF_API_BASE_URL/{anDsId}/        /annotation/..
+    private String anLcId;         // IIIF_API_BASE_URL/        /{anLcId}/annotation/..
 
-    public FTAnnotation(String id, String dcType, String motivation, String language,
-                        Integer textStart, Integer textEnd, Integer targetX,
-                        Integer targetY, Integer targetW, Integer targetH, String pageId) {
-        this.id         = id;
-        this.dcType     = dcType;
-        this.motivation = motivation;
-        this.language   = language;
-        this.textStart  = textStart;
-        this.textEnd    = textEnd;
-        this.targetX    = targetX;
-        this.targetY    = targetY;
-        this.targetW    = targetW;
-        this.targetH    = targetH;
-        this.pageId     = pageId;
+    // to provide a way to define a Resource Base URL that does not conform to the regular namespace, eg for external resources
+    private String anResUrl;
+
+    // to provide a way to define a Target URL that does not conform to the regular namespace, eg for external targets
+    private String anTgUrl;
+
+    public FTAnnotation(){}
+
+    public FTAnnotation(String anId, String dcType, Integer from, Integer to) {
+        this.anId   = anId;
+        this.dcType = dcType;
+        this.from   = from;
+        this.to     = to;
     }
 
-    public String getId() {
-        return id;
+    public FTAnnotation(String anId, String dcType, Integer from, Integer to,
+                        FTResource res, List<FTTarget> tgs) {
+        this(anId, dcType, from, to);
+        this.res = res;
+        this.tgs = tgs;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public FTAnnotation(String anId, String dcType, Integer from, Integer to,
+                        FTResource res, List<FTTarget> tgs, String lang) {
+        this(anId, dcType, from, to, res, tgs);
+        this.lang = lang;
+    }
+
+    public String getAnId() {
+        return anId;
+    }
+
+    public void setAnId(String anId) {
+        this.anId = anId;
     }
 
     public String getDcType() {
@@ -74,75 +91,83 @@ public class FTAnnotation {
         this.dcType = dcType;
     }
 
-    public String getMotivation() {
-        return motivation;
+    public String getMotiv() {
+        return motiv;
     }
 
-    public void setMotivation(String motivation) {
-        this.motivation = motivation;
+    public void setMotiv(String motiv) {
+        this.motiv = motiv;
     }
 
-    public String getLanguage() {
-        return language;
+    public String getLang() {
+        return lang;
     }
 
-    public void setLanguage(String language) {
-        this.language = language;
+    public void setLang(String lang) {
+        this.lang = lang;
     }
 
-    public Integer getTextStart() {
-        return textStart;
+    public FTResource getRes() {
+        return res;
     }
 
-    public void setTextStart(Integer textStart) {
-        this.textStart = textStart;
+    public void setRes(FTResource res) {
+        this.res = res;
     }
 
-    public Integer getTextEnd() {
-        return textEnd;
+    public Integer getFrom() {
+        return from;
     }
 
-    public void setTextEnd(Integer textEnd) {
-        this.textEnd = textEnd;
+    public void setFrom(Integer from) {
+        this.from = from;
     }
 
-    public Integer getTargetX() {
-        return targetX;
+    public Integer getTo() {
+        return to;
     }
 
-    public void setTargetX(Integer targetX) {
-        this.targetX = targetX;
+    public void setTo(Integer to) {
+        this.to = to;
     }
 
-    public Integer getTargetY() {
-        return targetY;
+    public List<FTTarget> getTgs() {
+        return tgs;
     }
 
-    public void setTargetY(Integer targetY) {
-        this.targetY = targetY;
+    public void setTgs(List<FTTarget> tgs) {
+        this.tgs = tgs;
     }
 
-    public Integer getTargetW() {
-        return targetW;
+    public String getAnDsId() {
+        return anDsId;
     }
 
-    public void setTargetW(Integer targetW) {
-        this.targetW = targetW;
+    public void setAnDsId(String anDsId) {
+        this.anDsId = anDsId;
     }
 
-    public Integer getTargetH() {
-        return targetH;
+    public String getAnLcId() {
+        return anLcId;
     }
 
-    public void setTargetH(Integer targetH) {
-        this.targetH = targetH;
+    public void setAnLcId(String anLcId) {
+        this.anLcId = anLcId;
     }
 
-    public String getPageId() {
-        return pageId;
+    public String getAnResUrl() {
+        return anResUrl;
     }
 
-    public void setPageId(String pageId) {
-        this.pageId = pageId;
+    public void setAnResUrl(String anResUrl) {
+        this.anResUrl = anResUrl;
+    }
+
+    public String getAnTgUrl() {
+        return anTgUrl;
+    }
+
+    public void setAnTgUrl(String anTgUrl) {
+        this.anTgUrl = anTgUrl;
     }
 }

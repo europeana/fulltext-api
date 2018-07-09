@@ -15,39 +15,42 @@
  *  the Licence.
  */
 
-package eu.europeana.fulltext.model.v3;
+package eu.europeana.fulltext.model.v2;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import ioinformarics.oss.jackson.module.jsonld.annotation.JsonldType;
 
 import java.io.Serializable;
-
-import static eu.europeana.fulltext.config.FTDefinitions.MEDIA_TYPE_IIIF_V3;
-import static eu.europeana.fulltext.config.FTDefinitions.V3_ANNO_PAGE_TYPE;
 
 /**
  * Created by luthien on 14/06/2018.
  */
-@JsonPropertyOrder({"context", "id"})
-public class AnnotationPageV3 extends JsonLdIdType implements Serializable{
+@JsonldType("oa:SpecificResource")
+@JsonPropertyOrder({"id"})
+public class AnnotationFullBodyV2 extends AnnotationBodyV2{
 
-    private static final long serialVersionUID = 3852844091029376312L;
+    private static final long serialVersionUID = 1825322475703247072L;
 
-    @JsonProperty("@context")
-    private String context = MEDIA_TYPE_IIIF_V3;
+    private String full;
+    private String language;
 
-    private AnnotationV3[] items;
-
-    public AnnotationPageV3(String id) {
-        super(id, V3_ANNO_PAGE_TYPE);
+    public AnnotationFullBodyV2(String id) {
+        super(id);
     }
 
-    public AnnotationV3[] getItems() {
-        return items;
+    public String getFull() {
+        return this.full;
     }
 
-    public void setItems(AnnotationV3[] items) {
-        this.items = items;
+    public void setFull(String full) {
+        this.full = full;
     }
 
+    public String getLanguage() {
+        return this.language;
+    }
+
+    public void setLanguage(String language) {
+        this.language = language;
+    }
 }

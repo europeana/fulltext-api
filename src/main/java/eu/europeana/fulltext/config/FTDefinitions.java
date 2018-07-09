@@ -25,19 +25,26 @@ public class FTDefinitions {
     /**
      * Media type for json-ld
      */
-    public static final String MEDIA_TYPE_JSONLD = "application/ld+json";
-    public static final String IIIFURL = "https://iiif.europeana.eu/";
-    public static final String FULLTEXTURL = "https://www.europeana.eu/api/fulltext";
+    public static final String MEDIA_TYPE_JSONLD  = "application/ld+json";
+    public static final String IIIF_API_BASE_URL  = "https://iiif.europeana.eu/presentation/";
+    public static final String RESOURCE_BASE_URL  = "https://www.europeana.eu/api/fulltext/";
+    public static final String ANNOPAGE_DIR       = "/annopage/";
+    public static final String ANNOTATION_DIR     = "/annotation/";
+    public static final String TARGET_DIR         = "/canvas/";
+
+    public static final String V3_ANNO_PAGE_TYPE  = "AnnotationPage";
+    public static final String V3_ANNOTATION_TYPE = "Annotation";
+    public static final String V3_ANNO_BODY_TYPE  = "SpecificResource";
 
     /**
      * Media type for IIIF version 2
      */
-    public static final String MEDIA_TYPE_IIIF_V2 = "http://iiif.io/api/presentation/2/context.json";
+    public static final String MEDIA_TYPE_IIIF_V2  = "http://iiif.io/api/presentation/2/context.json";
 
     /**
      * Media type for IIIF version 3
      */
-    public static final String MEDIA_TYPE_IIIF_V3 = "http://iiif.io/api/presentation/3/context.json";
+    public static final String MEDIA_TYPE_IIIF_V3  = "http://iiif.io/api/presentation/3/context.json";
 
     /**
      * Default Content-type returned on manifest requests for version 3

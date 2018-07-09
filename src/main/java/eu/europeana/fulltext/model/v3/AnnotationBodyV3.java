@@ -17,23 +17,23 @@
 
 package eu.europeana.fulltext.model.v3;
 
-import ioinformarics.oss.jackson.module.jsonld.annotation.JsonldType;
-
 import java.io.Serializable;
 
 /**
  * Created by luthien on 14/06/2018.
  */
-@JsonldType("SpecificResource")
-public class AnnotationBodyV3 extends JsonLdId implements Serializable{
+public class AnnotationBodyV3 extends JsonLdIdType implements Serializable{
 
     private static final long serialVersionUID = -3277352172046621380L;
-
     private String source;
     private String language;
 
     public AnnotationBodyV3(String id) {
         super(id);
+    }
+
+    public AnnotationBodyV3(String id, String type) {
+        super(id, type);
     }
 
     public String getSource() {

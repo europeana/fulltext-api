@@ -17,32 +17,53 @@
 
 package eu.europeana.fulltext.entity;
 
-import org.bson.types.ObjectId;
-import org.mongodb.morphia.annotations.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
-
 /**
- * Created by luthien on 31/05/2018.
+ * Created by luthien on 26/06/2018.
  */
-@Document(collection = "ftResource")
-public class FTResource {
+public class FTTarget {
 
-    @Id
-    private ObjectId _id; // Mongo ObjectId
-    private String   ft;
+    private Integer X;
+    private Integer Y;
+    private Integer W;
+    private Integer H;
 
-
-    // No args Constructor
-
-    public FTResource(String ft) {
-        this.ft = ft;
+    public FTTarget(Integer X, Integer Y, Integer W, Integer H) {
+        this.X = X;
+        this.Y = Y;
+        this.W = W;
+        this.H = H;
     }
 
-    public String getFt() {
-        return ft;
+    public Integer getX() {
+        return X;
     }
 
-    public void setFt(String ft) {
-        this.ft = ft;
+    public void setX(Integer x) {
+        this.X = x;
     }
+
+    public Integer getY() {
+        return Y;
+    }
+
+    public void setY(Integer y) {
+        this.Y = y;
+    }
+
+    public Integer getW() {
+        return W;
+    }
+
+    public void setW(Integer w) {
+        this.W = w;
+    }
+
+    public Integer getH() {
+        return H;
+    }
+
+    public void setH(Integer h) {
+        this.H = h;
+    }
+
 }

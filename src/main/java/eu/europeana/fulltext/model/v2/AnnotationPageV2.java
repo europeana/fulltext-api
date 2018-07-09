@@ -17,31 +17,37 @@
 
 package eu.europeana.fulltext.model.v2;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import ioinformarics.oss.jackson.module.jsonld.annotation.JsonldType;
 
 import java.io.Serializable;
 
+import static eu.europeana.fulltext.config.FTDefinitions.MEDIA_TYPE_IIIF_V2;
+
 /**
  * Created by luthien on 14/06/2018.
  */
 @JsonldType(value = "sc:AnnotationList")
-@JsonPropertyOrder({"id"}) // make sure id always comes first, instead of last
+@JsonPropertyOrder({"context", "id"})
 public class AnnotationPageV2 extends JsonLdId implements Serializable{
 
     private static final long serialVersionUID = 3852844091029376312L;
-    private AnnotationV2[] items;
+
+    @JsonProperty("@context")
+    private String context = MEDIA_TYPE_IIIF_V2;
+    private AnnotationV2[] resources;
 
     public AnnotationPageV2(String id) {
         super(id);
     }
 
-    public AnnotationV2[] getItems() {
-        return items;
+    public AnnotationV2[] getResources() {
+        return resources;
     }
 
-    public void setItems(AnnotationV2[] items) {
-        this.items = items;
+    public void setResources(AnnotationV2[] resources) {
+        this.resources = resources;
     }
 
 }
