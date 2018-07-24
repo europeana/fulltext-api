@@ -28,6 +28,7 @@ import eu.europeana.fulltext.repository.FTResourceRepository;
 import eu.europeana.fulltext.service.exception.FTException;
 import eu.europeana.fulltext.service.exception.AnnoPageDoesNotExistException;
 import eu.europeana.fulltext.service.exception.RecordParseException;
+import eu.europeana.fulltext.web.FTController;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -50,7 +51,8 @@ import java.util.*;
 @Service
 public class FTService {
 
-    private static Path startingDir = Paths.get("/Users/luthien/Downloads/9200396");
+    private static final Logger LOG = LogManager.getLogger(FTService.class);
+    private static Path startingDir = Paths.get("/Users/luthien/Downloads/batch3");
 
     @Autowired
     FTResourceRepository   ftResRepo;
@@ -61,7 +63,6 @@ public class FTService {
     @Autowired
     FTAnnoPageRepository ftAPRepo;
 
-    private static final Logger LOG = LogManager.getLogger(FTService.class);
 
     // create a single objectMapper for efficiency purposes (see https://github.com/FasterXML/jackson-docs/wiki/Presentation:-Jackson-Performance)
     private static ObjectMapper mapper = new ObjectMapper();
@@ -197,15 +198,15 @@ public class FTService {
         }
     }
 
-    public void saveAPList(List<AnnoPage> apList) throws FTException {
+    public void saveAPList(List<AnnoPage> apList) {
         for (AnnoPage annoPage : apList){
             String[] identifiers = StringUtils.split(
                     StringUtils.removeStartIgnoreCase(annoPage.getFtResource(), ftSettings.getResourceBaseUrl()), '/');
             if (identifiers.length > 3){
-                throw new FTException("Please check Resource Base URL settings in properties file: '"
+                LOG.error("Error", new FTException("Please check Resource Base URL settings in properties file: '"
                                       + ftSettings.getResourceBaseUrl()
                                       + "', making sure that it matches with the 'ENTITY text' value found in import file: '"
-                                      + annoPage.getFtResource() + "'");
+                                      + annoPage.getFtResource() + "'"));
             }
             FTResource ftResource = new FTResource(identifiers[2], annoPage.getFtText());
             ftResRepo.save(ftResource);
@@ -214,14 +215,15 @@ public class FTService {
             ftAnnoPage.setAns(createFTAnnoList(annoPage, ftResource));
             ftAPRepo.save(ftAnnoPage);
         }
-
-        System.out.println("done.");
+        LOG.debug("done.");
     }
 
     public void importBatch(String directory){
         LoadFiles lf = new LoadFiles(this);
+        String batchDir = ftSettings.getBatchBaseDirectory()
+                          + (StringUtils.isNotBlank(directory) ? "/" + directory : "");
         try {
-            Files.walkFileTree(StringUtils.isBlank(directory) ? startingDir : Paths.get(directory), lf);
+            Files.walkFileTree(Paths.get(batchDir), lf);
         } catch (IOException e) {
             e.printStackTrace();
         }

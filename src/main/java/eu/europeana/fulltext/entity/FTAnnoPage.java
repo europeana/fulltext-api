@@ -19,6 +19,8 @@ package eu.europeana.fulltext.entity;
 
 import org.bson.types.ObjectId;
 import org.mongodb.morphia.annotations.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -32,11 +34,15 @@ import java.util.List;
  *
  */
 @Document(collection = "ftAnnoPage")
+@CompoundIndexes({
+                         @CompoundIndex(name = "dataset_local_page",
+                                        unique = true,
+                                        def = "{'dsId' : 1, 'lcId': 1, 'pgId': 1}")
+                 })
 public class FTAnnoPage {
 
     @Id
     private ObjectId           _id;   // Mongo ObjectId
-    // next 3 combined must be unique
     private String             dsId;  // IIIF_API_BASE_URL/{dsId}/      /annopage/
     private String             lcId;  // IIIF_API_BASE_URL/      /{lcId}/annopage/
     private String             pgId;  // IIIF_API_BASE_URL/      /      /annopage/{pgId}

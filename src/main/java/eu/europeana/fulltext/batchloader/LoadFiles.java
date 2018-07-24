@@ -19,6 +19,9 @@ package eu.europeana.fulltext.batchloader;
 
 import eu.europeana.fulltext.service.FTService;
 import eu.europeana.fulltext.service.exception.FTException;
+import eu.europeana.fulltext.web.FTController;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -36,6 +39,7 @@ import static java.nio.file.FileVisitResult.CONTINUE;
 
 public class LoadFiles extends SimpleFileVisitor<Path> {
 
+    private static final Logger LOG = LogManager.getLogger(FTController.class);
     private FTService ftService;
     private List<AnnoPage> apList = new ArrayList<>();
 
@@ -43,26 +47,27 @@ public class LoadFiles extends SimpleFileVisitor<Path> {
         this.ftService = ftService;
     }
 
+    @Override
+    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attr) {
+        LOG.debug("Parsing batch with LocalID: " + dir.getFileName().toString() + " ...");
+        return CONTINUE;
+    }
 
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attr) {
         if (file.getFileName().toString().endsWith("xml")){
             XMLXPathParser parser = new XMLXPathParser();
             apList.add(parser.eatIt(file));
-            System.out.println("processed " + file.getFileName().toString());
+            LOG.debug("processed " + file.getFileName().toString());
         }
         return CONTINUE;
     }
 
     @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
-        try {
-            System.out.println("Processing " + dir.getFileName().toString() + "done, saving ...");
-            ftService.saveAPList(apList);
-            System.out.println("... done");
-        } catch (FTException e) {
-            e.printStackTrace();
-        }
+        LOG.debug("... batch " + dir.getFileName().toString() + " parsed, saving to MongoDB ...");
+        ftService.saveAPList(apList);
+        LOG.debug("... done");
         return CONTINUE;
     }
 

@@ -19,6 +19,7 @@ package eu.europeana.fulltext.entity;
 
 import org.bson.types.ObjectId;
 import org.mongodb.morphia.annotations.Id;
+import org.mongodb.morphia.annotations.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
@@ -29,6 +30,8 @@ public class FTResource {
 
     @Id
     private ObjectId _id; // Mongo ObjectId
+
+    @Indexed(unique=true)
     private String   resId;
     private String   ft;
 

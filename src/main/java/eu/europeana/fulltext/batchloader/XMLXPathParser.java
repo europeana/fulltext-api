@@ -17,12 +17,12 @@
 
 package eu.europeana.fulltext.batchloader;
 
+import eu.europeana.fulltext.web.FTController;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.w3c.dom.*;
 import org.xml.sax.InputSource;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -45,6 +45,7 @@ import java.util.regex.Pattern;
  */
 
 public class XMLXPathParser {
+    private static final Logger LOG = LogManager.getLogger(FTController.class);
 
     private static final String CHARPOS    = "#char=";
     private static final String XYWHPOS    = "#xywh=";
@@ -91,6 +92,7 @@ public class XMLXPathParser {
             Annotation      pageAnnotation = null;
 
             for (int i = 0; i < aNodes.getLength(); i++) {
+                boolean      annotationError  = false;
                 boolean      isPageAnnotation = false;
                 Node         aNode            = aNodes.item(i);
                 String       id               = "";
@@ -155,15 +157,24 @@ public class XMLXPathParser {
                         if (targetNode.getNodeType() == Node.ELEMENT_NODE) {
                             Element targetElement = (Element) targetNode;
                             if (!isPageAnnotation) {
-                                targetList.add(createTarget(targetElement.getAttributes().item(0).getNodeValue()));
+                                try {
+                                    targetList.add(createTarget(targetElement.getAttributes().item(0).getNodeValue()));
+                                } catch (ArrayIndexOutOfBoundsException | DOMException e) {
+                                    annotationError = true;
+                                    LOG.error("Error processing Image Target for Annotation with id: " + id
+                                              + ". This Annotation will be skipped.");
+                                    break;
+                                }
                             }
                         }
                     }
                 }
-                if (isPageAnnotation) {
-                    pageAnnotation = new Annotation(id, dcType, motiv, resource, targetList);
-                } else {
-                    annoList.add(createAnnotation(specRes, id, dcType, motiv, resource, targetList));
+                if (!annotationError){
+                    if (isPageAnnotation) {
+                        pageAnnotation = new Annotation(id, dcType, motiv, resource, targetList);
+                    } else {
+                        annoList.add(createAnnotation(specRes, id, dcType, motiv, resource, targetList));
+                    }
                 }
             }
 
@@ -175,7 +186,7 @@ public class XMLXPathParser {
         return ap;
     }
 
-    private Target createTarget(String url) {
+    private Target createTarget(String url) throws ArrayIndexOutOfBoundsException{
         Integer x = Integer.parseInt(StringUtils.split(StringUtils.splitByWholeSeparator(url, XYWHPOS)[1], ",")[0]);
         Integer y = Integer.parseInt(StringUtils.split(StringUtils.splitByWholeSeparator(url, XYWHPOS)[1], ",")[1]);
         Integer w = Integer.parseInt(StringUtils.split(StringUtils.splitByWholeSeparator(url, XYWHPOS)[1], ",")[2]);

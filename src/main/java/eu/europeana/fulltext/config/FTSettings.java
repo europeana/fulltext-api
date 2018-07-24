@@ -58,6 +58,9 @@ public class FTSettings {
     @Value("${target.directory}")
     private String targetDirectory;
 
+    @Value("${batch.base.directory}")
+    private String batchBaseDirectory;
+
 
     // Inject an instance of Spring-Boot MongoProperties
     @Autowired
@@ -109,4 +112,6 @@ public class FTSettings {
     public String getTargetDirectory() {
         return targetDirectory;
     }
+
+    public String getBatchBaseDirectory() { return batchBaseDirectory; }
 }
