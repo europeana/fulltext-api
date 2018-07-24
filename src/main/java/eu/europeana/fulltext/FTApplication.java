@@ -1,6 +1,5 @@
 package eu.europeana.fulltext;
 
-import eu.europeana.fulltext.config.FTSettings;
 import eu.europeana.fulltext.service.FTService;
 import eu.europeana.fulltext.web.FTController;
 import eu.europeana.fulltext.web.context.SocksProxyConfigInjector;
@@ -46,7 +45,7 @@ public class FTApplication extends SpringBootServletInitializer {
 	 * FulltextService that does the actual work
 	 * @return
 	 */
-	@Bean
+
 	public FTService ftService() {
 		return new FTService();
 	}

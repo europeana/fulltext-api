@@ -29,13 +29,29 @@ public class FTResource {
 
     @Id
     private ObjectId _id; // Mongo ObjectId
+    private String   resId;
     private String   ft;
 
 
     // No args Constructor
+    public FTResource() {
+    }
 
     public FTResource(String ft) {
         this.ft = ft;
+    }
+
+    public FTResource(String resId, String ft) {
+        this(ft);
+        this.resId = resId;
+    }
+
+    public String getResId() {
+        return resId;
+    }
+
+    public void setResId(String resId) {
+        this.resId = resId;
     }
 
     public String getFt() {

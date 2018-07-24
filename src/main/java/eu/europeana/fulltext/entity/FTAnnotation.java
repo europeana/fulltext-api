@@ -29,8 +29,8 @@ import java.util.List;
 //@Document(collection = "ftAnnotation")
 public class FTAnnotation {
 
-    @Id
-    private ObjectId       _id;    // Mongo ObjectId
+//    @Id
+//    private ObjectId       _id;    // Mongo ObjectId
     private String         anId;   // IIIF_API_BASE_URL/               /            /annotation/{anId}
 
     private String         dcType;
@@ -63,9 +63,14 @@ public class FTAnnotation {
     }
 
     public FTAnnotation(String anId, String dcType, Integer from, Integer to,
-                        FTResource res, List<FTTarget> tgs) {
+                        FTResource res) {
         this(anId, dcType, from, to);
         this.res = res;
+    }
+
+    public FTAnnotation(String anId, String dcType, Integer from, Integer to,
+                        FTResource res, List<FTTarget> tgs) {
+        this(anId, dcType, from, to, res);
         this.tgs = tgs;
     }
 

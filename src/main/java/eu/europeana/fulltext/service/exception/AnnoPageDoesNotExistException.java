@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * Created on 27-02-2018
  */
 @ResponseStatus(HttpStatus.NOT_FOUND)
-public class IdDoesNotExistException extends FTException {
+public class AnnoPageDoesNotExistException extends FTException {
 
-    public IdDoesNotExistException(String id) {
+    public AnnoPageDoesNotExistException(String id) {
         super(id, ErrorCode.ID_DOES_NOT_EXIST);
     }
 

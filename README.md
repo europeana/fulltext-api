@@ -4,6 +4,8 @@
 This initial (v.0.1-SNAPSHOT) version implements the functionality described in §3.3 & 3.4 
 of the IIIF API Specification.
 
+v.0.2-SNAPSHOT
+Added functionality to read, parse, process and save batch xml files
 
 v.0.1.1-SNAPSHOT
 Added functionality to read fulltext.properties / fulltext.user.properties

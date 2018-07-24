@@ -12,7 +12,7 @@
 
 	<groupId>eu.europeana</groupId>
 	<artifactId>fulltext</artifactId>
-	<version>0.1.1-SNAPSHOT</version>
+	<version>0.2-SNAPSHOT</version>
 	<packaging>war</packaging>
 
 	<name>Europeana Newspapers Fulltext API</name>
@@ -27,8 +27,11 @@
 		<io-informatics.version>0.1.1</io-informatics.version>
 		<morphia.version>1.3.1</morphia.version>
 		<commons-lang.version>2.6</commons-lang.version>
+		<commons-collections4.version>4.0</commons-collections4.version>
 		<spring-boot.version>2.0.2.RELEASE</spring-boot.version>
 		<spring-cloud-netflix.version>2.0.0.RC2</spring-cloud-netflix.version>
+		<xmlprojector.version>1.4.16</xmlprojector.version>
+		<spring-oxm.version>5.0.7.RELEASE</spring-oxm.version>
 	</properties>
 
 	<dependencyManagement>
@@ -92,6 +95,11 @@
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-batch</artifactId>
+			<!--<version>${spring-boot.version}</version>-->
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
 			<version>${spring-cloud-netflix.version}</version>
@@ -100,6 +108,12 @@
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-netflix-hystrix-dashboard</artifactId>
 			<version>${spring-cloud-netflix.version}</version>
+		</dependency>
+
+		<!-- for some dark reason Spring boot batch needs this -->
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
 		</dependency>
 
 		<!-- for parsing record json -->
@@ -114,6 +128,32 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-oxm</artifactId>
+			<version>${spring-oxm.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.thoughtworks.xstream</groupId>
+			<artifactId>xstream</artifactId>
+			<version>1.4.10</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>javax.xml</groupId>
+			<artifactId>jaxp-api</artifactId>
+			<version>1.4.2</version>
+		</dependency>
+
+
+		<!--<dependency>-->
+			<!--<groupId>org.xmlbeam</groupId>-->
+			<!--<artifactId>xmlprojector</artifactId>-->
+			<!--<version>${xmlprojector.version}</version>-->
+		<!--</dependency>-->
 
 		<!-- mongodb bling layer -->
 		<dependency>
@@ -142,6 +182,13 @@
 			<artifactId>commons-lang</artifactId>
 			<version>${commons-lang.version}</version>
 		</dependency>
+
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-collections4</artifactId>
+			<version>${commons-collections4.version}</version>
+		</dependency>
+
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

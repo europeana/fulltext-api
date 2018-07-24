@@ -171,7 +171,7 @@ public class EDM2IIIFMapping {
         if (StringUtils.isNotBlank(ftAnno.getAnResUrl())){
             return ftAnno.getAnResUrl();
         } else {
-            return fts.getResourceBaseUrl() + ftAnnoPage.getDsId() + "/" + ftAnnoPage.getLcId() + "/" + ftAnnoPage.getResId();
+            return fts.getResourceBaseUrl() + ftAnnoPage.getDsId() + "/" + ftAnnoPage.getLcId() + "/" + ftAnnoPage.getRes().getResId();
         }
     }
 
@@ -190,7 +190,8 @@ public class EDM2IIIFMapping {
         if (StringUtils.isNotBlank(ftAnno.getAnTgUrl())){
             return ftAnno.getAnTgUrl();
         } else {
-            return fts.getIiifApiBaseUrl() + ftAnnoPage.getDsId() + "/" + ftAnnoPage.getLcId() + fts.getTargetDirectory() + ftAnnoPage.getTgtId();
+            // fts.getIiifApiBaseUrl() + ftAnnoPage.getDsId() + "/" + ftAnnoPage.getLcId() + fts.getTargetDirectory() + ftAnnoPage.getTgtId();
+            return ftAnnoPage.getTgtId();
         }
     }
 }

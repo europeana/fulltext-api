@@ -2,11 +2,14 @@ package eu.europeana.fulltext.web;
 
 import eu.europeana.fulltext.config.FTDefinitions;
 import eu.europeana.fulltext.service.FTService;
+import eu.europeana.fulltext.service.exception.AnnoPageDoesNotExistException;
 import eu.europeana.fulltext.service.exception.RecordParseException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -70,6 +73,20 @@ public class FTController {
         return fts.serializeResource(annotation);
     }
 
+    @RequestMapping(value    = "/{datasetId}/{recordId}/annopage/{pageId}",
+                    method   = RequestMethod.HEAD,
+                    produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity annopagehead(@PathVariable String datasetId,
+                                       @PathVariable String recordId,
+                                       @PathVariable String pageId,
+                                       HttpServletRequest request,
+                                       HttpServletResponse response) throws RecordParseException {
+        if (fts.doesAnnoPageNotExist(datasetId, recordId, pageId)){
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
+        } else {
+            return new ResponseEntity(HttpStatus.OK);
+        }
+    }
 
     /**
      * Handles fetching a page (resource) with all its annotations
@@ -91,17 +108,41 @@ public class FTController {
             iiifVersion = versionFromAcceptHeader(request);
         }
 
-        Object annotationPage;
+        Object annotationPage = null;
 
-        if ("3".equalsIgnoreCase(iiifVersion)) {
-            annotationPage = fts.getAnnotationPageV3(datasetId, recordId, pageId);
-            response.setContentType(FTDefinitions.MEDIA_TYPE_IIIF_JSONLD_V3+";charset=UTF-8");
-        } else {
-            annotationPage = fts.getAnnotationPageV2(datasetId, recordId, pageId); // fallback option
-            response.setContentType(FTDefinitions.MEDIA_TYPE_IIIF_JSONLD_V2+";charset=UTF-8");
+        try {
+            if ("3".equalsIgnoreCase(iiifVersion)) {
+                    annotationPage = fts.getAnnotationPageV3(datasetId, recordId, pageId);
+
+                response.setContentType(FTDefinitions.MEDIA_TYPE_IIIF_JSONLD_V3+";charset=UTF-8");
+            } else {
+                annotationPage = fts.getAnnotationPageV2(datasetId, recordId, pageId); // fallback option
+                response.setContentType(FTDefinitions.MEDIA_TYPE_IIIF_JSONLD_V2+";charset=UTF-8");
+            }
+        } catch (AnnoPageDoesNotExistException e) {
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            e.printStackTrace();
+            annotationPage = "{'error': 'AnnoPage not found'}";
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
         }
         return fts.serializeResource(annotationPage);
     }
+
+    /**
+     * starts batch importing
+     * @return
+     */
+    @RequestMapping(value       = "/batch",
+                    method      = RequestMethod.GET,
+                    produces    = MediaType.APPLICATION_JSON_VALUE)
+    public String batch(@RequestParam(value = "directory", required = false) String directory,
+                                    HttpServletRequest request,
+                                    HttpServletResponse response) {
+        fts.importBatch(directory);
+        LOG.debug("Batch processing finished.");
+        return "Batch processing finished.";
+    }
+
 
 //    /**
 //     * Handles creating a page (resource)
@@ -141,7 +182,7 @@ public class FTController {
 
 
     /**
-     * Handles test
+     * Handles test record creation
      * @return
      */
     @RequestMapping(value       = "/testset",

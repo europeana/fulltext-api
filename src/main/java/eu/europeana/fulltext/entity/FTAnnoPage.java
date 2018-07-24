@@ -19,6 +19,7 @@ package eu.europeana.fulltext.entity;
 
 import org.bson.types.ObjectId;
 import org.mongodb.morphia.annotations.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
@@ -35,23 +36,24 @@ public class FTAnnoPage {
 
     @Id
     private ObjectId           _id;   // Mongo ObjectId
-    // these combined must be unique
+    // next 3 combined must be unique
     private String             dsId;  // IIIF_API_BASE_URL/{dsId}/      /annopage/
     private String             lcId;  // IIIF_API_BASE_URL/      /{lcId}/annopage/
     private String             pgId;  // IIIF_API_BASE_URL/      /      /annopage/{pgId}
-
-    private String             resId; // RESOURCE_BASE_URL/      /      /{resId}
-    private String             tgtId; // IIIF_API_BASE_URL/      /      /canvas/{tgtId}
+    private String             tgtId; // IIIF_API_BASE_URL/      /      /canvas/{tgtId} USE WHOLE URL!!
     private String             lang;
     private FTAnnotation       pgAn;  // FTAnnotation
     private List<FTAnnotation> ans;   // List of Annotations
 
+    @DBRef
+    private FTResource         res;   // RESOURCE_BASE_URL/      /      /{resId} (= resource)
+
     public FTAnnoPage(String dsId, String lcId,  String pgId,
-                      String lang, String resId, String tgtId) {
+                      String lang, FTResource res, String tgtId) {
         this.dsId  = dsId;
         this.lcId  = lcId;
         this.pgId  = pgId;
-        this.resId = resId;
+        this.res   = res;
         this.tgtId = tgtId;
         this.lang  = lang;
     }
@@ -80,12 +82,12 @@ public class FTAnnoPage {
         this.pgId = pgId;
     }
 
-    public String getResId() {
-        return resId;
+    public FTResource getRes() {
+        return res;
     }
 
-    public void setResId(String resId) {
-        this.resId = resId;
+    public void setRes(FTResource res) {
+        this.res = res;
     }
 
     public String getTgtId() {
