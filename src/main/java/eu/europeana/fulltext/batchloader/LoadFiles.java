@@ -39,9 +39,9 @@ import static java.nio.file.FileVisitResult.CONTINUE;
 
 public class LoadFiles extends SimpleFileVisitor<Path> {
 
-    private static final Logger LOG = LogManager.getLogger(FTController.class);
+    private static final Logger LOG = LogManager.getLogger(LoadFiles.class);
     private FTService ftService;
-    private List<AnnoPage> apList = new ArrayList<>();
+    private List<AnnoPage> apList = null;
 
     public LoadFiles(FTService ftService) {
         this.ftService = ftService;
@@ -49,25 +49,36 @@ public class LoadFiles extends SimpleFileVisitor<Path> {
 
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attr) {
-        LOG.debug("Parsing batch with LocalID: " + dir.getFileName().toString() + " ...");
+        apList = new ArrayList<>();
+        System.out.println("Entering directory: " + dir.getFileName().toString() + " ...");
+        LOG.debug("Entering directory: " + dir.getFileName().toString() + " ...");
         return CONTINUE;
     }
 
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attr) {
         if (file.getFileName().toString().endsWith("xml")){
-            XMLXPathParser parser = new XMLXPathParser();
-            apList.add(parser.eatIt(file));
-            LOG.debug("processed " + file.getFileName().toString());
+            apList.add(XMLXPathParser.eatIt(file));
+            System.out.println("processed: " + file.getFileName().toString());
+            LOG.debug("processed: " + file.getFileName().toString());
         }
         return CONTINUE;
     }
 
     @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
-        LOG.debug("... batch " + dir.getFileName().toString() + " parsed, saving to MongoDB ...");
-        ftService.saveAPList(apList);
-        LOG.debug("... done");
+        if (null != apList){
+            if (!apList.isEmpty()){
+                System.out.println("... batch " + dir.getFileName().toString() + " parsed, saving to MongoDB ...");
+                LOG.debug("... batch " + dir.getFileName().toString() + " parsed, saving to MongoDB ...");
+                ftService.saveAPList(apList);
+                System.out.println("... done, leaving directory " + dir.getFileName().toString());
+                LOG.debug("... done, leaving directory " + dir.getFileName().toString());
+                apList = null;
+            } else {
+                LOG.debug("... leaving directory " + dir.getFileName().toString());
+            }
+        }
         return CONTINUE;
     }
 

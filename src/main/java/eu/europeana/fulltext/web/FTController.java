@@ -129,18 +129,29 @@ public class FTController {
     }
 
     /**
-     * starts batch importing
+     * starts batch importing of an unzipped directory
      * @return
      */
     @RequestMapping(value       = "/batch",
                     method      = RequestMethod.GET,
                     produces    = MediaType.APPLICATION_JSON_VALUE)
-    public String batch(@RequestParam(value = "directory", required = false) String directory,
-                                    HttpServletRequest request,
-                                    HttpServletResponse response) {
+    public String batch(@RequestParam(value = "directory", required = false) String directory) {
         fts.importBatch(directory);
         LOG.debug("Batch processing finished.");
         return "Batch processing finished.";
+    }
+
+    /**
+     * starts batch importing of an unzipped directory
+     * @return
+     */
+    @RequestMapping(value       = "/zipbatch",
+                    method      = RequestMethod.GET,
+                    produces    = MediaType.APPLICATION_JSON_VALUE)
+    public String zipbatch(@RequestParam(value = "directory", required = false) String directory) {
+        fts.importZipBatch(directory);
+        LOG.debug("Zip batch processing finished.");
+        return "Zip batch processing finished.";
     }
 
 

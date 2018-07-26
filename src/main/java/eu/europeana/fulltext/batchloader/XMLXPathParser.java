@@ -52,14 +52,17 @@ public class XMLXPathParser {
     private static final String PAGEDCTYPE = "Page";
 
 
-    public AnnoPage eatIt(Path path) {
-        String pageId = StringUtils.split(path.getFileName().toString(), '.')[0];
-        String xml = readFileContents(path);
+    public static AnnoPage eatIt(Path path) {
+        return eatIt(readFileContents(path), StringUtils.split(path.getFileName().toString(), '.')[0]);
+    }
+
+
+    public static AnnoPage eatIt(String xmlString, String pageId) {
         AnnoPage ap = null;
         try {
             DocumentBuilderFactory factory  = DocumentBuilderFactory.newInstance();
             DocumentBuilder        builder  = factory.newDocumentBuilder();
-            Document               document = builder.parse(new InputSource(new StringReader(xml)));
+            Document               document = builder.parse(new InputSource(new StringReader(xmlString)));
 
             String internalSubset = (document).getDoctype().getInternalSubset();
 
@@ -186,7 +189,7 @@ public class XMLXPathParser {
         return ap;
     }
 
-    private Target createTarget(String url) throws ArrayIndexOutOfBoundsException{
+    private static Target createTarget(String url) throws ArrayIndexOutOfBoundsException{
         Integer x = Integer.parseInt(StringUtils.split(StringUtils.splitByWholeSeparator(url, XYWHPOS)[1], ",")[0]);
         Integer y = Integer.parseInt(StringUtils.split(StringUtils.splitByWholeSeparator(url, XYWHPOS)[1], ",")[1]);
         Integer w = Integer.parseInt(StringUtils.split(StringUtils.splitByWholeSeparator(url, XYWHPOS)[1], ",")[2]);
@@ -194,7 +197,7 @@ public class XMLXPathParser {
         return new Target(x, y, w, h);
     }
 
-    private Annotation createAnnotation(String specRes,
+    private static Annotation createAnnotation(String specRes,
                                         String id,
                                         String dcType,
                                         String motiv,
@@ -207,7 +210,7 @@ public class XMLXPathParser {
         return new Annotation(id, dcType, motiv, from, to, resource, targetList);
     }
 
-    private String readEntityString(String whichEntity, String internalSubset) {
+    private static String readEntityString(String whichEntity, String internalSubset) {
         Pattern entityPattern = Pattern.compile("ENTITY\\s*?" + whichEntity + "\\s*?'(.+?)'");
         Matcher entityMatcher = entityPattern.matcher(StringUtils.replaceChars(internalSubset, '"', '\''));
         if (entityMatcher.find()) {
@@ -217,7 +220,7 @@ public class XMLXPathParser {
         }
     }
 
-    private String readFileContents(Path file) {
+    private static String readFileContents(Path file) {
         String content = "";
         try {
             content = new String(Files.readAllBytes(file));

@@ -9,10 +9,7 @@ import com.jayway.jsonpath.spi.json.JacksonJsonNodeJsonProvider;
 import com.jayway.jsonpath.spi.json.JsonProvider;
 import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
 import com.jayway.jsonpath.spi.mapper.MappingProvider;
-import eu.europeana.fulltext.batchloader.AnnoPage;
-import eu.europeana.fulltext.batchloader.Annotation;
-import eu.europeana.fulltext.batchloader.LoadFiles;
-import eu.europeana.fulltext.batchloader.Target;
+import eu.europeana.fulltext.batchloader.*;
 import eu.europeana.fulltext.config.FTSettings;
 import eu.europeana.fulltext.entity.FTAnnoPage;
 import eu.europeana.fulltext.entity.FTAnnotation;
@@ -28,7 +25,6 @@ import eu.europeana.fulltext.repository.FTResourceRepository;
 import eu.europeana.fulltext.service.exception.FTException;
 import eu.europeana.fulltext.service.exception.AnnoPageDoesNotExistException;
 import eu.europeana.fulltext.service.exception.RecordParseException;
-import eu.europeana.fulltext.web.FTController;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,7 +34,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
@@ -52,7 +47,6 @@ import java.util.*;
 public class FTService {
 
     private static final Logger LOG = LogManager.getLogger(FTService.class);
-    private static Path startingDir = Paths.get("/Users/luthien/Downloads/batch3");
 
     @Autowired
     FTResourceRepository   ftResRepo;
@@ -213,9 +207,21 @@ public class FTService {
             FTAnnoPage ftAnnoPage = new FTAnnoPage(identifiers[0], identifiers[1], annoPage.getPageId(),
                                                annoPage.getFtLang(), ftResource, annoPage.getImgTargetBase());
             ftAnnoPage.setAns(createFTAnnoList(annoPage, ftResource));
+            System.out.println("dsID: " + identifiers[0] + " lcId:" + identifiers[1] + " pgId:" + annoPage.getPageId());
             ftAPRepo.save(ftAnnoPage);
         }
         LOG.debug("done.");
+    }
+
+    public void importZipBatch(String directory){
+        LoadArchives la = new LoadArchives(this);
+        String zipBatchDir = ftSettings.getBatchBaseDirectory()
+                          + (StringUtils.isNotBlank(directory) ? "/" + directory : "");
+        try {
+            Files.walkFileTree(Paths.get(zipBatchDir), la);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void importBatch(String directory){
@@ -227,7 +233,6 @@ public class FTService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
     private List<FTAnnotation> createFTAnnoList(AnnoPage annoPage, FTResource ftResource){

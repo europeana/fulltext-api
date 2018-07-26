@@ -1,15 +1,20 @@
 # Fulltext API
 ### Europeana Newspapers Fulltext API 
 
-This initial (v.0.1-SNAPSHOT) version implements the functionality described in §3.3 & 3.4 
+This Fulltext API implements the functionality described in §3.3 & 3.4 
 of the IIIF API Specification.
+
+Version history:
+
+
+v.0.2.1-SNAPSHOT
+Added functionality to read, parse, process and save batch xml files contained within ZIP archives
 
 v.0.2-SNAPSHOT
 Added functionality to read, parse, process and save batch xml files
 
 v.0.1.1-SNAPSHOT
 Added functionality to read fulltext.properties / fulltext.user.properties
-
 
 v.0.1-SNAPSHOT
 This version offers the bare functionality only: there is no checking of credentials or mime-type.
