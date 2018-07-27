@@ -20,18 +20,22 @@ package eu.europeana.fulltext.entity;
 import org.bson.types.ObjectId;
 import org.mongodb.morphia.annotations.Id;
 import org.mongodb.morphia.annotations.Indexed;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
  * Created by luthien on 31/05/2018.
  */
 @Document(collection = "ftResource")
+@CompoundIndexes({
+                         @CompoundIndex(name = "resourceId", def = "{ 'resId': 1 }", unique = true)
+                 })
 public class FTResource {
 
     @Id
     private ObjectId _id; // Mongo ObjectId
 
-    @Indexed(unique=true)
     private String   resId;
     private String   ft;
 
