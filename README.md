@@ -6,6 +6,8 @@ of the IIIF API Specification.
 
 Version history:
 
+v.0.2.2-SNAPSHOT
+Refactored .yml properties to .properties prior to deployment on Bluemix
 
 v.0.2.1-SNAPSHOT
 Added functionality to read, parse, process and save batch xml files contained within ZIP archives

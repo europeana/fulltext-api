@@ -18,8 +18,6 @@
 package eu.europeana.fulltext.batchloader;
 
 import eu.europeana.fulltext.service.FTService;
-import eu.europeana.fulltext.service.exception.FTException;
-import eu.europeana.fulltext.web.FTController;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

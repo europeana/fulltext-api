@@ -18,13 +18,14 @@
 package eu.europeana.fulltext.batchloader;
 
 import eu.europeana.fulltext.service.FTService;
-import eu.europeana.fulltext.web.FTController;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
