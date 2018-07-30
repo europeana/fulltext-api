@@ -22,12 +22,25 @@ v.0.1-SNAPSHOT
 This version offers the bare functionality only: there is no checking of credentials or mime-type.
 It neither returns the specified HTTP status codes yet.
 
-The application needs to be able to connect to a Mongo instance on localhost, and uses the default 'test'
-database in there.
+REQUIREMENTS
+The application needs Java8 jre and a Mongo instance
 
-You can create a small test-set of data to play around with using this endpoint: 
-[http://localhost:8084/presentation/testset]
+### FUNCTIONALITY
+* Batch loading zipped EMD xml files: ensure that the batch.base.directory property is set correctly. 
+The loader can read a single .zip file from that directory by calling the **zipbatch** endpoint: 
+`[http://{server:port}/presentation/zipbatch?archive={archive.zip}]`; alternatively, it will process all the files in the
+specified directory by speficying **all** as archive name, e.g.: [http://{server:port}/presentation/zipbatch?archive=all]
 
-Port number, the database used etcetera can be edited in the application.yml file.
+* A JSON-LD representation of an Annotation Page can be requested like this: 
+`[http://{server:port}/presentation/{dataset_id}/{local_id}/annopage/{page_id}?format={2/3}]` _(**format** defaults to 2)_
 
-Note that the fulltext.properties file is not used for this release yet.
+* A JSON-LD representation of an individual Annotation can be requested like this: 
+`[http://{server:port}/presentation/{dataset_id}/{local_id}/anno/{annotation_id}?format={2/3}]` _(**format** defaults to 2)_
+
+
+### PROPERTIES
+Application name, port number, Mongodb connection settings, path elements (for rendering URL's in JSON output), etc. are 
+all managed in the fulltext.properties file.
+Note that any sensitive data (e.g. passwords) are omitted from this file; they can be overridden in a local 
+fulltext.user.properties file in src/main/resources.
+
