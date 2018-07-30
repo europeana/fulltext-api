@@ -29,6 +29,10 @@ public class FTDefinitions {
     public static final String V3_ANNOTATION_TYPE = "Annotation";
     public static final String V3_ANNO_BODY_TYPE  = "SpecificResource";
 
+    public static final String ALL_ARCHIVES       = "all";
+
+
+
     /**
      * Media type for IIIF version 2
      */

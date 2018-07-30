@@ -10,6 +10,7 @@ import com.jayway.jsonpath.spi.json.JsonProvider;
 import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
 import com.jayway.jsonpath.spi.mapper.MappingProvider;
 import eu.europeana.fulltext.batchloader.*;
+import eu.europeana.fulltext.config.FTDefinitions;
 import eu.europeana.fulltext.config.FTSettings;
 import eu.europeana.fulltext.entity.FTAnnoPage;
 import eu.europeana.fulltext.entity.FTAnnotation;
@@ -203,24 +204,38 @@ public class FTService {
                                       + annoPage.getFtResource() + "'"));
             }
             FTResource ftResource = new FTResource(identifiers[2], annoPage.getFtText());
-            ftResRepo.save(ftResource);
+            try{
+                ftResRepo.save(ftResource);
+            } catch (Exception e){
+                LOG.error("Error saving ftResource with resId: " + identifiers[2], e);
+            }
             FTAnnoPage ftAnnoPage = new FTAnnoPage(identifiers[0], identifiers[1], annoPage.getPageId(),
                                                annoPage.getFtLang(), ftResource, annoPage.getImgTargetBase());
             ftAnnoPage.setAns(createFTAnnoList(annoPage, ftResource));
             System.out.println("dsID: " + identifiers[0] + " lcId:" + identifiers[1] + " pgId:" + annoPage.getPageId());
-            ftAPRepo.save(ftAnnoPage);
+            try{
+                ftAPRepo.save(ftAnnoPage);
+            } catch (Exception e){
+                LOG.error("Error saving ftAnnoPage for Dataset: " + identifiers[0]
+                          + ", LocalId: " + identifiers[1]
+                          + ", PageId: " + annoPage.getPageId(), e);
+            }
         }
         LOG.debug("done.");
     }
 
-    public void importZipBatch(String directory){
+    public void importZipBatch(String archive){
         LoadArchives la = new LoadArchives(this);
-        String zipBatchDir = ftSettings.getBatchBaseDirectory()
-                          + (StringUtils.isNotBlank(directory) ? "/" + directory : "");
-        try {
-            Files.walkFileTree(Paths.get(zipBatchDir), la);
-        } catch (IOException e) {
-            e.printStackTrace();
+        String batchBaseDirectory = ftSettings.getBatchBaseDirectory();
+        String zipBatchDir = StringUtils.removeEnd(batchBaseDirectory, "/") + "/";
+        if (StringUtils.equalsIgnoreCase(archive, FTDefinitions.ALL_ARCHIVES)){
+            try {
+                Files.walkFileTree(Paths.get(zipBatchDir), la);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            LoadArchives.processArchive(zipBatchDir + archive);
         }
     }
 

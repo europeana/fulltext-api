@@ -148,8 +148,8 @@ public class FTController {
     @RequestMapping(value       = "/zipbatch",
                     method      = RequestMethod.GET,
                     produces    = MediaType.APPLICATION_JSON_VALUE)
-    public String zipbatch(@RequestParam(value = "directory", required = false) String directory) {
-        fts.importZipBatch(directory);
+    public String zipbatch(@RequestParam(value = "archive", required = true) String archive) {
+        fts.importZipBatch(archive);
         LOG.debug("Zip batch processing finished.");
         return "Zip batch processing finished.";
     }

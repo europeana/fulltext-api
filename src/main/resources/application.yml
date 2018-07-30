@@ -5,8 +5,9 @@ spring:
   application:
     name: Fulltext API
   data:
-    mongodb:
-      database: test
+    mongodb: REMOVED
+      uri:
+      database: fulltext
       repositories:
         type: auto
   datasource:

@@ -54,17 +54,13 @@ public class LoadArchives extends SimpleFileVisitor<Path> {
     @Override
     public FileVisitResult visitFile(Path path, BasicFileAttributes attr) {
         if (path.getFileName().toString().endsWith("zip")){
-            System.out.println("processing archive: " + path.getFileName().toString());
-            LOG.debug("processing archive:: " + path.getFileName().toString());
             processArchive(path.toString());
-            System.out.println("archive: " + path.getFileName().toString() + " processed.");
-            LOG.debug("archive:: " + path.getFileName().toString() + " processed.");
         }
         return CONTINUE;
     }
 
 
-    private static void processArchive(String path){
+    public static void processArchive(String path){
         System.out.println("processing archive: " + path);
         LOG.debug("processing archive: " + path);
         try (ZipFile archive = new ZipFile(path)){
@@ -76,6 +72,18 @@ public class LoadArchives extends SimpleFileVisitor<Path> {
         catch (Exception e){
             e.printStackTrace();
         }
+
+        if (apCounter > 0){
+            System.out.println("... remaining " + apCounter + " xml files parsed, flushing to MongoDB ...");
+            LOG.debug("... remaining " + apCounter + " xml files parsed, flushing to MongoDB ...");
+            ftService.saveAPList(apList);
+            System.out.println("... done.");
+            LOG.debug("... done.");
+            apList = new ArrayList<>();
+            apCounter = 0;
+        }
+        System.out.println("archive: " + path + " processed.");
+        LOG.debug("archive:: " + path + " processed.");
     }
 
     private static void parseArchive(ZipEntry element, ZipFile archive){
@@ -97,8 +105,8 @@ public class LoadArchives extends SimpleFileVisitor<Path> {
             System.out.println("... 100 xml files parsed, flushing to MongoDB ...");
             LOG.debug("... 100 xml files parsed, flushing to MongoDB ...");
             ftService.saveAPList(apList);
-            System.out.println("... flushed, continuing ...");
-            LOG.debug("... flushed, continuing ...");
+            System.out.println("... done, continuing ...");
+            LOG.debug("... done, continuing ...");
             apList = new ArrayList<>();
             apCounter = 0;
         }
