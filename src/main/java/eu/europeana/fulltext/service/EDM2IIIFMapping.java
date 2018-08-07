@@ -18,9 +18,9 @@
 package eu.europeana.fulltext.service;
 
 import eu.europeana.fulltext.config.FTSettings;
-import eu.europeana.fulltext.entity.FTAnnotation;
-import eu.europeana.fulltext.entity.FTAnnoPage;
-import eu.europeana.fulltext.entity.FTTarget;
+import eu.europeana.fulltext.entity.AnnoPage;
+import eu.europeana.fulltext.entity.Annotation;
+import eu.europeana.fulltext.entity.Target;
 import eu.europeana.fulltext.model.v2.*;
 import eu.europeana.fulltext.model.v3.AnnotationPageV3;
 import eu.europeana.fulltext.model.v3.AnnotationV3;
@@ -37,7 +37,7 @@ import java.util.Optional;
 import static eu.europeana.fulltext.config.FTDefinitions.*;
 
 /**
- * This class contains the methods for mapping FTAnnotation / FTAnnoPage Mongo bean objects to IIIF v2 / v3 fulltext
+ * This class contains the methods for mapping Annotation / AnnoPage Mongo bean objects to IIIF v2 / v3 fulltext
  * resource objects.
  *
  * NOTE while a given value for the 'motivation' field in the Annotation class will be stored as such in Mongo, it is
@@ -61,33 +61,33 @@ public class EDM2IIIFMapping {
         EDM2IIIFMapping.fts = fts;
     }
 
-    static AnnotationPageV2 getAnnotationPageV2(FTAnnoPage ftAnnoPage){
-        AnnotationPageV2 annPage = new AnnotationPageV2(getAnnoPageIdUrl(ftAnnoPage));
-        annPage.setResources(getAnnotationV2Array(ftAnnoPage));
+    static AnnotationPageV2 getAnnotationPageV2(AnnoPage annoPage){
+        AnnotationPageV2 annPage = new AnnotationPageV2(getAnnoPageIdUrl(annoPage));
+        annPage.setResources(getAnnotationV2Array(annoPage));
         return annPage;
     }
 
-    private static AnnotationV2[] getAnnotationV2Array(FTAnnoPage ftAnnoPage){
+    private static AnnotationV2[] getAnnotationV2Array(AnnoPage annoPage){
         ArrayList<AnnotationV2> annoArrayList = new ArrayList<>();
-        for (FTAnnotation ftAnno : ftAnnoPage.getAns()){
-            annoArrayList.add(getAnnotationV2(ftAnnoPage, ftAnno, false));
+        for (Annotation ftAnno : annoPage.getAns()){
+            annoArrayList.add(getAnnotationV2(annoPage, ftAnno, false));
         }
         return annoArrayList.toArray(new AnnotationV2[0]);
     }
 
-    private static AnnotationV2 getAnnotationV2(FTAnnoPage ftAnnoPage, FTAnnotation ftAnno, boolean addContext){
-        String       resourceIdUrl  = getResourceIdUrl(ftAnnoPage, ftAnno);
-        AnnotationV2 ann            = new AnnotationV2(getAnnotationIdUrl(ftAnnoPage, ftAnno));
+    private static AnnotationV2 getAnnotationV2(AnnoPage annoPage, Annotation annotation, boolean addContext){
+        String       resourceIdUrl  = getResourceIdUrl(annoPage, annotation);
+        AnnotationV2 ann            = new AnnotationV2(getAnnotationIdUrl(annoPage, annotation));
         if (addContext){
             ann.setContext(MEDIA_TYPE_IIIF_V2);
         }
-        ann.setMotivation(StringUtils.isNotBlank(ftAnno.getMotiv()) ? ftAnno.getMotiv() : V2_MOTIVATION);
-        ann.setDcType(ftAnno.getDcType());
-        ann.setOn(getFTTargetArray(ftAnnoPage, ftAnno));
-        if (StringUtils.isNotBlank(ftAnno.getLang())){
+        ann.setMotivation(StringUtils.isNotBlank(annotation.getMotiv()) ? annotation.getMotiv() : V2_MOTIVATION);
+        ann.setDcType(annotation.getDcType());
+        ann.setOn(getFTTargetArray(annoPage, annotation));
+        if (StringUtils.isNotBlank(annotation.getLang())){
             AnnotationFullBodyV2 anb = new AnnotationFullBodyV2(resourceIdUrl);
-            anb.setFull(getResourceIdBaseUrl(ftAnnoPage, ftAnno));
-            anb.setLanguage(ftAnno.getLang());
+            anb.setFull(getResourceIdBaseUrl(annoPage));
+            anb.setLanguage(annotation.getLang());
             ann.setResource(anb);
         } else {
             AnnotationBodyV2 anb = new AnnotationBodyV2(resourceIdUrl);
@@ -96,102 +96,87 @@ public class EDM2IIIFMapping {
         return ann;
     }
 
-    static AnnotationPageV3 getAnnotationPageV3(FTAnnoPage ftAnnoPage){
-        AnnotationPageV3 annPage = new AnnotationPageV3(getAnnoPageIdUrl(ftAnnoPage));
-        annPage.setItems(getAnnotationV3Array(ftAnnoPage));
+    static AnnotationPageV3 getAnnotationPageV3(AnnoPage annoPage){
+        AnnotationPageV3 annPage = new AnnotationPageV3(getAnnoPageIdUrl(annoPage));
+        annPage.setItems(getAnnotationV3Array(annoPage));
         return annPage;
     }
 
-    private static AnnotationV3[] getAnnotationV3Array(FTAnnoPage ftAnnoPage){
+    private static AnnotationV3[] getAnnotationV3Array(AnnoPage annoPage){
         ArrayList<AnnotationV3> annoArrayList = new ArrayList<>();
-        for (FTAnnotation ftAnno : ftAnnoPage.getAns()){
-            annoArrayList.add(getAnnotationV3(ftAnnoPage, ftAnno, false));
+        for (Annotation ftAnno : annoPage.getAns()){
+            annoArrayList.add(getAnnotationV3(annoPage, ftAnno, false));
         }
         return annoArrayList.toArray(new AnnotationV3[0]);
     }
 
-    private static AnnotationV3 getAnnotationV3(FTAnnoPage ftAnnoPage, FTAnnotation ftAnno, boolean addContext){
-        String       body = getResourceIdUrl(ftAnnoPage, ftAnno);
-        AnnotationV3 ann  = new AnnotationV3(getAnnotationIdUrl(ftAnnoPage, ftAnno));
+    private static AnnotationV3 getAnnotationV3(AnnoPage annoPage, Annotation annotation, boolean addContext){
+        String       body = getResourceIdUrl(annoPage, annotation);
+        AnnotationV3 ann  = new AnnotationV3(getAnnotationIdUrl(annoPage, annotation));
         AnnotationBodyV3 anb;
         if (addContext){
             ann.setContext(MEDIA_TYPE_IIIF_V3);
         }
-        ann.setMotivation(StringUtils.isNotBlank(ftAnno.getMotiv()) ? ftAnno.getMotiv() : V3_MOTIVATION);
-        ann.setDcType(ftAnno.getDcType());
-        if (StringUtils.isNotBlank(ftAnno.getLang())){
+        ann.setMotivation(StringUtils.isNotBlank(annotation.getMotiv()) ? annotation.getMotiv() : V3_MOTIVATION);
+        ann.setDcType(annotation.getDcType());
+        if (StringUtils.isNotBlank(annotation.getLang())){
             anb = new AnnotationBodyV3(body, V3_ANNO_BODY_TYPE);
-            anb.setSource(getResourceIdBaseUrl(ftAnnoPage, ftAnno));
-            anb.setLanguage(ftAnno.getLang());
+            anb.setSource(getResourceIdBaseUrl(annoPage));
+            anb.setLanguage(annotation.getLang());
         } else {
             anb = new AnnotationBodyV3(body);
         }
         ann.setBody(anb);
-        ann.setTarget(getFTTargetArray(ftAnnoPage, ftAnno));
+        ann.setTarget(getFTTargetArray(annoPage, annotation));
         return ann;
     }
 
-    static AnnotationV3 getSingleAnnotationV3(FTAnnoPage ftAnnoPage, String annoId){
-        FTAnnotation ftAnno;
-        Optional<FTAnnotation> maybe = ftAnnoPage.getAns().stream().filter(o -> o.getAnId().equals(annoId)).findFirst();
+    static AnnotationV3 getSingleAnnotationV3(AnnoPage annoPage, String annoId){
+        Annotation           annotation;
+        Optional<Annotation> maybe = annoPage.getAns().stream().filter(o -> o.getAnId().equals(annoId)).findFirst();
         if (maybe.isPresent()){
-            return getAnnotationV3(ftAnnoPage, maybe.get(), true);
+            return getAnnotationV3(annoPage, maybe.get(), true);
         } else {
             return null; // TODO handle this better
         }
     }
 
-    static AnnotationV2 getSingleAnnotationV2(FTAnnoPage ftAnnoPage, String annoId){
-        FTAnnotation ftAnno;
-        Optional<FTAnnotation> maybe = ftAnnoPage.getAns().stream().filter(o -> o.getAnId().equals(annoId)).findFirst();
+    static AnnotationV2 getSingleAnnotationV2(AnnoPage annoPage, String annoId){
+        Annotation           annotation;
+        Optional<Annotation> maybe = annoPage.getAns().stream().filter(o -> o.getAnId().equals(annoId)).findFirst();
         if (maybe.isPresent()){
-            return getAnnotationV2(ftAnnoPage, maybe.get(), true);
+            return getAnnotationV2(annoPage, maybe.get(), true);
         } else {
             return null; // TODO handle this better
         }
     }
 
-    private static String[] getFTTargetArray(FTAnnoPage ftAnnoPage, FTAnnotation ftAnno){
+    private static String[] getFTTargetArray(AnnoPage annoPage, Annotation annotation){
         ArrayList<String> ftTargetURLList = new ArrayList<>();
-        for (FTTarget ftTarget : ftAnno.getTgs()){
-            ftTargetURLList.add(getTargetIdBaseUrl(ftAnnoPage, ftAnno) + "#xywh="
-                                + ftTarget.getX() + ","
-                                + ftTarget.getY() + ","
-                                + ftTarget.getW() + ","
-                                + ftTarget.getH());
+        for (Target target : annotation.getTgs()){
+            ftTargetURLList.add(annoPage.getTgtId() + "#xywh="
+                                + target.getX() + ","
+                                + target.getY() + ","
+                                + target.getW() + ","
+                                + target.getH());
         }
         return ftTargetURLList.toArray(new String[0]);
     }
 
-    private static String getResourceIdUrl(FTAnnoPage ftAnnoPage, FTAnnotation ftAnno){
-        return getResourceIdBaseUrl(ftAnnoPage, ftAnno) + "#char=" + ftAnno.getFrom() + "," + ftAnno.getTo();
+    private static String getResourceIdUrl(AnnoPage annoPage, Annotation annotation){
+        return getResourceIdBaseUrl(annoPage) + "#char=" + annotation.getFrom() + "," + annotation.getTo();
     }
 
-    private static String getResourceIdBaseUrl(FTAnnoPage ftAnnoPage, FTAnnotation ftAnno){
-        if (StringUtils.isNotBlank(ftAnno.getAnResUrl())){
-            return ftAnno.getAnResUrl();
-        } else {
-            return fts.getResourceBaseUrl() + ftAnnoPage.getDsId() + "/" + ftAnnoPage.getLcId() + "/" + ftAnnoPage.getRes().getResId();
-        }
+    private static String getResourceIdBaseUrl(AnnoPage annoPage){
+        return fts.getResourceBaseUrl() + annoPage.getDsId() + "/" + annoPage.getLcId() + "/" + annoPage.getRes().getId();
     }
 
-    private static String getAnnoPageIdUrl(FTAnnoPage ftAnnoPage){
-        return fts.getIiifApiBaseUrl() + ftAnnoPage.getDsId() + "/" +
-               ftAnnoPage.getLcId() + fts.getAnnoPageDirectory() + ftAnnoPage.getPgId();
+    private static String getAnnoPageIdUrl(AnnoPage annoPage){
+        return fts.getIiifApiBaseUrl() + annoPage.getDsId() + "/" +
+               annoPage.getLcId() + fts.getAnnoPageDirectory() + annoPage.getPgId();
     }
 
-    private static String getAnnotationIdUrl(FTAnnoPage ftAnnoPage, FTAnnotation ftAnno){
-        String datasetId = StringUtils.isNotBlank(ftAnno.getAnDsId()) ? ftAnno.getAnDsId() : ftAnnoPage.getDsId();
-        String localId = StringUtils.isNotBlank(ftAnno.getAnLcId()) ? ftAnno.getAnLcId() : ftAnnoPage.getLcId();
-        return fts.getIiifApiBaseUrl() + datasetId + "/" + localId + fts.getAnnotationDirectory() + ftAnno.getAnId();
-    }
-
-    private static String getTargetIdBaseUrl(FTAnnoPage ftAnnoPage, FTAnnotation ftAnno){
-        if (StringUtils.isNotBlank(ftAnno.getAnTgUrl())){
-            return ftAnno.getAnTgUrl();
-        } else {
-            // fts.getIiifApiBaseUrl() + ftAnnoPage.getDsId() + "/" + ftAnnoPage.getLcId() + fts.getTargetDirectory() + ftAnnoPage.getTgtId();
-            return ftAnnoPage.getTgtId();
-        }
+    private static String getAnnotationIdUrl(AnnoPage annoPage, Annotation annotation){
+        return fts.getIiifApiBaseUrl() + annoPage.getDsId() + "/" + annoPage.getLcId() + fts.getAnnotationDirectory() + annotation.getAnId();
     }
 }

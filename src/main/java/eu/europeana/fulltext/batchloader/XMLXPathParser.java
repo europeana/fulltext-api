@@ -51,25 +51,19 @@ public class XMLXPathParser {
     private static final String PAGEDCTYPE = "Page";
 
 
-    public static AnnoPage eatIt(Path path) {
+    public static AnnoPageRdf eatIt(Path path) {
         return eatIt(readFileContents(path), StringUtils.split(path.getFileName().toString(), '.')[0]);
     }
 
 
-    public static AnnoPage eatIt(String xmlString, String pageId) {
-        AnnoPage ap = null;
+    public static AnnoPageRdf eatIt(String xmlString, String pageId) {
+        AnnoPageRdf ap = null;
         try {
             DocumentBuilderFactory factory  = DocumentBuilderFactory.newInstance();
             DocumentBuilder        builder  = factory.newDocumentBuilder();
             Document               document = builder.parse(new InputSource(new StringReader(xmlString)));
 
             String internalSubset = (document).getDoctype().getInternalSubset();
-
-//            String resourceBase = readEntityString("text", internalSubset);
-//            String targetBase = readEntityString("img", internalSubset);
-//            String motivBase = readEntityString("motv", internalSubset);
-//            Node payload = document.getChildNodes().item(1);
-//            String baseUrl = payload.getBaseURI();
 
             String imgTargetBase = readEntityString("img", internalSubset);
 
@@ -90,19 +84,20 @@ public class XMLXPathParser {
             Object          anResult = anExpr.evaluate(document, XPathConstants.NODESET);
             NodeList        aNodes   = (NodeList) anResult;
 
-            List<Annotation> annoList = new ArrayList<>();
-            Annotation      pageAnnotation = null;
+            List<AnnotationRdf> annoList          = new ArrayList<>();
+            AnnotationRdf       pageAnnotationRdf = null;
 
             for (int i = 0; i < aNodes.getLength(); i++) {
-                boolean      annotationError  = false;
-                boolean      isPageAnnotation = false;
-                Node         aNode            = aNodes.item(i);
-                String       id               = "";
-                String       dcType           = "";
-                String       motiv            = "";
-                String       specRes          = "";
-                String       resource         = "";
-                List<Target> targetList       = new ArrayList<>();
+                boolean         annotationError  = false;
+                boolean         isPageAnnotation = false;
+                Node            aNode            = aNodes.item(i);
+                String          id               = "";
+                String          dcType           = "";
+                String          motiv            = "";
+                String          specRes          = "";
+                String          resource         = "";
+                String          resLang          = "";
+                List<TargetRdf> targetRdfList    = new ArrayList<>();
 
                 id = StringUtils.removeStart(aNode.getAttributes().item(0).getTextContent(), "/");
 
@@ -149,6 +144,11 @@ public class XMLXPathParser {
                                                          .getAttributes()
                                                          .item(0)
                                                          .getNodeValue();
+                                if (specResElement.getElementsByTagName("dc:language").getLength() > 0){
+                                    resLang = specResElement.getElementsByTagName("dc:language")
+                                                             .item(0)
+                                                             .getTextContent();
+                                }
                             }
                         }
                     }
@@ -160,11 +160,11 @@ public class XMLXPathParser {
                             Element targetElement = (Element) targetNode;
                             if (!isPageAnnotation) {
                                 try {
-                                    targetList.add(createTarget(targetElement.getAttributes().item(0).getNodeValue()));
+                                    targetRdfList.add(createTarget(targetElement.getAttributes().item(0).getNodeValue()));
                                 } catch (ArrayIndexOutOfBoundsException | DOMException e) {
                                     annotationError = true;
                                     LOG.error("Error processing Image Target for Annotation with id: " + id
-                                              + ". This Annotation will be skipped.");
+                                              + ". This Annotation will be skipped during processing.");
                                     break;
                                 }
                             }
@@ -173,14 +173,22 @@ public class XMLXPathParser {
                 }
                 if (!annotationError){
                     if (isPageAnnotation) {
-                        pageAnnotation = new Annotation(id, dcType, motiv, resource, targetList);
+                        if (StringUtils.isNotBlank(resLang)){
+                            pageAnnotationRdf = new AnnotationRdf(id, dcType, motiv, resLang, targetRdfList);
+                        } else {
+                            pageAnnotationRdf = new AnnotationRdf(id, dcType, motiv, targetRdfList);
+                        }
                     } else {
-                        annoList.add(createAnnotation(specRes, id, dcType, motiv, resource, targetList));
+                        if (StringUtils.isNotBlank(resLang)){
+                            annoList.add(createAnnotation(specRes, id, dcType, motiv, resLang, resource, targetRdfList));
+                        } else {
+                            annoList.add(createAnnotation(specRes, id, dcType, motiv, resource, targetRdfList));
+                        }
                     }
                 }
             }
 
-            ap = new AnnoPage(pageId, ftResource, ftText, ftLang, imgTargetBase, pageAnnotation, annoList);
+            ap = new AnnoPageRdf(pageId, ftResource, ftText, ftLang, imgTargetBase, pageAnnotationRdf, annoList);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -188,25 +196,38 @@ public class XMLXPathParser {
         return ap;
     }
 
-    private static Target createTarget(String url) throws ArrayIndexOutOfBoundsException{
+    private static TargetRdf createTarget(String url) throws ArrayIndexOutOfBoundsException{
         Integer x = Integer.parseInt(StringUtils.split(StringUtils.splitByWholeSeparator(url, XYWHPOS)[1], ",")[0]);
         Integer y = Integer.parseInt(StringUtils.split(StringUtils.splitByWholeSeparator(url, XYWHPOS)[1], ",")[1]);
         Integer w = Integer.parseInt(StringUtils.split(StringUtils.splitByWholeSeparator(url, XYWHPOS)[1], ",")[2]);
         Integer h = Integer.parseInt(StringUtils.split(StringUtils.splitByWholeSeparator(url, XYWHPOS)[1], ",")[3]);
-        return new Target(x, y, w, h);
+        return new TargetRdf(x, y, w, h);
     }
 
-    private static Annotation createAnnotation(String specRes,
-                                        String id,
-                                        String dcType,
-                                        String motiv,
-                                        String resource,
-                                        List targetList) {
+    private static AnnotationRdf createAnnotation(String specRes,
+                                                  String id,
+                                                  String dcType,
+                                                  String motiv,
+                                                  String lang,
+                                                  String resource,
+                                                  List   targetRdfList) {
+        AnnotationRdf annoRdf = createAnnotation(specRes, id, dcType, motiv, resource, targetRdfList);
+        annoRdf.setLang(lang);
+        return annoRdf;
+    }
+
+
+    private static AnnotationRdf createAnnotation(String specRes,
+                                                  String id,
+                                                  String dcType,
+                                                  String motiv,
+                                                  String resource,
+                                                  List   targetRdfList) {
         Integer from = Integer.parseInt(StringUtils.split(StringUtils.splitByWholeSeparator(specRes, CHARPOS)[1],
                                                           ",")[0]);
         Integer to   = Integer.parseInt(StringUtils.split(StringUtils.splitByWholeSeparator(specRes, CHARPOS)[1],
                                                           ",")[1]);
-        return new Annotation(id, dcType, motiv, from, to, resource, targetList);
+        return new AnnotationRdf(id, dcType, motiv, from, to, targetRdfList);
     }
 
     private static String readEntityString(String whichEntity, String internalSubset) {

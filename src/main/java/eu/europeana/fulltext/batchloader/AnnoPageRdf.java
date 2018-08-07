@@ -23,24 +23,30 @@ import java.util.List;
  * Created by luthien on 10/07/2018.
  */
 
-public class AnnoPage {
-    private String            pageId;
-    private String            ftResource;
-    private String            ftText;
-    private String            ftLang;
-    private String            imgTargetBase;
-    private Annotation        pageAnnotation;
-    private List<Annotation>  annotationList;
+public class AnnoPageRdf {
+    private String              pageId;
+    private String              ftResource;
+    private String              ftText;
+    private String              ftLang;
+    private String              imgTargetBase;
+    private AnnotationRdf       pageAnnotationRdf;
+    private List<AnnotationRdf> annotationRdfList;
 
 
-    public AnnoPage(String pageId, String ftResource, String ftText, String ftLang, String imgTargetBase, Annotation pageAnnotation, List annotationList) {
-        this.pageId         = pageId;
-        this.ftResource     = ftResource;
-        this.ftText         = ftText;
-        this.ftLang         = ftLang;
-        this.imgTargetBase  = imgTargetBase;
-        this.pageAnnotation = pageAnnotation;
-        this.annotationList = annotationList;
+    public AnnoPageRdf(String pageId,
+                       String ftResource,
+                       String ftText,
+                       String ftLang,
+                       String imgTargetBase,
+                       AnnotationRdf pageAnnotationRdf,
+                       List annotationRdfList) {
+        this.pageId            = pageId;
+        this.ftResource        = ftResource;
+        this.ftText            = ftText;
+        this.ftLang            = ftLang;
+        this.imgTargetBase     = imgTargetBase;
+        this.pageAnnotationRdf = pageAnnotationRdf;
+        this.annotationRdfList = annotationRdfList;
     }
 
     public String getPageId() {
@@ -75,20 +81,20 @@ public class AnnoPage {
         this.ftLang = ftLang;
     }
 
-    public List<Annotation> getAnnotationList() {
-        return annotationList;
+    public List<AnnotationRdf> getAnnotationRdfList() {
+        return annotationRdfList;
     }
 
-    public void setAnnotationList(List<Annotation> annotationList) {
-        this.annotationList = annotationList;
+    public void setAnnotationRdfList(List<AnnotationRdf> annotationRdfList) {
+        this.annotationRdfList = annotationRdfList;
     }
 
-    public Annotation getPageAnnotation() {
-        return pageAnnotation;
+    public AnnotationRdf getPageAnnotationRdf() {
+        return pageAnnotationRdf;
     }
 
-    public void setPageAnnotation(Annotation pageAnnotation) {
-        this.pageAnnotation = pageAnnotation;
+    public void setPageAnnotationRdf(AnnotationRdf pageAnnotationRdf) {
+        this.pageAnnotationRdf = pageAnnotationRdf;
     }
 
     public String getImgTargetBase() {

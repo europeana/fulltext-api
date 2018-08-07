@@ -18,7 +18,7 @@
 package eu.europeana.fulltext.entity;
 
 import org.bson.types.ObjectId;
-import org.mongodb.morphia.annotations.Id;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.DBRef;
@@ -33,35 +33,32 @@ import java.util.List;
  * Resource base URL: https://www.europeana.eu/api/fulltext/
  *
  */
-@Document(collection = "ftAnnoPage")
+@Document(collection = "AnnoPage")
+//@Entity(noClassnameStored = true)
 @CompoundIndexes({
                          @CompoundIndex(name = "dataset_local_page",
                                         unique = true,
                                         def = "{'dsId' : 1, 'lcId': 1, 'pgId': 1}")
                  })
-public class FTAnnoPage {
+public class AnnoPage {
 
     @Id
-    private ObjectId           _id;   // Mongo ObjectId
-    private String             dsId;  // IIIF_API_BASE_URL/{dsId}/      /annopage/
-    private String             lcId;  // IIIF_API_BASE_URL/      /{lcId}/annopage/
-    private String             pgId;  // IIIF_API_BASE_URL/      /      /annopage/{pgId}
-    private String             tgtId; // IIIF_API_BASE_URL/      /      /canvas/{tgtId} USE WHOLE URL!!
-    private String             lang;
-    private FTAnnotation       pgAn;  // FTAnnotation
-    private List<FTAnnotation> ans;   // List of Annotations
-
+    private ObjectId         _id;   // Mongo ObjectId
+    private String           dsId;  // IIIF_API_BASE_URL/{dsId}/      /annopage/
+    private String           lcId;  // IIIF_API_BASE_URL/      /{lcId}/annopage/
+    private String           pgId;  // IIIF_API_BASE_URL/      /      /annopage/{pgId}
+    private String           tgtId; // IIIF_API_BASE_URL/      /      /canvas/{tgtId} USE WHOLE URL!!
+    private Annotation       pgAn;  // Annotation
+    private List<Annotation> ans;   // List of Annotations
     @DBRef
-    private FTResource         res;   // RESOURCE_BASE_URL/      /      /{resId} (= resource)
+    private Resource res;           // RESOURCE_BASE_URL/      /      /{resId} (= resource)
 
-    public FTAnnoPage(String dsId, String lcId,  String pgId,
-                      String lang, FTResource res, String tgtId) {
+    public AnnoPage(String dsId, String lcId, String pgId, String tgtId, Resource res) {
         this.dsId  = dsId;
         this.lcId  = lcId;
         this.pgId  = pgId;
-        this.res   = res;
         this.tgtId = tgtId;
-        this.lang  = lang;
+        this.res   = res;
     }
 
     public String getDsId() {
@@ -88,11 +85,11 @@ public class FTAnnoPage {
         this.pgId = pgId;
     }
 
-    public FTResource getRes() {
+    public Resource getRes() {
         return res;
     }
 
-    public void setRes(FTResource res) {
+    public void setRes(Resource res) {
         this.res = res;
     }
 
@@ -104,27 +101,19 @@ public class FTAnnoPage {
         this.tgtId = tgtId;
     }
 
-    public String getLang() {
-        return lang;
-    }
-
-    public void setLang(String lang) {
-        this.lang = lang;
-    }
-
-    public FTAnnotation getPgAn() {
+    public Annotation getPgAn() {
         return pgAn;
     }
 
-    public void setPgAn(FTAnnotation pgAn) {
+    public void setPgAn(Annotation pgAn) {
         this.pgAn = pgAn;
     }
 
-    public List<FTAnnotation> getAns() {
+    public List<Annotation> getAns() {
         return ans;
     }
 
-    public void setAns(List<FTAnnotation> ans) {
+    public void setAns(List<Annotation> ans) {
         this.ans = ans;
     }
 }

@@ -1,14 +1,12 @@
 package eu.europeana.fulltext.service.exception;
 
 
-import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Base error class for this application
+ * Base error class for this application (needs work)
  * @author Lúthien
  * Created on 27-02-2018
  */
-@XmlRootElement
 public class FTException extends Exception {
 
     private ErrorCode errorCode;

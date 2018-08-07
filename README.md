@@ -6,6 +6,10 @@ of the IIIF API Specification.
 
 Version history:
 
+v.0.3-SNAPSHOT
+(hopefully) final adjustments to Mongo schema; removed _class column generation; used Spring mongodb 
+data consistently through the application (instead of Morphia); cleaning up
+
 v.0.2.2-SNAPSHOT
 Refactored .yml properties to .properties prior to deployment on Bluemix
 

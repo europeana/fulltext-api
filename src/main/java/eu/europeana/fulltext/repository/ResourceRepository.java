@@ -17,36 +17,26 @@
 
 package eu.europeana.fulltext.repository;
 
-import eu.europeana.fulltext.entity.FTAnnoPage;
-import eu.europeana.fulltext.entity.FTAnnotation;
+import eu.europeana.fulltext.entity.Resource;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Created by luthien on 31/05/2018.
  */
 @Repository
-@RepositoryRestResource(collectionResourceRel = "ftAnnoPage", path = "ftAnnoPage")
-public interface FTAnnoPageRepository extends MongoRepository<FTAnnoPage, String> {
-
+@RepositoryRestResource(collectionResourceRel = "Resource", path = "Resource")
+public interface ResourceRepository extends MongoRepository<Resource, String> {
 
     //Supports native JSON query string
-    @Query("{ftAnnoPage:'?0'}")
-    FTAnnoPage findFTAnnoPageByDomain(String ftAnnoPage);
+    @Query("{Resource:'?0'}")
+    Resource findFTResourceByDomain(String resource);
 
-    @Query("{ftAnnoPage: { $regex: ?0 } })")
-    List<FTAnnoPage> findFTAnnoPageByRegEx(String ftAnnoPage);
-
-    @Query("{'dsId':'?0', 'lcId':'?1', 'pgId':'?2'}")
-    List<FTAnnoPage> findByDatasetLocalAndPageId(String datasetId, String localId, String pageId);
-
-    @Query("{'dsId':'?0', 'lcId':'?1', 'ans.anId':'?2'}")
-    List<FTAnnoPage> findByDatasetLocalAndAnnoId(String datasetId, String localId, String annoId);
-
+    @Query("{Resource: { $regex: ?0 } })")
+    List<Resource> findResourceByRegEx(String resource);
 
 }

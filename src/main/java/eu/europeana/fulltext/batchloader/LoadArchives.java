@@ -42,10 +42,10 @@ import static java.nio.file.FileVisitResult.CONTINUE;
  */
 public class LoadArchives extends SimpleFileVisitor<Path> {
 
-    private static final Logger LOG = LogManager.getLogger(LoadArchives.class);
-    private static FTService      ftService;
-    private static int            apCounter = 0;
-    private static List<AnnoPage> apList    = new ArrayList<>();
+    private static final Logger      LOG       = LogManager.getLogger(LoadArchives.class);
+    private static FTService         ftService;
+    private static int               apCounter = 0;
+    private static List<AnnoPageRdf> apList    = new ArrayList<>();
 
     public LoadArchives(FTService ftService) {
         this.ftService = ftService;
@@ -94,9 +94,7 @@ public class LoadArchives extends SimpleFileVisitor<Path> {
             StringWriter writer      = new StringWriter();
             IOUtils.copy(inputStream, writer, "UTF-8");
             apList.add(XMLXPathParser.eatIt(writer.toString(),
-                                            StringUtils.substringAfterLast(
-                                            StringUtils.removeEndIgnoreCase(element.toString(), ".xml"),
-                                            "/")));
+                                            StringUtils.removeEndIgnoreCase(element.toString(), ".xml")));
             apCounter ++;
         }
         catch (IOException ex){

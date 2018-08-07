@@ -4,7 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
- * Error that is thrown when there is an error during serialization
+ * Error that is thrown when there is an error during serialization (needs work)
  * @author Lúthien
  * Created on 27-02-2018
  */

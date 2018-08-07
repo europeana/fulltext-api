@@ -12,7 +12,7 @@
 
 	<groupId>eu.europeana</groupId>
 	<artifactId>fulltext</artifactId>
-	<version>0.2.2-SNAPSHOT</version>
+	<version>0.3-SNAPSHOT</version>
 	<packaging>war</packaging>
 
 	<name>Europeana Newspapers Fulltext API</name>
@@ -110,13 +110,6 @@
 					<groupId>org.slf4j</groupId>
 				</exclusion>
 			</exclusions>
-		</dependency>
-
-		<!-- mongodb bling layer -->
-		<dependency>
-			<groupId>org.mongodb.morphia</groupId>
-			<artifactId>morphia</artifactId>
-			<version>${morphia.version}</version>
 		</dependency>
 
 		<!-- for serializing -->

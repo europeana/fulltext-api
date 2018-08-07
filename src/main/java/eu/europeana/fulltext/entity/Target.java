@@ -15,54 +15,55 @@
  *  the Licence.
  */
 
-package eu.europeana.fulltext.batchloader;
+package eu.europeana.fulltext.entity;
 
 /**
- * Created by luthien on 18/07/2018.
+ * Created by luthien on 26/06/2018.
  */
 public class Target {
 
-    private Integer x;
-    private Integer y;
-    private Integer w;
-    private Integer h;
+    private Integer X;
+    private Integer Y;
+    private Integer W;
+    private Integer H;
 
-    public Target(Integer x, Integer y, Integer w, Integer h) {
-        this.x = x;
-        this.y = y;
-        this.w = w;
-        this.h = h;
+    public Target(Integer X, Integer Y, Integer W, Integer H) {
+        this.X = X;
+        this.Y = Y;
+        this.W = W;
+        this.H = H;
     }
 
     public Integer getX() {
-        return x;
+        return X;
     }
 
     public void setX(Integer x) {
-        this.x = x;
+        this.X = x;
     }
 
     public Integer getY() {
-        return y;
+        return Y;
     }
 
     public void setY(Integer y) {
-        this.y = y;
+        this.Y = y;
     }
 
     public Integer getW() {
-        return w;
+        return W;
     }
 
     public void setW(Integer w) {
-        this.w = w;
+        this.W = w;
     }
 
     public Integer getH() {
-        return h;
+        return H;
     }
 
     public void setH(Integer h) {
-        this.h = h;
+        this.H = h;
     }
+
 }

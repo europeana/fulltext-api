@@ -22,7 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
- * Exception thrown on a problem parsing or serializing a resource
+ * Exception thrown on a problem parsing or serializing a resource (needs work)
  * Created by luthien on 18/06/2018.
  */
 

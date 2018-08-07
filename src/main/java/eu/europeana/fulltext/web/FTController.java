@@ -4,6 +4,7 @@ import eu.europeana.fulltext.config.FTDefinitions;
 import eu.europeana.fulltext.service.FTService;
 import eu.europeana.fulltext.service.exception.AnnoPageDoesNotExistException;
 import eu.europeana.fulltext.service.exception.RecordParseException;
+import eu.europeana.fulltext.service.exception.SerializationException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -52,7 +53,7 @@ public class FTController {
                              @PathVariable String annoID,
                              @RequestParam(value = "format", required = false) String version,
                              HttpServletRequest request,
-                             HttpServletResponse response) throws RecordParseException {
+                             HttpServletResponse response) throws SerializationException {
         LOG.debug("Retrieve Annotation: " + datasetId + "/" + recordId + "/" + annoID);
 
         String iiifVersion = version;
@@ -62,7 +63,7 @@ public class FTController {
 
         Object annotation;
 
-//        Optional<FTAnnotation> ftAnnotation = fts.findAnnotation(datasetId, recordId, annoID);
+//        Optional<Annotation> Annotation = fts.findAnnotation(datasetId, recordId, annoID);
         if ("3".equalsIgnoreCase(iiifVersion)) {
             annotation = fts.getAnnotationV3(datasetId, recordId, annoID);
             response.setContentType(FTDefinitions.MEDIA_TYPE_IIIF_JSONLD_V3+";charset=UTF-8");
@@ -100,7 +101,7 @@ public class FTController {
                            @PathVariable String pageId,
                            @RequestParam(value = "format", required = false) String version,
                            HttpServletRequest request,
-                           HttpServletResponse response) throws RecordParseException {
+                           HttpServletResponse response) throws SerializationException {
         LOG.debug("Retrieve Annopage: " + datasetId + "/" + recordId + "/" + pageId);
 
         String iiifVersion = version;

@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * Created by luthien on 18/07/2018.
  */
-public class Annotation {
+public class AnnotationRdf {
 
     private String       id;
     private String       dcType;
@@ -31,41 +31,66 @@ public class Annotation {
     private Integer      from;
     private Integer      to;
 
-    private List<Target> targetList;
-    private String       resource;
+    private List<TargetRdf> targetRdfList;
 
-    public Annotation(String id, String dcType) {
+    public AnnotationRdf(String id,
+                         String dcType) {
         this.id = id;
         this.dcType = dcType;
     }
 
-    public Annotation(String id, String dcType, Integer from, Integer to) {
+    public AnnotationRdf(String id,
+                         String dcType,
+                         String lang) {
+        this(id, dcType);
+        this.lang = lang;
+    }
+
+    public AnnotationRdf(String  id,
+                         String  dcType,
+                         Integer from,
+                         Integer to) {
         this(id, dcType);
         this.from = from;
-        this.to = to;
+        this.to   = to;
     }
 
-    public Annotation(String id, String dcType, String motiv, String resource, List targetList) {
+    public AnnotationRdf(String id,
+                         String dcType,
+                         String motiv,
+                         List   targetList) {
         this(id, dcType);
-        this.motiv = motiv;
-        this.resource = resource;
-        this.targetList = targetList;
+        this.motiv         = motiv;
+        this.targetRdfList = targetList;
     }
 
-    public Annotation(String id, String dcType, String motiv, Integer from, Integer to, String resource) {
+    public AnnotationRdf(String id,
+                         String dcType,
+                         String motiv,
+                         String lang,
+                         List   targetList) {
+        this(id, dcType, lang);
+        this.motiv         = motiv;
+        this.targetRdfList = targetList;
+    }
+
+    public AnnotationRdf(String  id,
+                         String  dcType,
+                         String  motiv,
+                         Integer from,
+                         Integer to) {
         this(id, dcType, from, to);
-        this.motiv = motiv;
-        this.resource = resource;
+        this.motiv    = motiv;
     }
 
-    public Annotation(String id, String dcType, String motiv, Integer from, Integer to, String resource, List targetList) {
-        this(id, dcType, motiv, from, to, resource);
-        this.targetList = targetList;
-    }
-
-    public Annotation(String id, String dcType, String motiv, String lang, Integer from, Integer to, String resource) {
-        this(id, dcType, motiv, from, to, resource);
-        this.lang = lang;
+    public AnnotationRdf(String  id,
+                         String  dcType,
+                         String  motiv,
+                         Integer from,
+                         Integer to,
+                         List    targetList) {
+        this(id, dcType, motiv, from, to);
+        this.targetRdfList = targetList;
     }
 
     public String getId() {
@@ -116,19 +141,12 @@ public class Annotation {
         this.to = to;
     }
 
-    public List<Target> getTargetList() {
-        return targetList;
+    public List<TargetRdf> getTargetRdfList() {
+        return targetRdfList;
     }
 
-    public void setTargetList(List<Target> targetList) {
-        this.targetList = targetList;
+    public void setTargetRdfList(List<TargetRdf> targetRdfList) {
+        this.targetRdfList = targetRdfList;
     }
 
-    public String getResource() {
-        return resource;
-    }
-
-    public void setResource(String resource) {
-        this.resource = resource;
-    }
 }

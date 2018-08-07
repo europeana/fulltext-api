@@ -12,20 +12,21 @@ import com.jayway.jsonpath.spi.mapper.MappingProvider;
 import eu.europeana.fulltext.batchloader.*;
 import eu.europeana.fulltext.config.FTDefinitions;
 import eu.europeana.fulltext.config.FTSettings;
-import eu.europeana.fulltext.entity.FTAnnoPage;
-import eu.europeana.fulltext.entity.FTAnnotation;
-import eu.europeana.fulltext.entity.FTResource;
-import eu.europeana.fulltext.entity.FTTarget;
+import eu.europeana.fulltext.entity.AnnoPage;
+import eu.europeana.fulltext.entity.Annotation;
+import eu.europeana.fulltext.entity.Resource;
+import eu.europeana.fulltext.entity.Target;
 import eu.europeana.fulltext.model.v2.AnnotationPageV2;
 import eu.europeana.fulltext.model.v2.AnnotationV2;
 import eu.europeana.fulltext.model.v3.AnnotationPageV3;
 import eu.europeana.fulltext.model.v3.AnnotationV3;
-import eu.europeana.fulltext.repository.FTAnnoPageRepository;
-import eu.europeana.fulltext.repository.FTAnnotationRepository;
-import eu.europeana.fulltext.repository.FTResourceRepository;
+import eu.europeana.fulltext.repository.AnnoPageRepository;
+import eu.europeana.fulltext.repository.AnnotationRepository;
+import eu.europeana.fulltext.repository.ResourceRepository;
 import eu.europeana.fulltext.service.exception.FTException;
 import eu.europeana.fulltext.service.exception.AnnoPageDoesNotExistException;
 import eu.europeana.fulltext.service.exception.RecordParseException;
+import eu.europeana.fulltext.service.exception.SerializationException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -50,13 +51,13 @@ public class FTService {
     private static final Logger LOG = LogManager.getLogger(FTService.class);
 
     @Autowired
-    FTResourceRepository   ftResRepo;
+    ResourceRepository resourceRepository;
 
     @Autowired
-    FTAnnotationRepository ftAnnoRepo;
+    AnnotationRepository annotationRepository;
 
     @Autowired
-    FTAnnoPageRepository ftAPRepo;
+    AnnoPageRepository annoPageRepository;
 
 
     // create a single objectMapper for efficiency purposes (see https://github.com/FasterXML/jackson-docs/wiki/Presentation:-Jackson-Performance)
@@ -107,71 +108,71 @@ public class FTService {
 
     public AnnotationPageV2 getAnnotationPageV2(String datasetId, String recordId, String pageId)
             throws AnnoPageDoesNotExistException {
-        FTAnnoPage ftAnnoPage;
+        AnnoPage annoPage;
         try {
-            ftAnnoPage = ftAPRepo.findByDatasetLocalAndPageId(datasetId, recordId, pageId).get(0);
+            annoPage = annoPageRepository.findByDatasetLocalAndPageId(datasetId, recordId, pageId).get(0);
         } catch (java.lang.IndexOutOfBoundsException e) {
             throw new AnnoPageDoesNotExistException(datasetId + "/" + recordId + "/" + pageId);
         }
-        return generateAnnoPageV2(ftAnnoPage);
+        return generateAnnoPageV2(annoPage);
     }
 
     public AnnotationPageV3 getAnnotationPageV3(String datasetId, String recordId, String pageId)
             throws AnnoPageDoesNotExistException {
-        FTAnnoPage ftAnnoPage;
+        AnnoPage annoPage;
         try {
-            ftAnnoPage = ftAPRepo.findByDatasetLocalAndPageId(datasetId, recordId, pageId).get(0);
+            annoPage = annoPageRepository.findByDatasetLocalAndPageId(datasetId, recordId, pageId).get(0);
         } catch (java.lang.IndexOutOfBoundsException e) {
             throw new AnnoPageDoesNotExistException(datasetId + "/" + recordId + "/" + pageId);
         }
-        return generateAnnoPageV3(ftAnnoPage);
+        return generateAnnoPageV3(annoPage);
     }
 
     public AnnotationV3 getAnnotationV3(String datasetId, String recordId, String annoId){
-        FTAnnoPage ftAnnoPage = ftAPRepo.findByDatasetLocalAndAnnoId(datasetId, recordId, annoId).get(0);
-        return generateAnnotationV3(ftAnnoPage, annoId);
+        AnnoPage annoPage = annoPageRepository.findByDatasetLocalAndAnnoId(datasetId, recordId, annoId).get(0);
+        return generateAnnotationV3(annoPage, annoId);
     }
 
     public AnnotationV2 getAnnotationV2(String datasetId, String recordId, String annoId){
-        FTAnnoPage ftAnnoPage = ftAPRepo.findByDatasetLocalAndAnnoId(datasetId, recordId, annoId).get(0);
-        return generateAnnotationV2(ftAnnoPage, annoId);
+        AnnoPage annoPage = annoPageRepository.findByDatasetLocalAndAnnoId(datasetId, recordId, annoId).get(0);
+        return generateAnnotationV2(annoPage, annoId);
     }
 
     public boolean doesAnnoPageNotExist(String datasetId, String recordId, String annoId){
-        return ftAPRepo.findByDatasetLocalAndPageId(datasetId, recordId, annoId).isEmpty();
+        return annoPageRepository.findByDatasetLocalAndPageId(datasetId, recordId, annoId).isEmpty();
     }
 
 
-    private AnnotationPageV3 generateAnnoPageV3(FTAnnoPage ftAnnoPage){
+    private AnnotationPageV3 generateAnnoPageV3(eu.europeana.fulltext.entity.AnnoPage annoPage){
         long start = System.currentTimeMillis();
-        AnnotationPageV3 result = EDM2IIIFMapping.getAnnotationPageV3(ftAnnoPage);
+        AnnotationPageV3 result = EDM2IIIFMapping.getAnnotationPageV3(annoPage);
         if (LOG.isDebugEnabled()) {
             LOG.debug("Generated in {} ms ", System.currentTimeMillis() - start);
         }
         return result;
     }
 
-    private AnnotationPageV2 generateAnnoPageV2(FTAnnoPage ftAnnoPage){
+    private AnnotationPageV2 generateAnnoPageV2(eu.europeana.fulltext.entity.AnnoPage annoPage){
         long start = System.currentTimeMillis();
-        AnnotationPageV2 result = EDM2IIIFMapping.getAnnotationPageV2(ftAnnoPage);
+        AnnotationPageV2 result = EDM2IIIFMapping.getAnnotationPageV2(annoPage);
         if (LOG.isDebugEnabled()) {
             LOG.debug("Generated in {} ms ", System.currentTimeMillis() - start);
         }
         return result;
     }
 
-    private AnnotationV3 generateAnnotationV3(FTAnnoPage ftAnnoPage, String annoId){
+    private AnnotationV3 generateAnnotationV3(eu.europeana.fulltext.entity.AnnoPage annoPage, String annoId){
         long start = System.currentTimeMillis();
-        AnnotationV3 result = EDM2IIIFMapping.getSingleAnnotationV3(ftAnnoPage, annoId);
+        AnnotationV3 result = EDM2IIIFMapping.getSingleAnnotationV3(annoPage, annoId);
         if (LOG.isDebugEnabled()) {
             LOG.debug("Generated in {} ms ", System.currentTimeMillis() - start);
         }
         return result;
     }
 
-    private AnnotationV2 generateAnnotationV2(FTAnnoPage ftAnnoPage, String annoId){
+    private AnnotationV2 generateAnnotationV2(AnnoPage annoPage, String annoId){
         long start = System.currentTimeMillis();
-        AnnotationV2 result = EDM2IIIFMapping.getSingleAnnotationV2(ftAnnoPage, annoId);
+        AnnotationV2 result = EDM2IIIFMapping.getSingleAnnotationV2(annoPage, annoId);
         if (LOG.isDebugEnabled()) {
             LOG.debug("Generated in {} ms ", System.currentTimeMillis() - start);
         }
@@ -184,41 +185,45 @@ public class FTService {
      * @return JSON-LD string
      * @throws RecordParseException when there is a problem parsing
      */
-    public String serializeResource(Object res) throws RecordParseException {
+    public String serializeResource(Object res) throws SerializationException {
         try {
             return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(res);
         }
         catch (IOException e) {
-            throw new RecordParseException("Error serializing data: "+e.getMessage(), e);
+            throw new SerializationException("Error serializing data: " + e.getMessage(), e);
         }
     }
 
-    public void saveAPList(List<AnnoPage> apList) {
-        for (AnnoPage annoPage : apList){
+    public void saveAPList(List<AnnoPageRdf> apList) {
+        for (AnnoPageRdf annoPageRdf : apList){
             String[] identifiers = StringUtils.split(
-                    StringUtils.removeStartIgnoreCase(annoPage.getFtResource(), ftSettings.getResourceBaseUrl()), '/');
+                    StringUtils.removeStartIgnoreCase(annoPageRdf.getFtResource(), ftSettings.getResourceBaseUrl()), '/');
             if (identifiers.length > 3){
                 LOG.error("Error", new FTException("Please check Resource Base URL settings in properties file: '"
-                                      + ftSettings.getResourceBaseUrl()
-                                      + "', making sure that it matches with the 'ENTITY text' value found in import file: '"
-                                      + annoPage.getFtResource() + "'"));
+                                                   + ftSettings.getResourceBaseUrl()
+                                                   + "', making sure that it matches with the 'ENTITY text' value found in import file: '"
+                                                   + annoPageRdf.getFtResource() + "'"));
             }
-            FTResource ftResource = new FTResource(identifiers[2], annoPage.getFtText());
+            Resource resource = new Resource(identifiers[2], annoPageRdf.getFtLang(), annoPageRdf.getFtText());
             try{
-                ftResRepo.save(ftResource);
+                resourceRepository.save(resource);
             } catch (Exception e){
-                LOG.error("Error saving ftResource with resId: " + identifiers[2], e);
+                LOG.error("Error saving resource with resId: " + identifiers[2], e);
             }
-            FTAnnoPage ftAnnoPage = new FTAnnoPage(identifiers[0], identifiers[1], annoPage.getPageId(),
-                                               annoPage.getFtLang(), ftResource, annoPage.getImgTargetBase());
-            ftAnnoPage.setAns(createFTAnnoList(annoPage, ftResource));
-            System.out.println("dsID: " + identifiers[0] + " lcId:" + identifiers[1] + " pgId:" + annoPage.getPageId());
+            AnnoPage annoPage = new AnnoPage(
+                                identifiers[0],
+                                identifiers[1],
+                                annoPageRdf.getPageId(),
+                                annoPageRdf.getImgTargetBase(),
+                                resource);
+            annoPage.setAns(createAnnoList(annoPageRdf, identifiers[0]));
+            System.out.println("dsID: " + identifiers[0] + " lcId:" + identifiers[1] + " pgId:" + annoPageRdf.getPageId());
             try{
-                ftAPRepo.save(ftAnnoPage);
+                annoPageRepository.save(annoPage);
             } catch (Exception e){
-                LOG.error("Error saving ftAnnoPage for Dataset: " + identifiers[0]
+                LOG.error("Error saving AnnoPage for Dataset: " + identifiers[0]
                           + ", LocalId: " + identifiers[1]
-                          + ", PageId: " + annoPage.getPageId(), e);
+                          + ", PageId: " + annoPageRdf.getPageId(), e);
             }
         }
         LOG.debug("done.");
@@ -250,44 +255,74 @@ public class FTService {
         }
     }
 
-    private List<FTAnnotation> createFTAnnoList(AnnoPage annoPage, FTResource ftResource){
-        List<FTAnnotation> ftAnnotationList = new ArrayList<>();
-        for (Annotation annotation : annoPage.getAnnotationList()){
-            FTAnnotation ftAnnotation = new FTAnnotation(annotation.getId(), annotation.getDcType(),
-                                                         annotation.getFrom(), annotation.getTo(), ftResource );
-            if (StringUtils.isNotBlank(annotation.getLang())){
-                ftAnnotation.setLang(annotation.getLang());
+    private List<Annotation> createAnnoList(AnnoPageRdf annoPageRdf, String dataSetId){
+        List<Annotation> annotationList = new ArrayList<>();
+        for (AnnotationRdf annotationRdf : annoPageRdf.getAnnotationRdfList()){
+            Annotation annotation = new Annotation(
+                    annotationRdf.getId(),
+                    getDcTypeCode(annotationRdf.getDcType(), dataSetId, annoPageRdf.getPageId(), annotationRdf.getId()),
+                    annotationRdf.getFrom(),
+                    annotationRdf.getTo());
+            if (StringUtils.isNotBlank(annotationRdf.getLang())){
+                annotation.setLang(annotationRdf.getLang());
             }
-            ftAnnotation.setTgs(createFTTargetList(annotation));
-            ftAnnotationList.add(ftAnnotation);
+            annotation.setTgs(createFTTargetList(annotationRdf));
+            annotationList.add(annotation);
         }
-        return ftAnnotationList;
+        return annotationList;
     }
 
-    private List<FTTarget> createFTTargetList(Annotation annotation){
-        List<FTTarget> ftTargetList = new ArrayList<>();
-        for (Target target : annotation.getTargetList()){
-            ftTargetList.add(new FTTarget(target.getX(), target.getY(), target.getW(), target.getH()));
+    private List<Target> createFTTargetList(AnnotationRdf annotationRdf){
+        List<Target> targetList = new ArrayList<>();
+        for (TargetRdf targetRdf : annotationRdf.getTargetRdfList()){
+            targetList.add(new Target(targetRdf.getX(),
+                                      targetRdf.getY(),
+                                      targetRdf.getW(),
+                                      targetRdf.getH()));
         }
-        return ftTargetList;
+        return targetList;
+    }
+
+    private static String getDcTypeCode(String dcType, String dataSetId, String pageId, String annoId){
+        String dcTypeCode;
+        if (StringUtils.isBlank(dcType)){
+            String error = "dc:type not set or null for Annotation with ID: " + annoId
+                           + " on Annotation Page: " + pageId + " for Dataset: " + dataSetId;
+            LOG.error(error);
+            System.out.println(error);
+        }
+        switch (dcType.toLowerCase()) {
+            case "page":
+                dcTypeCode = "P";
+                break;
+            case "block":
+                dcTypeCode = "B";
+                break;
+            case "line":
+                dcTypeCode = "L";
+                break;
+            case "word":
+                dcTypeCode = "W";
+                break;
+            default:
+                dcTypeCode = "";
+                break;
+        }
+        return dcTypeCode;
     }
 
 
 
-    /* TEST STUFF BELOW  */
+    /* DEVELOPMENT TEST DATA  */
 
-
-    /**
-     * initial Mongo and Morphia setup testing
-     */
-    private FTAnnoPage     pag0;
-    private List<FTTarget> tar0;
-    private List<FTTarget> tar1;
-    private List<FTTarget> tar2;
-    private FTResource     res0;
-    private FTAnnotation   ann0;
-    private FTAnnotation   ann1;
-    private FTAnnotation   ann2;
+    private AnnoPage     pag0;
+    private List<Target> tar0;
+    private List<Target> tar1;
+    private List<Target> tar2;
+    private Resource     res0;
+    private Annotation   ann0;
+    private Annotation   ann1;
+    private Annotation   ann2;
 
     public void createTestRecords(){
         String fullText     = "Wat wil Wickie? Wickie willah Koeckebacke!";
@@ -295,50 +330,25 @@ public class FTService {
         String localId      = "BibliographicResource_3000100331503";
         String pageId       = "1";
         String targetId     = "p1";
+        String resId        = "123123123";
         String resourceId   = "XPTO";
 
-        tar0 = Arrays.asList(newFTTarget(0, 0, 0, 0));
-        tar1 = Arrays.asList(newFTTarget(110, 70, 30, 11),
-                             newFTTarget(144, 72, 18, 11));
-        tar2 = Arrays.asList(newFTTarget(12, 98, 23, 12));
+        tar0 = Arrays.asList(new Target(0, 0, 0, 0));
+        tar1 = Arrays.asList(new Target(110, 70, 30, 11),
+                             new Target(144, 72, 18, 11));
+        tar2 = Arrays.asList(new Target(12, 98, 23, 12));
 
-        res0 = saveFTResource(fullText);
+        res0 = new Resource(resId, "en", fullText);
+        resourceRepository.save(res0);
 
-        ann0 = newFTAnnotation("0", "page", 0, 0, res0, tar0);
-        ann1 = newFTAnnotation("1", "word", 0, 2, res0, tar1);
-        ann2 = newFTAnnotation("2", "word", 4, 6, res0, tar2, "nl");
+        ann0 = new Annotation("0", "page", 0, 0, tar0);
+        ann1 = new Annotation("1", "word", 0, 2, tar1);
+        ann2 = new Annotation("2", "word", 4, 6, tar2, "nl");
 
-        pag0 = newFTAnnoPage(datasetId, localId, pageId, "en", res0, targetId);
+        pag0 = new AnnoPage(datasetId, localId, pageId, targetId, res0);
         pag0.setPgAn(ann0);
         pag0.setAns(Arrays.asList(ann1, ann2));
-        ftAPRepo.save(pag0);
+        annoPageRepository.save(pag0);
     }
-
-    public FTAnnoPage newFTAnnoPage(String datasetId, String localId, String pageId, String language,
-                                    FTResource res, String targetId){
-        return new FTAnnoPage(datasetId, localId, pageId, language, res, targetId); }
-
-
-    public FTAnnotation newFTAnnotation(String annoId, String dcType, Integer textStart, Integer textEnd,
-                                         FTResource resource, List<FTTarget> ftTargets){
-        return new FTAnnotation(annoId, dcType, textStart, textEnd, resource, ftTargets);
-    }
-
-    public FTAnnotation newFTAnnotation(String annoId, String dcType, Integer textStart, Integer textEnd,
-                                        FTResource resource, List<FTTarget> ftTargets, String annoLanguage){
-        return new FTAnnotation(annoId, dcType, textStart, textEnd, resource, ftTargets, annoLanguage);
-    }
-
-    public FTResource saveFTResource(String fullText) {
-        FTResource res = new FTResource(fullText);
-        ftResRepo.save(res);
-        return res;
-    }
-
-    public FTTarget newFTTarget(Integer targetX, Integer targetY, Integer targetW, Integer targetH){
-        return new FTTarget(targetX, targetY, targetW, targetH);
-    }
-
-
 
 }

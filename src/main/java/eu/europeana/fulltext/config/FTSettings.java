@@ -18,20 +18,23 @@
 package eu.europeana.fulltext.config;
 
 import com.mongodb.MongoClient;
-import org.mongodb.morphia.Datastore;
-import org.mongodb.morphia.Morphia;
+import com.mongodb.ServerAddress;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.data.mongodb.MongoDbFactory;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.SimpleMongoDbFactory;
+import org.springframework.data.mongodb.core.convert.*;
+import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
+import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.stereotype.Component;
 
 
 /**
  * Contains settings from fulltext.properties and fulltext.user.properties files
- * and does the Morphia initialisation
  * @author Lúthien
  * Created on 31/05/2018
  */
@@ -39,6 +42,7 @@ import org.springframework.stereotype.Component;
 @Component
 @PropertySource("classpath:fulltext.properties")
 @PropertySource(value = "classpath:fulltext.user.properties", ignoreResourceNotFound = true)
+@EnableMongoRepositories(basePackages="eu.europeana.fulltext")
 public class FTSettings {
 
     private Boolean suppressParseException = false; // default value if we run this outside of Spring
@@ -61,27 +65,26 @@ public class FTSettings {
     @Value("${batch.base.directory}")
     private String batchBaseDirectory;
 
+    @Value("${spring.data.mongodb.database}")
+    private String mongoDbName;
 
-    // Inject an instance of Spring-Boot MongoProperties
+    @Value("${spring.data.mongodb.host}")
+    private String mongoHost;
+
+
     @Autowired
-    private MongoProperties mongoProperties;
+    MongoDbFactory      mongoDbFactory;
 
-    private Morphia morphia() {
-        final Morphia morphia = new Morphia();
-        // tell Morphia where to find your classes
-        // can be called multiple times with different packages or classes
-        morphia.mapPackage("eu.europeana.fulltext.entity");
-
-        return morphia;
-    }
+    @Autowired
+    MongoMappingContext mongoMappingContext;
 
     @Bean
-    public Datastore datastore(MongoClient mongoClient) {
-        // create the Datastore connecting to the default port on the local host
-        final Datastore datastore = morphia().createDatastore(mongoClient, mongoProperties.getDatabase());
-        datastore.ensureIndexes();
+    public MappingMongoConverter mappingMongoConverter() {
 
-        return datastore;
+        DbRefResolver         dbRefResolver = new DefaultDbRefResolver(mongoDbFactory);
+        MappingMongoConverter converter     = new MappingMongoConverter(dbRefResolver, mongoMappingContext);
+        converter.setTypeMapper(new DefaultMongoTypeMapper(null));
+        return converter;
     }
 
     /**

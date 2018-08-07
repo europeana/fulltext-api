@@ -37,9 +37,9 @@ import static java.nio.file.FileVisitResult.CONTINUE;
 
 public class LoadFiles extends SimpleFileVisitor<Path> {
 
-    private static final Logger LOG = LogManager.getLogger(LoadFiles.class);
-    private FTService ftService;
-    private List<AnnoPage> apList = null;
+    private static final Logger LOG    = LogManager.getLogger(LoadFiles.class);
+    private FTService           ftService;
+    private List<AnnoPageRdf>   apList = null;
 
     public LoadFiles(FTService ftService) {
         this.ftService = ftService;
