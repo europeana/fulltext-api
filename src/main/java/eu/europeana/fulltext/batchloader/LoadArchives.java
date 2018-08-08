@@ -42,7 +42,8 @@ import static java.nio.file.FileVisitResult.CONTINUE;
  */
 public class LoadArchives extends SimpleFileVisitor<Path> {
 
-    private static final Logger      LOG       = LogManager.getLogger(LoadArchives.class);
+    private static final Logger      ERRLOG    = LogManager.getLogger("batcherror");
+    private static final Logger      LOG       = LogManager.getLogger("batchloader");
     private static FTService         ftService;
     private static int               apCounter = 0;
     private static List<AnnoPageRdf> apList    = new ArrayList<>();
@@ -62,8 +63,7 @@ public class LoadArchives extends SimpleFileVisitor<Path> {
 
 
     public static void processArchive(String path){
-        System.out.println("processing archive: " + path);
-        LOG.debug("processing archive: " + path);
+        LOG.info("processing archive: " + path);
         try (ZipFile archive = new ZipFile(path)){
             archive.stream()
                    .filter(p -> p.toString().contains(".xml"))
@@ -71,41 +71,42 @@ public class LoadArchives extends SimpleFileVisitor<Path> {
                    .forEach(p -> parseArchive(p, archive));
         }
         catch (Exception e){
-            e.printStackTrace();
+            LOG.error("Exception occurred processing zipped archive: " + path + ", please check logs/batcherror.log file");
+            ERRLOG.error("Exception occurred processing " + path, e);
         }
 
         if (apCounter > 0){
-            System.out.println("... remaining " + apCounter + " xml files parsed, flushing to MongoDB ...");
-            LOG.debug("... remaining " + apCounter + " xml files parsed, flushing to MongoDB ...");
+            LOG.info("... remaining " + apCounter + " xml files parsed, flushing to MongoDB ...");
             ftService.saveAPList(apList);
-            System.out.println("... done.");
-            LOG.debug("... done.");
+            LOG.info("... done.");
             apList = new ArrayList<>();
             apCounter = 0;
         }
-        System.out.println("archive: " + path + " processed.");
-        LOG.debug("archive:: " + path + " processed.");
+        LOG.info("archive: " + path + " processed.");
     }
 
     private static void parseArchive(ZipEntry element, ZipFile archive){
-        System.out.println("parsing file: " + element.toString());
-        LOG.debug("parsing file: " + element.toString());
+        LOG.info("parsing file: " + element.toString());
         try (InputStream  inputStream = archive.getInputStream(element)){
             StringWriter writer      = new StringWriter();
             IOUtils.copy(inputStream, writer, "UTF-8");
-            apList.add(XMLXPathParser.eatIt(writer.toString(),
-                                            StringUtils.removeEndIgnoreCase(element.toString(), ".xml")));
+            String pageId = element.getName();
+            if (StringUtils.contains(element.toString(), "/")){
+                pageId = StringUtils.substringAfterLast(element.toString() , "/");
+            }
+            pageId = StringUtils.removeEndIgnoreCase(pageId, ".xml");
+            apList.add(XMLXPathParser.eatIt(writer.toString(), pageId));
+
             apCounter ++;
         }
         catch (IOException ex){
-            ex.printStackTrace();
+            LOG.error("I/O error during processing " + element.toString() + ", please check logs/batcherror.log file");
+            ERRLOG.error("IO Error processing " + element.toString() + ": ", ex);
         }
         if (apCounter > 99){
-            System.out.println("... 100 xml files parsed, flushing to MongoDB ...");
-            LOG.debug("... 100 xml files parsed, flushing to MongoDB ...");
+            LOG.info("... 100 xml files parsed, flushing to MongoDB ...");
             ftService.saveAPList(apList);
-            System.out.println("... done, continuing ...");
-            LOG.debug("... done, continuing ...");
+            LOG.info("... done, continuing ...");
             apList = new ArrayList<>();
             apCounter = 0;
         }

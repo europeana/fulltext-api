@@ -48,7 +48,9 @@ import java.util.*;
 @Service
 public class FTService {
 
-    private static final Logger LOG = LogManager.getLogger(FTService.class);
+    private static final Logger LOG      = LogManager.getLogger(FTService.class);
+    private static final Logger ERRLOG   = LogManager.getLogger("batcherror");
+    private static final Logger BATCHLOG = LogManager.getLogger("batchloader");
 
     @Autowired
     ResourceRepository resourceRepository;
@@ -199,7 +201,8 @@ public class FTService {
             String[] identifiers = StringUtils.split(
                     StringUtils.removeStartIgnoreCase(annoPageRdf.getFtResource(), ftSettings.getResourceBaseUrl()), '/');
             if (identifiers.length > 3){
-                LOG.error("Error", new FTException("Please check Resource Base URL settings in properties file: '"
+                BATCHLOG.error("Configuration error occurred! Check logs/batcherror.log file for details.");
+                ERRLOG.error("Configuration mismatch error occurred", new FTException("Please check Resource Base URL settings in properties file: '"
                                                    + ftSettings.getResourceBaseUrl()
                                                    + "', making sure that it matches with the 'ENTITY text' value found in import file: '"
                                                    + annoPageRdf.getFtResource() + "'"));
@@ -208,7 +211,8 @@ public class FTService {
             try{
                 resourceRepository.save(resource);
             } catch (Exception e){
-                LOG.error("Error saving resource with resId: " + identifiers[2], e);
+                BATCHLOG.error("Error saving resource with resId: " + identifiers[2] + "! Check logs/batcherror.log file for details.");
+                ERRLOG.error("Error saving resource with resId: " + identifiers[2], e);
             }
             AnnoPage annoPage = new AnnoPage(
                                 identifiers[0],
@@ -221,12 +225,14 @@ public class FTService {
             try{
                 annoPageRepository.save(annoPage);
             } catch (Exception e){
-                LOG.error("Error saving AnnoPage for Dataset: " + identifiers[0]
+                BATCHLOG.error("Error saving AnnoPage for Dataset: " + identifiers[0] + ", LocalId: " + identifiers[1] +
+                               ", PageId: " + annoPageRdf.getPageId() + "! Check logs/batcherror.log file for details.");
+                ERRLOG.error("Error saving AnnoPage for Dataset: " + identifiers[0]
                           + ", LocalId: " + identifiers[1]
                           + ", PageId: " + annoPageRdf.getPageId(), e);
             }
         }
-        LOG.debug("done.");
+        BATCHLOG.info("done.");
     }
 
     public void importZipBatch(String archive){
@@ -237,7 +243,8 @@ public class FTService {
             try {
                 Files.walkFileTree(Paths.get(zipBatchDir), la);
             } catch (IOException e) {
-                e.printStackTrace();
+                BATCHLOG.error("I/O error occurred reading archives at: " + archive + "! Check logs/batcherror.log file for details.");
+                ERRLOG.error("I/O error occurred reading archives at: " + archive , e);
             }
         } else {
             LoadArchives.processArchive(zipBatchDir + archive);
@@ -251,7 +258,8 @@ public class FTService {
         try {
             Files.walkFileTree(Paths.get(batchDir), lf);
         } catch (IOException e) {
-            e.printStackTrace();
+            BATCHLOG.error("I/O error occurred reading contents of: " + directory + "! Check logs/batcherror.log file for details.");
+            ERRLOG.error("I/O error occurred reading contents of: " + directory , e);
         }
     }
 
@@ -286,10 +294,11 @@ public class FTService {
     private static String getDcTypeCode(String dcType, String dataSetId, String pageId, String annoId){
         String dcTypeCode;
         if (StringUtils.isBlank(dcType)){
-            String error = "dc:type not set or null for Annotation with ID: " + annoId
+            String error = "Data error: dc:type not set or null for Annotation with ID: " + annoId
                            + " on Annotation Page: " + pageId + " for Dataset: " + dataSetId;
-            LOG.error(error);
-            System.out.println(error);
+
+            BATCHLOG.error(error);
+            ERRLOG.error(error);
         }
         switch (dcType.toLowerCase()) {
             case "page":

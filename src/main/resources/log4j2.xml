@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="DEBUG">
+<Configuration status="INFO">
     <Appenders>
         <Console name="Console" targetUrl="SYSTEM_OUT">
             <!-- Use the JSON layout for production (logging to ELK) -->
@@ -11,12 +11,24 @@
             <!-- Use this pattern for local debugging -->
             <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %highlight{%level}{FATAL=bg_red, ERROR=red, WARN=yellow, INFO=green, DEBUG=blue} %logger{36} - %msg%n" />
         </Console>
+        <File name="batcherrorlog" fileName="logs/batcherror.log">
+            <PatternLayout>
+                <pattern>%d %p %C{1.} [%t] %m%n %throwable{short.message}%n%n</pattern>
+            </PatternLayout>
+        </File>
+        <Console name="batchloaderlog" targetUrl="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %highlight{%level}{FATAL=bg_red, ERROR=red, WARN=yellow, INFO=green, DEBUG=blue} %logger{36} - %msg%n" />
+        </Console>
     </Appenders>
     <Loggers>
+        <Logger name="batcherror" level="INFO">
+            <AppenderRef ref="batcherrorlog"/>
+        </Logger>
+        <Logger name="batchloader" level="INFO">
+            <AppenderRef ref="batchloaderlog"/>
+        </Logger>
         <Root level="INFO">
             <AppenderRef ref="Console"/>
         </Root>
-        <Logger name="org.apache.http" level="INFO"/>
-        <Logger name="eu.europeana.fulltext" level="DEBUG"/>
     </Loggers>
 </Configuration>

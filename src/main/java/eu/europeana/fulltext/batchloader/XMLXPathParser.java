@@ -44,11 +44,13 @@ import java.util.regex.Pattern;
  */
 
 public class XMLXPathParser {
-    private static final Logger LOG = LogManager.getLogger(FTController.class);
-
+    private static final Logger ERRLOG     = LogManager.getLogger("batcherror");
+    private static final Logger LOG        = LogManager.getLogger("batchloader");
     private static final String CHARPOS    = "#char=";
     private static final String XYWHPOS    = "#xywh=";
     private static final String PAGEDCTYPE = "Page";
+
+    private static String entity_text = "";
 
 
     public static AnnoPageRdf eatIt(Path path) {
@@ -66,6 +68,7 @@ public class XMLXPathParser {
             String internalSubset = (document).getDoctype().getInternalSubset();
 
             String imgTargetBase = readEntityString("img", internalSubset);
+            entity_text = readEntityString("text", internalSubset);
 
             XPathFactory xPathfactory = XPathFactory.newInstance();
             factory.setNamespaceAware(true);
@@ -164,7 +167,9 @@ public class XMLXPathParser {
                                 } catch (ArrayIndexOutOfBoundsException | DOMException e) {
                                     annotationError = true;
                                     LOG.error("Error processing Image Target for Annotation with id: " + id
-                                              + ". This Annotation will be skipped during processing.");
+                                              + ". Please check the logs/batcherror.log file.");
+                                    ERRLOG.error("Error processing Image Target for Annotation with id: " + id
+                                                 + ". This Annotation is skipped during processing.", e);
                                     break;
                                 }
                             }
@@ -191,7 +196,9 @@ public class XMLXPathParser {
             ap = new AnnoPageRdf(pageId, ftResource, ftText, ftLang, imgTargetBase, pageAnnotationRdf, annoList);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            LOG.error("Error processing page#: " + pageId + ", of resource with URL: " + entity_text
+                      + ". Please check the logs/batcherror.log file.");
+            ERRLOG.error("Error processing page#: " + pageId + ", for resource with URL: " + entity_text, e);
         }
         return ap;
     }
@@ -245,7 +252,8 @@ public class XMLXPathParser {
         try {
             content = new String(Files.readAllBytes(file));
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.error("I/O error reading " + file + ". Please check the logs/batcherror.log file.");
+            ERRLOG.error("I/O error reading " + file , e);
         }
         return content;
     }

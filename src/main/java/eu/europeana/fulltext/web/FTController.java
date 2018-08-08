@@ -138,7 +138,7 @@ public class FTController {
                     produces    = MediaType.APPLICATION_JSON_VALUE)
     public String batch(@RequestParam(value = "directory", required = false) String directory) {
         fts.importBatch(directory);
-        LOG.debug("Batch processing finished.");
+        LOG.info("Batch processing finished.");
         return "Batch processing finished.";
     }
 
@@ -151,7 +151,7 @@ public class FTController {
                     produces    = MediaType.APPLICATION_JSON_VALUE)
     public String zipbatch(@RequestParam(value = "archive", required = true) String archive) {
         fts.importZipBatch(archive);
-        LOG.debug("Zip batch processing finished.");
+        LOG.info("Zip batch processing finished.");
         return "Zip batch processing finished.";
     }
 
@@ -208,7 +208,7 @@ public class FTController {
                                     HttpServletRequest request,
                                     HttpServletResponse response) {
         fts.createTestRecords();
-        LOG.debug("Test records created.");
+        LOG.info("Test records created.");
         return "Test records created.";
     }
 
