@@ -6,6 +6,10 @@ of the IIIF API Specification.
 
 Version history:
 
+v.0.3.1-SNAPSHOT
+added retrieving of FullTextResource
+added separate handling of logging for batch loading
+
 v.0.3-SNAPSHOT
 (hopefully) final adjustments to Mongo schema; removed _class column generation; used Spring mongodb 
 data consistently through the application (instead of Morphia); cleaning up

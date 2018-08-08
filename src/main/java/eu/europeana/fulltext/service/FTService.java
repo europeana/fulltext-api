@@ -16,6 +16,7 @@ import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Annotation;
 import eu.europeana.fulltext.entity.Resource;
 import eu.europeana.fulltext.entity.Target;
+import eu.europeana.fulltext.model.FullTextResource;
 import eu.europeana.fulltext.model.v2.AnnotationPageV2;
 import eu.europeana.fulltext.model.v2.AnnotationV2;
 import eu.europeana.fulltext.model.v3.AnnotationPageV3;
@@ -23,10 +24,7 @@ import eu.europeana.fulltext.model.v3.AnnotationV3;
 import eu.europeana.fulltext.repository.AnnoPageRepository;
 import eu.europeana.fulltext.repository.AnnotationRepository;
 import eu.europeana.fulltext.repository.ResourceRepository;
-import eu.europeana.fulltext.service.exception.FTException;
-import eu.europeana.fulltext.service.exception.AnnoPageDoesNotExistException;
-import eu.europeana.fulltext.service.exception.RecordParseException;
-import eu.europeana.fulltext.service.exception.SerializationException;
+import eu.europeana.fulltext.service.exception.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -135,6 +133,17 @@ public class FTService {
         return generateAnnotationV3(annoPage, annoId);
     }
 
+    public FullTextResource getFullTextResource(String datasetId, String recordId, String resId) throws
+                                                                                                 ResourceDoesNotExistException {
+        Resource resource;
+        try{
+            resource = resourceRepository.findByDatasetLocalAndResId(datasetId, recordId, resId).get(0);
+        } catch (java.lang.IndexOutOfBoundsException e) {
+            throw new ResourceDoesNotExistException(datasetId + "/" + recordId + "/" + resId);
+        }
+        return generateFullTextResource(resource);
+    }
+
     public AnnotationV2 getAnnotationV2(String datasetId, String recordId, String annoId){
         AnnoPage annoPage = annoPageRepository.findByDatasetLocalAndAnnoId(datasetId, recordId, annoId).get(0);
         return generateAnnotationV2(annoPage, annoId);
@@ -143,7 +152,6 @@ public class FTService {
     public boolean doesAnnoPageNotExist(String datasetId, String recordId, String annoId){
         return annoPageRepository.findByDatasetLocalAndPageId(datasetId, recordId, annoId).isEmpty();
     }
-
 
     private AnnotationPageV3 generateAnnoPageV3(eu.europeana.fulltext.entity.AnnoPage annoPage){
         long start = System.currentTimeMillis();
@@ -181,6 +189,15 @@ public class FTService {
         return result;
     }
 
+    private FullTextResource generateFullTextResource(Resource resource){
+        long start = System.currentTimeMillis();
+        FullTextResource result = EDM2IIIFMapping.getFullTextResource(resource);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Generated in {} ms ", System.currentTimeMillis() - start);
+        }
+        return result;
+    }
+
     /**
      * Serialize resource from MongoDB to JSON-LD
      * @param res resource
@@ -207,7 +224,11 @@ public class FTService {
                                                    + "', making sure that it matches with the 'ENTITY text' value found in import file: '"
                                                    + annoPageRdf.getFtResource() + "'"));
             }
-            Resource resource = new Resource(identifiers[2], annoPageRdf.getFtLang(), annoPageRdf.getFtText());
+            Resource resource = new Resource(identifiers[2],
+                                             annoPageRdf.getFtLang(),
+                                             annoPageRdf.getFtText(),
+                                             identifiers[0],
+                                             identifiers[1]);
             try{
                 resourceRepository.save(resource);
             } catch (Exception e){

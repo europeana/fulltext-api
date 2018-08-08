@@ -18,6 +18,8 @@
 package eu.europeana.fulltext.entity;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
@@ -25,10 +27,17 @@ import org.springframework.data.mongodb.core.mapping.Document;
  */
 @Document(collection = "Resource")
 //@Entity(noClassnameStored = true)
+@CompoundIndexes({
+                         @CompoundIndex(name = "dataset_local_res",
+                                        unique = true,
+                                        def = "{'dsId' : 1, 'lcId': 1, '_id': 1}")
+                 })
 public class Resource {
 
     @Id
-    private String id; // custom Mongo ID
+    private String id;    // custom Mongo ID
+    private String dsId;  // IIIF_API_BASE_URL/{dsId}/      /annopage/
+    private String lcId;  // IIIF_API_BASE_URL/      /{lcId}/annopage/
     private String lang;
     private String value;
 
@@ -39,6 +48,12 @@ public class Resource {
         this.id = id;
         this.lang = lang;
         this.value = value;
+    }
+
+    public Resource(String id, String lang, String value, String dsId, String lcId) {
+        this(id, lang, value);
+        this.dsId = dsId;
+        this.lcId = lcId;
     }
 
     public String getId() {
@@ -64,4 +79,21 @@ public class Resource {
     public void setLang(String lang) {
         this.lang = lang;
     }
+
+    public String getDsId() {
+        return dsId;
+    }
+
+    public void setDsId(String dsId) {
+        this.dsId = dsId;
+    }
+
+    public String getLcId() {
+        return lcId;
+    }
+
+    public void setLcId(String lcId) {
+        this.lcId = lcId;
+    }
+
 }

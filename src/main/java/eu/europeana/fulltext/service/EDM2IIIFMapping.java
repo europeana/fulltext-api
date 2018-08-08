@@ -20,7 +20,9 @@ package eu.europeana.fulltext.service;
 import eu.europeana.fulltext.config.FTSettings;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Annotation;
+import eu.europeana.fulltext.entity.Resource;
 import eu.europeana.fulltext.entity.Target;
+import eu.europeana.fulltext.model.FullTextResource;
 import eu.europeana.fulltext.model.v2.*;
 import eu.europeana.fulltext.model.v3.AnnotationPageV3;
 import eu.europeana.fulltext.model.v3.AnnotationV3;
@@ -161,6 +163,10 @@ public class EDM2IIIFMapping {
                                 + target.getH());
         }
         return ftTargetURLList.toArray(new String[0]);
+    }
+
+    static FullTextResource getFullTextResource(Resource resource){
+        return new FullTextResource(resource.getId(), resource.getValue());
     }
 
     private static String getResourceIdUrl(AnnoPage annoPage, Annotation annotation){

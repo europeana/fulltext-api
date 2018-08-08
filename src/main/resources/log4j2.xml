@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="INFO">
     <Appenders>
-        <Console name="Console" targetUrl="SYSTEM_OUT">
+        <Console name="Console" target="SYSTEM_OUT">
             <!-- Use the JSON layout for production (logging to ELK) -->
             <!--<PatternLayout>-->
                 <!--<alwaysWriteExceptions>false</alwaysWriteExceptions>-->
@@ -16,7 +16,7 @@
                 <pattern>%d %p %C{1.} [%t] %m%n %throwable{short.message}%n%n</pattern>
             </PatternLayout>
         </File>
-        <Console name="batchloaderlog" targetUrl="SYSTEM_OUT">
+        <Console name="batchloaderlog" target="SYSTEM_OUT">
             <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %highlight{%level}{FATAL=bg_red, ERROR=red, WARN=yellow, INFO=green, DEBUG=blue} %logger{36} - %msg%n" />
         </Console>
     </Appenders>

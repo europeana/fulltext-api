@@ -4,6 +4,7 @@ import eu.europeana.fulltext.config.FTDefinitions;
 import eu.europeana.fulltext.service.FTService;
 import eu.europeana.fulltext.service.exception.AnnoPageDoesNotExistException;
 import eu.europeana.fulltext.service.exception.RecordParseException;
+import eu.europeana.fulltext.service.exception.ResourceDoesNotExistException;
 import eu.europeana.fulltext.service.exception.SerializationException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -122,12 +123,38 @@ public class FTController {
             }
         } catch (AnnoPageDoesNotExistException e) {
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-            e.printStackTrace();
+            LOG.error("Error retrieving Annopage" + datasetId + "/" + recordId + "/" + pageId, e);
             annotationPage = "{'error': 'AnnoPage not found'}";
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
         }
         return fts.serializeResource(annotationPage);
     }
+
+    /**
+     * Handles fetching a page (resource) with all its annotations
+     * @return
+     */
+    @RequestMapping(value    = "/{datasetId}/{recordId}/{resId}",
+                    method   = RequestMethod.GET,
+                    produces = MediaType.APPLICATION_JSON_VALUE)
+    public String fulltextJsonLd(@PathVariable String datasetId,
+                           @PathVariable String recordId,
+                           @PathVariable String resId,
+                           HttpServletRequest request,
+                           HttpServletResponse response) throws SerializationException {
+
+        Object resource = null;
+        try {
+            resource = fts.getFullTextResource(datasetId, recordId, resId);
+        } catch (ResourceDoesNotExistException e) {
+            LOG.error("error retrieving FulltextAnnotation", e);
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+        }
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        return fts.serializeResource(resource);
+    }
+
+
 
     /**
      * starts batch importing of an unzipped directory

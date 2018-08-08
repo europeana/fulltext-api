@@ -169,7 +169,8 @@ public class XMLXPathParser {
                                     LOG.error("Error processing Image Target for Annotation with id: " + id
                                               + ". Please check the logs/batcherror.log file.");
                                     ERRLOG.error("Error processing Image Target for Annotation with id: " + id
-                                                 + ". This Annotation is skipped during processing.", e);
+                                                 + ", page #" + pageId + ", for resource with URL: " + entity_text
+                                                 + " . This Annotation is skipped during processing.", e);
                                     break;
                                 }
                             }

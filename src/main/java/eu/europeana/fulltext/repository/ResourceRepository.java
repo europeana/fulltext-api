@@ -39,4 +39,7 @@ public interface ResourceRepository extends MongoRepository<Resource, String> {
     @Query("{Resource: { $regex: ?0 } })")
     List<Resource> findResourceByRegEx(String resource);
 
+    @Query("{'dsId':'?0', 'lcId':'?1', 'id':'?2'}")
+    List<Resource> findByDatasetLocalAndResId(String datasetId, String localId, String resId);
+
 }

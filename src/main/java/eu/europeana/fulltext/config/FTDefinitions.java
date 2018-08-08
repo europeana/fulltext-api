@@ -29,6 +29,9 @@ public class FTDefinitions {
     public static final String V3_ANNOTATION_TYPE = "Annotation";
     public static final String V3_ANNO_BODY_TYPE  = "SpecificResource";
 
+    public static final String EDM_WEBRESOURCE_TYPE       = "edm:WebResource";
+    public static final String EDM_FULLTESTRESOURCE_TYPE  = "edm:FullTextResource";
+
     public static final String ALL_ARCHIVES       = "all";
 
 
