@@ -6,6 +6,10 @@ of the IIIF API Specification.
 
 Version history:
 
+v.0.3.2-SNAPSHOT
+added more robust error handling
+implemented Hugo's comments in EA-978
+
 v.0.3.1-SNAPSHOT
 added retrieving of FullTextResource
 added separate handling of logging for batch loading
@@ -51,4 +55,9 @@ Application name, port number, Mongodb connection settings, path elements (for r
 all managed in the fulltext.properties file.
 Note that any sensitive data (e.g. passwords) are omitted from this file; they can be overridden in a local 
 fulltext.user.properties file in src/main/resources.
+
+### KNOWN ISSUES
+* the current version does not yet implement any form of authorisation / authentication
+* the current version does not yet return the HTTP statuses as specified
+* testing still needs to be set up
 

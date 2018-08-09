@@ -32,7 +32,7 @@ import static eu.europeana.fulltext.config.FTDefinitions.MEDIA_TYPE_IIIF_V2;
 @JsonPropertyOrder({"context", "id"})
 public class AnnotationPageV2 extends JsonLdId implements Serializable{
 
-    private static final long serialVersionUID = 3852844091029376312L;
+    private static final long serialVersionUID = -491589144458820254L;
 
     @JsonProperty("@context")
     private String context = MEDIA_TYPE_IIIF_V2;

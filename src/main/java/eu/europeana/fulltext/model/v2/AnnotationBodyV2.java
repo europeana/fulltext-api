@@ -28,7 +28,7 @@ import java.io.Serializable;
 @JsonPropertyOrder({"id"})
 public class AnnotationBodyV2 extends JsonLdId implements Serializable{
 
-    private static final long serialVersionUID = 8445245491007747043L;
+    private static final long serialVersionUID = -814446825873060414L;
 
     public AnnotationBodyV2(String id) {
         super(id);

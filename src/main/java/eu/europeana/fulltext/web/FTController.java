@@ -1,6 +1,7 @@
 package eu.europeana.fulltext.web;
 
 import eu.europeana.fulltext.config.FTDefinitions;
+import eu.europeana.fulltext.model.JsonErrorResponse;
 import eu.europeana.fulltext.service.FTService;
 import eu.europeana.fulltext.service.exception.AnnoPageDoesNotExistException;
 import eu.europeana.fulltext.service.exception.RecordParseException;
@@ -62,19 +63,31 @@ public class FTController {
             iiifVersion = versionFromAcceptHeader(request);
         }
 
-        Object annotation;
+        Object annotation = null;
 
-//        Optional<Annotation> Annotation = fts.findAnnotation(datasetId, recordId, annoID);
-        if ("3".equalsIgnoreCase(iiifVersion)) {
-            annotation = fts.getAnnotationV3(datasetId, recordId, annoID);
-            response.setContentType(FTDefinitions.MEDIA_TYPE_IIIF_JSONLD_V3+";charset=UTF-8");
-        } else {
-            annotation = fts.getAnnotationV2(datasetId, recordId, annoID); // fallback option
-            response.setContentType(FTDefinitions.MEDIA_TYPE_IIIF_JSONLD_V2+";charset=UTF-8");
+        try {
+            if ("3".equalsIgnoreCase(iiifVersion)) {
+                annotation = fts.getAnnotationV3(datasetId, recordId, annoID);
+                response.setContentType(FTDefinitions.MEDIA_TYPE_IIIF_JSONLD_V3 + ";charset=UTF-8");
+            } else {
+                annotation = fts.getAnnotationV2(datasetId, recordId, annoID);
+                response.setContentType(FTDefinitions.MEDIA_TYPE_IIIF_JSONLD_V2 + ";charset=UTF-8");
+            }
+        } catch (AnnoPageDoesNotExistException e) {
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            LOG.error(e.getMessage(), e);
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return fts.serializeResource(new JsonErrorResponse(e.getMessage()));
         }
+
         return fts.serializeResource(annotation);
     }
 
+
+    /**
+     * for testing HEAD request performance (EA-1239)
+     * @return
+     */
     @RequestMapping(value    = "/{datasetId}/{recordId}/annopage/{pageId}",
                     method   = RequestMethod.HEAD,
                     produces = MediaType.APPLICATION_JSON_VALUE)
@@ -114,24 +127,23 @@ public class FTController {
 
         try {
             if ("3".equalsIgnoreCase(iiifVersion)) {
-                    annotationPage = fts.getAnnotationPageV3(datasetId, recordId, pageId);
-
+                annotationPage = fts.getAnnotationPageV3(datasetId, recordId, pageId);
                 response.setContentType(FTDefinitions.MEDIA_TYPE_IIIF_JSONLD_V3+";charset=UTF-8");
             } else {
-                annotationPage = fts.getAnnotationPageV2(datasetId, recordId, pageId); // fallback option
+                annotationPage = fts.getAnnotationPageV2(datasetId, recordId, pageId);
                 response.setContentType(FTDefinitions.MEDIA_TYPE_IIIF_JSONLD_V2+";charset=UTF-8");
             }
         } catch (AnnoPageDoesNotExistException e) {
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-            LOG.error("Error retrieving Annopage" + datasetId + "/" + recordId + "/" + pageId, e);
-            annotationPage = "{'error': 'AnnoPage not found'}";
+            LOG.error(e.getMessage(), e);
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return fts.serializeResource(new JsonErrorResponse(e.getMessage()));
         }
         return fts.serializeResource(annotationPage);
     }
 
     /**
-     * Handles fetching a page (resource) with all its annotations
+     * Handles fetching a Fulltext Resource
      * @return
      */
     @RequestMapping(value    = "/{datasetId}/{recordId}/{resId}",
@@ -147,14 +159,14 @@ public class FTController {
         try {
             resource = fts.getFullTextResource(datasetId, recordId, resId);
         } catch (ResourceDoesNotExistException e) {
-            LOG.error("error retrieving FulltextAnnotation", e);
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            LOG.error(e.getMessage(), e);
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return fts.serializeResource(new JsonErrorResponse(e.getMessage()));
         }
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         return fts.serializeResource(resource);
     }
-
-
 
     /**
      * starts batch importing of an unzipped directory

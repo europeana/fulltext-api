@@ -12,7 +12,7 @@
 
 	<groupId>eu.europeana</groupId>
 	<artifactId>fulltext</artifactId>
-	<version>0.3.1-SNAPSHOT</version>
+	<version>0.3.2-SNAPSHOT</version>
 	<packaging>war</packaging>
 
 	<name>Europeana Newspapers Fulltext API</name>

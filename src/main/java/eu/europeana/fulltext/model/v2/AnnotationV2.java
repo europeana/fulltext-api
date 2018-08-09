@@ -30,7 +30,7 @@ import java.io.Serializable;
 @JsonPropertyOrder({"context", "id"})
 public class AnnotationV2 extends JsonLdId implements Serializable {
 
-    private static final long serialVersionUID = -7091618924397220872L;
+    private static final long serialVersionUID = 7120324589144279826L;
 
     @JsonProperty("@context")
     private String context;

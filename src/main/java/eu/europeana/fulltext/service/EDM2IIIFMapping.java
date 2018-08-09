@@ -27,6 +27,7 @@ import eu.europeana.fulltext.model.v2.*;
 import eu.europeana.fulltext.model.v3.AnnotationPageV3;
 import eu.europeana.fulltext.model.v3.AnnotationV3;
 import eu.europeana.fulltext.model.v3.AnnotationBodyV3;
+import eu.europeana.fulltext.service.exception.AnnotationDoesNotExistException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -53,7 +54,7 @@ public class EDM2IIIFMapping {
 
     private static FTSettings fts;
 
-    private static final String V2_MOTIVATION = "oa:Annotation";
+    private static final String V2_MOTIVATION = "sc:painting";
     private static final String V3_MOTIVATION = "transcribing";
 
     private static final Logger LOG = LogManager.getLogger(EDM2IIIFMapping.class);
@@ -84,7 +85,7 @@ public class EDM2IIIFMapping {
             ann.setContext(MEDIA_TYPE_IIIF_V2);
         }
         ann.setMotivation(StringUtils.isNotBlank(annotation.getMotiv()) ? annotation.getMotiv() : V2_MOTIVATION);
-        ann.setDcType(annotation.getDcType());
+        ann.setDcType(expandDCType(annotation.getDcType()));
         ann.setOn(getFTTargetArray(annoPage, annotation));
         if (StringUtils.isNotBlank(annotation.getLang())){
             AnnotationFullBodyV2 anb = new AnnotationFullBodyV2(resourceIdUrl);
@@ -120,7 +121,7 @@ public class EDM2IIIFMapping {
             ann.setContext(MEDIA_TYPE_IIIF_V3);
         }
         ann.setMotivation(StringUtils.isNotBlank(annotation.getMotiv()) ? annotation.getMotiv() : V3_MOTIVATION);
-        ann.setDcType(annotation.getDcType());
+        ann.setDcType(expandDCType(annotation.getDcType()));
         if (StringUtils.isNotBlank(annotation.getLang())){
             anb = new AnnotationBodyV3(body, V3_ANNO_BODY_TYPE);
             anb.setSource(getResourceIdBaseUrl(annoPage));
@@ -136,21 +137,15 @@ public class EDM2IIIFMapping {
     static AnnotationV3 getSingleAnnotationV3(AnnoPage annoPage, String annoId){
         Annotation           annotation;
         Optional<Annotation> maybe = annoPage.getAns().stream().filter(o -> o.getAnId().equals(annoId)).findFirst();
-        if (maybe.isPresent()){
-            return getAnnotationV3(annoPage, maybe.get(), true);
-        } else {
-            return null; // TODO handle this better
-        }
+        // NOTE this shouldn't fail because in that case the annoPage would not have been found in the first place
+        return maybe.map(annotation1 -> getAnnotationV3(annoPage, annotation1, true)).orElse(null);
     }
 
     static AnnotationV2 getSingleAnnotationV2(AnnoPage annoPage, String annoId){
         Annotation           annotation;
         Optional<Annotation> maybe = annoPage.getAns().stream().filter(o -> o.getAnId().equals(annoId)).findFirst();
-        if (maybe.isPresent()){
-            return getAnnotationV2(annoPage, maybe.get(), true);
-        } else {
-            return null; // TODO handle this better
-        }
+        // NOTE this shouldn't fail because in that case the annoPage would not have been found in the first place
+        return maybe.map(annotation1 -> getAnnotationV2(annoPage, annotation1, true)).orElse(null);
     }
 
     private static String[] getFTTargetArray(AnnoPage annoPage, Annotation annotation){
@@ -166,7 +161,10 @@ public class EDM2IIIFMapping {
     }
 
     static FullTextResource getFullTextResource(Resource resource){
-        return new FullTextResource(resource.getId(), resource.getValue());
+        return new FullTextResource(fts.getResourceBaseUrl()
+                                    + resource.getDsId() + "/"
+                                    + resource.getLcId() + "/"
+                                    + resource.getId(), resource.getValue());
     }
 
     private static String getResourceIdUrl(AnnoPage annoPage, Annotation annotation){
@@ -178,11 +176,33 @@ public class EDM2IIIFMapping {
     }
 
     private static String getAnnoPageIdUrl(AnnoPage annoPage){
-        return fts.getIiifApiBaseUrl() + annoPage.getDsId() + "/" +
+        return fts.getAnnoPageBaseUrl() + annoPage.getDsId() + "/" +
                annoPage.getLcId() + fts.getAnnoPageDirectory() + annoPage.getPgId();
     }
 
     private static String getAnnotationIdUrl(AnnoPage annoPage, Annotation annotation){
-        return fts.getIiifApiBaseUrl() + annoPage.getDsId() + "/" + annoPage.getLcId() + fts.getAnnotationDirectory() + annotation.getAnId();
+        return fts.getAnnotationBaseUrl() + annoPage.getDsId() + "/" + annoPage.getLcId() + fts.getAnnotationDirectory() + annotation.getAnId();
+    }
+
+    private static String expandDCType(String dcTypeCode){
+        String dcType = "";
+        switch (StringUtils.upperCase(dcTypeCode)) {
+            case "P":
+                dcType = "Page";
+                break;
+            case "B":
+                dcType = "Block";
+                break;
+            case "L":
+                dcType = "Line";
+                break;
+            case "W":
+                dcType = "Word";
+                break;
+            default:
+                dcType = "undefined";
+                break;
+        }
+        return dcType;
     }
 }

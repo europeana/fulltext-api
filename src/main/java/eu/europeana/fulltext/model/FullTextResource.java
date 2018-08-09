@@ -19,10 +19,10 @@ package eu.europeana.fulltext.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import static eu.europeana.fulltext.config.FTDefinitions.EDM_WEBRESOURCE_TYPE;
-import static eu.europeana.fulltext.config.FTDefinitions.EDM_FULLTESTRESOURCE_TYPE;
 
 import java.io.Serializable;
+
+import static eu.europeana.fulltext.config.FTDefinitions.*;
 
 /**
  * Created by luthien on 14/06/2018.
@@ -30,13 +30,15 @@ import java.io.Serializable;
 @JsonPropertyOrder({"context", "id"})
 public class FullTextResource extends JsonLdIdType implements Serializable {
 
-    private static final long serialVersionUID = -7091618924397220872L;
+    private static final long serialVersionUID = -2460385486748326124L;
 
+    @JsonProperty("@context")
+    private String context = MEDIA_TYPE_EDM_JSONLD;
     private String value;
 
 
     public FullTextResource(String id) {
-        super(id, new String[] {EDM_WEBRESOURCE_TYPE, EDM_FULLTESTRESOURCE_TYPE});
+        super(id, EDM_FULLTESTRESOURCE_TYPE);
     }
 
     public FullTextResource(String id, String value) {

@@ -32,7 +32,7 @@ import java.io.Serializable;
 
 public class JsonLdIdType implements Serializable{
 
-    private static final long serialVersionUID = -2716881573824312952L;
+    private static final long serialVersionUID = 509628293285922978L;
 
     private String id;
     private String type;

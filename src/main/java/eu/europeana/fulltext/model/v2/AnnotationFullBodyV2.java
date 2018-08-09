@@ -29,7 +29,7 @@ import java.io.Serializable;
 @JsonPropertyOrder({"id"})
 public class AnnotationFullBodyV2 extends AnnotationBodyV2{
 
-    private static final long serialVersionUID = 1825322475703247072L;
+    private static final long serialVersionUID = 3894020068338298481L;
 
     private String full;
     private String language;

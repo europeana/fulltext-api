@@ -24,7 +24,7 @@ import java.io.Serializable;
  */
 public class AnnotationBodyV3 extends JsonLdIdType implements Serializable{
 
-    private static final long serialVersionUID = -3277352172046621380L;
+    private static final long serialVersionUID = 481686784002335472L;
     private String source;
     private String language;
 

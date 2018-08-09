@@ -106,51 +106,60 @@ public class FTService {
         return mapper;
     }
 
-    public AnnotationPageV2 getAnnotationPageV2(String datasetId, String recordId, String pageId)
+    public AnnotationPageV2 getAnnotationPageV2(String datasetId, String localId, String pageId)
             throws AnnoPageDoesNotExistException {
-        AnnoPage annoPage;
-        try {
-            annoPage = annoPageRepository.findByDatasetLocalAndPageId(datasetId, recordId, pageId).get(0);
-        } catch (java.lang.IndexOutOfBoundsException e) {
-            throw new AnnoPageDoesNotExistException(datasetId + "/" + recordId + "/" + pageId);
-        }
-        return generateAnnoPageV2(annoPage);
+        return generateAnnoPageV2(fetchAnnoPage(datasetId, localId, pageId));
     }
 
-    public AnnotationPageV3 getAnnotationPageV3(String datasetId, String recordId, String pageId)
+    public AnnotationPageV3 getAnnotationPageV3(String datasetId, String localId, String pageId)
             throws AnnoPageDoesNotExistException {
-        AnnoPage annoPage;
-        try {
-            annoPage = annoPageRepository.findByDatasetLocalAndPageId(datasetId, recordId, pageId).get(0);
-        } catch (java.lang.IndexOutOfBoundsException e) {
-            throw new AnnoPageDoesNotExistException(datasetId + "/" + recordId + "/" + pageId);
-        }
-        return generateAnnoPageV3(annoPage);
+        return generateAnnoPageV3(fetchAnnoPage(datasetId, localId, pageId));
     }
 
-    public AnnotationV3 getAnnotationV3(String datasetId, String recordId, String annoId){
-        AnnoPage annoPage = annoPageRepository.findByDatasetLocalAndAnnoId(datasetId, recordId, annoId).get(0);
-        return generateAnnotationV3(annoPage, annoId);
+    public AnnotationV2 getAnnotationV2(String datasetId, String localId, String annoId)
+            throws AnnoPageDoesNotExistException {
+        return generateAnnotationV2(fetchAPAnnotation(datasetId, localId, annoId), annoId);
     }
 
-    public FullTextResource getFullTextResource(String datasetId, String recordId, String resId) throws
-                                                                                                 ResourceDoesNotExistException {
+    public AnnotationV3 getAnnotationV3(String datasetId, String localId, String annoId)
+            throws AnnoPageDoesNotExistException {
+        return generateAnnotationV3(fetchAPAnnotation(datasetId, localId, annoId), annoId);
+    }
+
+    public FullTextResource getFullTextResource(String datasetId, String localId, String resId)
+            throws ResourceDoesNotExistException {
         Resource resource;
         try{
-            resource = resourceRepository.findByDatasetLocalAndResId(datasetId, recordId, resId).get(0);
+            resource = resourceRepository.findByDatasetLocalAndResId(datasetId, localId, resId).get(0);
         } catch (java.lang.IndexOutOfBoundsException e) {
-            throw new ResourceDoesNotExistException(datasetId + "/" + recordId + "/" + resId);
+            throw new ResourceDoesNotExistException("No Fulltext Resource with resourceId: " + resId
+                  + " was found that is associated with datasetId: " + datasetId + " and localId: " + localId );
         }
         return generateFullTextResource(resource);
     }
 
-    public AnnotationV2 getAnnotationV2(String datasetId, String recordId, String annoId){
-        AnnoPage annoPage = annoPageRepository.findByDatasetLocalAndAnnoId(datasetId, recordId, annoId).get(0);
-        return generateAnnotationV2(annoPage, annoId);
+    private AnnoPage fetchAnnoPage(String datasetId, String localId, String pageId)
+            throws AnnoPageDoesNotExistException {
+        try {
+            return annoPageRepository.findByDatasetLocalAndPageId(datasetId, localId, pageId).get(0);
+        } catch (java.lang.IndexOutOfBoundsException e) {
+            throw new AnnoPageDoesNotExistException("No AnnoPage with datasetId: " + datasetId + ", localId: "
+                                                    + localId + " and pageId: " + pageId + " could be found");
+        }
     }
 
-    public boolean doesAnnoPageNotExist(String datasetId, String recordId, String annoId){
-        return annoPageRepository.findByDatasetLocalAndPageId(datasetId, recordId, annoId).isEmpty();
+    private AnnoPage fetchAPAnnotation(String datasetId, String localId, String annoId)
+            throws AnnoPageDoesNotExistException {
+        try {
+            return annoPageRepository.findByDatasetLocalAndAnnoId(datasetId, localId, annoId).get(0);
+        } catch (java.lang.IndexOutOfBoundsException e) {
+            throw new AnnoPageDoesNotExistException("No AnnoPage with datasetId: " + datasetId + " and localId: "
+                      + localId + " could be found that contains an Annotation with annotationId: " + annoId);
+        }
+    }
+
+    public boolean doesAnnoPageNotExist(String datasetId, String localId, String annoId){
+        return annoPageRepository.findByDatasetLocalAndPageId(datasetId, localId, annoId).isEmpty();
     }
 
     private AnnotationPageV3 generateAnnoPageV3(eu.europeana.fulltext.entity.AnnoPage annoPage){

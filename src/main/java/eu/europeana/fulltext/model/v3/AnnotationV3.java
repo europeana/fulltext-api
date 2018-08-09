@@ -30,7 +30,7 @@ import static eu.europeana.fulltext.config.FTDefinitions.V3_ANNOTATION_TYPE;
 @JsonPropertyOrder({"context", "id"})
 public class AnnotationV3 extends JsonLdIdType implements Serializable {
 
-    private static final long serialVersionUID = -7091618924397220872L;
+    private static final long serialVersionUID = 8849251970656404497L;
 
     @JsonProperty("@context")
     private String context;

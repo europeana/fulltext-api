@@ -19,40 +19,19 @@ package eu.europeana.fulltext.model;
 
 import java.io.Serializable;
 
+
 /**
- * Id and Type are common fields for Fulltext v3 types as well
- * After the IIIF version by Patrick Ehlert
- *
- * @author Luthien
- * Created on 02-07-2018
+ * Created by luthien on 14/06/2018.
  */
+public class JsonErrorResponse implements Serializable {
 
-public class JsonLdIdType implements Serializable{
+    private static final long serialVersionUID = 2326908117059525587L;
 
-    private static final long serialVersionUID = -2465231545266868944L;
+    private String error;
 
-    private String id;
-    private String type;
-
-    public JsonLdIdType() {
-        // empty constructor to make it also deserializable (see SonarQube squid:S2055)
+    public JsonErrorResponse(String error) {
+        this.error = error;
     }
 
-    public JsonLdIdType(String id) {
-        this.id = id;
-    }
-
-    public JsonLdIdType(String id, String type) {
-        this.id = id;
-        this.type = type;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public String getType() {
-        return type;
-    }
 }
 

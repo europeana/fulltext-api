@@ -24,15 +24,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class FTDefinitions {
 
-    public static final String MEDIA_TYPE_JSONLD  = "application/ld+json";
-    public static final String V3_ANNO_PAGE_TYPE  = "AnnotationPage";
-    public static final String V3_ANNOTATION_TYPE = "Annotation";
-    public static final String V3_ANNO_BODY_TYPE  = "SpecificResource";
-
-    public static final String EDM_WEBRESOURCE_TYPE       = "edm:WebResource";
-    public static final String EDM_FULLTESTRESOURCE_TYPE  = "edm:FullTextResource";
-
-    public static final String ALL_ARCHIVES       = "all";
+    public static final String MEDIA_TYPE_JSONLD          = "application/ld+json";
+    public static final String V3_ANNO_PAGE_TYPE          = "AnnotationPage";
+    public static final String V3_ANNOTATION_TYPE         = "Annotation";
+    public static final String V3_ANNO_BODY_TYPE          = "SpecificResource";
+    public static final String EDM_FULLTESTRESOURCE_TYPE  = "FullTextResource";
+    public static final String ALL_ARCHIVES               = "all";
 
 
 
@@ -45,6 +42,12 @@ public class FTDefinitions {
      * Media type for IIIF version 3
      */
     public static final String MEDIA_TYPE_IIIF_V3  = "http://iiif.io/api/presentation/3/context.json";
+
+
+    /**
+     * Media type used in @context tag of Fulltext Resource
+     */
+    public static final String MEDIA_TYPE_EDM_JSONLD  = "http://iiif.io/api/presentation/3/context.json";
 
     /**
      * Default Content-type returned on manifest requests for version 3

@@ -31,7 +31,7 @@ import static eu.europeana.fulltext.config.FTDefinitions.V3_ANNO_PAGE_TYPE;
 @JsonPropertyOrder({"context", "id"})
 public class AnnotationPageV3 extends JsonLdIdType implements Serializable{
 
-    private static final long serialVersionUID = 3852844091029376312L;
+    private static final long serialVersionUID = 3567695991809278386L;
 
     @JsonProperty("@context")
     private String context = MEDIA_TYPE_IIIF_V3;

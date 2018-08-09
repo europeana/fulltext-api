@@ -47,8 +47,11 @@ public class FTSettings {
 
     private Boolean suppressParseException = false; // default value if we run this outside of Spring
 
-    @Value("${iiifapi.baseurl}")
-    private String iiifApiBaseUrl;
+    @Value("${annopage.baseurl}")
+    private String annoPageBaseUrl;
+
+    @Value("${annotation.baseurl}")
+    private String annotationBaseUrl;
 
     @Value("${resource.baseurl}")
     private String resourceBaseUrl;
@@ -96,8 +99,12 @@ public class FTSettings {
         return suppressParseException;
     }
 
-    public String getIiifApiBaseUrl() {
-        return iiifApiBaseUrl;
+    public String getAnnoPageBaseUrl() {
+        return annoPageBaseUrl;
+    }
+
+    public String getAnnotationBaseUrl() {
+        return annotationBaseUrl;
     }
 
     public String getResourceBaseUrl() {
