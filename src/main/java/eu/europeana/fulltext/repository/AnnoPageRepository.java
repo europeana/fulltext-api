@@ -18,6 +18,8 @@
 package eu.europeana.fulltext.repository;
 
 import eu.europeana.fulltext.entity.AnnoPage;
+import org.springframework.data.mongodb.repository.CountQuery;
+import org.springframework.data.mongodb.repository.ExistsQuery;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
@@ -33,15 +35,19 @@ import java.util.List;
 public interface AnnoPageRepository extends MongoRepository<AnnoPage, String> {
 
 
-    //Supports native JSON query string
-    @Query("{AnnoPage:'?0'}")
-    AnnoPage findAnnoPageByDomain(String annoPage);
-
-    @Query("{AnnoPage: { $regex: ?0 } })")
-    List<AnnoPage> findAnnoPageByRegEx(String annoPage);
-
     @Query("{'dsId':'?0', 'lcId':'?1', 'pgId':'?2'}")
     List<AnnoPage> findByDatasetLocalAndPageId(String datasetId, String localId, String pageId);
+
+    @Deprecated // keeping this temporarily for testing speed (EA-1239)
+    @Query("{'dsId':'?0', 'lcId':'?1', 'pgId':'?2'}{ _id : 1}")
+    AnnoPage findOneWithId(String datasetId, String localId, String pageId);
+
+    @ExistsQuery("{'dsId':'?0', 'lcId':'?1', 'pgId':'?2'}")
+    Boolean existsWithId(String datasetId, String localId, String pageId);
+
+    @Deprecated // keeping this temporarily for testing speed (EA-1239)
+    @CountQuery("{'dsId':'?0', 'lcId':'?1', 'pgId':'?2'}")
+    Integer countWithId(String datasetId, String localId, String pageId);
 
     @Query("{'dsId':'?0', 'lcId':'?1', 'ans.anId':'?2'}")
     List<AnnoPage> findByDatasetLocalAndAnnoId(String datasetId, String localId, String annoId);
