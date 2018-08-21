@@ -50,16 +50,14 @@ public class XMLXPathParser {
     private static final String XYWHPOS    = "#xywh=";
     private static final String PAGEDCTYPE = "Page";
 
-    private static String entity_text = "";
-
-
     public static AnnoPageRdf eatIt(Path path) {
         return eatIt(readFileContents(path), StringUtils.split(path.getFileName().toString(), '.')[0]);
     }
 
-
     public static AnnoPageRdf eatIt(String xmlString, String pageId) {
+        String entity_text = null;
         AnnoPageRdf ap = null;
+
         try {
             DocumentBuilderFactory factory  = DocumentBuilderFactory.newInstance();
             DocumentBuilder        builder  = factory.newDocumentBuilder();
@@ -78,9 +76,15 @@ public class XMLXPathParser {
             Object          ftResult = ftExpr.evaluate(document, XPathConstants.NODESET);
             NodeList        ftNodes  = (NodeList) ftResult;
 
+            // note that getTextContent will automatically convert escaped xml characters to their proper value
+            // TODO check with Hugo if we can assume that language and text is always present and always in the same order
             String ftResource = ftNodes.item(0).getAttributes().item(0).getTextContent();
-            String ftText     = ftNodes.item(0).getTextContent();
+            assert ftNodes.item(0).getChildNodes().item(1).getNodeName().equalsIgnoreCase("dc:language");
             String ftLang     = ftNodes.item(0).getChildNodes().item(1).getTextContent();
+            assert ftNodes.item(0).getChildNodes().item(3).getNodeName().equalsIgnoreCase("rdf:value");
+            String ftText     = ftNodes.item(0).getChildNodes().item(3).getTextContent();
+
+            // TODO break this up into submethods
 
             XPath           anXpath  = xPathfactory.newXPath();
             XPathExpression anExpr   = anXpath.compile("//*[local-name()='Annotation']");
@@ -242,10 +246,22 @@ public class XMLXPathParser {
         Pattern entityPattern = Pattern.compile("ENTITY\\s*?" + whichEntity + "\\s*?'(.+?)'");
         Matcher entityMatcher = entityPattern.matcher(StringUtils.replaceChars(internalSubset, '"', '\''));
         if (entityMatcher.find()) {
-            return entityMatcher.group(1);
+            return convertXmlEscapeCharacters(entityMatcher.group(1));
         } else {
             return null;
         }
+    }
+
+    /**
+     * This methods converts all 5 xml escape character to their normal representation
+     * @return
+     */
+    private static String convertXmlEscapeCharacters(String xml) {
+        return xml.replaceAll("&lt;", "<")
+                  .replaceAll("&gt;", ">")
+                  .replaceAll("&quot;", "\"")
+                  .replaceAll("&amp;","&")
+                  .replaceAll("&apos;", "\'");
     }
 
     private static String readFileContents(Path file) {
