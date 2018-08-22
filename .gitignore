@@ -1,4 +1,5 @@
 **/fulltext.user.properties
+**/loader.user.properties
 
 target/
 !.mvn/wrapper/maven-wrapper.jar

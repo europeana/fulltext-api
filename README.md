@@ -1,10 +1,24 @@
-# Fulltext API
+# Full Text API
 ### Europeana Newspapers Fulltext API 
 
-This Fulltext API implements the functionality described in §3.3 & 3.4 
-of the IIIF API Specification.
+This project consists of 2 modules:
+
+1. A loader module to parse Europeana Newspaper xml files that are the result of the newspaper OCR process. The relevant
+ data from the xml files is retrieved and stored in a Mongo database.
+2. An API that reads this data from the Mongo database and makes it available via IIIF presentation requests (JSON-LD)
+
+Note that the loader module is dependent on the API module.
+
+
+### Implementation details ###
+
+This Fulltext API implements the functionality described in §3.3 & 3.4 of the Europeana IIIF API Specification.
 
 Version history:
+
+v.0.4-SNAPSHOT
+split into 2 modules
+fix loading bugs (EA-1276, EA-1277)
 
 v.0.3.2-SNAPSHOT
 added more robust error handling
