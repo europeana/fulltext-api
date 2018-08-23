@@ -1,5 +1,7 @@
 package eu.europeana.fulltext.loader;
 
+import eu.europeana.fulltext.loader.config.LoaderSettings;
+import eu.europeana.fulltext.loader.service.LoadArchiveService;
 import eu.europeana.fulltext.loader.service.MongoService;
 import eu.europeana.fulltext.loader.web.LoaderController;
 import org.springframework.boot.SpringApplication;
@@ -19,7 +21,14 @@ import org.springframework.context.annotation.PropertySource;
 public class LoaderApplication extends SpringBootServletInitializer {
 
 	/**
-	 * FulltextService that does the actual work
+	 * Load configuration from loader.properties file
+	 * @return
+	 */
+	@Bean
+	public LoaderSettings settings() { return new LoaderSettings(); }
+
+	/**
+	 * Connection to mongo
 	 * @return
 	 */
 	@Bean
@@ -27,13 +36,21 @@ public class LoaderApplication extends SpringBootServletInitializer {
 		return new MongoService();
 	}
 
+
+	/**
+	 * Service that does the actual work, loading, parsing and sending data to Mongo
+	 */
+	@Bean
+	public LoadArchiveService loadArchiveService() { return new LoadArchiveService(mongoService(), settings());}
+
+
 	/**
 	 * Rest controller that handles all requests
 	 * @return
 	 */
 	@Bean
 	public LoaderController loaderController() {
-		return new LoaderController(mongoService());
+		return new LoaderController(loadArchiveService());
 	}
 
 	/**

@@ -95,7 +95,9 @@ public class ProgressLogger {
      * Return current results
      */
     public String getResults() {
-        return("Processed " +getItemsDone()+" items of expected "+expectedItems+" items. "+itemsFail+" items failed");
+        return("Processed " +getItemsDone()+" items in " +getDurationText(System.currentTimeMillis()-startTime)+
+                " (expected items "+expectedItems+").\n" 
+                +itemsFail+" items failed");
     }
 
     /**

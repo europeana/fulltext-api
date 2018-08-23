@@ -51,9 +51,6 @@ public class LoaderSettings {
     @Value("${batch.base.directory}")
     private String batchBaseDirectory;
 
-    @Value("${mongo.save.mode}")
-    private MongoSaveMode mongoSaveMode;
-
     @Value("${spring.data.mongodb.database}")
     private String mongoDbName;
 
@@ -81,7 +78,5 @@ public class LoaderSettings {
     }
 
     public String getBatchBaseDirectory() { return batchBaseDirectory; }
-
-    public MongoSaveMode getMongoSaveMode() { return mongoSaveMode; }
 
 }

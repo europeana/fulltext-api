@@ -42,10 +42,12 @@ public class LoadFiles extends SimpleFileVisitor<Path> {
     private static final Logger      LOG       = LogManager.getLogger(LoadFiles.class);
 
     private MongoService ftService;
+    private MongoSaveMode saveMode;
     private List<AnnoPageRdf>   apList = null;
 
-    public LoadFiles(MongoService ftService) {
+    public LoadFiles(MongoService ftService, MongoSaveMode saveMode) {
         this.ftService = ftService;
+        this.saveMode = saveMode;
     }
 
     @Override
@@ -69,7 +71,7 @@ public class LoadFiles extends SimpleFileVisitor<Path> {
         if (null != apList){
             if (!apList.isEmpty()){
                 LOG.debug("... batch " + dir.getFileName().toString() + " parsed, saving to MongoDB ...");
-                ftService.saveAPList(apList);
+                ftService.saveAPList(apList, this.saveMode);
                 LOG.info("... done, leaving directory " + dir.getFileName().toString());
                 apList = null;
             } else {

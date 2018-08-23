@@ -17,6 +17,7 @@
 
 package eu.europeana.fulltext.loader.service;
 
+import eu.europeana.fulltext.loader.exception.MissingDataException;
 import eu.europeana.fulltext.loader.model.AnnoPageRdf;
 import eu.europeana.fulltext.loader.model.AnnotationRdf;
 import eu.europeana.fulltext.loader.model.TargetRdf;
@@ -83,12 +84,23 @@ public class XMLXPathParser {
             NodeList        ftNodes  = (NodeList) ftResult;
 
             // note that getTextContent will automatically convert escaped xml characters to their proper value
-            // TODO check with Hugo if we can assume that language and text is always present and always in the same order
             String ftResource = ftNodes.item(0).getAttributes().item(0).getTextContent();
-            assert ftNodes.item(0).getChildNodes().item(1).getNodeName().equalsIgnoreCase("dc:language");
+            if (ftResource == null) {
+                // TODO check with Hugo if there is any point in saving annotations if we don't have a resource
+                throw new MissingDataException("No resource found!");
+            }
+
+            if (!ftNodes.item(0).getChildNodes().item(1).getNodeName().equalsIgnoreCase("dc:language")) {
+                // TODO check with Hugo if we can assume that language and text is always present and always in the same order
+                throw new MissingDataException("No resource dc:language definition found!");
+            }
             String ftLang     = ftNodes.item(0).getChildNodes().item(1).getTextContent();
-            assert ftNodes.item(0).getChildNodes().item(3).getNodeName().equalsIgnoreCase("rdf:value");
+
+            if (!ftNodes.item(0).getChildNodes().item(3).getNodeName().equalsIgnoreCase("rdf:value")) {
+                throw new MissingDataException("No resource rdf:value definition found!");
+            }
             String ftText     = ftNodes.item(0).getChildNodes().item(3).getTextContent();
+
 
             // TODO break this up into submethods
 
@@ -204,7 +216,7 @@ public class XMLXPathParser {
             ap = new AnnoPageRdf(pageId, ftResource, ftText, ftLang, imgTargetBase, pageAnnotationRdf, annoList);
             LogFile.OUT.debug("{} - OK", path);
         } catch (Exception e) {
-            LogFile.OUT.error("{} - Error processing page for resource with URL {} ", pageId, entityText, e);
+            LogFile.OUT.error("{} - Error processing page {} for resource with URL {}.", path, pageId, entityText, e);
         }
         return ap;
     }

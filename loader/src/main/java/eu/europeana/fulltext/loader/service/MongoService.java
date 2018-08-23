@@ -1,7 +1,6 @@
 package eu.europeana.fulltext.loader.service;
 
 import eu.europeana.fulltext.api.entity.AnnoPage;
-import eu.europeana.fulltext.loader.config.LoaderDefinitions;
 import eu.europeana.fulltext.loader.config.LoaderSettings;
 import eu.europeana.fulltext.loader.exception.LoaderException;
 import eu.europeana.fulltext.loader.model.AnnoPageRdf;
@@ -16,9 +15,6 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,7 +38,7 @@ public class MongoService {
     @Autowired
     private LoaderSettings settings;
 
-    public void saveAPList(List<AnnoPageRdf> apList) {
+    public void saveAPList(List<AnnoPageRdf> apList, MongoSaveMode saveMode) {
         LOG.debug("Saving {} annoPages...", apList.size());
         for (AnnoPageRdf annoPageRdf : apList){
             String[] identifiers = StringUtils.split(
@@ -54,7 +50,7 @@ public class MongoService {
                                                    + annoPageRdf.getFtResource() + "'"));
             }
 
-            if (MongoSaveMode.INSERT.equals(settings.getMongoSaveMode())) {
+            if (MongoSaveMode.INSERT.equals(saveMode)) {
                 Resource resource = saveResource(identifiers[2],
                         annoPageRdf.getFtLang(),
                         annoPageRdf.getFtText(),
@@ -67,7 +63,7 @@ public class MongoService {
                         annoPageRdf,
                         resource);
 
-            } else if (MongoSaveMode.UPDATE.equals(settings.getMongoSaveMode())) {
+            } else if (MongoSaveMode.UPDATE.equals(saveMode)) {
                 // TODO to implement
             }
         }
@@ -115,33 +111,6 @@ public class MongoService {
             LogFile.OUT.error("{}/{}/{} - Error saving AnnoPage", dsId, lcId, annoPageRdf.getPageId(), e);
         }
         return result;
-    }
-
-    public String importZipBatch(String archive){
-        LoadArchives la = new LoadArchives(this);
-        String batchBaseDirectory = settings.getBatchBaseDirectory();
-        String zipBatchDir = StringUtils.removeEnd(batchBaseDirectory, "/") + "/";
-        if (StringUtils.equalsIgnoreCase(archive, LoaderDefinitions.ALL_ARCHIVES)){
-            try {
-                Files.walkFileTree(Paths.get(zipBatchDir), la);
-            } catch (IOException e) {
-                LogFile.OUT.error("I/O error occurred reading archives at: " + archive , e);
-            }
-        } else {
-            return LoadArchives.processArchive(zipBatchDir + archive);
-        }
-        return null;
-    }
-
-    public void importBatch(String directory){
-        LoadFiles lf = new LoadFiles(this);
-        String batchDir = settings.getBatchBaseDirectory()
-                          + (StringUtils.isNotBlank(directory) ? "/" + directory : "");
-        try {
-            Files.walkFileTree(Paths.get(batchDir), lf);
-        } catch (IOException e) {
-            LogFile.OUT.error("I/O error occurred reading contents of: " + directory , e);
-        }
     }
 
     private List<eu.europeana.fulltext.api.entity.Annotation> createAnnoList(AnnoPageRdf annoPageRdf, String dataSetId){
