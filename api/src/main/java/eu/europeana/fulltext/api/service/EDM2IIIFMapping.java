@@ -163,7 +163,10 @@ public class EDM2IIIFMapping {
         return new FullTextResource(fts.getResourceBaseUrl()
                                     + resource.getDsId() + "/"
                                     + resource.getLcId() + "/"
-                                    + resource.getId(), resource.getValue());
+                                    + resource.getId(),
+                resource.getLang(),
+                resource.getValue());
+
     }
 
     private static String getResourceIdUrl(AnnoPage annoPage, Annotation annotation){

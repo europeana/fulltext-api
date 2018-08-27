@@ -34,6 +34,7 @@ public class FullTextResource extends JsonLdIdType implements Serializable {
 
     @JsonProperty("@context")
     private String context = MEDIA_TYPE_EDM_JSONLD;
+    private String language;
     private String value;
 
 
@@ -41,10 +42,19 @@ public class FullTextResource extends JsonLdIdType implements Serializable {
         super(id, EDM_FULLTESTRESOURCE_TYPE);
     }
 
-    public FullTextResource(String id, String value) {
+    public FullTextResource(String id, String language, String value) {
         this(id);
+        this.language = language;
         this.value = value;
     }
 
+    public String getLanguage() {
+        return language;
+    }
+
+
+    public String getValue() {
+        return value;
+    }
 }
 

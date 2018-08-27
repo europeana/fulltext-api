@@ -153,6 +153,8 @@ public class FTController {
                            HttpServletRequest request,
                            HttpServletResponse response) throws SerializationException {
 
+        // No support for v2 and v3 yet?
+
         Object resource = null;
         try {
             resource = fts.getFullTextResource(datasetId, recordId, resId);
