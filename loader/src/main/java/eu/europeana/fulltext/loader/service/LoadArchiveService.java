@@ -20,6 +20,7 @@ package eu.europeana.fulltext.loader.service;
 import eu.europeana.fulltext.loader.config.LoaderDefinitions;
 import eu.europeana.fulltext.loader.config.LoaderSettings;
 import eu.europeana.fulltext.loader.exception.ArchiveReadException;
+import eu.europeana.fulltext.loader.exception.LoaderException;
 import eu.europeana.fulltext.loader.model.AnnoPageRdf;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -103,6 +104,9 @@ public class LoadArchiveService extends SimpleFileVisitor<Path> {
 
         LogFile.OUT.info("Processing archive {} with save mode {}", path, saveMode);
         try (ZipFile archive = new ZipFile(path)) {
+
+            // Note that normally size() returns the number of files AND folders in the zip, but for some reason for
+            // newspaper archives it only returns the number of files, so no need to take folders into account
             long size = archive.size();
             LogFile.OUT.info("Archive has {} files", size);
             progressLog.setExpectedItems(size);
@@ -140,20 +144,18 @@ public class LoadArchiveService extends SimpleFileVisitor<Path> {
             }
             pageId = StringUtils.removeEndIgnoreCase(pageId, ".xml");
 
-            // TODO for now we check for null, but we should consider not catching errors in XMLXPathParser
             AnnoPageRdf ap = XMLXPathParser.eatIt(element.getName(), writer.toString(), pageId);
-            if (ap != null) {
-                apList.add(ap);
-                apCounter++;
-                progressLog.addItemOk();
-            } else {
-                LogFile.OUT.error("{} - {} - Failed to process annotationPage", archive.getName(), element.getName());
-                progressLog.addItemFail();
-            }
+            apList.add(ap);
+            apCounter++;
+            progressLog.addItemOk();
         }
-        catch (IOException ex){
+        catch (IOException e){
             progressLog.addItemFail();
-            LogFile.OUT.error("{} - {} - Unable to read file", archive.getName(), element.getName(), ex);
+            LogFile.OUT.error("{} - Unable to read file: {}", element.getName(), getRootCauseMsg(e), e);
+        }
+        catch (LoaderException e) {
+            progressLog.addItemFail();
+            LogFile.OUT.error("{} - Unable to process file: {}", element.getName(), getRootCauseMsg(e), e);
         }
 
         if (apCounter > 99){
@@ -164,6 +166,18 @@ public class LoadArchiveService extends SimpleFileVisitor<Path> {
             apCounter = 0;
         }
         LOG.debug("Done parsing file {} ", element.toString());
+    }
+
+    private String getRootCauseMsg(Throwable e) {
+        String result = null;
+        if (e != null) {
+            if (e.getCause() == null) {
+                result = e.getMessage();
+            } else {
+                result = getRootCauseMsg(e.getCause());
+            }
+        }
+        return result;
     }
 
 }

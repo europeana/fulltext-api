@@ -14,7 +14,7 @@
 
         <File name="fileLogger" fileName="logs/${sys:logFileName}.log">
             <PatternLayout>
-                <pattern>%d %p %C{1.} [%t] %m%n %throwable{short.message}</pattern>
+                <pattern>%d %p %C{1.} - %m %throwable{short.message}%n</pattern>
             </PatternLayout>
         </File>
 

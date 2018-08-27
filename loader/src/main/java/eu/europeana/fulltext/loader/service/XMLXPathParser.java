@@ -17,19 +17,26 @@
 
 package eu.europeana.fulltext.loader.service;
 
+import eu.europeana.fulltext.loader.exception.ArchiveReadException;
+import eu.europeana.fulltext.loader.exception.ConfigurationException;
+import eu.europeana.fulltext.loader.exception.LoaderException;
 import eu.europeana.fulltext.loader.exception.MissingDataException;
+import eu.europeana.fulltext.loader.exception.ParseDocumentException;
 import eu.europeana.fulltext.loader.model.AnnoPageRdf;
 import eu.europeana.fulltext.loader.model.AnnotationRdf;
 import eu.europeana.fulltext.loader.model.TargetRdf;
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.*;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.IOException;
 import java.io.StringReader;
@@ -46,11 +53,13 @@ import java.util.regex.Pattern;
 
 public class XMLXPathParser {
 
+    private static final XPathFactory X_PATH_FACTORY = XPathFactory.newInstance();
+
     private static final String CHARPOS    = "#char=";
     private static final String XYWHPOS    = "#xywh=";
     private static final String PAGEDCTYPE = "Page";
 
-    public static AnnoPageRdf eatIt(Path path) {
+    public static AnnoPageRdf eatIt(Path path) throws LoaderException {
         return eatIt(path.toString(), readFileContents(path), StringUtils.split(path.getFileName().toString(), '.')[0]);
     }
 
@@ -61,167 +70,165 @@ public class XMLXPathParser {
      * @param pageId
      * @return
      */
-    public static AnnoPageRdf eatIt(String path, String xmlString, String pageId) {
-        String entityText = null;
-        AnnoPageRdf ap = null;
+    public static AnnoPageRdf eatIt(String path, String xmlString, String pageId) throws LoaderException {
+        Document document = parseXml(xmlString);
+        String internalSubset = (document).getDoctype().getInternalSubset();
 
-        try {
-            DocumentBuilderFactory factory  = DocumentBuilderFactory.newInstance();
-            DocumentBuilder        builder  = factory.newDocumentBuilder();
-            Document               document = builder.parse(new InputSource(new StringReader(xmlString)));
+        String entityImage = readEntityString("img", internalSubset);
+        String entityText = readEntityString("text", internalSubset);
 
-            String internalSubset = (document).getDoctype().getInternalSubset();
-
-            String imgTargetBase = readEntityString("img", internalSubset);
-            entityText = readEntityString("text", internalSubset);
-
-            XPathFactory xPathfactory = XPathFactory.newInstance();
-            factory.setNamespaceAware(true);
-            XPath ftXpath = xPathfactory.newXPath();
-
-            XPathExpression ftExpr   = ftXpath.compile("//*[local-name()='FullTextResource']");
-            Object          ftResult = ftExpr.evaluate(document, XPathConstants.NODESET);
-            NodeList        ftNodes  = (NodeList) ftResult;
-
-            // note that getTextContent will automatically convert escaped xml characters to their proper value
-            String ftResource = ftNodes.item(0).getAttributes().item(0).getTextContent();
-            if (ftResource == null) {
-                // TODO check with Hugo if there is any point in saving annotations if we don't have a resource
-                throw new MissingDataException("No resource found!");
-            }
-
-            if (!ftNodes.item(0).getChildNodes().item(1).getNodeName().equalsIgnoreCase("dc:language")) {
-                // TODO check with Hugo if we can assume that language and text is always present and always in the same order
-                throw new MissingDataException("No resource dc:language definition found!");
-            }
-            String ftLang     = ftNodes.item(0).getChildNodes().item(1).getTextContent();
-
-            if (!ftNodes.item(0).getChildNodes().item(3).getNodeName().equalsIgnoreCase("rdf:value")) {
-                throw new MissingDataException("No resource rdf:value definition found!");
-            }
-            String ftText     = ftNodes.item(0).getChildNodes().item(3).getTextContent();
-
-
-            // TODO break this up into submethods
-
-            XPath           anXpath  = xPathfactory.newXPath();
-            XPathExpression anExpr   = anXpath.compile("//*[local-name()='Annotation']");
-            Object          anResult = anExpr.evaluate(document, XPathConstants.NODESET);
-            NodeList        aNodes   = (NodeList) anResult;
-
-            List<AnnotationRdf> annoList          = new ArrayList<>();
-            AnnotationRdf pageAnnotationRdf = null;
-
-            for (int i = 0; i < aNodes.getLength(); i++) {
-                boolean         annotationError  = false;
-                boolean         isPageAnnotation = false;
-                Node            aNode            = aNodes.item(i);
-                String          id               = "";
-                String          dcType           = "";
-                String          motiv            = "";
-                String          specRes          = "";
-                String          resource         = "";
-                String          resLang          = "";
-                List<TargetRdf> targetRdfList    = new ArrayList<>();
-
-                id = StringUtils.removeStart(aNode.getAttributes().item(0).getTextContent(), "/");
-
-                if (aNode.getNodeType() == Node.ELEMENT_NODE) {
-                    Element anElement = (Element) aNode;
-                    dcType = anElement.getElementsByTagName("dc:type").item(0).getTextContent();
-                    motiv = anElement.getElementsByTagName("oa:motivatedBy")
-                                     .item(0)
-                                     .getAttributes()
-                                     .item(0)
-                                     .getNodeValue();
-
-                    Node bodyNode = anElement.getElementsByTagName("oa:hasBody").item(0);
-
-                    if (StringUtils.equalsIgnoreCase(dcType, PAGEDCTYPE)) {
-                        isPageAnnotation = true;
-                        resource = anElement.getElementsByTagName("oa:hasBody")
-                                            .item(0)
-                                            .getAttributes()
-                                            .item(0)
-                                            .getNodeValue();
-                    } else if (bodyNode.getNodeType() == Node.ELEMENT_NODE) {
-                        Element bodyElement = (Element) bodyNode;
-                        if (bodyElement.getElementsByTagName("oa:SpecificResource").getLength() == 0){
-                            resource = anElement.getElementsByTagName("oa:hasBody")
-                                                .item(0)
-                                                .getAttributes()
-                                                .item(0)
-                                                .getNodeValue();
-                            specRes = resource; // in case of 'bodyless' Annotations, make these two equal
-
-                        } else {
-                            specRes = bodyElement.getElementsByTagName("oa:SpecificResource")
-                                                 .item(0)
-                                                 .getAttributes()
-                                                 .item(0)
-                                                 .getNodeValue();
-
-                            Node specResNode = bodyElement.getElementsByTagName("oa:SpecificResource").item(0);
-                            if (specResNode.getNodeType() == Node.ELEMENT_NODE) {
-                                Element specResElement = (Element) specResNode;
-                                resource = specResElement.getElementsByTagName("oa:hasSource")
-                                                         .item(0)
-                                                         .getAttributes()
-                                                         .item(0)
-                                                         .getNodeValue();
-                                if (specResElement.getElementsByTagName("dc:language").getLength() > 0){
-                                    resLang = specResElement.getElementsByTagName("dc:language")
-                                                             .item(0)
-                                                             .getTextContent();
-                                }
-                            }
-                        }
-                    }
-
-                    NodeList targetNodes = anElement.getElementsByTagName("oa:hasTarget");
-                    for (int j = 0; j < targetNodes.getLength(); j++) {
-                        Node targetNode = targetNodes.item(j);
-                        if (targetNode.getNodeType() == Node.ELEMENT_NODE) {
-                            Element targetElement = (Element) targetNode;
-                            if (!isPageAnnotation) {
-                                try {
-                                    targetRdfList.add(createTarget(targetElement.getAttributes().item(0).getNodeValue()));
-                                } catch (ArrayIndexOutOfBoundsException | DOMException e) {
-                                    annotationError = true;
-                                    LogFile.OUT.error("{} - Error processing Image Target for Annotation {} for resource with URL {}. "
-                                            + "Skipping annotation", path, id, entityText, e);
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-                if (!annotationError){
-                    if (isPageAnnotation) {
-                        if (StringUtils.isNotBlank(resLang)){
-                            pageAnnotationRdf = new AnnotationRdf(id, dcType, motiv, resLang, targetRdfList);
-                        } else {
-                            pageAnnotationRdf = new AnnotationRdf(id, dcType, motiv, targetRdfList);
-                        }
-                    } else {
-                        if (StringUtils.isNotBlank(resLang)){
-                            annoList.add(createAnnotation(specRes, id, dcType, motiv, resLang, resource, targetRdfList));
-                        } else {
-                            annoList.add(createAnnotation(specRes, id, dcType, motiv, resource, targetRdfList));
-                        }
-                    }
-                }
-            }
-
-            ap = new AnnoPageRdf(pageId, ftResource, ftText, ftLang, imgTargetBase, pageAnnotationRdf, annoList);
-            LogFile.OUT.debug("{} - OK", path);
-        } catch (Exception e) {
-            LogFile.OUT.error("{} - Error processing page {} for resource with URL {}.", path, pageId, entityText, e);
+        NodeList ftNodes = getNodes(document, "FullTextResource");
+        // note that getTextContent will automatically convert escaped xml characters to their proper value
+        String ftResource = ftNodes.item(0).getAttributes().item(0).getTextContent();
+        if (ftResource == null) {
+            // TODO check with Hugo if there is any point in saving annotations if we don't have a resource
+            throw new MissingDataException("No resource found!");
         }
-        return ap;
+
+        if (!ftNodes.item(0).getChildNodes().item(1).getNodeName().equalsIgnoreCase("dc:language")) {
+            // TODO check with Hugo if we can assume that language and text is always present and always in the same order
+            throw new MissingDataException("No resource dc:language definition found!");
+        }
+        String ftLang     = ftNodes.item(0).getChildNodes().item(1).getTextContent();
+
+        if (!ftNodes.item(0).getChildNodes().item(3).getNodeName().equalsIgnoreCase("rdf:value")) {
+            throw new MissingDataException("No resource rdf:value definition found!");
+        }
+        String ftText     = ftNodes.item(0).getChildNodes().item(3).getTextContent();
+
+
+        // TODO break this up into submethods for better readability and understandability
+
+        NodeList aNodes = getNodes(document, "Annotation");
+        List<AnnotationRdf> annoList    = new ArrayList<>();
+        AnnotationRdf pageAnnotationRdf = null;
+
+        for (int i = 0; i < aNodes.getLength(); i++) {
+            boolean         hasTargetError  = false;
+            boolean         isPageAnnotation = false;
+            Node            aNode            = aNodes.item(i);
+            String          id               = "";
+            String          dcType           = "";
+            String          motiv            = "";
+            String          specRes          = "";
+            String          resource         = "";
+            String          resLang          = "";
+            List<TargetRdf> targetRdfList    = new ArrayList<>();
+
+            id = StringUtils.removeStart(aNode.getAttributes().item(0).getTextContent(), "/");
+
+            if (aNode.getNodeType() == Node.ELEMENT_NODE) {
+                Element anElement = (Element) aNode;
+                dcType = anElement.getElementsByTagName("dc:type").item(0).getTextContent();
+                motiv = getAttributeValue(anElement, "oa:motivatedBy");
+
+                Node bodyNode = anElement.getElementsByTagName("oa:hasBody").item(0);
+
+                if (StringUtils.equalsIgnoreCase(dcType, PAGEDCTYPE)) {
+                    isPageAnnotation = true;
+                    resource =  getAttributeValue(anElement, "oa:hasBody");
+                } else if (bodyNode.getNodeType() == Node.ELEMENT_NODE) {
+                    Element bodyElement = (Element) bodyNode;
+                    if (bodyElement.getElementsByTagName("oa:SpecificResource").getLength() == 0){
+                        resource =  getAttributeValue(anElement, "oa:hasBody");
+                        specRes = resource; // in case of 'bodyless' Annotations, make these two equal
+
+                    } else {
+                        specRes =  getAttributeValue(bodyElement, "oa:SpecificResource");
+
+                        Node specResNode = bodyElement.getElementsByTagName("oa:SpecificResource").item(0);
+                        if (specResNode.getNodeType() == Node.ELEMENT_NODE) {
+                            Element specResElement = (Element) specResNode;
+                            resource =  getAttributeValue(specResElement, ("oa:hasSource"));
+                            if (specResElement.getElementsByTagName("dc:language").getLength() > 0){
+                                resLang = specResElement.getElementsByTagName("dc:language")
+                                                         .item(0)
+                                                         .getTextContent();
+                            }
+                        }
+                    }
+                }
+
+                NodeList targetNodes = anElement.getElementsByTagName("oa:hasTarget");
+                for (int j = 0; j < targetNodes.getLength(); j++) {
+                    Node targetNode = targetNodes.item(j);
+                    if (targetNode.getNodeType() == Node.ELEMENT_NODE) {
+                        Element targetElement = (Element) targetNode;
+                        if (!isPageAnnotation) {
+                            String url = targetElement.getAttributes().item(0).getNodeValue();
+                            try {
+                                targetRdfList.add(createTarget(url));
+                            } catch (MissingDataException e) {
+                                // non-fatal error, so we skip only this annotation and continue with the rest in the file
+                                hasTargetError = true;
+                                // no need to log full error stacktrace, message is sufficient
+                                LogFile.OUT.error("{} - Skipping annotation with id {} because {}", path, id, e.getMessage());
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!hasTargetError){
+                if (isPageAnnotation) {
+                    if (StringUtils.isNotBlank(resLang)){
+                        pageAnnotationRdf = new AnnotationRdf(id, dcType, motiv, resLang, targetRdfList);
+                    } else {
+                        pageAnnotationRdf = new AnnotationRdf(id, dcType, motiv, targetRdfList);
+                    }
+                } else {
+                    if (StringUtils.isNotBlank(resLang)){
+                        annoList.add(createAnnotation(specRes, id, dcType, motiv, resLang, resource, targetRdfList));
+                    } else {
+                        annoList.add(createAnnotation(specRes, id, dcType, motiv, resource, targetRdfList));
+                    }
+                }
+            }
+        }
+
+        LogFile.OUT.debug("{} - OK", path);
+        return new AnnoPageRdf(pageId, ftResource, ftText, ftLang, entityImage, pageAnnotationRdf, annoList);
     }
 
-    private static TargetRdf createTarget(String url) {
+    private static Document parseXml(String xmlString) throws LoaderException {
+        Document result;
+        try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setNamespaceAware(true);
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            result = builder.parse(new InputSource(new StringReader(xmlString)));
+        } catch (ParserConfigurationException e) {
+            throw new ConfigurationException("Error creating xml document", e);
+        } catch (IOException e) {
+            throw new ArchiveReadException("Error reading xml file", e);
+        } catch (SAXException e) {
+            throw new ParseDocumentException("Error parsing document", e);
+        }
+        return result;
+    }
+
+    private static NodeList getNodes(Document document, String localName) throws LoaderException {
+        XPath ftXpath = X_PATH_FACTORY.newXPath();
+        NodeList result;
+        try {
+            XPathExpression ftExpr = ftXpath.compile("//*[local-name()='"+localName+"']");
+            Object ftResult = ftExpr.evaluate(document, XPathConstants.NODESET);
+            result  = (NodeList) ftResult;
+        } catch (XPathExpressionException e) {
+            throw new ParseDocumentException("Error reading "+localName+" data");
+        }
+        return result;
+    }
+
+    private static String getAttributeValue(Element element, String elementName) {
+        return element.getElementsByTagName(elementName).item(0).getAttributes().item(0).getNodeValue();
+    }
+
+    private static TargetRdf createTarget(String url) throws MissingDataException {
+        if (url == null || !url.contains(XYWHPOS)) {
+            throw new MissingDataException("no "+XYWHPOS+" defined in url "+url);
+        }
         Integer x = Integer.parseInt(StringUtils.split(StringUtils.splitByWholeSeparator(url, XYWHPOS)[1], ",")[0]);
         Integer y = Integer.parseInt(StringUtils.split(StringUtils.splitByWholeSeparator(url, XYWHPOS)[1], ",")[1]);
         Integer w = Integer.parseInt(StringUtils.split(StringUtils.splitByWholeSeparator(url, XYWHPOS)[1], ",")[2]);

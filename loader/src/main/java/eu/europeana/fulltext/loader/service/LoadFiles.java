@@ -17,6 +17,7 @@
 
 package eu.europeana.fulltext.loader.service;
 
+import eu.europeana.fulltext.loader.exception.LoaderException;
 import eu.europeana.fulltext.loader.model.AnnoPageRdf;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -60,7 +61,11 @@ public class LoadFiles extends SimpleFileVisitor<Path> {
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attr) {
         if (file.getFileName().toString().endsWith("xml")){
-            apList.add(XMLXPathParser.eatIt(file));
+            try {
+                apList.add(XMLXPathParser.eatIt(file));
+            } catch (LoaderException e) {
+                LogFile.OUT.error("{} - Error processing xml file", file, e);
+            }
             LOG.debug("processed: " + file.getFileName().toString());
         }
         return CONTINUE;
