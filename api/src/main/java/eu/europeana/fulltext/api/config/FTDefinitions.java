@@ -42,7 +42,7 @@ public class FTDefinitions {
     /**
      * Media type used in @context tag of Fulltext Resource
      */
-    public static final String MEDIA_TYPE_EDM_JSONLD  = "http://iiif.io/api/presentation/3/context.json";
+    public static final String MEDIA_TYPE_EDM_JSONLD  = "https://www.europeana.eu/schemas/context/edm.jsonld";
 
     /**
      * Default Content-type returned on manifest requests for version 3
