@@ -60,6 +60,11 @@ public class LoaderApplication extends SpringBootServletInitializer {
 	@SuppressWarnings("squid:S2095") // to avoid sonarqube false positive (see https://stackoverflow.com/a/37073154/741249)
 	public static void main(String[] args)  {
 		System.setProperty("logFileName", "application");
+
+		// WARNING: we need to set a bigger entity expension limit because we have xml files with lots of entities.
+		// For now we set it to 0 to disable any limit, but this makes us vulnerable to XML DDos attacks
+		// See also https://stackoverflow.com/a/20482332
+		System.setProperty("jdk.xml.entityExpansionLimit", "0");
 		SpringApplication.run(LoaderApplication.class, args);
 	}
 

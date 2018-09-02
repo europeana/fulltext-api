@@ -96,7 +96,7 @@ public class ProgressLogger {
      */
     public String getResults() {
         return("Processed " +getItemsDone()+" files in " +getDurationText(System.currentTimeMillis()-startTime)+
-                " (expected "+expectedItems+"files). " +itemsFail+" files were skipped");
+                " (expected "+expectedItems+" files). " +itemsFail+" files were skipped");
     }
 
     /**

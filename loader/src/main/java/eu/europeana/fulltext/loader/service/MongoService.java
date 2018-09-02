@@ -84,7 +84,7 @@ public class MongoService {
         try{
             result = new Resource(id, lang, value, dsId, lcId);
             result = resourceRepository.save(result);
-            LOG.debug("{}/{} - resource saved with id", dsId, lcId, id);
+            LOG.info("{}/{} - resource saved with id {}", dsId, lcId, id);
         } catch (Exception e){
             LogFile.OUT.error("{}/{} - Error saving resource with id {}", dsId, lcId, id, e);
         }
