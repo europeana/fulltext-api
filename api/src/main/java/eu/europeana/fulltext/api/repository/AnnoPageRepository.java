@@ -15,9 +15,9 @@
  *  the Licence.
  */
 
-package eu.europeana.fulltext.repository;
+package eu.europeana.fulltext.api.repository;
 
-import eu.europeana.fulltext.entity.AnnoPage;
+import eu.europeana.fulltext.api.entity.AnnoPage;
 import org.springframework.data.mongodb.repository.CountQuery;
 import org.springframework.data.mongodb.repository.ExistsQuery;
 import org.springframework.data.mongodb.repository.MongoRepository;

@@ -155,8 +155,30 @@ public class FTService {
         }
     }
 
-    public boolean doesAnnoPageNotExist(String datasetId, String localId, String annoId){
-        return annoPageRepository.findByDatasetLocalAndPageId(datasetId, localId, annoId).isEmpty();
+    @Deprecated // keeping this temporarily for testing speed (EA-1239)
+    public boolean doesAnnoPageExist_findNotEmpty(String datasetId, String localId, String annoId){
+        return !annoPageRepository.findByDatasetLocalAndPageId(datasetId, localId, annoId).isEmpty();
+    }
+
+    @Deprecated // keeping this temporarily for testing speed (EA-1239)
+    public boolean doesAnnoPageExist_findOneNotNull(String datasetId, String localId, String annoId){
+        return annoPageRepository.findOneWithId(datasetId, localId, annoId) != null;
+    }
+
+    /**
+     * Check if a particular annotation page with the provided ids exists or not
+     * @param datasetId
+     * @param localId
+     * @param annoId
+     * @return true if it exists, otherwise false
+     */
+    public boolean doesAnnoPageExist_exists(String datasetId, String localId, String annoId){
+        return annoPageRepository.existsWithId(datasetId, localId, annoId);
+    }
+
+    @Deprecated // keeping this temporarily for testing speed (EA-1239)
+    public boolean doesAnnoPageExist_countNotZero(String datasetId, String localId, String annoId){
+        return annoPageRepository.countWithId(datasetId, localId, annoId) > 0;
     }
 
     private AnnotationPageV3 generateAnnoPageV3(eu.europeana.fulltext.api.entity.AnnoPage annoPage){
