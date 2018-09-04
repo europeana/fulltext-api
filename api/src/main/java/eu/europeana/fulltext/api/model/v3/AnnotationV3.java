@@ -33,7 +33,8 @@ public class AnnotationV3 extends JsonLdIdType implements Serializable {
     private static final long serialVersionUID = 8849251970656404497L;
 
     @JsonProperty("@context")
-    private String context;
+    // note that we only set context for a single annotation and not for an array of annotations part of an annotationpage
+    private String[] context;
     private String           motivation;
     private String           dcType;
     private AnnotationBodyV3 body;
@@ -43,11 +44,11 @@ public class AnnotationV3 extends JsonLdIdType implements Serializable {
         super(id, V3_ANNOTATION_TYPE);
     }
 
-    public String getContext() {
+    public String[] getContext() {
         return context;
     }
 
-    public void setContext(String context) {
+    public void setContext(String[] context) {
         this.context = context;
     }
 

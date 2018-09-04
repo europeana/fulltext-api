@@ -81,7 +81,7 @@ public class EDM2IIIFMapping {
         String       resourceIdUrl  = getResourceIdUrl(annoPage, annotation);
         AnnotationV2 ann            = new AnnotationV2(getAnnotationIdUrl(annoPage, annotation));
         if (addContext){
-            ann.setContext(MEDIA_TYPE_IIIF_V2);
+            ann.setContext(new String[]{MEDIA_TYPE_IIIF_V2, MEDIA_TYPE_EDM_JSONLD});
         }
         ann.setMotivation(StringUtils.isNotBlank(annotation.getMotiv()) ? annotation.getMotiv() : V2_MOTIVATION);
         ann.setDcType(expandDCType(annotation.getDcType()));
@@ -117,7 +117,7 @@ public class EDM2IIIFMapping {
         AnnotationV3 ann  = new AnnotationV3(getAnnotationIdUrl(annoPage, annotation));
         AnnotationBodyV3 anb;
         if (addContext){
-            ann.setContext(MEDIA_TYPE_IIIF_V3);
+            ann.setContext(new String[]{MEDIA_TYPE_IIIF_V3, MEDIA_TYPE_EDM_JSONLD});
         }
         ann.setMotivation(StringUtils.isNotBlank(annotation.getMotiv()) ? annotation.getMotiv() : V3_MOTIVATION);
         ann.setDcType(expandDCType(annotation.getDcType()));
