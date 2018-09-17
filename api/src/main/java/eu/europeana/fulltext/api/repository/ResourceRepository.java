@@ -18,6 +18,7 @@
 package eu.europeana.fulltext.api.repository;
 
 import eu.europeana.fulltext.api.entity.Resource;
+import org.springframework.data.mongodb.repository.DeleteQuery;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
@@ -42,4 +43,11 @@ public interface ResourceRepository extends MongoRepository<Resource, String> {
     @Query("{'dsId':'?0', 'lcId':'?1', 'id':'?2'}")
     List<Resource> findByDatasetLocalAndResId(String datasetId, String localId, String resId);
 
+    /**
+     * Deletes all resources part of a particular dataset
+     * @param datasetId
+     * @return the number of deleted resources
+     */
+    @DeleteQuery("{'dsId':'?0'}")
+    long deleteDataset(String datasetId);
 }

@@ -48,12 +48,14 @@ public class LoadArchiveService extends SimpleFileVisitor<Path> {
 
     private static final Logger      LOG       = LogManager.getLogger(LoadArchiveService.class);
 
+    private XMLParserService parser;
     private MongoService mongoService;
     private LoaderSettings settings;
     private int               apCounter = 0;
     private List<AnnoPageRdf> apList    = new ArrayList<>();
 
-    public LoadArchiveService(MongoService mongoService, LoaderSettings settings) {
+    public LoadArchiveService(XMLParserService parser, MongoService mongoService, LoaderSettings settings) {
+        this.parser = parser;
         this.mongoService = mongoService;
         this.settings = settings;
     }
@@ -82,7 +84,7 @@ public class LoadArchiveService extends SimpleFileVisitor<Path> {
     }
 
     public String importBatch(String directory, MongoSaveMode saveMode) {
-        LoadFiles lf = new LoadFiles(mongoService, saveMode);
+        LoadFiles lf = new LoadFiles(parser, mongoService, saveMode, settings);
         String batchDir = settings.getBatchBaseDirectory()
                 + (StringUtils.isNotBlank(directory) ? "/" + directory : "");
         try {
@@ -100,9 +102,9 @@ public class LoadArchiveService extends SimpleFileVisitor<Path> {
      */
     public String processArchive(String path, MongoSaveMode saveMode) throws ArchiveReadException {
         LogFile.setFileName(path);
-        ProgressLogger progressLog = new ProgressLogger(30);
-
         LogFile.OUT.info("Processing archive {} with save mode {}", path, saveMode);
+
+        ProgressLogger progressLog = new ProgressLogger(30);
         try (ZipFile archive = new ZipFile(path)) {
 
             // Note that normally size() returns the number of files AND folders in the zip, but for some reason for
@@ -136,7 +138,7 @@ public class LoadArchiveService extends SimpleFileVisitor<Path> {
     private void parseArchiveFile(ZipEntry element, ZipFile archive, ProgressLogger progressLog, MongoSaveMode saveMode) {
         LOG.debug("Parsing file {} ", element.getName());
         try (InputStream  inputStream = archive.getInputStream(element);
-             StringWriter writer      = new StringWriter()) {
+            StringWriter writer      = new StringWriter()) {
             IOUtils.copy(inputStream, writer, "UTF-8");
             String pageId = element.getName();
             if (StringUtils.contains(element.toString(), "/")) {
@@ -144,7 +146,7 @@ public class LoadArchiveService extends SimpleFileVisitor<Path> {
             }
             pageId = StringUtils.removeEndIgnoreCase(pageId, ".xml");
 
-            AnnoPageRdf ap = XMLXPathParser.eatIt(element.getName(), writer.toString(), pageId);
+            AnnoPageRdf ap = parser.eatIt(element.getName(), writer.toString(), pageId);
             apList.add(ap);
             apCounter++;
             progressLog.addItemOk();

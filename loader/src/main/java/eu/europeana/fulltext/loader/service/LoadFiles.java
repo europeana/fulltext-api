@@ -17,6 +17,7 @@
 
 package eu.europeana.fulltext.loader.service;
 
+import eu.europeana.fulltext.loader.config.LoaderSettings;
 import eu.europeana.fulltext.loader.exception.LoaderException;
 import eu.europeana.fulltext.loader.model.AnnoPageRdf;
 import org.apache.logging.log4j.LogManager;
@@ -42,13 +43,17 @@ public class LoadFiles extends SimpleFileVisitor<Path> {
 
     private static final Logger      LOG       = LogManager.getLogger(LoadFiles.class);
 
+    private XMLParserService parser;
     private MongoService ftService;
     private MongoSaveMode saveMode;
+    private LoaderSettings settings;
     private List<AnnoPageRdf>   apList = null;
 
-    public LoadFiles(MongoService ftService, MongoSaveMode saveMode) {
+    public LoadFiles(XMLParserService parser, MongoService ftService, MongoSaveMode saveMode, LoaderSettings settings) {
+        this.parser = parser;
         this.ftService = ftService;
         this.saveMode = saveMode;
+        this.settings = settings;
     }
 
     @Override
@@ -62,7 +67,7 @@ public class LoadFiles extends SimpleFileVisitor<Path> {
     public FileVisitResult visitFile(Path file, BasicFileAttributes attr) {
         if (file.getFileName().toString().endsWith("xml")){
             try {
-                apList.add(XMLXPathParser.eatIt(file));
+                apList.add(parser.eatIt(file));
             } catch (LoaderException e) {
                 LogFile.OUT.error("{} - Error processing xml file", file, e);
             }

@@ -6,5 +6,5 @@ package eu.europeana.fulltext.loader.service;
  */
 public enum MongoSaveMode {
 
-    NONE, INSERT, UPDATE
+    NONE, INSERT
 }

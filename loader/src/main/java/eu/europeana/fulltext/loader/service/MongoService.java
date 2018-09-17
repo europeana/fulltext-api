@@ -1,8 +1,6 @@
 package eu.europeana.fulltext.loader.service;
 
 import eu.europeana.fulltext.api.entity.AnnoPage;
-import eu.europeana.fulltext.loader.config.LoaderSettings;
-import eu.europeana.fulltext.loader.exception.LoaderException;
 import eu.europeana.fulltext.loader.model.AnnoPageRdf;
 import eu.europeana.fulltext.api.entity.Resource;
 import eu.europeana.fulltext.api.repository.AnnoPageRepository;
@@ -19,15 +17,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
- *
  * @author Lúthien
  * Created on 27-02-2018
  */
 @Service
+
 public class MongoService {
 
-    private static final Logger LOG      = LogManager.getLogger(MongoService.class);
+    private static final Logger LOG = LogManager.getLogger(MongoService.class);
 
     @Autowired
     ResourceRepository resourceRepository;
@@ -35,36 +32,18 @@ public class MongoService {
     @Autowired
     AnnoPageRepository annoPageRepository;
 
-    @Autowired
-    private LoaderSettings settings;
 
     public void saveAPList(List<AnnoPageRdf> apList, MongoSaveMode saveMode) {
         LOG.debug("Saving {} annoPages...", apList.size());
         for (AnnoPageRdf annoPageRdf : apList){
-            String[] identifiers = StringUtils.split(
-                    StringUtils.removeStartIgnoreCase(annoPageRdf.getFtResource(), settings.getResourceBaseUrl()), '/');
-            if (identifiers.length > 3){
-                LogFile.OUT.error("Configuration mismatch error occurred", new LoaderException("Please check Resource Base URL settings in properties file: '"
-                                                   + settings.getResourceBaseUrl()
-                                                   + "', making sure that it matches with the 'ENTITY text' value found in import file: '"
-                                                   + annoPageRdf.getFtResource() + "'"));
-            }
 
             if (MongoSaveMode.INSERT.equals(saveMode)) {
-                Resource resource = saveResource(identifiers[2],
+                Resource resource = saveResource(annoPageRdf.getResourceId(),
                         annoPageRdf.getFtLang(),
                         annoPageRdf.getFtText(),
-                        identifiers[0],
-                        identifiers[1]);
-
-                // TODO ask Hugo, is there any point in saving an annoPage if the resource wasn't saved properly
-                saveAnnoPage(identifiers[0],
-                        identifiers[1],
-                        annoPageRdf,
-                        resource);
-
-            } else if (MongoSaveMode.UPDATE.equals(saveMode)) {
-                // TODO to implement
+                        annoPageRdf.getDatasetId(),
+                        annoPageRdf.getLocalId());
+                saveAnnoPage(annoPageRdf, resource);
             }
         }
         LOG.debug("Saving done.");
@@ -92,25 +71,45 @@ public class MongoService {
     }
 
     /**
+     * Deletes all resources that belong to a particular dataset
+     * @param datasetId
+     * @return the number of deleted resources
+     */
+    public long deleteAllResources(String datasetId) {
+        return resourceRepository.deleteDataset(datasetId);
+    }
+
+    /**
      * Saves an AnnoPage object to the database with embedded Annotations and linking to a resource
-     * @param dsId
-     * @param lcId
      * @param annoPageRdf
      * @param res
      * @return the saved AnnoPage object
      */
-    public AnnoPage saveAnnoPage(String dsId, String lcId, AnnoPageRdf annoPageRdf, Resource res) {
+    public AnnoPage saveAnnoPage(AnnoPageRdf annoPageRdf, Resource res) {
         AnnoPage result = null;
         try{
-            result =  new eu.europeana.fulltext.api.entity.AnnoPage(dsId, lcId,
-                    annoPageRdf.getPageId(), annoPageRdf.getImgTargetBase(), res);
-            result.setAns(createAnnoList(annoPageRdf, dsId));
+            result = new eu.europeana.fulltext.api.entity.AnnoPage(
+                    annoPageRdf.getDatasetId(),
+                    annoPageRdf.getLocalId(),
+                    annoPageRdf.getPageId(),
+                    annoPageRdf.getImgTargetBase(),
+                    res);
+            result.setAns(createAnnoList(annoPageRdf, annoPageRdf.getDatasetId()));
             result = annoPageRepository.save(result);
             LOG.debug("{}/{}/{} annopage saved");
         } catch (Exception e){
-            LogFile.OUT.error("{}/{}/{} - Error saving AnnoPage", dsId, lcId, annoPageRdf.getPageId(), e);
+            LogFile.OUT.error("{}/{}/{} - Error saving AnnoPage", annoPageRdf.getDatasetId(), annoPageRdf.getLocalId(), annoPageRdf.getPageId(), e);
         }
         return result;
+    }
+
+    /**
+     * Deletes all annotation pages that belong to a particular dataset
+     * @param datasetId
+     * @return the number of deleted annopages
+     */
+    public long deleteAllAnnoPages(String datasetId) {
+        return annoPageRepository.deleteDataset(datasetId);
     }
 
     private List<eu.europeana.fulltext.api.entity.Annotation> createAnnoList(AnnoPageRdf annoPageRdf, String dataSetId){
