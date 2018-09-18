@@ -58,28 +58,6 @@ public class FTSettings {
     @Value("${annotation.directory}")
     private String annotationDirectory;
 
-    @Value("${spring.data.mongodb.database}")
-    private String mongoDbName;
-
-    @Value("${spring.data.mongodb.host}")
-    private String mongoHost;
-
-
-    @Autowired
-    MongoDbFactory      mongoDbFactory;
-
-    @Autowired
-    MongoMappingContext mongoMappingContext;
-
-    @Bean
-    public MappingMongoConverter mappingMongoConverter() {
-
-        DbRefResolver         dbRefResolver = new DefaultDbRefResolver(mongoDbFactory);
-        MappingMongoConverter converter     = new MappingMongoConverter(dbRefResolver, mongoMappingContext);
-        converter.setTypeMapper(new DefaultMongoTypeMapper(null));
-        return converter;
-    }
-
     /**
      * For production we want to suppress exceptions that arise from parsing record data, but for testing/debugging we
      * want to see those exceptions

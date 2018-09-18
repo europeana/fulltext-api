@@ -40,12 +40,6 @@ public class LoaderSettings {
     @Value("${batch.base.directory}")
     private String batchBaseDirectory;
 
-    @Value("${spring.data.mongodb.database}")
-    private String mongoDbName;
-
-    @Value("${spring.data.mongodb.host}")
-    private String mongoHost;
-
     public String getResourceBaseUrl() {
         return resourceBaseUrl;
     }

@@ -21,7 +21,6 @@ import java.util.List;
  * Created on 27-02-2018
  */
 @Service
-
 public class MongoService {
 
     private static final Logger LOG = LogManager.getLogger(MongoService.class);
@@ -63,7 +62,7 @@ public class MongoService {
         try{
             result = new Resource(id, lang, value, dsId, lcId);
             result = resourceRepository.save(result);
-            LOG.info("{}/{} - resource saved with id {}", dsId, lcId, id);
+            LOG.debug("{}/{} - resource saved with id {}", dsId, lcId, id);
         } catch (Exception e){
             LogFile.OUT.error("{}/{} - Error saving resource with id {}", dsId, lcId, id, e);
         }
