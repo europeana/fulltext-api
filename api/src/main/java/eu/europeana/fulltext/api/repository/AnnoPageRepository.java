@@ -19,6 +19,7 @@ package eu.europeana.fulltext.api.repository;
 
 import eu.europeana.fulltext.api.entity.AnnoPage;
 import org.springframework.data.mongodb.repository.CountQuery;
+import org.springframework.data.mongodb.repository.DeleteQuery;
 import org.springframework.data.mongodb.repository.ExistsQuery;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
@@ -51,6 +52,14 @@ public interface AnnoPageRepository extends MongoRepository<AnnoPage, String> {
 
     @Query("{'dsId':'?0', 'lcId':'?1', 'ans.anId':'?2'}")
     List<AnnoPage> findByDatasetLocalAndAnnoId(String datasetId, String localId, String annoId);
+
+    /**
+     * Deletes all annotation pages part of a particular dataset
+     * @param datasetId
+     * @return the number of deleted annotation pages
+     */
+    @DeleteQuery("{'dsId':'?0'}")
+    long deleteDataset(String datasetId);
 
 
 }

@@ -24,29 +24,45 @@ import java.util.List;
  */
 
 public class AnnoPageRdf {
+    private String              resourceId;
+    private String              datasetId;
+    private String              localId;
     private String              pageId;
-    private String              ftResource;
     private String              ftText;
     private String              ftLang;
     private String              imgTargetBase;
     private AnnotationRdf pageAnnotationRdf;
     private List<AnnotationRdf> annotationRdfList;
 
+    public AnnoPageRdf(String datasetId, String localId, String resourceId, String pageId) {
+        this.datasetId  = datasetId;
+        this.localId    = localId;
+        this.resourceId = resourceId;
+        this.pageId = pageId;
+    }
 
-    public AnnoPageRdf(String pageId,
-                       String ftResource,
-                       String ftText,
-                       String ftLang,
-                       String imgTargetBase,
-                       AnnotationRdf pageAnnotationRdf,
-                       List annotationRdfList) {
-        this.pageId            = pageId;
-        this.ftResource        = ftResource;
-        this.ftText            = ftText;
-        this.ftLang            = ftLang;
-        this.imgTargetBase     = imgTargetBase;
-        this.pageAnnotationRdf = pageAnnotationRdf;
-        this.annotationRdfList = annotationRdfList;
+    public String getResourceId() {
+        return resourceId;
+    }
+
+    public void setResourceId(String resourceId) {
+        this.resourceId = resourceId;
+    }
+
+    public String getDatasetId() {
+        return datasetId;
+    }
+
+    public void setDatasetId(String datasetId) {
+        this.datasetId = datasetId;
+    }
+
+    public String getLocalId() {
+        return localId;
+    }
+
+    public void setLocalId(String localId) {
+        this.localId = localId;
     }
 
     public String getPageId() {
@@ -55,14 +71,6 @@ public class AnnoPageRdf {
 
     public void setPageId(String pageId) {
         this.pageId = pageId;
-    }
-
-    public String getFtResource() {
-        return ftResource;
-    }
-
-    public void setFtResource(String ftResource) {
-        this.ftResource = ftResource;
     }
 
     public String getFtText() {

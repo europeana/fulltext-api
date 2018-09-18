@@ -42,7 +42,6 @@ import org.springframework.stereotype.Component;
 @Component
 @PropertySource("classpath:loader.properties")
 @PropertySource(value = "classpath:loader.user.properties", ignoreResourceNotFound = true)
-@EnableMongoRepositories(basePackages="eu.europeana.fulltext")
 public class LoaderSettings {
 
     @Value("${resource.baseurl}")
@@ -56,22 +55,6 @@ public class LoaderSettings {
 
     @Value("${spring.data.mongodb.host}")
     private String mongoHost;
-
-
-    @Autowired
-    MongoDbFactory      mongoDbFactory;
-
-    @Autowired
-    MongoMappingContext mongoMappingContext;
-
-    @Bean
-    public MappingMongoConverter mappingMongoConverter() {
-
-        DbRefResolver         dbRefResolver = new DefaultDbRefResolver(mongoDbFactory);
-        MappingMongoConverter converter     = new MappingMongoConverter(dbRefResolver, mongoMappingContext);
-        converter.setTypeMapper(new DefaultMongoTypeMapper(null));
-        return converter;
-    }
 
     public String getResourceBaseUrl() {
         return resourceBaseUrl;

@@ -73,6 +73,7 @@ public class FTSettings {
 
     @Bean
     public MappingMongoConverter mappingMongoConverter() {
+
         DbRefResolver         dbRefResolver = new DefaultDbRefResolver(mongoDbFactory);
         MappingMongoConverter converter     = new MappingMongoConverter(dbRefResolver, mongoMappingContext);
         converter.setTypeMapper(new DefaultMongoTypeMapper(null));

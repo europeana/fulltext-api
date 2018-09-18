@@ -26,5 +26,6 @@
         <Logger name="logFile" level="INFO">
             <AppenderRef ref="fileLogger"/>
         </Logger>
+        <Logger name="eu.europeana.fulltext.loader.web.LoaderController" level="DEBUG"/>
     </Loggers>
 </Configuration>

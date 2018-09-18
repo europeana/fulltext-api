@@ -17,6 +17,7 @@
 
 package eu.europeana.fulltext.loader.service;
 
+import eu.europeana.fulltext.loader.config.LoaderSettings;
 import eu.europeana.fulltext.loader.exception.ArchiveReadException;
 import eu.europeana.fulltext.loader.exception.ConfigurationException;
 import eu.europeana.fulltext.loader.exception.LoaderException;
@@ -26,6 +27,7 @@ import eu.europeana.fulltext.loader.model.AnnoPageRdf;
 import eu.europeana.fulltext.loader.model.AnnotationRdf;
 import eu.europeana.fulltext.loader.model.TargetRdf;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Service;
 import org.w3c.dom.*;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -48,10 +50,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
+ * Service for parsing fulltext xml files
  * Created by luthien on 18/07/2018.
  */
 
-public class XMLXPathParser {
+@Service
+public class XMLParserService {
 
     private static final XPathFactory X_PATH_FACTORY = XPathFactory.newInstance();
 
@@ -59,7 +63,13 @@ public class XMLXPathParser {
     private static final String XYWHPOS    = "#xywh=";
     private static final String PAGEDCTYPE = "Page";
 
-    public static AnnoPageRdf eatIt(Path path) throws LoaderException {
+    private LoaderSettings settings;
+
+    public XMLParserService(LoaderSettings settings) {
+        this.settings = settings;
+    }
+
+    public AnnoPageRdf eatIt(Path path) throws LoaderException {
         return eatIt(path.toString(), readFileContents(path), StringUtils.split(path.getFileName().toString(), '.')[0]);
     }
 
@@ -68,33 +78,44 @@ public class XMLXPathParser {
      * @param path fileName, for logging purposes only so we know which file contains errors
      * @param xmlString
      * @param pageId
-     * @return
+     * @return annoPageRdf object with all relevant information
      */
-    public static AnnoPageRdf eatIt(String path, String xmlString, String pageId) throws LoaderException {
+    public AnnoPageRdf eatIt(String path, String xmlString, String pageId) throws LoaderException {
+        AnnoPageRdf result = null;
+
         Document document = parseXml(xmlString);
-        String internalSubset = (document).getDoctype().getInternalSubset();
 
-        String entityImage = readEntityString("img", internalSubset);
-        String entityText = readEntityString("text", internalSubset);
-
+        // parse ftResource and extract datasetId, localId and resourceid
         NodeList ftNodes = getNodes(document, "FullTextResource");
         // note that getTextContent will automatically convert escaped xml characters to their proper value
         String ftResource = ftNodes.item(0).getAttributes().item(0).getTextContent();
         if (ftResource == null) {
-            // TODO check with Hugo if there is any point in saving annotations if we don't have a resource
             throw new MissingDataException("No resource found!");
+        } else if (!ftResource.startsWith(settings.getResourceBaseUrl())) {
+            throw new ConfigurationException(path + " - ENTITY text value '" + ftResource + "' doesn't start with configured" +
+                    "resource base url '" + settings.getResourceBaseUrl() + "'");
+        } else {
+            String[] identifiers = StringUtils.split(
+                    StringUtils.removeStartIgnoreCase(ftResource, settings.getResourceBaseUrl()), '/');
+            if (identifiers.length != 3){
+                throw new MissingDataException(path + " - Error retrieving ids from ftResource: "+ftResource);
+            }
+            result = new AnnoPageRdf(identifiers[0], identifiers[1], identifiers[2], pageId);
         }
+
+        String internalSubset = (document).getDoctype().getInternalSubset();
+        result.setImgTargetBase(readEntityString("img", internalSubset));
 
         if (!ftNodes.item(0).getChildNodes().item(1).getNodeName().equalsIgnoreCase("dc:language")) {
             // TODO check with Hugo if we can assume that language and text is always present and always in the same order
             throw new MissingDataException("No resource dc:language definition found!");
         }
-        String ftLang     = ftNodes.item(0).getChildNodes().item(1).getTextContent();
+        result.setFtLang(ftNodes.item(0).getChildNodes().item(1).getTextContent());
 
         if (!ftNodes.item(0).getChildNodes().item(3).getNodeName().equalsIgnoreCase("rdf:value")) {
             throw new MissingDataException("No resource rdf:value definition found!");
         }
-        String ftText     = ftNodes.item(0).getChildNodes().item(3).getTextContent();
+        result.setFtText(ftNodes.item(0).getChildNodes().item(3).getTextContent());
 
 
         // TODO break this up into submethods for better readability and understandability
@@ -186,12 +207,14 @@ public class XMLXPathParser {
                 }
             }
         }
+        result.setPageAnnotationRdf(pageAnnotationRdf);
+        result.setAnnotationRdfList(annoList);
 
         LogFile.OUT.debug("{} - OK", path);
-        return new AnnoPageRdf(pageId, ftResource, ftText, ftLang, entityImage, pageAnnotationRdf, annoList);
+        return result;
     }
 
-    private static Document parseXml(String xmlString) throws LoaderException {
+    private Document parseXml(String xmlString) throws LoaderException {
         Document result;
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -208,7 +231,7 @@ public class XMLXPathParser {
         return result;
     }
 
-    private static NodeList getNodes(Document document, String localName) throws LoaderException {
+    private NodeList getNodes(Document document, String localName) throws LoaderException {
         XPath ftXpath = X_PATH_FACTORY.newXPath();
         NodeList result;
         try {
@@ -221,11 +244,11 @@ public class XMLXPathParser {
         return result;
     }
 
-    private static String getAttributeValue(Element element, String elementName) {
+    private String getAttributeValue(Element element, String elementName) {
         return element.getElementsByTagName(elementName).item(0).getAttributes().item(0).getNodeValue();
     }
 
-    private static TargetRdf createTarget(String url) throws MissingDataException {
+    private TargetRdf createTarget(String url) throws MissingDataException {
         if (url == null || !url.contains(XYWHPOS)) {
             throw new MissingDataException("no "+XYWHPOS+" defined in url "+url);
         }
@@ -236,7 +259,7 @@ public class XMLXPathParser {
         return new TargetRdf(x, y, w, h);
     }
 
-    private static AnnotationRdf createAnnotation(String specRes,
+    private AnnotationRdf createAnnotation(String specRes,
                                                   String id,
                                                   String dcType,
                                                   String motiv,
@@ -249,7 +272,7 @@ public class XMLXPathParser {
     }
 
 
-    private static AnnotationRdf createAnnotation(String specRes,
+    private AnnotationRdf createAnnotation(String specRes,
                                                   String id,
                                                   String dcType,
                                                   String motiv,

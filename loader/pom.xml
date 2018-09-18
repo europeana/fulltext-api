@@ -7,13 +7,13 @@
     <parent>
         <artifactId>fulltext</artifactId>
         <groupId>eu.europeana</groupId>
-        <version>0.4-SNAPSHOT</version>
+        <version>0.4.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <groupId>eu.europeana.fulltext</groupId>
     <artifactId>loader</artifactId>
-    <version>0.4-SNAPSHOT</version>
+    <version>0.4.1-SNAPSHOT</version>
     <packaging>war</packaging>
 
     <name>Europeana Newspapers Fulltext Loader</name>
@@ -29,7 +29,7 @@
         <dependency>
             <groupId>eu.europeana.fulltext</groupId>
             <artifactId>api</artifactId>
-            <version>0.4-SNAPSHOT</version>
+            <version>0.4.1-SNAPSHOT</version>
             <classifier>classes</classifier>
         </dependency>
 
@@ -111,6 +111,25 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-launcher</artifactId>
+            <version>${org.junit.platform.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+            <!--<version>4.12.1</version>-->
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-runner</artifactId>
+            <version>${org.junit.platform.version}</version>
             <scope>test</scope>
         </dependency>
 

@@ -1,15 +1,14 @@
 package eu.europeana.fulltext.api;
 
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.junit.platform.runner.JUnitPlatform;
+import org.springframework.test.context.junit4.SpringRunner;
 
-@Disabled
-@ExtendWith(SpringExtension.class)
+@Ignore
+@RunWith(SpringRunner.class)
 @SpringBootTest
 public class FTApplicationTests {
 
@@ -18,6 +17,7 @@ public class FTApplicationTests {
 	 */
 	// TODO fix so this will load with a mock database
 
+	@Ignore
 	@Test
 	public void contextLoads() {
 	}
