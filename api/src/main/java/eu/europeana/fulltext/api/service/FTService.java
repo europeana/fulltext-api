@@ -9,22 +9,17 @@ import com.jayway.jsonpath.spi.json.JacksonJsonNodeJsonProvider;
 import com.jayway.jsonpath.spi.json.JsonProvider;
 import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
 import com.jayway.jsonpath.spi.mapper.MappingProvider;
-import eu.europeana.fulltext.api.config.FTDefinitions;
 import eu.europeana.fulltext.api.config.FTSettings;
 import eu.europeana.fulltext.api.entity.AnnoPage;
-import eu.europeana.fulltext.api.entity.Annotation;
 import eu.europeana.fulltext.api.entity.Resource;
-import eu.europeana.fulltext.api.entity.Target;
 import eu.europeana.fulltext.api.model.FullTextResource;
 import eu.europeana.fulltext.api.model.v2.AnnotationPageV2;
 import eu.europeana.fulltext.api.model.v2.AnnotationV2;
 import eu.europeana.fulltext.api.model.v3.AnnotationPageV3;
 import eu.europeana.fulltext.api.model.v3.AnnotationV3;
 import eu.europeana.fulltext.api.repository.AnnoPageRepository;
-import eu.europeana.fulltext.api.repository.AnnotationRepository;
 import eu.europeana.fulltext.api.repository.ResourceRepository;
 import eu.europeana.fulltext.api.service.exception.*;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,8 +27,6 @@ import ioinformarics.oss.jackson.module.jsonld.JsonldModule;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -49,9 +42,6 @@ public class FTService {
 
     @Autowired
     ResourceRepository resourceRepository;
-
-    @Autowired
-    AnnotationRepository annotationRepository;
 
     @Autowired
     AnnoPageRepository annoPageRepository;

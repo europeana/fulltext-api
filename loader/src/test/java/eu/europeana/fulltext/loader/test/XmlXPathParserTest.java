@@ -6,17 +6,17 @@ import eu.europeana.fulltext.loader.model.AnnotationRdf;
 import eu.europeana.fulltext.loader.model.TargetRdf;
 import eu.europeana.fulltext.loader.service.XMLXPathParser;
 import org.apache.commons.io.IOUtils;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static junit.framework.TestCase.assertNull;
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 /**
  * Tests the XMLXPathParser using 2 example data xml files
@@ -28,7 +28,7 @@ public class XmlXPathParserTest {
     private static AnnoPageRdf apRdf1;
     private static AnnoPageRdf apRdf2;
 
-    @BeforeClass
+    @BeforeAll
     public static void loadExampleFiles() throws LoaderException, IOException {
         // this example file contains an image entity with special characters (e.g. &apos;), plus 78 annotations
         String file1 = "9200396-BibliographicResource_3000118435009-1.xml";
