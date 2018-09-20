@@ -18,18 +18,23 @@ package eu.europeana.fulltext.loader.test;/*
 import eu.europeana.fulltext.api.entity.AnnoPage;
 import eu.europeana.fulltext.api.entity.Resource;
 import eu.europeana.fulltext.api.repository.AnnoPageRepository;
+import eu.europeana.fulltext.loader.config.LoaderSettings;
 import eu.europeana.fulltext.loader.exception.LoaderException;
 import eu.europeana.fulltext.loader.model.AnnoPageRdf;
 import eu.europeana.fulltext.loader.service.MongoService;
 import eu.europeana.fulltext.loader.service.XMLParserService;
+import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 
 import static org.junit.Assert.assertEquals;
 
@@ -37,25 +42,36 @@ import static org.junit.Assert.assertEquals;
  * Created by luthien on 17/09/2018.
  */
 @RunWith(SpringRunner.class)
+@TestPropertySource(locations = "classpath:loader-test.properties")
 @DataMongoTest
 public class MongoIntegrationTest {
 
+    private static AnnoPageRdf apRdf1;
+
     @Autowired
-    private MongoService mongoService;
+    private LoaderSettings     settings;
+    @Autowired
+    private MongoService       mongoService;
     @Autowired
     private AnnoPageRepository annoPageRepository;
-    @Autowired
-    private XMLParserService parser;
 
-    private TestUtils testUtils = new TestUtils(parser);
-
-
-    private static AnnoPageRdf apRdf1;
 
 
     @Before
     public void loadExampleFiles() throws LoaderException, IOException {
-        apRdf1 = testUtils.parseXmlFile("9200396-BibliographicResource_3000118435009-1.xml", "1");
+        XMLParserService parser = new XMLParserService(settings);
+        // this example file contains an image entity with special characters (e.g. &apos;), plus 78 annotations
+        String file1 = "9200396-BibliographicResource_3000118435009-1.xml";
+        apRdf1 = parser.eatIt(file1, loadXmlFile(file1), "1");
+    }
+
+    private String loadXmlFile(String fileName) throws IOException {
+        try (InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(fileName)) {
+            if (is != null) {
+                return IOUtils.toString(is);
+            }
+            throw new FileNotFoundException(fileName);
+        }
     }
 
     @Test

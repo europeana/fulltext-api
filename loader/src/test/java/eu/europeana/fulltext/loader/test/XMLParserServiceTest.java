@@ -6,6 +6,7 @@ import eu.europeana.fulltext.loader.model.AnnoPageRdf;
 import eu.europeana.fulltext.loader.model.AnnotationRdf;
 import eu.europeana.fulltext.loader.model.TargetRdf;
 import eu.europeana.fulltext.loader.service.XMLParserService;
+import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,9 +15,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 
-import static eu.europeana.fulltext.loader.test.TestUtils.loadXmlFile;
 import static junit.framework.TestCase.assertNull;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
@@ -37,18 +39,28 @@ public class XMLParserServiceTest {
 
     @Autowired
     private LoaderSettings settings;
-    @Autowired
-    private XMLParserService parser;
-
-    private TestUtils testUtils = new TestUtils(parser);
 
     @Before
     public void loadExampleFiles() throws LoaderException, IOException {
+        XMLParserService parser = new XMLParserService(settings);
+
         // this example file contains an image entity with special characters (e.g. &apos;), plus 78 annotations
-        apRdf1 = testUtils.parseXmlFile("9200396-BibliographicResource_3000118435009-1.xml", "1");
+        String file1 = "9200396-BibliographicResource_3000118435009-1.xml";
+        apRdf1 = parser.eatIt(file1, loadXmlFile(file1), "1");
+
         // this example file contains 1111 annotations, including 4 annotations without a target of which 2 annotations
         // have the exact same id
-        apRdf2 = testUtils.parseXmlFile("9200357-BibliographicResource_3000095247417-2.xml", "2");
+        String file2 = "9200357-BibliographicResource_3000095247417-2.xml";
+        apRdf2 = parser.eatIt(file2, loadXmlFile(file2), "2");
+    }
+
+    private String loadXmlFile(String fileName) throws IOException {
+        try (InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(fileName)) {
+            if (is != null) {
+                return IOUtils.toString(is);
+            }
+            throw new FileNotFoundException(fileName);
+        }
     }
 
     /**

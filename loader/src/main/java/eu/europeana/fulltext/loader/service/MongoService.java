@@ -23,7 +23,6 @@ import java.util.List;
  * Created on 27-02-2018
  */
 @Service
-
 public class MongoService {
 
     private static final Logger LOG = LogManager.getLogger(MongoService.class);

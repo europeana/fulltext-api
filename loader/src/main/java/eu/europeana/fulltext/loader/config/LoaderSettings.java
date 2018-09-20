@@ -17,19 +17,9 @@
 
 package eu.europeana.fulltext.loader.config;
 
-import eu.europeana.fulltext.loader.service.MongoSaveMode;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.data.mongodb.MongoDbFactory;
-import org.springframework.data.mongodb.core.convert.DbRefResolver;
-import org.springframework.data.mongodb.core.convert.DefaultDbRefResolver;
-import org.springframework.data.mongodb.core.convert.DefaultMongoTypeMapper;
-import org.springframework.data.mongodb.core.convert.MappingMongoConverter;
-import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
-import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.stereotype.Component;
 
 
@@ -49,12 +39,6 @@ public class LoaderSettings {
 
     @Value("${batch.base.directory}")
     private String batchBaseDirectory;
-
-    @Value("${spring.data.mongodb.database}")
-    private String mongoDbName;
-
-    @Value("${spring.data.mongodb.host}")
-    private String mongoHost;
 
     public String getResourceBaseUrl() {
         return resourceBaseUrl;
