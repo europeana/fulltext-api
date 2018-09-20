@@ -24,6 +24,8 @@ import java.io.Serializable;
 
 import static eu.europeana.fulltext.api.config.FTDefinitions.V3_ANNOTATION_TYPE;
 
+import eu.europeana.fulltext.api.model.JsonLdIdType;
+
 /**
  * Created by luthien target 14/06/2018.
  */

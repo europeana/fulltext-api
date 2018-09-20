@@ -15,39 +15,55 @@ package eu.europeana.fulltext.loader.test;/*
  *  the Licence.
  */
 
-import com.mongodb.BasicDBObjectBuilder;
-import com.mongodb.DBObject;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import eu.europeana.fulltext.api.entity.AnnoPage;
+import eu.europeana.fulltext.api.entity.Resource;
+import eu.europeana.fulltext.api.repository.AnnoPageRepository;
+import eu.europeana.fulltext.loader.exception.LoaderException;
+import eu.europeana.fulltext.loader.model.AnnoPageRdf;
+import eu.europeana.fulltext.loader.service.MongoService;
+import eu.europeana.fulltext.loader.service.XMLParserService;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.junit4.SpringRunner;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import java.io.IOException;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Created by luthien on 17/09/2018.
  */
+@RunWith(SpringRunner.class)
 @DataMongoTest
-@ExtendWith(SpringExtension.class)
 public class MongoIntegrationTest {
-    @DisplayName("given object to save"
-                 + " when save object using MongoDB template"
-                 + " then object is saved")
+
+    @Autowired
+    private MongoService mongoService;
+    @Autowired
+    private AnnoPageRepository annoPageRepository;
+    @Autowired
+    private XMLParserService parser;
+
+    private TestUtils testUtils = new TestUtils(parser);
+
+
+    private static AnnoPageRdf apRdf1;
+
+
+    @Before
+    public void loadExampleFiles() throws LoaderException, IOException {
+        apRdf1 = testUtils.parseXmlFile("9200396-BibliographicResource_3000118435009-1.xml", "1");
+    }
+
     @Test
-    public void test(@Autowired MongoTemplate mongoTemplate) {
-        // given
-        DBObject objectToSave = BasicDBObjectBuilder.start()
-                                                    .add("key", "value")
-                                                    .get();
+    public void test() {
+        Resource res01  = new Resource("res01", "nl", "Er ligt tussen Regge en Dinkel een land");
+        AnnoPage ap_in  = mongoService.createAnnoPage(apRdf1, res01);
+        AnnoPage ap_out = annoPageRepository.save(ap_in);
+        assertEquals(ap_out.getPgId(), ap_in.getPgId());
 
-        // when
-        mongoTemplate.save(objectToSave, "collection");
-
-        // then
-        assertThat(mongoTemplate.findAll(DBObject.class, "collection")).extracting("key")
-                                                                       .containsOnly("value");
     }
 }

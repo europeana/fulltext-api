@@ -26,6 +26,8 @@ import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_EDM_JSON
 import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_IIIF_V3;
 import static eu.europeana.fulltext.api.config.FTDefinitions.V3_ANNO_PAGE_TYPE;
 
+import eu.europeana.fulltext.api.model.JsonLdIdType;
+
 /**
  * Created by luthien on 14/06/2018.
  */

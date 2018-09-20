@@ -2,6 +2,8 @@ package eu.europeana.fulltext.loader.service;
 
 import eu.europeana.fulltext.api.entity.AnnoPage;
 import eu.europeana.fulltext.api.entity.Resource;
+import eu.europeana.fulltext.api.entity.Annotation;
+import eu.europeana.fulltext.api.entity.Target;
 import eu.europeana.fulltext.api.repository.AnnoPageRepository;
 import eu.europeana.fulltext.api.repository.ResourceRepository;
 import eu.europeana.fulltext.loader.model.AnnoPageRdf;
@@ -88,18 +90,23 @@ public class MongoService {
     public AnnoPage saveAnnoPage(AnnoPageRdf annoPageRdf, Resource res) {
         AnnoPage result = null;
         try{
-            result = new eu.europeana.fulltext.api.entity.AnnoPage(
-                    annoPageRdf.getDatasetId(),
-                    annoPageRdf.getLocalId(),
-                    annoPageRdf.getPageId(),
-                    annoPageRdf.getImgTargetBase(),
-                    res);
-            result.setAns(createAnnoList(annoPageRdf, annoPageRdf.getDatasetId()));
-            result = annoPageRepository.save(result);
+            result = annoPageRepository.save(createAnnoPage(annoPageRdf, res));
             LOG.debug("{}/{}/{} annopage saved");
         } catch (Exception e){
             LogFile.OUT.error("{}/{}/{} - Error saving AnnoPage", annoPageRdf.getDatasetId(), annoPageRdf.getLocalId(), annoPageRdf.getPageId(), e);
         }
+        return result;
+    }
+
+
+    public AnnoPage createAnnoPage(AnnoPageRdf annoPageRdf, Resource res) {
+        AnnoPage result = new AnnoPage(
+                annoPageRdf.getDatasetId(),
+                annoPageRdf.getLocalId(),
+                annoPageRdf.getPageId(),
+                annoPageRdf.getImgTargetBase(),
+                res);
+        result.setAns(createAnnoList(annoPageRdf, annoPageRdf.getDatasetId()));
         return result;
     }
 
@@ -112,10 +119,10 @@ public class MongoService {
         return annoPageRepository.deleteDataset(datasetId);
     }
 
-    private List<eu.europeana.fulltext.api.entity.Annotation> createAnnoList(AnnoPageRdf annoPageRdf, String dataSetId){
-        List<eu.europeana.fulltext.api.entity.Annotation> annotationList = new ArrayList<>();
+    private List<Annotation> createAnnoList(AnnoPageRdf annoPageRdf, String dataSetId){
+        List<Annotation> annotationList = new ArrayList<>();
         for (AnnotationRdf annotationRdf : annoPageRdf.getAnnotationRdfList()){
-            eu.europeana.fulltext.api.entity.Annotation annotation = new eu.europeana.fulltext.api.entity.Annotation(
+            Annotation annotation = new Annotation(
                     annotationRdf.getId(),
                     getDcTypeCode(annotationRdf.getDcType(), dataSetId, annoPageRdf.getPageId(), annotationRdf.getId()),
                     annotationRdf.getFrom(),
@@ -129,10 +136,10 @@ public class MongoService {
         return annotationList;
     }
 
-    private List<eu.europeana.fulltext.api.entity.Target> createFTTargetList(AnnotationRdf annotationRdf){
-        List<eu.europeana.fulltext.api.entity.Target> targetList = new ArrayList<>();
+    private List<Target> createFTTargetList(AnnotationRdf annotationRdf){
+        List<Target> targetList = new ArrayList<>();
         for (TargetRdf targetRdf : annotationRdf.getTargetRdfList()){
-            targetList.add(new eu.europeana.fulltext.api.entity.Target(targetRdf.getX(),
+            targetList.add(new Target(targetRdf.getX(),
                                       targetRdf.getY(),
                                       targetRdf.getW(),
                                       targetRdf.getH()));

@@ -19,6 +19,7 @@ package eu.europeana.fulltext.api.repository;
 
 import eu.europeana.fulltext.api.entity.Resource;
 import org.springframework.data.mongodb.repository.DeleteQuery;
+import org.springframework.data.mongodb.repository.ExistsQuery;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
@@ -33,13 +34,23 @@ import java.util.List;
 @RepositoryRestResource(collectionResourceRel = "Resource", path = "Resource")
 public interface ResourceRepository extends MongoRepository<Resource, String> {
 
-    //Supports native JSON query string
-    @Query("{Resource:'?0'}")
-    Resource findFTResourceByDomain(String resource);
+    /**
+     * Check if a Resource exists that matches the given parameters
+     * @param datasetId
+     * @param localId
+     * @param resId
+     * @return Boolean.TRUE if yes, otherwise Boolean.FALSE
+     */
+    @ExistsQuery("{'dsId':'?0', 'lcId':'?1', 'id':'?2'}")
+    Boolean existsWithDatasetLocalAndResId(String datasetId, String localId, String resId);
 
-    @Query("{Resource: { $regex: ?0 } })")
-    List<Resource> findResourceByRegEx(String resource);
-
+    /**
+     * Find a Resource that matches the given parameters
+     * @param datasetId
+     * @param localId
+     * @param resId
+     * @return List containing matching Resource(s) (should be just one)
+     */
     @Query("{'dsId':'?0', 'lcId':'?1', 'id':'?2'}")
     List<Resource> findByDatasetLocalAndResId(String datasetId, String localId, String resId);
 

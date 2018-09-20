@@ -36,20 +36,43 @@ import java.util.List;
 public interface AnnoPageRepository extends MongoRepository<AnnoPage, String> {
 
 
+    /**
+     * Check if an AnnoPage exists that matches the given parameters
+     * @param datasetId
+     * @param localId
+     * @param pageId
+     * @return Boolean.TRUE if yes, otherwise Boolean.FALSE
+     */
+    @ExistsQuery("{'dsId':'?0', 'lcId':'?1', 'pgId':'?2'}")
+    Boolean existsWithPageId(String datasetId, String localId, String pageId);
+
+    /**
+     * Find AnnoPage that matches the given parameters
+     * @param datasetId
+     * @param localId
+     * @param pageId
+     * @return List containing matching AnnoPage(s) (should be just one)
+     */
     @Query("{'dsId':'?0', 'lcId':'?1', 'pgId':'?2'}")
     List<AnnoPage> findByDatasetLocalAndPageId(String datasetId, String localId, String pageId);
 
-    @Deprecated // keeping this temporarily for testing speed (EA-1239)
-    @Query("{'dsId':'?0', 'lcId':'?1', 'pgId':'?2'}{ _id : 1}")
-    AnnoPage findOneWithId(String datasetId, String localId, String pageId);
+    /**
+     * Check if an AnnoPage exists that contains an Annotation that matches the given parameters
+     * @param datasetId
+     * @param localId
+     * @param annoId
+     * @return Boolean.TRUE if yes, otherwise Boolean.FALSE
+     */
+    @ExistsQuery("{'dsId':'?0', 'lcId':'?1', 'ans.anId':'?2'}")
+    Boolean existsWithAnnoId(String datasetId, String localId, String annoId);
 
-    @ExistsQuery("{'dsId':'?0', 'lcId':'?1', 'pgId':'?2'}")
-    Boolean existsWithId(String datasetId, String localId, String pageId);
-
-    @Deprecated // keeping this temporarily for testing speed (EA-1239)
-    @CountQuery("{'dsId':'?0', 'lcId':'?1', 'pgId':'?2'}")
-    Integer countWithId(String datasetId, String localId, String pageId);
-
+    /**
+     * Find AnnoPage that contains an annotation with the given parameters
+     * @param datasetId
+     * @param localId
+     * @param annoId
+     * @return List containing matching AnnoPage(s) (should be just one)
+     */
     @Query("{'dsId':'?0', 'lcId':'?1', 'ans.anId':'?2'}")
     List<AnnoPage> findByDatasetLocalAndAnnoId(String datasetId, String localId, String annoId);
 
@@ -60,6 +83,15 @@ public interface AnnoPageRepository extends MongoRepository<AnnoPage, String> {
      */
     @DeleteQuery("{'dsId':'?0'}")
     long deleteDataset(String datasetId);
+
+
+    @Deprecated // keeping this temporarily for testing speed (EA-1239)
+    @CountQuery("{'dsId':'?0', 'lcId':'?1', 'pgId':'?2'}")
+    Integer countWithId(String datasetId, String localId, String pageId);
+
+    @Deprecated // keeping this temporarily for testing speed (EA-1239)
+    @Query("{'dsId':'?0', 'lcId':'?1', 'pgId':'?2'}{ _id : 1}")
+    AnnoPage findOneWithId(String datasetId, String localId, String pageId);
 
 
 }

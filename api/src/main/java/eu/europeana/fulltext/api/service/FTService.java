@@ -121,33 +121,32 @@ public class FTService {
 
     public FullTextResource getFullTextResource(String datasetId, String localId, String resId)
             throws ResourceDoesNotExistException {
-        Resource resource;
-        try{
-            resource = resourceRepository.findByDatasetLocalAndResId(datasetId, localId, resId).get(0);
-        } catch (java.lang.IndexOutOfBoundsException e) {
+        if (doesResourceExist_exists(datasetId, localId, resId)){
+            return generateFullTextResource(
+                    resourceRepository.findByDatasetLocalAndResId(datasetId, localId, resId).get(0));
+        } else {
             throw new ResourceDoesNotExistException("No Fulltext Resource with resourceId: " + resId
-                  + " was found that is associated with datasetId: " + datasetId + " and localId: " + localId );
+                      + " was found that is associated with datasetId: " + datasetId + " and localId: " + localId );
         }
-        return generateFullTextResource(resource);
     }
 
     private AnnoPage fetchAnnoPage(String datasetId, String localId, String pageId)
             throws AnnoPageDoesNotExistException {
-        try {
+        if (doesAnnoPageExist_exists(datasetId, localId, pageId)){
             return annoPageRepository.findByDatasetLocalAndPageId(datasetId, localId, pageId).get(0);
-        } catch (java.lang.IndexOutOfBoundsException e) {
+        } else {
             throw new AnnoPageDoesNotExistException("No AnnoPage with datasetId: " + datasetId + ", localId: "
-                                                    + localId + " and pageId: " + pageId + " could be found");
+                      + localId + " and pageId: " + pageId + " could be found");
         }
     }
 
     private AnnoPage fetchAPAnnotation(String datasetId, String localId, String annoId)
             throws AnnoPageDoesNotExistException {
-        try {
+        if (doesAnnotationExist_exists(datasetId, localId, annoId)){
             return annoPageRepository.findByDatasetLocalAndAnnoId(datasetId, localId, annoId).get(0);
-        } catch (java.lang.IndexOutOfBoundsException e) {
+        } else {
             throw new AnnoPageDoesNotExistException("No AnnoPage with datasetId: " + datasetId + " and localId: "
-                      + localId + " could be found that contains an Annotation with annotationId: " + annoId);
+                       + localId + " could be found that contains an Annotation with annotationId: " + annoId);
         }
     }
 
@@ -165,11 +164,33 @@ public class FTService {
      * Check if a particular annotation page with the provided ids exists or not
      * @param datasetId
      * @param localId
+     * @param pageId
+     * @return true if it exists, otherwise false
+     */
+    public boolean doesAnnoPageExist_exists(String datasetId, String localId, String pageId){
+        return annoPageRepository.existsWithPageId(datasetId, localId, pageId);
+    }
+
+    /**
+     * Check if a particular annotation with the provided ids exists or not
+     * @param datasetId
+     * @param localId
      * @param annoId
      * @return true if it exists, otherwise false
      */
-    public boolean doesAnnoPageExist_exists(String datasetId, String localId, String annoId){
-        return annoPageRepository.existsWithId(datasetId, localId, annoId);
+    public boolean doesAnnotationExist_exists(String datasetId, String localId, String annoId){
+        return annoPageRepository.existsWithAnnoId(datasetId, localId, annoId);
+    }
+
+    /**
+     * Check if a particular resource with the provided ids exists or not
+     * @param datasetId
+     * @param localId
+     * @param resId
+     * @return true if it exists, otherwise false
+     */
+    public boolean doesResourceExist_exists(String datasetId, String localId, String resId){
+        return resourceRepository.existsWithDatasetLocalAndResId(datasetId, localId, resId);
     }
 
     @Deprecated // keeping this temporarily for testing speed (EA-1239)

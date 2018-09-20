@@ -114,8 +114,8 @@ public class LoadArchiveService extends SimpleFileVisitor<Path> {
             progressLog.setExpectedItems(size);
 
             archive.stream()
-                    .filter(p -> p.toString().contains(".xml"))
-                    .filter(p -> !p.toString().startsWith("__"))
+                    .filter(p -> p.getName().contains(".xml"))
+                    .filter(p -> !p.getName().startsWith("__"))
                     .forEach(p -> parseArchiveFile(p, archive, progressLog, saveMode));
 
             if (apCounter > 0) {
