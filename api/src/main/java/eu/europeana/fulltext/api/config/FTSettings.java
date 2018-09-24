@@ -26,8 +26,19 @@ import org.springframework.data.mongodb.MongoDbFactory;
 import org.springframework.data.mongodb.core.convert.*;
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
+import java.util.Arrays;
+import java.util.List;
+
+import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_IIIF_JSONLD_V2;
+import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_IIIF_JSONLD_V3;
+import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_JSONLD;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 /**
  * Contains settings from fulltext.properties and fulltext.user.properties files

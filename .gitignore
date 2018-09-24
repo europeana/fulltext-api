@@ -1,6 +1,9 @@
 **/fulltext.user.properties
 **/loader.user.properties
 
+loader/logs
+logs
+
 target/
 !.mvn/wrapper/maven-wrapper.jar
 
