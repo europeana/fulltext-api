@@ -22,6 +22,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_EDM_JSONLD;
 import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_IIIF_V2;
+import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_IIIF_V3;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.eq;
 import static org.mockito.BDDMockito.given;
@@ -29,6 +31,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.head;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
@@ -119,7 +122,6 @@ public class FTControllerTest {
 
         given(ftService.doesAnnoPageExist_exists(any(), any(), startsWith("a"))).willReturn(true);
         given(ftService.doesAnnoPageExist_exists(any(), any(), startsWith("z"))).willReturn(false);
-
     }
 
     /**
@@ -137,41 +139,91 @@ public class FTControllerTest {
     }
 
     /**
-     * Basic Annotationpage test: version 2 / 3 asked
-     * We expect a v2 / v3 Annotationpage
+     * Basic Annotationpage test: version 2 / 3 requested through either the
+     * format GET parameter or through the Accept header
+     * We expect a v2 / v3 Annotationpage and a Content-type header of the requested type
      */
     @Test
-    public void testGetAnnopageV3() throws Exception {
-        this.mockMvc.perform(get("/presentation/hoortwie/kloptdaar/annopage/kinderen").param("format", "3"))
-                    .andDo(print())
+    public void testGetAnnopage() throws Exception {
+
+        this.mockMvc.perform(get("/presentation/hoort_wie/klopt_daar/annopage/kinderen")
+                                     .param("format", "2"))
                     .andExpect(status().isOk())
-                    .andExpect(content().json(JSONLD_ANP_V3_OUTPUT));
-        this.mockMvc.perform(get("/presentation/tis_een/vreemdeling/annopage/zeker").param("format", "2"))
-                    .andDo(print())
+                    .andExpect(header().string("Content-Type",
+                                               containsString("profile=\"" + MEDIA_TYPE_IIIF_V2 + "\"")))
+                    .andExpect(content().json(JSONLD_ANP_V2_OUTPUT))
+                    .andDo(print());
+
+        this.mockMvc.perform(get("/presentation/tis_een/vreemdeling/annopage/zeeker")
+                                     .param("format", "3"))
                     .andExpect(status().isOk())
-                    .andExpect(content().json(JSONLD_ANP_V2_OUTPUT));
+                    .andExpect(header().string("Content-Type",
+                                               containsString("profile=\"" + MEDIA_TYPE_IIIF_V3 + "\"")))
+                    .andExpect(content().json(JSONLD_ANP_V3_OUTPUT))
+                    .andDo(print());
+
+        this.mockMvc.perform(get("/presentation/ziet_de/maan_schijnt/annopage/door_den_boomen")
+                                     .header("Accept",
+                                             "application/ld+json;profile=\"" + MEDIA_TYPE_IIIF_V2 +" \""))
+                    .andExpect(status().isOk())
+                    .andExpect(header().string("Content-Type",
+                                               containsString("profile=\"" + MEDIA_TYPE_IIIF_V2 + "\"")))
+                    .andExpect(content().json(JSONLD_ANP_V2_OUTPUT))
+                    .andDo(print());
+
+        this.mockMvc.perform(get("/presentation/makkers/staakt_uw/annopage/wild_geraasch")
+                                     .header("Accept",
+                                             "application/ld+json;profile=\"" + MEDIA_TYPE_IIIF_V3 +" \""))
+                    .andExpect(status().isOk())
+                    .andExpect(header().string("Content-Type",
+                                               containsString("profile=\"" + MEDIA_TYPE_IIIF_V3 + "\"")))
+                    .andExpect(content().json(JSONLD_ANP_V3_OUTPUT))
+                    .andDo(print());
     }
 
     /**
-     * Ask for a specific Annotation, default V2 & V3
-     *
+     * Ask for a specific Annotation: default & V2 & V3; requested through either the
+     * format GET parameter or through the Accept header
      */
     @Test
     public void testGetAnnotations() throws Exception {
+
         this.mockMvc.perform(get("/presentation/iwazzawokking/downdastreet/anno/an1"))
-                    .andDo(print())
-                    .andExpect(status().isOk())
-                    .andExpect(content().json(JSONLD_ANN_V2_1_OUTPUT));
+                    .andExpect(header().string("Content-Type",
+                                               containsString("profile=\"" + MEDIA_TYPE_IIIF_V2 + "\"")))
+                    .andExpect(content().json(JSONLD_ANN_V2_1_OUTPUT))
+                    .andDo(print());
 
         this.mockMvc.perform(get("/presentation/heydude/dontletmedown/anno/an3").param("format", "3"))
-                    .andDo(print())
                     .andExpect(status().isOk())
-                    .andExpect(content().json(JSONLD_ANN_V3_3_OUTPUT));
+                    .andExpect(header().string("Content-Type",
+                                               containsString("profile=\"" + MEDIA_TYPE_IIIF_V3 + "\"")))
+                    .andExpect(content().json(JSONLD_ANN_V3_3_OUTPUT))
+                    .andDo(print());
 
-        this.mockMvc.perform(get("/presentation/we_are_the_walrus/kookookechoo/anno/an2").param("format", "2"))
-                    .andDo(print())
+        this.mockMvc.perform(get("/presentation/we_are_the_walrus/kookookechoo/anno/an2")
+                                     .param("format", "2"))
                     .andExpect(status().isOk())
-                    .andExpect(content().json(JSONLD_ANN_V2_2_OUTPUT));
+                    .andExpect(header().string("Content-Type",
+                                               containsString("profile=\"" + MEDIA_TYPE_IIIF_V2 + "\"")))
+                    .andExpect(content().json(JSONLD_ANN_V2_2_OUTPUT))
+                    .andDo(print());
+
+        this.mockMvc.perform(get("/presentation/let_me_take_you_down/cause_im_going_to/anno/an3")
+                                     .header("Accept", "application/ld+json;profile=\""+MEDIA_TYPE_IIIF_V2+"\""))
+                    .andExpect(status().isOk())
+                    .andExpect(header().string("Content-Type",
+                                               containsString("profile=\"" + MEDIA_TYPE_IIIF_V2 + "\"")))
+                    .andExpect(content().json(JSONLD_ANN_V2_3_OUTPUT))
+                    .andDo(print());
+
+        this.mockMvc.perform(get("/presentation/strawberry_fields/nothing_is_real/anno/an2")
+                                     .header("Accept", "application/ld+json;profile=\""+MEDIA_TYPE_IIIF_V3+"\""))
+                    .andExpect(status().isOk())
+                    .andExpect(header().string("Content-Type",
+                                               containsString("profile=\"" + MEDIA_TYPE_IIIF_V3 + "\"")))
+                    .andExpect(content().json(JSONLD_ANN_V3_2_OUTPUT))
+                    .andDo(print());
     }
 
     /**
