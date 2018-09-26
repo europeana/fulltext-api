@@ -64,26 +64,31 @@ public class FTController {
             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
         }
 
-        if (StringUtils.containsIgnoreCase(request.getHeader("Accept"), MEDIA_TYPE_JSON)){
-            headers.add("Content-Type", MEDIA_TYPE_JSON);
-            includeContext = false;
-        } else {
-            headers.add("Content-Type", MEDIA_TYPE_JSONLD);
-        }
-
         String iiifVersion = version;
         if (iiifVersion == null) {
             iiifVersion = versionFromAcceptHeader(request);
+        }
+
+        String media_type_iiif_v2;
+        String media_type_iiif_v3;
+
+        if (StringUtils.containsIgnoreCase(request.getHeader("Accept"), MEDIA_TYPE_JSON)){
+            media_type_iiif_v2 = MEDIA_TYPE_IIIF_JSON_V2;
+            media_type_iiif_v3 = MEDIA_TYPE_IIIF_JSON_V3;
+            includeContext = false;
+        } else {
+            media_type_iiif_v2 = MEDIA_TYPE_IIIF_JSONLD_V2;
+            media_type_iiif_v3 = MEDIA_TYPE_IIIF_JSONLD_V3;
         }
 
         Object annotationPage;
         try {
             if ("3".equalsIgnoreCase(iiifVersion)) {
                 annotationPage = fts.getAnnotationPageV3(datasetId, recordId, pageId, includeContext);
-                headers.add("Content-Type", MEDIA_TYPE_IIIF_JSONLD_V3);
+                headers.add("Content-Type", media_type_iiif_v3);
             } else {
                 annotationPage = fts.getAnnotationPageV2(datasetId, recordId, pageId, includeContext);
-                headers.add("Content-Type", MEDIA_TYPE_IIIF_JSONLD_V2);
+                headers.add("Content-Type", media_type_iiif_v2);
             }
         } catch (AnnoPageDoesNotExistException e) {
             LOG.error(e.getMessage(), e);
@@ -115,25 +120,31 @@ public class FTController {
             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
         }
 
-        if (StringUtils.containsIgnoreCase(request.getHeader("Accept"), MEDIA_TYPE_JSON)){
-            headers.add("Content-Type", MEDIA_TYPE_JSON);
-            includeContext = false;
-        } else {
-            headers.add("Content-Type", MEDIA_TYPE_JSONLD);
-        }
-
         String iiifVersion = version;
         if (iiifVersion == null) {
             iiifVersion = versionFromAcceptHeader(request);
         }
+
+        String media_type_iiif_v2;
+        String media_type_iiif_v3;
+
+        if (StringUtils.containsIgnoreCase(request.getHeader("Accept"), MEDIA_TYPE_JSON)){
+            media_type_iiif_v2 = MEDIA_TYPE_IIIF_JSON_V2;
+            media_type_iiif_v3 = MEDIA_TYPE_IIIF_JSON_V3;
+            includeContext = false;
+        } else {
+            media_type_iiif_v2 = MEDIA_TYPE_IIIF_JSONLD_V2;
+            media_type_iiif_v3 = MEDIA_TYPE_IIIF_JSONLD_V3;
+        }
+
         Object annotation;
         try {
             if ("3".equalsIgnoreCase(iiifVersion)) {
                 annotation = fts.getAnnotationV3(datasetId, recordId, annoID, includeContext);
-                headers.add("Content-Type", MEDIA_TYPE_IIIF_JSONLD_V3);
+                headers.add("Content-Type", media_type_iiif_v3);
             } else {
                 annotation = fts.getAnnotationV2(datasetId, recordId, annoID, includeContext);
-                headers.add("Content-Type", MEDIA_TYPE_IIIF_JSONLD_V2);
+                headers.add("Content-Type", media_type_iiif_v2);
             }
         } catch (AnnoPageDoesNotExistException e) {
             LOG.error(e.getMessage(), e);

@@ -63,4 +63,22 @@ public class FTDefinitions {
                                                            + "\""
                                                            + ";charset=UTF-8";
 
+    /**
+     * JSON Content-type returned on manifest requests for version 2
+     */
+    public static final String MEDIA_TYPE_IIIF_JSON_V2 = MEDIA_TYPE_JSON
+                                                           + ";profile=\""
+                                                           + MEDIA_TYPE_IIIF_V2
+                                                           + "\""
+                                                           + ";charset=UTF-8";
+
+    /**
+     * JSON Content-type returned on manifest requests for version 3
+     */
+    public static final String MEDIA_TYPE_IIIF_JSON_V3 = MEDIA_TYPE_JSON
+                                                           + ";profile=\""
+                                                           + MEDIA_TYPE_IIIF_V3
+                                                           + "\""
+                                                           + ";charset=UTF-8";
+
 }
