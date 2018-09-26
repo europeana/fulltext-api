@@ -99,31 +99,32 @@ public class FTService {
         return mapper;
     }
 
-    public AnnotationPageV2 getAnnotationPageV2(String datasetId, String localId, String pageId)
+    public AnnotationPageV2 getAnnotationPageV2(String datasetId, String localId, String pageId, boolean includeContext)
             throws AnnoPageDoesNotExistException {
-        return generateAnnoPageV2(fetchAnnoPage(datasetId, localId, pageId));
+        return generateAnnoPageV2(fetchAnnoPage(datasetId, localId, pageId), includeContext);
     }
 
-    public AnnotationPageV3 getAnnotationPageV3(String datasetId, String localId, String pageId)
+    public AnnotationPageV3 getAnnotationPageV3(String datasetId, String localId, String pageId, boolean includeContext)
             throws AnnoPageDoesNotExistException {
-        return generateAnnoPageV3(fetchAnnoPage(datasetId, localId, pageId));
+        return generateAnnoPageV3(fetchAnnoPage(datasetId, localId, pageId), includeContext);
     }
 
-    public AnnotationV2 getAnnotationV2(String datasetId, String localId, String annoId)
+    public AnnotationV2 getAnnotationV2(String datasetId, String localId, String annoId, boolean includeContext)
             throws AnnoPageDoesNotExistException {
-        return generateAnnotationV2(fetchAPAnnotation(datasetId, localId, annoId), annoId);
+        return generateAnnotationV2(fetchAPAnnotation(datasetId, localId, annoId), annoId, includeContext);
     }
 
-    public AnnotationV3 getAnnotationV3(String datasetId, String localId, String annoId)
+    public AnnotationV3 getAnnotationV3(String datasetId, String localId, String annoId, boolean includeContext)
             throws AnnoPageDoesNotExistException {
-        return generateAnnotationV3(fetchAPAnnotation(datasetId, localId, annoId), annoId);
+        return generateAnnotationV3(fetchAPAnnotation(datasetId, localId, annoId), annoId, includeContext);
     }
 
-    public FullTextResource getFullTextResource(String datasetId, String localId, String resId)
+    public FullTextResource getFullTextResource(String datasetId, String localId, String resId, boolean includeContext)
             throws ResourceDoesNotExistException {
         if (doesResourceExist_exists(datasetId, localId, resId)){
             return generateFullTextResource(
-                    resourceRepository.findByDatasetLocalAndResId(datasetId, localId, resId).get(0));
+                    resourceRepository.findByDatasetLocalAndResId(datasetId, localId, resId).get(0),
+                    includeContext);
         } else {
             throw new ResourceDoesNotExistException("No Fulltext Resource with resourceId: " + resId
                       + " was found that is associated with datasetId: " + datasetId + " and localId: " + localId );
@@ -198,45 +199,45 @@ public class FTService {
         return annoPageRepository.countWithId(datasetId, localId, annoId) > 0;
     }
 
-    private AnnotationPageV3 generateAnnoPageV3(eu.europeana.fulltext.api.entity.AnnoPage annoPage){
+    private AnnotationPageV3 generateAnnoPageV3(AnnoPage annoPage, boolean includeContext){
         long start = System.currentTimeMillis();
-        AnnotationPageV3 result = EDM2IIIFMapping.getAnnotationPageV3(annoPage);
+        AnnotationPageV3 result = EDM2IIIFMapping.getAnnotationPageV3(annoPage, includeContext);
         if (LOG.isDebugEnabled()) {
             LOG.debug("Generated in {} ms ", System.currentTimeMillis() - start);
         }
         return result;
     }
 
-    private AnnotationPageV2 generateAnnoPageV2(eu.europeana.fulltext.api.entity.AnnoPage annoPage){
+    private AnnotationPageV2 generateAnnoPageV2(AnnoPage annoPage, boolean includeContext){
         long start = System.currentTimeMillis();
-        AnnotationPageV2 result = EDM2IIIFMapping.getAnnotationPageV2(annoPage);
+        AnnotationPageV2 result = EDM2IIIFMapping.getAnnotationPageV2(annoPage, includeContext);
         if (LOG.isDebugEnabled()) {
             LOG.debug("Generated in {} ms ", System.currentTimeMillis() - start);
         }
         return result;
     }
 
-    private AnnotationV3 generateAnnotationV3(eu.europeana.fulltext.api.entity.AnnoPage annoPage, String annoId){
+    private AnnotationV3 generateAnnotationV3(AnnoPage annoPage, String annoId, boolean includeContext){
         long start = System.currentTimeMillis();
-        AnnotationV3 result = EDM2IIIFMapping.getSingleAnnotationV3(annoPage, annoId);
+        AnnotationV3 result = EDM2IIIFMapping.getSingleAnnotationV3(annoPage, annoId, includeContext);
         if (LOG.isDebugEnabled()) {
             LOG.debug("Generated in {} ms ", System.currentTimeMillis() - start);
         }
         return result;
     }
 
-    private AnnotationV2 generateAnnotationV2(AnnoPage annoPage, String annoId){
+    private AnnotationV2 generateAnnotationV2(AnnoPage annoPage, String annoId, boolean includeContext){
         long start = System.currentTimeMillis();
-        AnnotationV2 result = EDM2IIIFMapping.getSingleAnnotationV2(annoPage, annoId);
+        AnnotationV2 result = EDM2IIIFMapping.getSingleAnnotationV2(annoPage, annoId, includeContext);
         if (LOG.isDebugEnabled()) {
             LOG.debug("Generated in {} ms ", System.currentTimeMillis() - start);
         }
         return result;
     }
 
-    private FullTextResource generateFullTextResource(Resource resource){
+    private FullTextResource generateFullTextResource(Resource resource, boolean includeContext){
         long start = System.currentTimeMillis();
-        FullTextResource result = EDM2IIIFMapping.getFullTextResource(resource);
+        FullTextResource result = EDM2IIIFMapping.getFullTextResource(resource, includeContext);
         if (LOG.isDebugEnabled()) {
             LOG.debug("Generated in {} ms ", System.currentTimeMillis() - start);
         }

@@ -73,43 +73,43 @@ public class FTControllerTest {
         AnnotationBodyV2    anb_01 = createAnnotationBodyV2("anb_01");
         AnnotationBodyV2    anb_02 = createAnnotationFullBodyV2("anb_02", FTBASEURL + "dataset_v2/local_v2/fulltext_v2", "en");
         AnnotationBodyV2    anb_03 = createAnnotationBodyV2("anb_03");
-        AnnotationV2        ann_01 = createAnnotationV2("ann_01", anb_01,
+        AnnotationV2        ann_01 = createAnnotationV2("ann_01", true, anb_01,
                                       new String[]{IIIFBASEURL + "dataset_v2/local_v2/canvas/page_v2#xywh=60,100,30,14"},
                                       "W", "sc:painting");
-        AnnotationV2        ann_02 = createAnnotationV2("ann_02", anb_02,
+        AnnotationV2        ann_02 = createAnnotationV2("ann_02", true, anb_02,
                                       new String[]{IIIFBASEURL + "dataset_v2/local_v2/canvas/page_v2#xywh=95,102,53,15"},
                                       "W", "sc:painting");
-        AnnotationV2        ann_03 = createAnnotationV2("ann_03", anb_03,
+        AnnotationV2        ann_03 = createAnnotationV2("ann_03", true, anb_03,
                                       new String[]{IIIFBASEURL + "dataset_v2/local_v2/canvas/page_v2#xywh=60,100,400,18"},
                                       "L", "sc:painting");
         AnnotationV2[]      ans_01 = new AnnotationV2[] {ann_01, ann_02, ann_03};
-        AnnotationPageV2    anp_01 = createAnnotationPageV2("anp_01", ans_01);
+        AnnotationPageV2    anp_01 = createAnnotationPageV2("anp_01", true, ans_01);
 
         AnnotationBodyV3    anb_11 = createAnnotationBodyV3("anb_11");
         AnnotationBodyV3    anb_12 = createAnnotationBodyV3("anb_12", FTBASEURL + "dataset_v3/local_v3/fulltext_v3", "en");
         AnnotationBodyV3    anb_13 = createAnnotationBodyV3("anb_13");
-        AnnotationV3        ann_11 = createAnnotationV3("ann_11", anb_11,
+        AnnotationV3        ann_11 = createAnnotationV3("ann_11", true, anb_11,
                                                         new String[]{IIIFBASEURL + "dataset_v3/local_v3/canvas/page_v3#xywh=64,97,54,16"},
                                                         "W", "sc:painting");
-        AnnotationV3        ann_12 = createAnnotationV3("ann_12", anb_12,
+        AnnotationV3        ann_12 = createAnnotationV3("ann_12", true, anb_12,
                                                         new String[]{IIIFBASEURL + "dataset_v3/local_v3/canvas/page_v3#xywh=119,95,29,17"},
                                                         "W", "sc:painting");
-        AnnotationV3        ann_13 = createAnnotationV3("ann_13", anb_13,
+        AnnotationV3        ann_13 = createAnnotationV3("ann_13", true, anb_13,
                                                         new String[]{IIIFBASEURL + "dataset_v3/local_v3/canvas/page_v3#xywh=60,96,407,19",
                                                                 IIIFBASEURL + "dataset_v3/local_v3/canvas/page_v3#xywh=59,138,133,25"},
                                                         "L", "sc:painting");
         AnnotationV3[]      ans_11 = new AnnotationV3[] {ann_11, ann_12, ann_13};
-        AnnotationPageV3    anp_11 = createAnnotationPageV3("anp_11", ans_11);
+        AnnotationPageV3    anp_11 = createAnnotationPageV3("anp_11", true, ans_11);
 
-        given(ftService.getAnnotationPageV2(any(), any(), any())).willReturn(anp_01);
-        given(ftService.getAnnotationV2(any(), any(), eq("an1"))).willReturn(ann_01);
-        given(ftService.getAnnotationV2(any(), any(), eq("an2"))).willReturn(ann_02);
-        given(ftService.getAnnotationV2(any(), any(), eq("an3"))).willReturn(ann_03);
+        given(ftService.getAnnotationPageV2(any(), any(), any(), eq(true))).willReturn(anp_01);
+        given(ftService.getAnnotationV2(any(), any(), eq("an1"), eq(true))).willReturn(ann_01);
+        given(ftService.getAnnotationV2(any(), any(), eq("an2"), eq(true))).willReturn(ann_02);
+        given(ftService.getAnnotationV2(any(), any(), eq("an3"), eq(true))).willReturn(ann_03);
 
-        given(ftService.getAnnotationPageV3(any(), any(), any())).willReturn(anp_11);
-        given(ftService.getAnnotationV3(any(), any(), eq("an1"))).willReturn(ann_11);
-        given(ftService.getAnnotationV3(any(), any(), eq("an2"))).willReturn(ann_12);
-        given(ftService.getAnnotationV3(any(), any(), eq("an3"))).willReturn(ann_13);
+        given(ftService.getAnnotationPageV3(any(), any(), any(), eq(true))).willReturn(anp_11);
+        given(ftService.getAnnotationV3(any(), any(), eq("an1"), eq(true))).willReturn(ann_11);
+        given(ftService.getAnnotationV3(any(), any(), eq("an2"), eq(true))).willReturn(ann_12);
+        given(ftService.getAnnotationV3(any(), any(), eq("an3"), eq(true))).willReturn(ann_13);
 
         given(ftService.serializeResource(anp_01)).willReturn(JSONLD_ANP_V2_OUTPUT);
         given(ftService.serializeResource(ann_01)).willReturn(JSONLD_ANN_V2_1_OUTPUT);
@@ -256,8 +256,8 @@ public class FTControllerTest {
 
 
 
-    private AnnotationPageV2 createAnnotationPageV2(String id, AnnotationV2[] resources){
-        AnnotationPageV2 anp = new AnnotationPageV2(id);
+    private AnnotationPageV2 createAnnotationPageV2(String id, boolean includeContext, AnnotationV2[] resources){
+        AnnotationPageV2 anp = new AnnotationPageV2(id, includeContext);
         anp.setResources(resources);
         return anp;
     }
@@ -273,8 +273,8 @@ public class FTControllerTest {
         return anb;
     }
 
-    private AnnotationV2 createAnnotationV2(String id, AnnotationBodyV2 resource, String[] on, String dcType, String motivation) {
-        AnnotationV2 ann = new AnnotationV2(id);
+    private AnnotationV2 createAnnotationV2(String id, boolean includeContext, AnnotationBodyV2 resource, String[] on, String dcType, String motivation) {
+        AnnotationV2 ann = new AnnotationV2(id, includeContext);
         ann.setContext(new String[]{MEDIA_TYPE_IIIF_V2, MEDIA_TYPE_EDM_JSONLD});
         ann.setResource(resource);
         ann.setOn(on);
@@ -283,8 +283,8 @@ public class FTControllerTest {
         return ann;
     }
 
-    private AnnotationPageV3 createAnnotationPageV3(String id, AnnotationV3[] items){
-        AnnotationPageV3 anp = new AnnotationPageV3(id);
+    private AnnotationPageV3 createAnnotationPageV3(String id, boolean includeContext, AnnotationV3[] items){
+        AnnotationPageV3 anp = new AnnotationPageV3(id, includeContext);
         anp.setItems(items);
         return anp;
     }
@@ -300,8 +300,8 @@ public class FTControllerTest {
         return anb;
     }
 
-    private AnnotationV3 createAnnotationV3(String id, AnnotationBodyV3 body, String[] target, String dcType, String motivation) {
-        AnnotationV3 ann = new AnnotationV3(id);
+    private AnnotationV3 createAnnotationV3(String id, boolean includeContext, AnnotationBodyV3 body, String[] target, String dcType, String motivation) {
+        AnnotationV3 ann = new AnnotationV3(id, includeContext);
         ann.setContext(new String[]{MEDIA_TYPE_IIIF_V2, MEDIA_TYPE_EDM_JSONLD});
         ann.setBody(body);
         ann.setTarget(target);

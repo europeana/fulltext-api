@@ -23,6 +23,7 @@ package eu.europeana.fulltext.api.config;
 public class FTDefinitions {
 
     public static final String MEDIA_TYPE_JSONLD          = "application/ld+json";
+    public static final String MEDIA_TYPE_JSON            = "application/json";
     public static final String V3_ANNO_PAGE_TYPE          = "AnnotationPage";
     public static final String V3_ANNOTATION_TYPE         = "Annotation";
     public static final String V3_ANNO_BODY_TYPE          = "SpecificResource";

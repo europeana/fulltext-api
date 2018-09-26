@@ -48,10 +48,16 @@ public class FullTextResource extends JsonLdIdType implements Serializable {
         this.value = value;
     }
 
+    public FullTextResource(String id, String language, String value, boolean includeContext) {
+        this(id, language, value);
+        if (!includeContext) {
+            context = null;
+        }
+    }
+
     public String getLanguage() {
         return language;
     }
-
 
     public String getValue() {
         return value;

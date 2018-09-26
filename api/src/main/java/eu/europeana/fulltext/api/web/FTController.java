@@ -58,9 +58,17 @@ public class FTController {
                            HttpServletResponse response) throws SerializationException {
         LOG.debug("Retrieve Annopage: " + datasetId + "/" + recordId + "/" + pageId);
 
+        boolean includeContext = true;
         HttpHeaders headers = new HttpHeaders();
         if (!isAcceptHeaderOK(request)){
             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+        }
+
+        if (StringUtils.containsIgnoreCase(request.getHeader("Accept"), MEDIA_TYPE_JSON)){
+            headers.add("Content-Type", MEDIA_TYPE_JSON);
+            includeContext = false;
+        } else {
+            headers.add("Content-Type", MEDIA_TYPE_JSONLD);
         }
 
         String iiifVersion = version;
@@ -71,15 +79,14 @@ public class FTController {
         Object annotationPage;
         try {
             if ("3".equalsIgnoreCase(iiifVersion)) {
-                annotationPage = fts.getAnnotationPageV3(datasetId, recordId, pageId);
+                annotationPage = fts.getAnnotationPageV3(datasetId, recordId, pageId, includeContext);
                 headers.add("Content-Type", MEDIA_TYPE_IIIF_JSONLD_V3);
             } else {
-                annotationPage = fts.getAnnotationPageV2(datasetId, recordId, pageId);
+                annotationPage = fts.getAnnotationPageV2(datasetId, recordId, pageId, includeContext);
                 headers.add("Content-Type", MEDIA_TYPE_IIIF_JSONLD_V2);
             }
         } catch (AnnoPageDoesNotExistException e) {
             LOG.error(e.getMessage(), e);
-            headers.add("Content-Type", MEDIA_TYPE_JSONLD);
             return new ResponseEntity<>(fts.serializeResource(new JsonErrorResponse(e.getMessage())),
                                         headers,
                                         HttpStatus.NOT_FOUND);
@@ -102,10 +109,19 @@ public class FTController {
                              HttpServletResponse response) throws SerializationException {
         LOG.debug("Retrieve Annotation: " + datasetId + "/" + recordId + "/" + annoID);
 
+        boolean includeContext = true;
         HttpHeaders headers = new HttpHeaders();
         if (!isAcceptHeaderOK(request)){
             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
         }
+
+        if (StringUtils.containsIgnoreCase(request.getHeader("Accept"), MEDIA_TYPE_JSON)){
+            headers.add("Content-Type", MEDIA_TYPE_JSON);
+            includeContext = false;
+        } else {
+            headers.add("Content-Type", MEDIA_TYPE_JSONLD);
+        }
+
         String iiifVersion = version;
         if (iiifVersion == null) {
             iiifVersion = versionFromAcceptHeader(request);
@@ -113,15 +129,14 @@ public class FTController {
         Object annotation;
         try {
             if ("3".equalsIgnoreCase(iiifVersion)) {
-                annotation = fts.getAnnotationV3(datasetId, recordId, annoID);
+                annotation = fts.getAnnotationV3(datasetId, recordId, annoID, includeContext);
                 headers.add("Content-Type", MEDIA_TYPE_IIIF_JSONLD_V3);
             } else {
-                annotation = fts.getAnnotationV2(datasetId, recordId, annoID);
+                annotation = fts.getAnnotationV2(datasetId, recordId, annoID, includeContext);
                 headers.add("Content-Type", MEDIA_TYPE_IIIF_JSONLD_V2);
             }
         } catch (AnnoPageDoesNotExistException e) {
             LOG.error(e.getMessage(), e);
-            headers.add("Content-Type", MEDIA_TYPE_JSONLD);
             return new ResponseEntity<>(fts.serializeResource(new JsonErrorResponse(e.getMessage())),
                                         headers,
                                         HttpStatus.NOT_FOUND);
@@ -143,22 +158,28 @@ public class FTController {
                                  HttpServletRequest request,
                                  HttpServletResponse response) throws SerializationException {
         LOG.debug("Retrieve Resource: " + datasetId + "/" + recordId + "/" + resId);
-
+        boolean includeContext = true;
         HttpHeaders headers = new HttpHeaders();
         if (!isAcceptHeaderOK(request)){
             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
         }
+
+        if (StringUtils.containsIgnoreCase(request.getHeader("Accept"), MEDIA_TYPE_JSON)){
+            headers.add("Content-Type", MEDIA_TYPE_JSON);
+            includeContext = false;
+        } else {
+            headers.add("Content-Type", MEDIA_TYPE_JSONLD);
+        }
+
         Object resource;
         try {
-            resource = fts.getFullTextResource(datasetId, recordId, resId);
+            resource = fts.getFullTextResource(datasetId, recordId, resId, includeContext);
         } catch (ResourceDoesNotExistException e) {
             LOG.error(e.getMessage(), e);
-            headers.add("Content-Type", MEDIA_TYPE_JSONLD);
             return new ResponseEntity<>(fts.serializeResource(new JsonErrorResponse(e.getMessage())),
                                         headers,
                                         HttpStatus.NOT_FOUND);
         }
-        response.setContentType(APPLICATION_JSON_VALUE);
         return new ResponseEntity<>(fts.serializeResource(resource),
                                     headers,
                                     HttpStatus.OK);
@@ -206,8 +227,8 @@ public class FTController {
         String accept = request.getHeader("Accept");
         return (StringUtils.isBlank(accept)) ||
                (StringUtils.containsIgnoreCase(accept, "*/*")) ||
-               (StringUtils.containsIgnoreCase(accept, "application/json")) ||
-               (StringUtils.containsIgnoreCase(accept, "application/ld+json"));
+               (StringUtils.containsIgnoreCase(accept, MEDIA_TYPE_JSON)) ||
+               (StringUtils.containsIgnoreCase(accept, MEDIA_TYPE_JSONLD));
     }
 
 

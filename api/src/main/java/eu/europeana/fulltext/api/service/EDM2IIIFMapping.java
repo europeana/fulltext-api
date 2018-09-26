@@ -63,8 +63,8 @@ public class EDM2IIIFMapping {
         EDM2IIIFMapping.fts = fts;
     }
 
-    static AnnotationPageV2 getAnnotationPageV2(AnnoPage annoPage){
-        AnnotationPageV2 annPage = new AnnotationPageV2(getAnnoPageIdUrl(annoPage));
+    static AnnotationPageV2 getAnnotationPageV2(AnnoPage annoPage, boolean includeContext){
+        AnnotationPageV2 annPage = new AnnotationPageV2(getAnnoPageIdUrl(annoPage), includeContext);
         annPage.setResources(getAnnotationV2Array(annoPage));
         return annPage;
     }
@@ -98,8 +98,8 @@ public class EDM2IIIFMapping {
         return ann;
     }
 
-    static AnnotationPageV3 getAnnotationPageV3(AnnoPage annoPage){
-        AnnotationPageV3 annPage = new AnnotationPageV3(getAnnoPageIdUrl(annoPage));
+    static AnnotationPageV3 getAnnotationPageV3(AnnoPage annoPage, boolean includeContext){
+        AnnotationPageV3 annPage = new AnnotationPageV3(getAnnoPageIdUrl(annoPage), includeContext);
         annPage.setItems(getAnnotationV3Array(annoPage));
         return annPage;
     }
@@ -133,18 +133,18 @@ public class EDM2IIIFMapping {
         return ann;
     }
 
-    static AnnotationV3 getSingleAnnotationV3(AnnoPage annoPage, String annoId){
+    static AnnotationV3 getSingleAnnotationV3(AnnoPage annoPage, String annoId, boolean includeContext){
         Annotation           annotation;
         Optional<Annotation> maybe = annoPage.getAns().stream().filter(o -> o.getAnId().equals(annoId)).findFirst();
         // NOTE this shouldn't fail because in that case the annoPage would not have been found in the first place
-        return maybe.map(annotation1 -> getAnnotationV3(annoPage, annotation1, true)).orElse(null);
+        return maybe.map(annotation1 -> getAnnotationV3(annoPage, annotation1, includeContext)).orElse(null);
     }
 
-    static AnnotationV2 getSingleAnnotationV2(AnnoPage annoPage, String annoId){
+    static AnnotationV2 getSingleAnnotationV2(AnnoPage annoPage, String annoId, boolean includeContext){
         Annotation           annotation;
         Optional<Annotation> maybe = annoPage.getAns().stream().filter(o -> o.getAnId().equals(annoId)).findFirst();
         // NOTE this shouldn't fail because in that case the annoPage would not have been found in the first place
-        return maybe.map(annotation1 -> getAnnotationV2(annoPage, annotation1, true)).orElse(null);
+        return maybe.map(annotation1 -> getAnnotationV2(annoPage, annotation1, includeContext)).orElse(null);
     }
 
     private static String[] getFTTargetArray(AnnoPage annoPage, Annotation annotation){
@@ -159,14 +159,14 @@ public class EDM2IIIFMapping {
         return ftTargetURLList.toArray(new String[0]);
     }
 
-    static FullTextResource getFullTextResource(Resource resource){
+    static FullTextResource getFullTextResource(Resource resource, boolean includeContext){
         return new FullTextResource(fts.getResourceBaseUrl()
                                     + resource.getDsId() + "/"
                                     + resource.getLcId() + "/"
                                     + resource.getId(),
-                resource.getLang(),
-                resource.getValue());
-
+                                    resource.getLang(),
+                                    resource.getValue(),
+                                    includeContext);
     }
 
     private static String getResourceIdUrl(AnnoPage annoPage, Annotation annotation){

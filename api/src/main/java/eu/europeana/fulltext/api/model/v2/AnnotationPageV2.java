@@ -43,6 +43,13 @@ public class AnnotationPageV2 extends JsonLdId implements Serializable{
         super(id);
     }
 
+    public AnnotationPageV2(String id, boolean includeContext) {
+        this(id);
+        if (!includeContext){
+            context = null;
+        }
+    }
+
     public AnnotationV2[] getResources() {
         return resources;
     }

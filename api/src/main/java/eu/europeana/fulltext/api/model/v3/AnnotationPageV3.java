@@ -44,6 +44,13 @@ public class AnnotationPageV3 extends JsonLdIdType implements Serializable{
         super(id, V3_ANNO_PAGE_TYPE);
     }
 
+    public AnnotationPageV3(String id, boolean includeContext) {
+        this(id);
+        if (!includeContext){
+            context = null;
+        }
+    }
+
     public AnnotationV3[] getItems() {
         return items;
     }

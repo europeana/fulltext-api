@@ -46,6 +46,13 @@ public class AnnotationV3 extends JsonLdIdType implements Serializable {
         super(id, V3_ANNOTATION_TYPE);
     }
 
+    public AnnotationV3(String id, boolean includeContext) {
+        this(id);
+        if (!includeContext){
+            context = null;
+        }
+    }
+
     public String[] getContext() {
         return context;
     }
