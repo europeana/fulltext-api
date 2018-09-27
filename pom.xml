@@ -35,6 +35,7 @@
 		<org.junit.platform.version>1.3.1</org.junit.platform.version>
 		<mockito.version>2.15.0</mockito.version>
 		<wiremock.version>2.18.0</wiremock.version>
+		<unitils.version>3.4.6</unitils.version>
 	</properties>
 
     <modules>
