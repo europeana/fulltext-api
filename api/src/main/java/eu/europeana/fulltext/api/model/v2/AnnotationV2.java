@@ -44,13 +44,6 @@ public class AnnotationV2 extends JsonLdId implements Serializable {
         super(id);
     }
 
-    public AnnotationV2(String id, boolean includeContext) {
-        this(id);
-        if (!includeContext){
-            context = null;
-        }
-    }
-
     public String[] getContext() {
         return context;
     }

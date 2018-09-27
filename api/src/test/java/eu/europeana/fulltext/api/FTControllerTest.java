@@ -1,13 +1,6 @@
 package eu.europeana.fulltext.api;
 
 
-import eu.europeana.fulltext.api.model.v2.AnnotationBodyV2;
-import eu.europeana.fulltext.api.model.v2.AnnotationFullBodyV2;
-import eu.europeana.fulltext.api.model.v2.AnnotationPageV2;
-import eu.europeana.fulltext.api.model.v2.AnnotationV2;
-import eu.europeana.fulltext.api.model.v3.AnnotationBodyV3;
-import eu.europeana.fulltext.api.model.v3.AnnotationPageV3;
-import eu.europeana.fulltext.api.model.v3.AnnotationV3;
 import eu.europeana.fulltext.api.service.FTService;
 import eu.europeana.fulltext.api.service.exception.AnnoPageDoesNotExistException;
 import eu.europeana.fulltext.api.service.exception.SerializationException;
@@ -18,24 +11,21 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_EDM_JSONLD;
+import static eu.europeana.fulltext.api.TestUtils.*;
 import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_IIIF_V2;
 import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_IIIF_V3;
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.startsWith;
 import static org.mockito.BDDMockito.eq;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.head;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
  * Test the application's controller
@@ -47,9 +37,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @WebMvcTest(FTController.class)
 //@AutoConfigureMockMvc
 public class FTControllerTest {
-
-    private static final String IIIFBASEURL = "https://iiif.europeana.eu/presentation/";
-    private static final String FTBASEURL = "http://data.europeana.eu/fulltext/";
 
 
     private static final String JSONLD_ANP_V2_OUTPUT    = "{AnnotationPage_V2 : JSONLD}";
@@ -70,55 +57,24 @@ public class FTControllerTest {
 
     @Before
     public void setup() throws AnnoPageDoesNotExistException, SerializationException {
-        AnnotationBodyV2    anb_01 = createAnnotationBodyV2("anb_01");
-        AnnotationBodyV2    anb_02 = createAnnotationFullBodyV2("anb_02", FTBASEURL + "dataset_v2/local_v2/fulltext_v2", "en");
-        AnnotationBodyV2    anb_03 = createAnnotationBodyV2("anb_03");
-        AnnotationV2        ann_01 = createAnnotationV2("ann_01", true, anb_01,
-                                      new String[]{IIIFBASEURL + "dataset_v2/local_v2/canvas/page_v2#xywh=60,100,30,14"},
-                                      "W", "sc:painting");
-        AnnotationV2        ann_02 = createAnnotationV2("ann_02", true, anb_02,
-                                      new String[]{IIIFBASEURL + "dataset_v2/local_v2/canvas/page_v2#xywh=95,102,53,15"},
-                                      "W", "sc:painting");
-        AnnotationV2        ann_03 = createAnnotationV2("ann_03", true, anb_03,
-                                      new String[]{IIIFBASEURL + "dataset_v2/local_v2/canvas/page_v2#xywh=60,100,400,18"},
-                                      "L", "sc:painting");
-        AnnotationV2[]      ans_01 = new AnnotationV2[] {ann_01, ann_02, ann_03};
-        AnnotationPageV2    anp_01 = createAnnotationPageV2("anp_01", true, ans_01);
+        given(ftService.getAnnotationPageV2(any(), any(), any(), eq(true))).willReturn(anpv2_1);
+        given(ftService.getAnnotationV2(any(), any(), eq("an1"), eq(true))).willReturn(annv2_1);
+        given(ftService.getAnnotationV2(any(), any(), eq("an2"), eq(true))).willReturn(annv2_2);
+        given(ftService.getAnnotationV2(any(), any(), eq("an3"), eq(true))).willReturn(annv2_3);
 
-        AnnotationBodyV3    anb_11 = createAnnotationBodyV3("anb_11");
-        AnnotationBodyV3    anb_12 = createAnnotationBodyV3("anb_12", FTBASEURL + "dataset_v3/local_v3/fulltext_v3", "en");
-        AnnotationBodyV3    anb_13 = createAnnotationBodyV3("anb_13");
-        AnnotationV3        ann_11 = createAnnotationV3("ann_11", true, anb_11,
-                                                        new String[]{IIIFBASEURL + "dataset_v3/local_v3/canvas/page_v3#xywh=64,97,54,16"},
-                                                        "W", "sc:painting");
-        AnnotationV3        ann_12 = createAnnotationV3("ann_12", true, anb_12,
-                                                        new String[]{IIIFBASEURL + "dataset_v3/local_v3/canvas/page_v3#xywh=119,95,29,17"},
-                                                        "W", "sc:painting");
-        AnnotationV3        ann_13 = createAnnotationV3("ann_13", true, anb_13,
-                                                        new String[]{IIIFBASEURL + "dataset_v3/local_v3/canvas/page_v3#xywh=60,96,407,19",
-                                                                IIIFBASEURL + "dataset_v3/local_v3/canvas/page_v3#xywh=59,138,133,25"},
-                                                        "L", "sc:painting");
-        AnnotationV3[]      ans_11 = new AnnotationV3[] {ann_11, ann_12, ann_13};
-        AnnotationPageV3    anp_11 = createAnnotationPageV3("anp_11", true, ans_11);
+        given(ftService.getAnnotationPageV3(any(), any(), any(), eq(true))).willReturn(anpv3_1);
+        given(ftService.getAnnotationV3(any(), any(), eq("an1"), eq(true))).willReturn(annv3_1);
+        given(ftService.getAnnotationV3(any(), any(), eq("an2"), eq(true))).willReturn(annv3_2);
+        given(ftService.getAnnotationV3(any(), any(), eq("an3"), eq(true))).willReturn(annv3_3);
 
-        given(ftService.getAnnotationPageV2(any(), any(), any(), eq(true))).willReturn(anp_01);
-        given(ftService.getAnnotationV2(any(), any(), eq("an1"), eq(true))).willReturn(ann_01);
-        given(ftService.getAnnotationV2(any(), any(), eq("an2"), eq(true))).willReturn(ann_02);
-        given(ftService.getAnnotationV2(any(), any(), eq("an3"), eq(true))).willReturn(ann_03);
-
-        given(ftService.getAnnotationPageV3(any(), any(), any(), eq(true))).willReturn(anp_11);
-        given(ftService.getAnnotationV3(any(), any(), eq("an1"), eq(true))).willReturn(ann_11);
-        given(ftService.getAnnotationV3(any(), any(), eq("an2"), eq(true))).willReturn(ann_12);
-        given(ftService.getAnnotationV3(any(), any(), eq("an3"), eq(true))).willReturn(ann_13);
-
-        given(ftService.serializeResource(anp_01)).willReturn(JSONLD_ANP_V2_OUTPUT);
-        given(ftService.serializeResource(ann_01)).willReturn(JSONLD_ANN_V2_1_OUTPUT);
-        given(ftService.serializeResource(ann_02)).willReturn(JSONLD_ANN_V2_2_OUTPUT);
-        given(ftService.serializeResource(ann_03)).willReturn(JSONLD_ANN_V2_3_OUTPUT);
-        given(ftService.serializeResource(anp_11)).willReturn(JSONLD_ANP_V3_OUTPUT);
-        given(ftService.serializeResource(ann_11)).willReturn(JSONLD_ANN_V3_1_OUTPUT);
-        given(ftService.serializeResource(ann_12)).willReturn(JSONLD_ANN_V3_2_OUTPUT);
-        given(ftService.serializeResource(ann_13)).willReturn(JSONLD_ANN_V3_3_OUTPUT);
+        given(ftService.serializeResource(anpv2_1)).willReturn(JSONLD_ANP_V2_OUTPUT);
+        given(ftService.serializeResource(annv2_1)).willReturn(JSONLD_ANN_V2_1_OUTPUT);
+        given(ftService.serializeResource(annv2_2)).willReturn(JSONLD_ANN_V2_2_OUTPUT);
+        given(ftService.serializeResource(annv2_3)).willReturn(JSONLD_ANN_V2_3_OUTPUT);
+        given(ftService.serializeResource(anpv3_1)).willReturn(JSONLD_ANP_V3_OUTPUT);
+        given(ftService.serializeResource(annv3_1)).willReturn(JSONLD_ANN_V3_1_OUTPUT);
+        given(ftService.serializeResource(annv3_2)).willReturn(JSONLD_ANN_V3_2_OUTPUT);
+        given(ftService.serializeResource(annv3_3)).willReturn(JSONLD_ANN_V3_3_OUTPUT);
 
         given(ftService.doesAnnoPageExist_exists(any(), any(), startsWith("a"))).willReturn(true);
         given(ftService.doesAnnoPageExist_exists(any(), any(), startsWith("z"))).willReturn(false);
@@ -254,60 +210,5 @@ public class FTControllerTest {
     }
 
 
-
-
-    private AnnotationPageV2 createAnnotationPageV2(String id, boolean includeContext, AnnotationV2[] resources){
-        AnnotationPageV2 anp = new AnnotationPageV2(id, includeContext);
-        anp.setResources(resources);
-        return anp;
-    }
-
-    private AnnotationBodyV2 createAnnotationBodyV2(String id){
-        return new AnnotationBodyV2(id);
-    }
-
-    private AnnotationFullBodyV2 createAnnotationFullBodyV2(String id, String full, String language){
-        AnnotationFullBodyV2 anb = new AnnotationFullBodyV2(id);
-        anb.setFull(full);
-        anb.setLanguage(language);
-        return anb;
-    }
-
-    private AnnotationV2 createAnnotationV2(String id, boolean includeContext, AnnotationBodyV2 resource, String[] on, String dcType, String motivation) {
-        AnnotationV2 ann = new AnnotationV2(id, includeContext);
-        ann.setContext(new String[]{MEDIA_TYPE_IIIF_V2, MEDIA_TYPE_EDM_JSONLD});
-        ann.setResource(resource);
-        ann.setOn(on);
-        ann.setDcType(dcType);
-        ann.setMotivation(motivation);
-        return ann;
-    }
-
-    private AnnotationPageV3 createAnnotationPageV3(String id, boolean includeContext, AnnotationV3[] items){
-        AnnotationPageV3 anp = new AnnotationPageV3(id, includeContext);
-        anp.setItems(items);
-        return anp;
-    }
-
-    private AnnotationBodyV3 createAnnotationBodyV3(String id){
-        return new AnnotationBodyV3(id);
-    }
-
-    private AnnotationBodyV3 createAnnotationBodyV3(String id, String source, String language){
-        AnnotationBodyV3 anb = new AnnotationBodyV3(id, "SpecificResource");
-        anb.setSource(source);
-        anb.setLanguage(language);
-        return anb;
-    }
-
-    private AnnotationV3 createAnnotationV3(String id, boolean includeContext, AnnotationBodyV3 body, String[] target, String dcType, String motivation) {
-        AnnotationV3 ann = new AnnotationV3(id, includeContext);
-        ann.setContext(new String[]{MEDIA_TYPE_IIIF_V2, MEDIA_TYPE_EDM_JSONLD});
-        ann.setBody(body);
-        ann.setTarget(target);
-        ann.setDcType(dcType);
-        ann.setMotivation(motivation);
-        return ann;
-    }
 
 }
