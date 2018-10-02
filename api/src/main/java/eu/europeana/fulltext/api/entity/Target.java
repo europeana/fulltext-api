@@ -30,6 +30,8 @@ public class Target {
     private Integer W;
     private Integer H;
 
+    public Target(){}
+
     public Target(Integer X, Integer Y, Integer W, Integer H) {
         this.X = X;
         this.Y = Y;

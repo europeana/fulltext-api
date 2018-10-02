@@ -17,10 +17,14 @@
 
 package eu.europeana.fulltext.api.repository.impl;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
 import eu.europeana.fulltext.api.entity.AnnoPage;
 import eu.europeana.fulltext.api.repository.AnnoPageRepository;
 import org.bson.types.ObjectId;
-import org.mongodb.morphia.Datastore;
+import org.mongodb.morphia.AdvancedDatastore;
 import org.mongodb.morphia.Key;
 import org.mongodb.morphia.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,12 +42,61 @@ public class AnnoPageRepositoryImpl extends BaseRepository<AnnoPage, ObjectId> i
     }
 
     @Autowired
-    private Datastore datastore;
+    private AdvancedDatastore datastore;
 
 
-    // psst ... fake to let it build
-    public boolean existsWithPageId(String datasetId, String localId, String pageId) {
-        return true;
+    /**
+     * Check if an AnnoPage exists that contains an Annotation that matches the given parameters
+     * using DBCursor = DBCollection.find().limit(1) & DBCursor.count()
+     * @param datasetId
+     * @param localId
+     * @param pageId
+     * @return true if yes, otherwise false
+     */
+    public boolean existsByLimitOne(String datasetId, String localId, String pageId) {
+        DBCollection col = datastore.getCollection(AnnoPage.class);
+        DBObject query= new BasicDBObject();
+        query.put("dsId", datasetId);
+        query.put("lcId", localId);
+        query.put("pgId", pageId);
+        DBCursor cur = col.find(query).limit(1);
+        int count = cur.count();
+        cur.close();
+        return (count >= 1);
+    }
+
+    /**
+     * Check if an AnnoPage exists that contains an Annotation that matches the given parameters
+     * using DBCollection.findOne()
+     * @param datasetId
+     * @param localId
+     * @param pageId
+     * @return true if yes, otherwise false
+     */
+    public boolean existsByFindOne(String datasetId, String localId, String pageId) {
+        DBCollection col = datastore.getCollection(AnnoPage.class);
+        DBObject query= new BasicDBObject();
+        query.put("dsId", datasetId);
+        query.put("lcId", localId);
+        query.put("pgId", pageId);
+        return (null != col.findOne(query));
+    }
+
+    /**
+     * Check if an AnnoPage exists that contains an Annotation that matches the given parameters
+     * using DBCollection.count()
+     * @param datasetId
+     * @param localId
+     * @param pageId
+     * @return true if yes, otherwise false
+     */
+    public boolean existsByCount(String datasetId, String localId, String pageId) {
+        DBCollection col = datastore.getCollection(AnnoPage.class);
+        DBObject query= new BasicDBObject();
+        query.put("dsId", datasetId);
+        query.put("lcId", localId);
+        query.put("pgId", pageId);
+        return (col.count(query) >= 1);
     }
 
     // psst ... fake to let it build

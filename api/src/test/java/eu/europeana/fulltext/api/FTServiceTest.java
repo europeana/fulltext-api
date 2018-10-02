@@ -65,7 +65,7 @@ public class FTServiceTest {
 
     @Before
     public void setup(){
-        given(apRepository.existsWithPageId(eq("dataset_1"), eq("local_1"), eq("page_1")))
+        given(apRepository.existsByLimitOne(eq("dataset_1"), eq("local_1"), eq("page_1")))
                 .willReturn(true);
         given(apRepository.findByDatasetLocalAndPageId(eq("dataset_1"), eq("local_1"), eq("page_1")))
                 .willReturn(anp_1);

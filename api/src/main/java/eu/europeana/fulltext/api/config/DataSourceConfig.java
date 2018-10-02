@@ -18,17 +18,21 @@
 package eu.europeana.fulltext.api.config;
 
 import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
+import org.mongodb.morphia.AdvancedDatastore;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
 /**
  * Created by luthien on 01/10/2018.
  */
 
+//@Component
 @Configuration
 public class DataSourceConfig {
     // Inject an instance of Spring-Boot MongoProperties
@@ -45,11 +49,12 @@ public class DataSourceConfig {
     }
 
     @Bean
-    public Datastore datastore(MongoClient mongoClient) {
+    public AdvancedDatastore datastore(MongoClient mongoClient) {
         // create the Datastore connecting to the default port on the local host
-        final Datastore datastore = morphia().createDatastore(mongoClient, mongoProperties.getDatabase());
-        datastore.ensureIndexes();
-
+        MongoClientURI          uri = new MongoClientURI(mongoProperties.getUri());
+        String                  defaultDatabase = uri.getDatabase();
+        final AdvancedDatastore datastore = (AdvancedDatastore) morphia().createDatastore(mongoClient, defaultDatabase);
+//        datastore.ensureIndexes();
         return datastore;
     }
 }

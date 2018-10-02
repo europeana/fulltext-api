@@ -47,6 +47,9 @@ public class AnnoPage {
     @Reference
     private Resource res;           // RESOURCE_BASE_URL/      /      /{resId} (= resource)
 
+
+    public AnnoPage(){}
+
     public AnnoPage(String dsId, String lcId, String pgId, String tgtId, Resource res) {
         this.dsId  = dsId;
         this.lcId  = lcId;

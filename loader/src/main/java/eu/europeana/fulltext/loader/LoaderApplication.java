@@ -10,7 +10,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
+//import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 /**
  * Main application and configuration.
@@ -20,7 +20,7 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
  */
 @SpringBootApplication
 @PropertySource(value = "classpath:build.properties", ignoreResourceNotFound = true)
-@EnableMongoRepositories(basePackages="eu.europeana.fulltext")
+//@EnableMongoRepositories(basePackages="eu.europeana.fulltext")
 public class LoaderApplication extends SpringBootServletInitializer {
 
 	/**

@@ -202,14 +202,12 @@ public class FTController {
      * @return
      */
     @RequestMapping(value    = {"/{datasetId}/{recordId}/annopage/{pageId}",
-            "/{datasetId}/{recordId}/annopage-exists/{pageId}"},
+            "/{datasetId}/{recordId}/annopage-limitone/{pageId}"},
                     method   = RequestMethod.HEAD)
-    public ResponseEntity annoPageHead_exists(@PathVariable String datasetId,
+    public ResponseEntity annoPageHead_existsOne(@PathVariable String datasetId,
                                               @PathVariable String recordId,
-                                              @PathVariable String pageId,
-                                              HttpServletRequest request,
-                                              HttpServletResponse response) throws RecordParseException {
-        if (fts.doesAnnoPageExist_exists(datasetId, recordId, pageId)){
+                                              @PathVariable String pageId) {
+        if (fts.doesAnnoPageExistByLimitOne(datasetId, recordId, pageId)){
             return new ResponseEntity(HttpStatus.OK);
         } else {
             return new ResponseEntity(HttpStatus.NOT_FOUND);
@@ -245,60 +243,36 @@ public class FTController {
 
     // ---- deprecated testing stuff ----
 
-//    /**
-//     * for testing HEAD request performance (EA-1239)
-//     * @return
-//     */
-//    @Deprecated
-//    @RequestMapping(value    = "/{datasetId}/{recordId}/annopage-findAll/{pageId}",
-//                    method   = RequestMethod.HEAD,
-//                    produces = APPLICATION_JSON_VALUE)
-//    public ResponseEntity annoPageHead_findAll(@PathVariable String datasetId,
-//                                       @PathVariable String recordId,
-//                                       @PathVariable String pageId,
-//                                       HttpServletRequest request,
-//                                       HttpServletResponse response) throws RecordParseException {
-//        if (fts.doesAnnoPageExist_findNotEmpty(datasetId, recordId, pageId)){
-//            return new ResponseEntity(HttpStatus.OK);
-//        } else {
-//            return new ResponseEntity(HttpStatus.NOT_FOUND);
-//        }
-//    }
-//
-//    /**
-//     * for testing HEAD request performance (EA-1239)
-//     * @return
-//     */
-//    @Deprecated
-//    @RequestMapping(value    = "/{datasetId}/{recordId}/annopage-findOne/{pageId}",
-//            method   = RequestMethod.HEAD,
-//            produces = APPLICATION_JSON_VALUE)
-//    public ResponseEntity annoPageHead_findOne(@PathVariable String datasetId,
-//                                       @PathVariable String recordId,
-//                                       @PathVariable String pageId,
-//                                       HttpServletRequest request,
-//                                       HttpServletResponse response) throws RecordParseException {
-//        if (fts.doesAnnoPageExist_findOneNotNull(datasetId, recordId, pageId)){
-//            return new ResponseEntity(HttpStatus.OK);
-//        } else {
-//            return new ResponseEntity(HttpStatus.NOT_FOUND);
-//        }
-//    }
+    /**
+     * for testing HEAD request performance (EA-1239)
+     * @return
+     */
+    @Deprecated
+    @RequestMapping(value    = "/{datasetId}/{recordId}/annopage-countone/{pageId}",
+                    method   = RequestMethod.HEAD,
+                    produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity annoPageHead_countOne(@PathVariable String datasetId,
+                                       @PathVariable String recordId,
+                                       @PathVariable String pageId) {
+        if (fts.doesAnnoPageExistByCount(datasetId, recordId, pageId)){
+            return new ResponseEntity(HttpStatus.OK);
+        } else {
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
+    }
 
     /**
      * for testing HEAD request performance (EA-1239)
      * @return
      */
     @Deprecated
-    @RequestMapping(value    = "/{datasetId}/{recordId}/annopage-count/{pageId}",
+    @RequestMapping(value    = "/{datasetId}/{recordId}/annopage-findone/{pageId}",
             method   = RequestMethod.HEAD,
             produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity annoPageHead_count(@PathVariable String datasetId,
+    public ResponseEntity annoPageHead_findOne(@PathVariable String datasetId,
                                        @PathVariable String recordId,
-                                       @PathVariable String pageId,
-                                       HttpServletRequest request,
-                                       HttpServletResponse response) throws RecordParseException {
-        if (fts.doesAnnoPageExist_countNotZero(datasetId, recordId, pageId)){
+                                       @PathVariable String pageId) {
+        if (fts.doesAnnoPageExistsByFindOne(datasetId, recordId, pageId)){
             return new ResponseEntity(HttpStatus.OK);
         } else {
             return new ResponseEntity(HttpStatus.NOT_FOUND);

@@ -76,8 +76,8 @@ public class FTControllerTest {
         given(ftService.serializeResource(annv3_2)).willReturn(JSONLD_ANN_V3_2_OUTPUT);
         given(ftService.serializeResource(annv3_3)).willReturn(JSONLD_ANN_V3_3_OUTPUT);
 
-        given(ftService.doesAnnoPageExist_exists(any(), any(), startsWith("a"))).willReturn(true);
-        given(ftService.doesAnnoPageExist_exists(any(), any(), startsWith("z"))).willReturn(false);
+        given(ftService.doesAnnoPageExistByLimitOne(any(), any(), startsWith("a"))).willReturn(true);
+        given(ftService.doesAnnoPageExistByLimitOne(any(), any(), startsWith("z"))).willReturn(false);
     }
 
     /**

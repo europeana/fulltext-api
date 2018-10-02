@@ -81,10 +81,15 @@
             <!--<groupId>org.springframework.boot</groupId>-->
             <!--<artifactId>spring-boot-starter-data-mongodb</artifactId>-->
         <!--</dependency>-->
+        <!--<dependency>-->
+        <!--<groupId>io.github.ganchix</groupId>-->
+        <!--<artifactId>morphia-spring-boot</artifactId>-->
+        <!--<version>${morphia-spring-boot.version}</version>-->
+        <!--</dependency>-->
         <dependency>
-            <groupId>io.github.ganchix</groupId>
-            <artifactId>morphia-spring-boot-starter</artifactId>
-            <version>${morphia-spring-boot.version}</version>
+            <groupId>org.mongodb.morphia</groupId>
+            <artifactId>morphia</artifactId>
+            <version>${morphia.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

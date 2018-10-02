@@ -20,7 +20,6 @@ package eu.europeana.fulltext.api.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.stereotype.Component;
 
 /**
@@ -32,9 +31,8 @@ import org.springframework.stereotype.Component;
 @Component
 @PropertySource("classpath:fulltext.properties")
 @PropertySource(value = "classpath:fulltext.user.properties", ignoreResourceNotFound = true)
-@EnableMongoRepositories(basePackages="eu.europeana.fulltext")
+//@EnableMongoRepositories(basePackages="eu.europeana.fulltext")
 public class FTSettings {
-
     private Boolean suppressParseException = false; // default value if we run this outside of Spring
 
     @Value("${annopage.baseurl}")

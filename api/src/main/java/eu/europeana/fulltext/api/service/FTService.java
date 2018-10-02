@@ -93,6 +93,8 @@ public class FTService {
         return mapper;
     }
 
+    // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
     public AnnotationPageV2 getAnnotationPageV2(String datasetId, String localId, String pageId, boolean includeContext)
             throws AnnoPageDoesNotExistException {
         return generateAnnoPageV2(fetchAnnoPage(datasetId, localId, pageId), includeContext);
@@ -125,9 +127,11 @@ public class FTService {
         }
     }
 
+    // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
     private AnnoPage fetchAnnoPage(String datasetId, String localId, String pageId)
             throws AnnoPageDoesNotExistException {
-        if (doesAnnoPageExist_exists(datasetId, localId, pageId)){
+        if (doesAnnoPageExistByLimitOne(datasetId, localId, pageId)){
             return annoPageRepositoryImpl.findByDatasetLocalAndPageId(datasetId, localId, pageId);
         } else {
             throw new AnnoPageDoesNotExistException("No AnnoPage with datasetId: " + datasetId + ", localId: "
@@ -145,15 +149,8 @@ public class FTService {
         }
     }
 
-//    @Deprecated // keeping this temporarily for testing speed (EA-1239)
-//    public boolean doesAnnoPageExist_findNotEmpty(String datasetId, String localId, String annoId){
-//        return !annoPageRepositoryImpl.findByDatasetLocalAndPageId(datasetId, localId, annoId).isEmpty();
-//    }
-//
-//    @Deprecated // keeping this temporarily for testing speed (EA-1239)
-//    public boolean doesAnnoPageExist_findOneNotNull(String datasetId, String localId, String annoId){
-//        return annoPageRepositoryImpl.findOneWithId(datasetId, localId, annoId) != null;
-//    }
+
+    // = = [ check Document existence ]= = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
     /**
      * Check if a particular annotation page with the provided ids exists or not
@@ -162,8 +159,18 @@ public class FTService {
      * @param pageId
      * @return true if it exists, otherwise false
      */
-    public boolean doesAnnoPageExist_exists(String datasetId, String localId, String pageId){
-        return annoPageRepositoryImpl.existsWithPageId(datasetId, localId, pageId);
+    public boolean doesAnnoPageExistByLimitOne(String datasetId, String localId, String pageId){
+        return annoPageRepositoryImpl.existsByLimitOne(datasetId, localId, pageId);
+    }
+
+    @Deprecated // keeping this temporarily for testing speed (EA-1239)
+    public boolean doesAnnoPageExistsByFindOne(String datasetId, String localId, String pageId){
+        return annoPageRepositoryImpl.existsByFindOne(datasetId, localId, pageId);
+    }
+
+    @Deprecated // keeping this temporarily for testing speed (EA-1239)
+    public boolean doesAnnoPageExistByCount(String datasetId, String localId, String pageId){
+        return annoPageRepositoryImpl.existsByCount(datasetId, localId, pageId);
     }
 
     /**
@@ -177,6 +184,11 @@ public class FTService {
         return annoPageRepositoryImpl.existsWithAnnoId(datasetId, localId, annoId);
     }
 
+    @Deprecated // keeping this temporarily for testing speed (EA-1239)
+    public boolean doesAnnoPageExist_countNotZero(String datasetId, String localId, String annoId){
+        return annoPageRepositoryImpl.countWithId(datasetId, localId, annoId) > 0;
+    }
+
     /**
      * Check if a particular resource with the provided ids exists or not
      * @param datasetId
@@ -188,10 +200,8 @@ public class FTService {
         return resourceRepositoryImpl.existsWithDatasetLocalAndResId(datasetId, localId, resId);
     }
 
-    @Deprecated // keeping this temporarily for testing speed (EA-1239)
-    public boolean doesAnnoPageExist_countNotZero(String datasetId, String localId, String annoId){
-        return annoPageRepositoryImpl.countWithId(datasetId, localId, annoId) > 0;
-    }
+
+    // = = [ generate JSON objects ] = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
     private AnnotationPageV3 generateAnnoPageV3(AnnoPage annoPage, boolean includeContext){
         long start = System.currentTimeMillis();
