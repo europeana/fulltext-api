@@ -9,21 +9,17 @@ import com.jayway.jsonpath.spi.json.JacksonJsonNodeJsonProvider;
 import com.jayway.jsonpath.spi.json.JsonProvider;
 import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
 import com.jayway.jsonpath.spi.mapper.MappingProvider;
-import eu.europeana.fulltext.api.config.FTDefinitions;
 import eu.europeana.fulltext.api.config.FTSettings;
 import eu.europeana.fulltext.api.entity.AnnoPage;
-import eu.europeana.fulltext.api.entity.Annotation;
 import eu.europeana.fulltext.api.entity.Resource;
-import eu.europeana.fulltext.api.entity.Target;
 import eu.europeana.fulltext.api.model.FullTextResource;
 import eu.europeana.fulltext.api.model.v2.AnnotationPageV2;
 import eu.europeana.fulltext.api.model.v2.AnnotationV2;
 import eu.europeana.fulltext.api.model.v3.AnnotationPageV3;
 import eu.europeana.fulltext.api.model.v3.AnnotationV3;
-import eu.europeana.fulltext.api.repository.AnnoPageRepository;
-import eu.europeana.fulltext.api.repository.ResourceRepository;
+import eu.europeana.fulltext.api.repository.impl.AnnoPageRepositoryImpl;
+import eu.europeana.fulltext.api.repository.impl.ResourceRepositoryImpl;
 import eu.europeana.fulltext.api.service.exception.*;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,8 +27,6 @@ import ioinformarics.oss.jackson.module.jsonld.JsonldModule;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -47,10 +41,10 @@ public class FTService {
     private static final Logger LOG      = LogManager.getLogger(FTService.class);
 
     @Autowired
-    ResourceRepository resourceRepository;
+    ResourceRepositoryImpl resourceRepositoryImpl;
 
     @Autowired
-    AnnoPageRepository annoPageRepository;
+    AnnoPageRepositoryImpl annoPageRepositoryImpl;
 
 
     // create a single objectMapper for efficiency purposes (see https://github.com/FasterXML/jackson-docs/wiki/Presentation:-Jackson-Performance)
@@ -123,7 +117,7 @@ public class FTService {
             throws ResourceDoesNotExistException {
         if (doesResourceExist_exists(datasetId, localId, resId)){
             return generateFullTextResource(
-                    resourceRepository.findByDatasetLocalAndResId(datasetId, localId, resId).get(0),
+                    resourceRepositoryImpl.findByDatasetLocalAndResId(datasetId, localId, resId),
                     includeContext);
         } else {
             throw new ResourceDoesNotExistException("No Fulltext Resource with resourceId: " + resId
@@ -134,7 +128,7 @@ public class FTService {
     private AnnoPage fetchAnnoPage(String datasetId, String localId, String pageId)
             throws AnnoPageDoesNotExistException {
         if (doesAnnoPageExist_exists(datasetId, localId, pageId)){
-            return annoPageRepository.findByDatasetLocalAndPageId(datasetId, localId, pageId).get(0);
+            return annoPageRepositoryImpl.findByDatasetLocalAndPageId(datasetId, localId, pageId);
         } else {
             throw new AnnoPageDoesNotExistException("No AnnoPage with datasetId: " + datasetId + ", localId: "
                       + localId + " and pageId: " + pageId + " could be found");
@@ -144,22 +138,22 @@ public class FTService {
     private AnnoPage fetchAPAnnotation(String datasetId, String localId, String annoId)
             throws AnnoPageDoesNotExistException {
         if (doesAnnotationExist_exists(datasetId, localId, annoId)){
-            return annoPageRepository.findByDatasetLocalAndAnnoId(datasetId, localId, annoId).get(0);
+            return annoPageRepositoryImpl.findByDatasetLocalAndAnnoId(datasetId, localId, annoId);
         } else {
             throw new AnnoPageDoesNotExistException("No AnnoPage with datasetId: " + datasetId + " and localId: "
                        + localId + " could be found that contains an Annotation with annotationId: " + annoId);
         }
     }
 
-    @Deprecated // keeping this temporarily for testing speed (EA-1239)
-    public boolean doesAnnoPageExist_findNotEmpty(String datasetId, String localId, String annoId){
-        return !annoPageRepository.findByDatasetLocalAndPageId(datasetId, localId, annoId).isEmpty();
-    }
-
-    @Deprecated // keeping this temporarily for testing speed (EA-1239)
-    public boolean doesAnnoPageExist_findOneNotNull(String datasetId, String localId, String annoId){
-        return annoPageRepository.findOneWithId(datasetId, localId, annoId) != null;
-    }
+//    @Deprecated // keeping this temporarily for testing speed (EA-1239)
+//    public boolean doesAnnoPageExist_findNotEmpty(String datasetId, String localId, String annoId){
+//        return !annoPageRepositoryImpl.findByDatasetLocalAndPageId(datasetId, localId, annoId).isEmpty();
+//    }
+//
+//    @Deprecated // keeping this temporarily for testing speed (EA-1239)
+//    public boolean doesAnnoPageExist_findOneNotNull(String datasetId, String localId, String annoId){
+//        return annoPageRepositoryImpl.findOneWithId(datasetId, localId, annoId) != null;
+//    }
 
     /**
      * Check if a particular annotation page with the provided ids exists or not
@@ -169,7 +163,7 @@ public class FTService {
      * @return true if it exists, otherwise false
      */
     public boolean doesAnnoPageExist_exists(String datasetId, String localId, String pageId){
-        return annoPageRepository.existsWithPageId(datasetId, localId, pageId);
+        return annoPageRepositoryImpl.existsWithPageId(datasetId, localId, pageId);
     }
 
     /**
@@ -180,7 +174,7 @@ public class FTService {
      * @return true if it exists, otherwise false
      */
     public boolean doesAnnotationExist_exists(String datasetId, String localId, String annoId){
-        return annoPageRepository.existsWithAnnoId(datasetId, localId, annoId);
+        return annoPageRepositoryImpl.existsWithAnnoId(datasetId, localId, annoId);
     }
 
     /**
@@ -191,12 +185,12 @@ public class FTService {
      * @return true if it exists, otherwise false
      */
     public boolean doesResourceExist_exists(String datasetId, String localId, String resId){
-        return resourceRepository.existsWithDatasetLocalAndResId(datasetId, localId, resId);
+        return resourceRepositoryImpl.existsWithDatasetLocalAndResId(datasetId, localId, resId);
     }
 
     @Deprecated // keeping this temporarily for testing speed (EA-1239)
     public boolean doesAnnoPageExist_countNotZero(String datasetId, String localId, String annoId){
-        return annoPageRepository.countWithId(datasetId, localId, annoId) > 0;
+        return annoPageRepositoryImpl.countWithId(datasetId, localId, annoId) > 0;
     }
 
     private AnnotationPageV3 generateAnnoPageV3(AnnoPage annoPage, boolean includeContext){

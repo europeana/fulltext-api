@@ -16,11 +16,26 @@
  */
 
 package eu.europeana.fulltext.api.repository;
-import org.bson.types.ObjectId;
 
-import eu.europeana.fulltext.api.entity.AnnoPage;
+import java.io.Serializable;
+
+import org.mongodb.morphia.Key;
+import org.mongodb.morphia.query.UpdateOperations;
+import org.mongodb.morphia.query.UpdateResults;
+
+import com.mongodb.WriteResult;
 
 /**
  * Created by luthien on 01/10/2018.
  */
-public interface AnnoPageRepository extends CrudRepository<AnnoPage, ObjectId>{}
+public interface CrudRepository<T, ID extends Serializable> {
+    public Key<T> create(T entity);
+
+    public T read(ID id);
+
+    public UpdateResults update(T entity, UpdateOperations<T> operations);
+
+    public WriteResult delete(T entity);
+
+    public UpdateOperations<T> createOperations();
+}

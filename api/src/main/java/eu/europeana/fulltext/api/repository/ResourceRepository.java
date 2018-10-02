@@ -18,47 +18,9 @@
 package eu.europeana.fulltext.api.repository;
 
 import eu.europeana.fulltext.api.entity.Resource;
-import org.springframework.data.mongodb.repository.DeleteQuery;
-import org.springframework.data.mongodb.repository.ExistsQuery;
-import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.data.mongodb.repository.Query;
-import org.springframework.data.rest.core.annotation.RepositoryRestResource;
-import org.springframework.stereotype.Repository;
-
-import java.util.List;
+import org.bson.types.ObjectId;
 
 /**
- * Created by luthien on 31/05/2018.
+ * Created by luthien on 01/10/2018.
  */
-@Repository
-@RepositoryRestResource(collectionResourceRel = "Resource", path = "Resource")
-public interface ResourceRepository extends MongoRepository<Resource, String> {
-
-    /**
-     * Check if a Resource exists that matches the given parameters
-     * @param datasetId
-     * @param localId
-     * @param resId
-     * @return Boolean.TRUE if yes, otherwise Boolean.FALSE
-     */
-    @ExistsQuery("{'dsId':'?0', 'lcId':'?1', 'id':'?2'}")
-    Boolean existsWithDatasetLocalAndResId(String datasetId, String localId, String resId);
-
-    /**
-     * Find a Resource that matches the given parameters
-     * @param datasetId
-     * @param localId
-     * @param resId
-     * @return List containing matching Resource(s) (should be just one)
-     */
-    @Query("{'dsId':'?0', 'lcId':'?1', 'id':'?2'}")
-    List<Resource> findByDatasetLocalAndResId(String datasetId, String localId, String resId);
-
-    /**
-     * Deletes all resources part of a particular dataset
-     * @param datasetId
-     * @return the number of deleted resources
-     */
-    @DeleteQuery("{'dsId':'?0'}")
-    long deleteDataset(String datasetId);
-}
+public interface ResourceRepository extends CrudRepository<Resource, String>{}

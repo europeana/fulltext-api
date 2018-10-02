@@ -245,45 +245,45 @@ public class FTController {
 
     // ---- deprecated testing stuff ----
 
-    /**
-     * for testing HEAD request performance (EA-1239)
-     * @return
-     */
-    @Deprecated
-    @RequestMapping(value    = "/{datasetId}/{recordId}/annopage-findAll/{pageId}",
-                    method   = RequestMethod.HEAD,
-                    produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity annoPageHead_findAll(@PathVariable String datasetId,
-                                       @PathVariable String recordId,
-                                       @PathVariable String pageId,
-                                       HttpServletRequest request,
-                                       HttpServletResponse response) throws RecordParseException {
-        if (fts.doesAnnoPageExist_findNotEmpty(datasetId, recordId, pageId)){
-            return new ResponseEntity(HttpStatus.OK);
-        } else {
-            return new ResponseEntity(HttpStatus.NOT_FOUND);
-        }
-    }
-
-    /**
-     * for testing HEAD request performance (EA-1239)
-     * @return
-     */
-    @Deprecated
-    @RequestMapping(value    = "/{datasetId}/{recordId}/annopage-findOne/{pageId}",
-            method   = RequestMethod.HEAD,
-            produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity annoPageHead_findOne(@PathVariable String datasetId,
-                                       @PathVariable String recordId,
-                                       @PathVariable String pageId,
-                                       HttpServletRequest request,
-                                       HttpServletResponse response) throws RecordParseException {
-        if (fts.doesAnnoPageExist_findOneNotNull(datasetId, recordId, pageId)){
-            return new ResponseEntity(HttpStatus.OK);
-        } else {
-            return new ResponseEntity(HttpStatus.NOT_FOUND);
-        }
-    }
+//    /**
+//     * for testing HEAD request performance (EA-1239)
+//     * @return
+//     */
+//    @Deprecated
+//    @RequestMapping(value    = "/{datasetId}/{recordId}/annopage-findAll/{pageId}",
+//                    method   = RequestMethod.HEAD,
+//                    produces = APPLICATION_JSON_VALUE)
+//    public ResponseEntity annoPageHead_findAll(@PathVariable String datasetId,
+//                                       @PathVariable String recordId,
+//                                       @PathVariable String pageId,
+//                                       HttpServletRequest request,
+//                                       HttpServletResponse response) throws RecordParseException {
+//        if (fts.doesAnnoPageExist_findNotEmpty(datasetId, recordId, pageId)){
+//            return new ResponseEntity(HttpStatus.OK);
+//        } else {
+//            return new ResponseEntity(HttpStatus.NOT_FOUND);
+//        }
+//    }
+//
+//    /**
+//     * for testing HEAD request performance (EA-1239)
+//     * @return
+//     */
+//    @Deprecated
+//    @RequestMapping(value    = "/{datasetId}/{recordId}/annopage-findOne/{pageId}",
+//            method   = RequestMethod.HEAD,
+//            produces = APPLICATION_JSON_VALUE)
+//    public ResponseEntity annoPageHead_findOne(@PathVariable String datasetId,
+//                                       @PathVariable String recordId,
+//                                       @PathVariable String pageId,
+//                                       HttpServletRequest request,
+//                                       HttpServletResponse response) throws RecordParseException {
+//        if (fts.doesAnnoPageExist_findOneNotNull(datasetId, recordId, pageId)){
+//            return new ResponseEntity(HttpStatus.OK);
+//        } else {
+//            return new ResponseEntity(HttpStatus.NOT_FOUND);
+//        }
+//    }
 
     /**
      * for testing HEAD request performance (EA-1239)

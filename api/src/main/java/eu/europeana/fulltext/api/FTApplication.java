@@ -24,7 +24,8 @@ import java.io.IOException;
  * Created on 27-02-2018
  */
 @SpringBootApplication
-@PropertySource(value = "classpath:build.properties", ignoreResourceNotFound = true)
+//@PropertySource(value = "classpath:build.properties", ignoreResourceNotFound = true)
+@PropertySource(value = "classpath:build.properties")
 public class FTApplication extends SpringBootServletInitializer {
 
 	/**

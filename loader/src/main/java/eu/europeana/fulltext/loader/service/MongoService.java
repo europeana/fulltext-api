@@ -4,8 +4,8 @@ import eu.europeana.fulltext.api.entity.AnnoPage;
 import eu.europeana.fulltext.api.entity.Resource;
 import eu.europeana.fulltext.api.entity.Annotation;
 import eu.europeana.fulltext.api.entity.Target;
-import eu.europeana.fulltext.api.repository.AnnoPageRepository;
-import eu.europeana.fulltext.api.repository.ResourceRepository;
+import eu.europeana.fulltext.api.repository.impl.AnnoPageRepositoryImpl;
+import eu.europeana.fulltext.api.repository.impl.ResourceRepositoryImpl;
 import eu.europeana.fulltext.loader.model.AnnoPageRdf;
 import eu.europeana.fulltext.loader.model.AnnotationRdf;
 import eu.europeana.fulltext.loader.model.TargetRdf;
@@ -28,10 +28,10 @@ public class MongoService {
     private static final Logger LOG = LogManager.getLogger(MongoService.class);
 
     @Autowired
-    ResourceRepository resourceRepository;
+    ResourceRepositoryImpl resourceRepositoryImpl;
 
     @Autowired
-    AnnoPageRepository annoPageRepository;
+    AnnoPageRepositoryImpl annoPageRepositoryImpl;
 
 
     public void saveAPList(List<AnnoPageRdf> apList, MongoSaveMode saveMode) {
@@ -63,7 +63,7 @@ public class MongoService {
         Resource result = null;
         try{
             result = new Resource(id, lang, value, dsId, lcId);
-            result = resourceRepository.save(result);
+//            result = resourceRepositoryImpl.save(result);
             LOG.info("{}/{} - resource saved with id {}", dsId, lcId, id);
         } catch (Exception e){
             LogFile.OUT.error("{}/{} - Error saving resource with id {}", dsId, lcId, id, e);
@@ -76,9 +76,9 @@ public class MongoService {
      * @param datasetId
      * @return the number of deleted resources
      */
-    public long deleteAllResources(String datasetId) {
-        return resourceRepository.deleteDataset(datasetId);
-    }
+//    public long deleteAllResources(String datasetId) {
+//        return resourceRepositoryImpl.deleteDataset(datasetId);
+//    }
 
     /**
      * Saves an AnnoPage object to the database with embedded Annotations and linking to a resource
@@ -89,7 +89,7 @@ public class MongoService {
     public AnnoPage saveAnnoPage(AnnoPageRdf annoPageRdf, Resource res) {
         AnnoPage result = null;
         try{
-            result = annoPageRepository.save(createAnnoPage(annoPageRdf, res));
+//            result = annoPageRepositoryImpl.save(createAnnoPage(annoPageRdf, res));
             LOG.debug("{}/{}/{} annopage saved");
         } catch (Exception e){
             LogFile.OUT.error("{}/{}/{} - Error saving AnnoPage", annoPageRdf.getDatasetId(), annoPageRdf.getLocalId(), annoPageRdf.getPageId(), e);
@@ -115,7 +115,8 @@ public class MongoService {
      * @return the number of deleted annopages
      */
     public long deleteAllAnnoPages(String datasetId) {
-        return annoPageRepository.deleteDataset(datasetId);
+//        return annoPageRepositoryImpl.deleteDataset(datasetId);
+        return 0l;
     }
 
     private List<Annotation> createAnnoList(AnnoPageRdf annoPageRdf, String dataSetId){

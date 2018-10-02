@@ -17,7 +17,7 @@ package eu.europeana.fulltext.loader.test;/*
 
 import eu.europeana.fulltext.api.entity.AnnoPage;
 import eu.europeana.fulltext.api.entity.Resource;
-import eu.europeana.fulltext.api.repository.AnnoPageRepository;
+import eu.europeana.fulltext.api.repository.impl.AnnoPageRepositoryImpl;
 import eu.europeana.fulltext.loader.config.LoaderSettings;
 import eu.europeana.fulltext.loader.exception.LoaderException;
 import eu.europeana.fulltext.loader.model.AnnoPageRdf;
@@ -27,6 +27,7 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mongodb.morphia.Key;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.test.context.TestPropertySource;
@@ -49,11 +50,11 @@ public class MongoIntegrationTest {
     private static AnnoPageRdf apRdf1;
 
     @Autowired
-    private LoaderSettings     settings;
+    private LoaderSettings         settings;
     @Autowired
-    private MongoService       mongoService;
+    private MongoService           mongoService;
     @Autowired
-    private AnnoPageRepository annoPageRepository;
+    private AnnoPageRepositoryImpl annoPageRepositoryImpl;
 
 
 
@@ -78,8 +79,8 @@ public class MongoIntegrationTest {
     public void test() {
         Resource res01  = new Resource("res01", "nl", "Er ligt tussen Regge en Dinkel een land");
         AnnoPage ap_in  = mongoService.createAnnoPage(apRdf1, res01);
-        AnnoPage ap_out = annoPageRepository.save(ap_in);
+        Key<AnnoPage> ap_key = annoPageRepositoryImpl.create(ap_in);
+        AnnoPage ap_out = annoPageRepositoryImpl.getAnnoPageByKey(ap_key);
         assertEquals(ap_out.getPgId(), ap_in.getPgId());
-
     }
 }

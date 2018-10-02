@@ -18,25 +18,19 @@
 package eu.europeana.fulltext.api;
 
 import eu.europeana.fulltext.api.config.FTSettings;
-import eu.europeana.fulltext.api.entity.AnnoPage;
 import eu.europeana.fulltext.api.model.v2.AnnotationPageV2;
 import eu.europeana.fulltext.api.model.v2.AnnotationV2;
 import eu.europeana.fulltext.api.model.v3.AnnotationPageV3;
 import eu.europeana.fulltext.api.model.v3.AnnotationV3;
-import eu.europeana.fulltext.api.repository.AnnoPageRepository;
-import eu.europeana.fulltext.api.repository.ResourceRepository;
+import eu.europeana.fulltext.api.repository.impl.AnnoPageRepositoryImpl;
+import eu.europeana.fulltext.api.repository.impl.ResourceRepositoryImpl;
 import eu.europeana.fulltext.api.service.EDM2IIIFMapping;
 import eu.europeana.fulltext.api.service.FTService;
 import eu.europeana.fulltext.api.service.exception.AnnoPageDoesNotExistException;
-import eu.europeana.fulltext.api.web.FTController;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
@@ -47,8 +41,6 @@ import java.util.Collections;
 import static eu.europeana.fulltext.api.TestUtils.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.anyObject;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.unitils.reflectionassert.ReflectionAssert.assertReflectionEquals;
@@ -66,9 +58,9 @@ public class FTServiceTest {
     private FTService ftService;
 
     @MockBean
-    private AnnoPageRepository apRepository;
+    private AnnoPageRepositoryImpl apRepository;
     @MockBean
-    private ResourceRepository resRepository;
+    private ResourceRepositoryImpl resRepository;
 
 
     @Before
@@ -76,19 +68,23 @@ public class FTServiceTest {
         given(apRepository.existsWithPageId(eq("dataset_1"), eq("local_1"), eq("page_1")))
                 .willReturn(true);
         given(apRepository.findByDatasetLocalAndPageId(eq("dataset_1"), eq("local_1"), eq("page_1")))
-                .willReturn(Collections.singletonList(anp_1));
+                .willReturn(anp_1);
+//                .willReturn(Collections.singletonList(anp_1));
         given(apRepository.existsWithAnnoId(eq("dataset_1"), eq("local_1"), eq("anno_1")))
                 .willReturn(true);
         given(apRepository.findByDatasetLocalAndAnnoId(eq("dataset_1"), eq("local_1"), eq("anno_1")))
-                .willReturn(Collections.singletonList(anp_1));
+                .willReturn(anp_1);
+//                .willReturn(Collections.singletonList(anp_1));
         given(apRepository.existsWithAnnoId(eq("dataset_1"), eq("local_1"), eq("anno_2")))
                 .willReturn(true);
         given(apRepository.findByDatasetLocalAndAnnoId(eq("dataset_1"), eq("local_1"), eq("anno_2")))
-                .willReturn(Collections.singletonList(anp_1));
+                .willReturn(anp_1);
+//                .willReturn(Collections.singletonList(anp_1));
         given(apRepository.existsWithAnnoId(eq("dataset_1"), eq("local_1"), eq("anno_3")))
                 .willReturn(true);
         given(apRepository.findByDatasetLocalAndAnnoId(eq("dataset_1"), eq("local_1"), eq("anno_3")))
-                .willReturn(Collections.singletonList(anp_1));
+                .willReturn(anp_1);
+//                .willReturn(Collections.singletonList(anp_1));
     }
 
 

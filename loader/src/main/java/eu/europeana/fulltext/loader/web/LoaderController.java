@@ -61,7 +61,7 @@ public class LoaderController {
         StringBuilder s = new StringBuilder("Deleted ");
         s.append(mongoService.deleteAllAnnoPages(datasetId));
         s.append(" annopages and ");
-        s.append(mongoService.deleteAllResources(datasetId));
+//        s.append(mongoService.deleteAllResources(datasetId));
         s.append(" resources");
         LogManager.getLogger(LoaderController.class).debug("Delete finished.");
         return s.toString();

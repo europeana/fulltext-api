@@ -17,9 +17,12 @@
 
 package eu.europeana.fulltext.api.entity;
 
+import org.mongodb.morphia.annotations.Embedded;
+
 /**
  * Created by luthien on 26/06/2018.
  */
+@Embedded
 public class Target {
 
     private Integer X;
