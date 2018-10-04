@@ -1,11 +1,12 @@
 package eu.europeana.fulltext.loader.service;
 
-import eu.europeana.fulltext.api.entity.AnnoPage;
-import eu.europeana.fulltext.api.entity.Resource;
-import eu.europeana.fulltext.api.entity.Annotation;
-import eu.europeana.fulltext.api.entity.Target;
-import eu.europeana.fulltext.api.repository.impl.AnnoPageRepositoryImpl;
-import eu.europeana.fulltext.api.repository.impl.ResourceRepositoryImpl;
+import eu.europeana.fulltext.common.entity.AnnoPage;
+import eu.europeana.fulltext.common.entity.Resource;
+import eu.europeana.fulltext.common.entity.Annotation;
+import eu.europeana.fulltext.common.entity.Target;
+import eu.europeana.fulltext.common.repository.impl.AnnoPageRepositoryImpl;
+import eu.europeana.fulltext.common.repository.impl.ResourceRepositoryImpl;
+import eu.europeana.fulltext.loader.exception.LoaderException;
 import eu.europeana.fulltext.loader.model.AnnoPageRdf;
 import eu.europeana.fulltext.loader.model.AnnotationRdf;
 import eu.europeana.fulltext.loader.model.TargetRdf;
@@ -34,7 +35,7 @@ public class MongoService {
     AnnoPageRepositoryImpl annoPageRepositoryImpl;
 
 
-    public void saveAPList(List<AnnoPageRdf> apList, MongoSaveMode saveMode) {
+    void saveAPList(List<AnnoPageRdf> apList, MongoSaveMode saveMode) throws LoaderException {
         LOG.debug("Saving {} annoPages...", apList.size());
         for (AnnoPageRdf annoPageRdf : apList){
 
@@ -59,14 +60,19 @@ public class MongoService {
      * @param lcId
      * @return the saved resource object
      */
-    public Resource saveResource(String id, String lang, String value, String dsId, String lcId) {
+    private Resource saveResource(String id, String lang, String value, String dsId, String lcId) throws
+                                                                                                  LoaderException {
         Resource result = null;
         try{
             result = new Resource(id, lang, value, dsId, lcId);
-//            result = resourceRepositoryImpl.save(result);
+            result = resourceRepositoryImpl.saveAndReturn(result);
             LOG.info("{}/{} - resource saved with id {}", dsId, lcId, id);
         } catch (Exception e){
             LogFile.OUT.error("{}/{} - Error saving resource with id {}", dsId, lcId, id, e);
+            throw new LoaderException("Error saving Resource with dsId: " + dsId +
+                                      ", lcId: " + lcId +
+                                      ", id:" + id +
+                                      ". Message: " + e.getMessage());
         }
         return result;
     }
@@ -76,29 +82,32 @@ public class MongoService {
      * @param datasetId
      * @return the number of deleted resources
      */
-//    public long deleteAllResources(String datasetId) {
-//        return resourceRepositoryImpl.deleteDataset(datasetId);
-//    }
+    public int deleteAllResources(String datasetId) {
+        return resourceRepositoryImpl.deleteDataset(datasetId);
+    }
 
     /**
      * Saves an AnnoPage object to the database with embedded Annotations and linking to a resource
      * @param annoPageRdf
      * @param res
-     * @return the saved AnnoPage object
      */
-    public AnnoPage saveAnnoPage(AnnoPageRdf annoPageRdf, Resource res) {
-        AnnoPage result = null;
+    private void saveAnnoPage(AnnoPageRdf annoPageRdf, Resource res) throws LoaderException {
         try{
-//            result = annoPageRepositoryImpl.save(createAnnoPage(annoPageRdf, res));
+            annoPageRepositoryImpl.save(createAnnoPage(annoPageRdf, res));
             LOG.debug("{}/{}/{} annopage saved");
         } catch (Exception e){
-            LogFile.OUT.error("{}/{}/{} - Error saving AnnoPage", annoPageRdf.getDatasetId(), annoPageRdf.getLocalId(), annoPageRdf.getPageId(), e);
+            LogFile.OUT.error("{}/{}/{} - Error saving AnnoPage",
+                              annoPageRdf.getDatasetId(), annoPageRdf.getLocalId(), annoPageRdf.getPageId(), e);
+
+            throw new LoaderException("Error saving Annopage with dsId: " + annoPageRdf.getDatasetId() +
+                                      ", lcId: " + annoPageRdf.getLocalId() +
+                                      ", pgId:" + annoPageRdf.getPageId() +
+                                      ". Message: " + e.getMessage());
         }
-        return result;
     }
 
 
-    public AnnoPage createAnnoPage(AnnoPageRdf annoPageRdf, Resource res) {
+    private AnnoPage createAnnoPage(AnnoPageRdf annoPageRdf, Resource res) {
         AnnoPage result = new AnnoPage(
                 annoPageRdf.getDatasetId(),
                 annoPageRdf.getLocalId(),
@@ -115,8 +124,7 @@ public class MongoService {
      * @return the number of deleted annopages
      */
     public long deleteAllAnnoPages(String datasetId) {
-//        return annoPageRepositoryImpl.deleteDataset(datasetId);
-        return 0l;
+        return annoPageRepositoryImpl.deleteDataset(datasetId);
     }
 
     private List<Annotation> createAnnoList(AnnoPageRdf annoPageRdf, String dataSetId){

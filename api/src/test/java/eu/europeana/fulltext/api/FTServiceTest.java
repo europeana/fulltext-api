@@ -22,8 +22,8 @@ import eu.europeana.fulltext.api.model.v2.AnnotationPageV2;
 import eu.europeana.fulltext.api.model.v2.AnnotationV2;
 import eu.europeana.fulltext.api.model.v3.AnnotationPageV3;
 import eu.europeana.fulltext.api.model.v3.AnnotationV3;
-import eu.europeana.fulltext.api.repository.impl.AnnoPageRepositoryImpl;
-import eu.europeana.fulltext.api.repository.impl.ResourceRepositoryImpl;
+import eu.europeana.fulltext.common.repository.impl.AnnoPageRepositoryImpl;
+import eu.europeana.fulltext.common.repository.impl.ResourceRepositoryImpl;
 import eu.europeana.fulltext.api.service.EDM2IIIFMapping;
 import eu.europeana.fulltext.api.service.FTService;
 import eu.europeana.fulltext.api.service.exception.AnnoPageDoesNotExistException;
@@ -36,11 +36,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.util.Collections;
-
 import static eu.europeana.fulltext.api.TestUtils.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.unitils.reflectionassert.ReflectionAssert.assertReflectionEquals;
@@ -67,22 +63,22 @@ public class FTServiceTest {
     public void setup(){
         given(apRepository.existsByLimitOne(eq("dataset_1"), eq("local_1"), eq("page_1")))
                 .willReturn(true);
-        given(apRepository.findByDatasetLocalAndPageId(eq("dataset_1"), eq("local_1"), eq("page_1")))
+        given(apRepository.findByDatasetLocalPageId(eq("dataset_1"), eq("local_1"), eq("page_1")))
                 .willReturn(anp_1);
 //                .willReturn(Collections.singletonList(anp_1));
         given(apRepository.existsWithAnnoId(eq("dataset_1"), eq("local_1"), eq("anno_1")))
                 .willReturn(true);
-        given(apRepository.findByDatasetLocalAndAnnoId(eq("dataset_1"), eq("local_1"), eq("anno_1")))
+        given(apRepository.findByDatasetLocalAnnoId(eq("dataset_1"), eq("local_1"), eq("anno_1")))
                 .willReturn(anp_1);
 //                .willReturn(Collections.singletonList(anp_1));
         given(apRepository.existsWithAnnoId(eq("dataset_1"), eq("local_1"), eq("anno_2")))
                 .willReturn(true);
-        given(apRepository.findByDatasetLocalAndAnnoId(eq("dataset_1"), eq("local_1"), eq("anno_2")))
+        given(apRepository.findByDatasetLocalAnnoId(eq("dataset_1"), eq("local_1"), eq("anno_2")))
                 .willReturn(anp_1);
 //                .willReturn(Collections.singletonList(anp_1));
         given(apRepository.existsWithAnnoId(eq("dataset_1"), eq("local_1"), eq("anno_3")))
                 .willReturn(true);
-        given(apRepository.findByDatasetLocalAndAnnoId(eq("dataset_1"), eq("local_1"), eq("anno_3")))
+        given(apRepository.findByDatasetLocalAnnoId(eq("dataset_1"), eq("local_1"), eq("anno_3")))
                 .willReturn(anp_1);
 //                .willReturn(Collections.singletonList(anp_1));
     }

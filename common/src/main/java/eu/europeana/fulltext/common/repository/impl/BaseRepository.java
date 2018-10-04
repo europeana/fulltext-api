@@ -15,19 +15,18 @@
  *  the Licence.
  */
 
-package eu.europeana.fulltext.api.repository.impl;
+package eu.europeana.fulltext.common.repository.impl;
 
 import java.io.Serializable;
 
 import com.mongodb.WriteResult;
-import eu.europeana.fulltext.api.repository.CrudRepository;
+import eu.europeana.fulltext.common.repository.CrudRepository;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Key;
 import org.mongodb.morphia.query.UpdateOperations;
 import org.mongodb.morphia.query.UpdateResults;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.io.Serializable;
 
 /**
  * Created by luthien on 01/10/2018.
@@ -37,7 +36,7 @@ public class BaseRepository <T, ID extends Serializable> implements CrudReposito
     private Datastore datastore;
     private Class<T> t;
 
-	public BaseRepository(Class<T> t) {
+	BaseRepository(Class<T> t) {
         this.t = t;
     }
 

@@ -1,6 +1,7 @@
 package eu.europeana.fulltext.loader.web;
 
 import eu.europeana.fulltext.loader.exception.ArchiveReadException;
+import eu.europeana.fulltext.loader.exception.LoaderException;
 import eu.europeana.fulltext.loader.service.LoadArchiveService;
 import eu.europeana.fulltext.loader.service.MongoSaveMode;
 import eu.europeana.fulltext.loader.service.MongoService;
@@ -45,8 +46,8 @@ public class LoaderController {
      */
     @GetMapping(value = "/zipbatch", produces = MediaType.TEXT_PLAIN_VALUE)
     public String zipbatch(@RequestParam(value = "archive", required = true) String archive,
-                           @RequestParam(value = "mode", required = false, defaultValue = "INSERT") MongoSaveMode saveMode)
-            throws ArchiveReadException {
+                           @RequestParam(value = "mode", required = false, defaultValue = "INSERT") MongoSaveMode saveMode) throws
+                                                                                                                            LoaderException {
         return loadArchiveService.importZipBatch(archive, saveMode);
     }
 
@@ -61,7 +62,7 @@ public class LoaderController {
         StringBuilder s = new StringBuilder("Deleted ");
         s.append(mongoService.deleteAllAnnoPages(datasetId));
         s.append(" annopages and ");
-//        s.append(mongoService.deleteAllResources(datasetId));
+        s.append(mongoService.deleteAllResources(datasetId));
         s.append(" resources");
         LogManager.getLogger(LoaderController.class).debug("Delete finished.");
         return s.toString();

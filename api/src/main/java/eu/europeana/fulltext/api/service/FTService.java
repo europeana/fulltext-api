@@ -10,15 +10,15 @@ import com.jayway.jsonpath.spi.json.JsonProvider;
 import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
 import com.jayway.jsonpath.spi.mapper.MappingProvider;
 import eu.europeana.fulltext.api.config.FTSettings;
-import eu.europeana.fulltext.api.entity.AnnoPage;
-import eu.europeana.fulltext.api.entity.Resource;
+import eu.europeana.fulltext.common.entity.AnnoPage;
+import eu.europeana.fulltext.common.entity.Resource;
 import eu.europeana.fulltext.api.model.FullTextResource;
 import eu.europeana.fulltext.api.model.v2.AnnotationPageV2;
 import eu.europeana.fulltext.api.model.v2.AnnotationV2;
 import eu.europeana.fulltext.api.model.v3.AnnotationPageV3;
 import eu.europeana.fulltext.api.model.v3.AnnotationV3;
-import eu.europeana.fulltext.api.repository.impl.AnnoPageRepositoryImpl;
-import eu.europeana.fulltext.api.repository.impl.ResourceRepositoryImpl;
+import eu.europeana.fulltext.common.repository.impl.AnnoPageRepositoryImpl;
+import eu.europeana.fulltext.common.repository.impl.ResourceRepositoryImpl;
 import eu.europeana.fulltext.api.service.exception.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -117,9 +117,9 @@ public class FTService {
 
     public FullTextResource getFullTextResource(String datasetId, String localId, String resId, boolean includeContext)
             throws ResourceDoesNotExistException {
-        if (doesResourceExist_exists(datasetId, localId, resId)){
+        if (doesResourceExist(datasetId, localId, resId)){
             return generateFullTextResource(
-                    resourceRepositoryImpl.findByDatasetLocalAndResId(datasetId, localId, resId),
+                    resourceRepositoryImpl.findByDatasetLocalResId(datasetId, localId, resId),
                     includeContext);
         } else {
             throw new ResourceDoesNotExistException("No Fulltext Resource with resourceId: " + resId
@@ -132,7 +132,7 @@ public class FTService {
     private AnnoPage fetchAnnoPage(String datasetId, String localId, String pageId)
             throws AnnoPageDoesNotExistException {
         if (doesAnnoPageExistByLimitOne(datasetId, localId, pageId)){
-            return annoPageRepositoryImpl.findByDatasetLocalAndPageId(datasetId, localId, pageId);
+            return annoPageRepositoryImpl.findByDatasetLocalPageId(datasetId, localId, pageId);
         } else {
             throw new AnnoPageDoesNotExistException("No AnnoPage with datasetId: " + datasetId + ", localId: "
                       + localId + " and pageId: " + pageId + " could be found");
@@ -141,8 +141,8 @@ public class FTService {
 
     private AnnoPage fetchAPAnnotation(String datasetId, String localId, String annoId)
             throws AnnoPageDoesNotExistException {
-        if (doesAnnotationExist_exists(datasetId, localId, annoId)){
-            return annoPageRepositoryImpl.findByDatasetLocalAndAnnoId(datasetId, localId, annoId);
+        if (doesAnnotationExist(datasetId, localId, annoId)){
+            return annoPageRepositoryImpl.findByDatasetLocalAnnoId(datasetId, localId, annoId);
         } else {
             throw new AnnoPageDoesNotExistException("No AnnoPage with datasetId: " + datasetId + " and localId: "
                        + localId + " could be found that contains an Annotation with annotationId: " + annoId);
@@ -180,13 +180,8 @@ public class FTService {
      * @param annoId
      * @return true if it exists, otherwise false
      */
-    public boolean doesAnnotationExist_exists(String datasetId, String localId, String annoId){
+    private boolean doesAnnotationExist(String datasetId, String localId, String annoId){
         return annoPageRepositoryImpl.existsWithAnnoId(datasetId, localId, annoId);
-    }
-
-    @Deprecated // keeping this temporarily for testing speed (EA-1239)
-    public boolean doesAnnoPageExist_countNotZero(String datasetId, String localId, String annoId){
-        return annoPageRepositoryImpl.countWithId(datasetId, localId, annoId) > 0;
     }
 
     /**
@@ -196,8 +191,8 @@ public class FTService {
      * @param resId
      * @return true if it exists, otherwise false
      */
-    public boolean doesResourceExist_exists(String datasetId, String localId, String resId){
-        return resourceRepositoryImpl.existsWithDatasetLocalAndResId(datasetId, localId, resId);
+    private boolean doesResourceExist(String datasetId, String localId, String resId){
+        return resourceRepositoryImpl.existsByLimitOne(datasetId, localId, resId);
     }
 
 

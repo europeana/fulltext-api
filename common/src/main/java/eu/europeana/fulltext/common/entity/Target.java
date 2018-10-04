@@ -15,7 +15,7 @@
  *  the Licence.
  */
 
-package eu.europeana.fulltext.api.entity;
+package eu.europeana.fulltext.common.entity;
 
 import org.mongodb.morphia.annotations.Embedded;
 

@@ -15,7 +15,7 @@
  *  the Licence.
  */
 
-package eu.europeana.fulltext.api.repository;
+package eu.europeana.fulltext.common.repository;
 
 import java.io.Serializable;
 
@@ -29,13 +29,13 @@ import com.mongodb.WriteResult;
  * Created by luthien on 01/10/2018.
  */
 public interface CrudRepository<T, ID extends Serializable> {
-    public Key<T> create(T entity);
+    Key<T> create(T entity);
 
-    public T read(ID id);
+    T read(ID id);
 
-    public UpdateResults update(T entity, UpdateOperations<T> operations);
+    UpdateResults update(T entity, UpdateOperations<T> operations);
 
-    public WriteResult delete(T entity);
+    WriteResult delete(T entity);
 
-    public UpdateOperations<T> createOperations();
+    UpdateOperations<T> createOperations();
 }

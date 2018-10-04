@@ -1,10 +1,8 @@
 package eu.europeana.fulltext.api.web;
 
-import eu.europeana.fulltext.api.config.FTDefinitions;
 import eu.europeana.fulltext.api.model.JsonErrorResponse;
 import eu.europeana.fulltext.api.service.FTService;
 import eu.europeana.fulltext.api.service.exception.AnnoPageDoesNotExistException;
-import eu.europeana.fulltext.api.service.exception.RecordParseException;
 import eu.europeana.fulltext.api.service.exception.ResourceDoesNotExistException;
 import eu.europeana.fulltext.api.service.exception.SerializationException;
 import org.apache.commons.lang3.StringUtils;
@@ -12,7 +10,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -39,9 +36,11 @@ public class FTController {
     private static final Logger LOG = LogManager.getLogger(FTController.class);
     /* for parsing accept headers */
     private Pattern acceptProfilePattern = Pattern.compile("profile=\"(.*?)\"");
+
     private FTService fts;
-    public FTController(FTService FTService) {
-        this.fts = FTService;
+
+    public FTController(FTService ftService) {
+        this.fts = ftService;
     }
 
 

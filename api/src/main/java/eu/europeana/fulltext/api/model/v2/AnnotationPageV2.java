@@ -39,7 +39,7 @@ public class AnnotationPageV2 extends JsonLdId implements Serializable{
     private String[] context = new String[]{MEDIA_TYPE_IIIF_V2, MEDIA_TYPE_EDM_JSONLD};
     private AnnotationV2[] resources;
 
-    public AnnotationPageV2(String id) {
+    private AnnotationPageV2(String id) {
         super(id);
     }
 

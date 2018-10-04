@@ -1,16 +1,10 @@
 package eu.europeana.fulltext.loader;
 
-import eu.europeana.fulltext.loader.config.LoaderSettings;
-import eu.europeana.fulltext.loader.service.LoadArchiveService;
-import eu.europeana.fulltext.loader.service.MongoService;
-import eu.europeana.fulltext.loader.service.XMLParserService;
-import eu.europeana.fulltext.loader.web.LoaderController;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.data.rest.RepositoryRestMvcAutoConfiguration;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.PropertySource;
-//import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 /**
  * Main application and configuration.
@@ -18,48 +12,14 @@ import org.springframework.context.annotation.PropertySource;
  * @author Lúthien
  * Created on 27-02-2018
  */
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {
+        "eu.europeana.fulltext.loader",
+        "eu.europeana.fulltext.common.repository",
+        "eu.europeana.fulltext.common.config"}, exclude = RepositoryRestMvcAutoConfiguration.class)
+
 @PropertySource(value = "classpath:build.properties", ignoreResourceNotFound = true)
-//@EnableMongoRepositories(basePackages="eu.europeana.fulltext")
 public class LoaderApplication extends SpringBootServletInitializer {
 
-	/**
-	 * Load configuration from loader.properties file
-	 */
-	@Bean
-	public LoaderSettings settings() { return new LoaderSettings(); }
-
-	/**
-	 * Service for parsing fulltext xml files
-	 */
-	@Bean
-	public XMLParserService xmlParserService() {
-		return new XMLParserService(settings());
-	}
-
-	/**
-	 * Connection to mongo
-	 */
-	@Bean
-	public MongoService mongoService() {
-		return new MongoService();
-	}
-
-
-	/**
-	 * Service that does the actual work, loading, parsing and sending data to Mongo
-	 */
-	@Bean
-	public LoadArchiveService loadArchiveService() { return new LoadArchiveService(xmlParserService(), mongoService(), settings());}
-
-
-	/**
-	 * Rest controller that handles all requests
-	 */
-	@Bean
-	public LoaderController loaderController() {
-		return new LoaderController(loadArchiveService(), mongoService());
-	}
 
 	/**
 	 * This method is called when starting as a Spring-Boot application (run this class from the IDE)

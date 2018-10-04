@@ -15,7 +15,7 @@
  *  the Licence.
  */
 
-package eu.europeana.fulltext.api.entity;
+package eu.europeana.fulltext.common.entity;
 
 import org.bson.types.ObjectId;
 import lombok.Data;

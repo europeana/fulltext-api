@@ -19,7 +19,6 @@ package eu.europeana.fulltext.loader.service;
 
 import eu.europeana.fulltext.loader.config.LoaderDefinitions;
 import eu.europeana.fulltext.loader.config.LoaderSettings;
-import eu.europeana.fulltext.loader.exception.ArchiveReadException;
 import eu.europeana.fulltext.loader.exception.LoaderException;
 import eu.europeana.fulltext.loader.model.AnnoPageRdf;
 import org.apache.commons.io.IOUtils;
@@ -66,7 +65,7 @@ public class LoadArchiveService extends SimpleFileVisitor<Path> {
      * @param saveMode
      * @return string containing summary of results (but only for a single zip, doesn't work for all archives yet)
      */
-    public String importZipBatch(String archive, MongoSaveMode saveMode) throws ArchiveReadException {
+    public String importZipBatch(String archive, MongoSaveMode saveMode) {
         String batchBaseDirectory = settings.getBatchBaseDirectory();
         String zipBatchDir = StringUtils.removeEnd(batchBaseDirectory, "/") + "/";
 
@@ -78,7 +77,11 @@ public class LoadArchiveService extends SimpleFileVisitor<Path> {
                 LogFile.OUT.error("I/O error occurred reading archives at: " + archive , e);
             }
         } else {
-            return processArchive(zipBatchDir + archive, saveMode);
+            try {
+                return processArchive(zipBatchDir + archive, saveMode);
+            } catch (LoaderException e) {
+                return "Unable to load data in MongoDB: " + e.getMessage();
+            }
         }
         return "Finished";
     }
@@ -100,7 +103,7 @@ public class LoadArchiveService extends SimpleFileVisitor<Path> {
      * Loads a zip file and starts processing it
      * @param path
      */
-    public String processArchive(String path, MongoSaveMode saveMode) throws ArchiveReadException {
+    public String processArchive(String path, MongoSaveMode saveMode) throws LoaderException {
         LogFile.setFileName(path);
         LogFile.OUT.info("Processing archive {} with save mode {}", path, saveMode);
 
@@ -116,7 +119,14 @@ public class LoadArchiveService extends SimpleFileVisitor<Path> {
             archive.stream()
                     .filter(p -> p.getName().contains(".xml"))
                     .filter(p -> !p.getName().startsWith("__"))
-                    .forEach(p -> parseArchiveFile(p, archive, progressLog, saveMode));
+                    .forEach(p -> {
+                        try {
+                            parseArchiveFile(p, archive, progressLog, saveMode);
+                        } catch (LoaderException e) {
+                            throw new LoaderException(e.getMessage(), e.getCause());
+                            e.printStackTrace();
+                        }
+                    });
 
             if (apCounter > 0) {
                 LOG.debug("... remaining {} xml files parsed, flushing to MongoDB ...", apCounter);
@@ -127,7 +137,7 @@ public class LoadArchiveService extends SimpleFileVisitor<Path> {
             }
         } catch (IOException  e) {
             LogFile.OUT.error("Unable to read archive {}", path, e);
-            throw new ArchiveReadException("Unable to read archive "+path, e);
+            return "Unable to read archive " + path + "; message:" + e.getMessage();
         }
 
         String results = progressLog.getResults();
@@ -135,7 +145,8 @@ public class LoadArchiveService extends SimpleFileVisitor<Path> {
         return results;
     }
 
-    private void parseArchiveFile(ZipEntry element, ZipFile archive, ProgressLogger progressLog, MongoSaveMode saveMode) {
+    private void parseArchiveFile(ZipEntry element, ZipFile archive, ProgressLogger progressLog, MongoSaveMode saveMode) throws
+                                                                                                                         LoaderException {
         LOG.debug("Parsing file {} ", element.getName());
         try (InputStream  inputStream = archive.getInputStream(element);
             StringWriter writer      = new StringWriter()) {
@@ -154,10 +165,6 @@ public class LoadArchiveService extends SimpleFileVisitor<Path> {
         catch (IOException e){
             progressLog.addItemFail();
             LogFile.OUT.error("{} - Unable to read file: {}", element.getName(), getRootCauseMsg(e), e);
-        }
-        catch (LoaderException e) {
-            progressLog.addItemFail();
-            LogFile.OUT.error("{} - Unable to process file: {}", element.getName(), getRootCauseMsg(e), e);
         }
 
         if (apCounter > 99){

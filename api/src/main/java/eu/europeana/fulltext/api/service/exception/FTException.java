@@ -7,8 +7,9 @@ package eu.europeana.fulltext.api.service.exception;
  * @author Lúthien
  * Created on 27-02-2018
  */
-public class FTException extends Exception {
+class FTException extends Exception {
 
+    private static final long serialVersionUID = 6584353234989077456L;
     private ErrorCode errorCode;
 
     public FTException(String msg, Throwable t) {

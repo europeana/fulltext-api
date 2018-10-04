@@ -1,6 +1,6 @@
 package eu.europeana.fulltext.api.web;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -19,11 +19,11 @@ import java.util.Properties;
  */
 public class SocksProxyConfigInjector {
 
-    public static final String SOCKS_ENABLED = "socks.enabled";
-    public static final String SOCKS_HOST = "socks.host";
-    public static final String SOCKS_PORT = "socks.port";
-    public static final String SOCKS_USER = "socks.user";
-    public static final String SOCKS_PASS = "socks.password";
+    private static final String SOCKS_ENABLED = "socks.enabled";
+    private static final String SOCKS_HOST    = "socks.host";
+    private static final String SOCKS_PORT    = "socks.port";
+    private static final String SOCKS_USER    = "socks.user";
+    private static final String SOCKS_PASS    = "socks.password";
 
     private static final Logger LOG = LogManager.getLogger(SocksProxyConfigInjector.class);
 
@@ -44,7 +44,7 @@ public class SocksProxyConfigInjector {
      *
      * @param properties
      */
-    public SocksProxyConfigInjector(Properties properties) {
+    private SocksProxyConfigInjector(Properties properties) {
         addProperties(properties);
     }
 
@@ -69,7 +69,7 @@ public class SocksProxyConfigInjector {
      *
      * @param properties
      */
-    public final void addProperties(Properties properties) {
+    private void addProperties(Properties properties) {
         props.putAll(properties);
     }
 
@@ -78,7 +78,7 @@ public class SocksProxyConfigInjector {
      *
      * @return true if there is at least a socks host defined and the socks enabled setting is true
      */
-    public boolean isValidConfiguration() {
+    private boolean isValidConfiguration() {
         String host = props.getProperty(SOCKS_HOST);
         Boolean enabled = Boolean.valueOf(props.getProperty(SOCKS_ENABLED));
 
@@ -118,7 +118,7 @@ public class SocksProxyConfigInjector {
         private String user;
         private char[] password;
 
-        public SockProxyAuthenticator(String user, String password) {
+        SockProxyAuthenticator(String user, String password) {
             this.user = user;
             this.password = password.toCharArray();
         }

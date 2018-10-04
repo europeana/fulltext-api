@@ -40,7 +40,7 @@ public class AnnotationPageV3 extends JsonLdIdType implements Serializable{
     private String[] context = new String[]{MEDIA_TYPE_IIIF_V3, MEDIA_TYPE_EDM_JSONLD};
     private AnnotationV3[] items;
 
-    public AnnotationPageV3(String id) {
+    private AnnotationPageV3(String id) {
         super(id, V3_ANNO_PAGE_TYPE);
     }
 

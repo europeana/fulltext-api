@@ -15,7 +15,7 @@
  *  the Licence.
  */
 
-package eu.europeana.fulltext.api.entity;
+package eu.europeana.fulltext.common.entity;
 
 import lombok.Data;
 import org.mongodb.morphia.annotations.*;
@@ -24,7 +24,7 @@ import org.mongodb.morphia.annotations.*;
  * Created by luthien on 31/05/2018.
  */
 @Data
-@Entity(value = "AnnoPage")
+@Entity(value = "Resource")
 @Indexes(@Index(fields = { @Field("dsId"), @Field("lcId"), @Field("_id") }, options = @IndexOptions(unique = true)))
 public class Resource {
 

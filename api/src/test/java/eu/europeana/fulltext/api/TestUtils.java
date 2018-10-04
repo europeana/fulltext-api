@@ -17,11 +17,10 @@
 
 package eu.europeana.fulltext.api;
 
-import eu.europeana.fulltext.api.config.FTSettings;
-import eu.europeana.fulltext.api.entity.AnnoPage;
-import eu.europeana.fulltext.api.entity.Annotation;
-import eu.europeana.fulltext.api.entity.Resource;
-import eu.europeana.fulltext.api.entity.Target;
+import eu.europeana.fulltext.common.entity.AnnoPage;
+import eu.europeana.fulltext.common.entity.Annotation;
+import eu.europeana.fulltext.common.entity.Resource;
+import eu.europeana.fulltext.common.entity.Target;
 import eu.europeana.fulltext.api.model.v2.AnnotationBodyV2;
 import eu.europeana.fulltext.api.model.v2.AnnotationFullBodyV2;
 import eu.europeana.fulltext.api.model.v2.AnnotationPageV2;
@@ -29,17 +28,6 @@ import eu.europeana.fulltext.api.model.v2.AnnotationV2;
 import eu.europeana.fulltext.api.model.v3.AnnotationBodyV3;
 import eu.europeana.fulltext.api.model.v3.AnnotationPageV3;
 import eu.europeana.fulltext.api.model.v3.AnnotationV3;
-import eu.europeana.fulltext.api.service.EDM2IIIFMapping;
-import eu.europeana.fulltext.api.service.FTService;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.stereotype.Component;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.Arrays;
 
@@ -51,7 +39,7 @@ import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_IIIF_V3;
  * Created by luthien on 26/09/2018.
  */
 
-public class TestUtils {
+class TestUtils {
 
     private static final String RESOURCEBASEURL     = "http://data.europeana.eu/fulltext/";
     private static final String IIIFBASEURL         = "https://iiif.europeana.eu/presentation/";
@@ -102,9 +90,9 @@ public class TestUtils {
         tgt_2 = new Target(95,102,53,15);
         tgt_3 = new Target(60,96,404,19);
         tgt_4 = new Target(59,138,133,25);
-        ann_1 = new Annotation("anno_1", "W", 0, 7, Arrays.asList(new Target[]{tgt_1}));
-        ann_2 = new Annotation("anno_2", "W", 9, 18, Arrays.asList(new Target[]{tgt_2}), "en");
-        ann_3 = new Annotation("anno_3", "L", 0, 214, Arrays.asList(new Target[]{tgt_3, tgt_4}));
+        ann_1 = new Annotation("anno_1", "W", 0, 7, Arrays.asList(tgt_1));
+        ann_2 = new Annotation("anno_2", "W", 9, 18, Arrays.asList(tgt_2), "en");
+        ann_3 = new Annotation("anno_3", "L", 0, 214, Arrays.asList(tgt_3, tgt_4));
         anp_1 = new AnnoPage(DS_ID, LCL_ID, "page_1", "target_1", res_1);
         anp_1.setAns(Arrays.asList(new Annotation[] {ann_1, ann_2, ann_3}));
         anp_1.setTgtId(getTargetIdBaseUrl("page_1"));

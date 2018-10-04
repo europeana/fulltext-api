@@ -38,11 +38,11 @@ public class FullTextResource extends JsonLdIdType implements Serializable {
     private String value;
 
 
-    public FullTextResource(String id) {
+    private FullTextResource(String id) {
         super(id, EDM_FULLTESTRESOURCE_TYPE);
     }
 
-    public FullTextResource(String id, String language, String value) {
+    private FullTextResource(String id, String language, String value) {
         this(id);
         this.language = language;
         this.value = value;

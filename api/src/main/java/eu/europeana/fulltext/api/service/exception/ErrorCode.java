@@ -11,7 +11,7 @@ public enum ErrorCode {
 
     private final String code;
 
-    private ErrorCode(String code) {
+    ErrorCode(String code) {
         this.code = code;
     }
 

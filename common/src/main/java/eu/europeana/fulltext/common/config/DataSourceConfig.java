@@ -15,18 +15,17 @@
  *  the Licence.
  */
 
-package eu.europeana.fulltext.api.config;
+package eu.europeana.fulltext.common.config;
 
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import org.mongodb.morphia.AdvancedDatastore;
-import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.PropertySource;
 
 /**
  * Created by luthien on 01/10/2018.
@@ -34,6 +33,8 @@ import org.springframework.stereotype.Component;
 
 //@Component
 @Configuration
+@PropertySource("classpath:fulltext.properties")
+@PropertySource(value = "classpath:fulltext.user.properties", ignoreResourceNotFound = true)
 public class DataSourceConfig {
     // Inject an instance of Spring-Boot MongoProperties
     @Autowired

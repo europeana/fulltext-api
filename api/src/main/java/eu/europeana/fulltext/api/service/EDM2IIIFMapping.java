@@ -18,10 +18,10 @@
 package eu.europeana.fulltext.api.service;
 
 import eu.europeana.fulltext.api.config.FTSettings;
-import eu.europeana.fulltext.api.entity.AnnoPage;
-import eu.europeana.fulltext.api.entity.Annotation;
-import eu.europeana.fulltext.api.entity.Resource;
-import eu.europeana.fulltext.api.entity.Target;
+import eu.europeana.fulltext.common.entity.AnnoPage;
+import eu.europeana.fulltext.common.entity.Annotation;
+import eu.europeana.fulltext.common.entity.Resource;
+import eu.europeana.fulltext.common.entity.Target;
 import eu.europeana.fulltext.api.model.FullTextResource;
 import eu.europeana.fulltext.api.model.v2.*;
 import eu.europeana.fulltext.api.model.v3.AnnotationPageV3;
@@ -187,7 +187,7 @@ public class EDM2IIIFMapping {
     }
 
     private static String expandDCType(String dcTypeCode){
-        String dcType = "";
+        String dcType;
         switch (StringUtils.upperCase(dcTypeCode)) {
             case "P":
                 dcType = "Page";

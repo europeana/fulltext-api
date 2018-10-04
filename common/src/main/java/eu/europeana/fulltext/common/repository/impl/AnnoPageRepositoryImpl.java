@@ -15,14 +15,11 @@
  *  the Licence.
  */
 
-package eu.europeana.fulltext.api.repository.impl;
+package eu.europeana.fulltext.common.repository.impl;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
-import eu.europeana.fulltext.api.entity.AnnoPage;
-import eu.europeana.fulltext.api.repository.AnnoPageRepository;
+import com.mongodb.*;
+import eu.europeana.fulltext.common.entity.AnnoPage;
+import eu.europeana.fulltext.common.repository.AnnoPageRepository;
 import org.bson.types.ObjectId;
 import org.mongodb.morphia.AdvancedDatastore;
 import org.mongodb.morphia.Key;
@@ -73,6 +70,7 @@ public class AnnoPageRepositoryImpl extends BaseRepository<AnnoPage, ObjectId> i
      * @param pageId
      * @return true if yes, otherwise false
      */
+    @Deprecated // keeping this temporarily for testing speed (EA-1239)
     public boolean existsByFindOne(String datasetId, String localId, String pageId) {
         DBCollection col = datastore.getCollection(AnnoPage.class);
         DBObject query= new BasicDBObject();
@@ -90,6 +88,7 @@ public class AnnoPageRepositoryImpl extends BaseRepository<AnnoPage, ObjectId> i
      * @param pageId
      * @return true if yes, otherwise false
      */
+    @Deprecated // keeping this temporarily for testing speed (EA-1239)
     public boolean existsByCount(String datasetId, String localId, String pageId) {
         DBCollection col = datastore.getCollection(AnnoPage.class);
         DBObject query= new BasicDBObject();
@@ -99,12 +98,34 @@ public class AnnoPageRepositoryImpl extends BaseRepository<AnnoPage, ObjectId> i
         return (col.count(query) >= 1);
     }
 
-    // psst ... fake to let it build
-    public int countWithId(String datasetId, String localId, String annoId) {
-        return 1;
+    /**
+     * Check if an AnnoPage exists that contains an Annotation that matches the given parameters
+     * @param datasetId
+     * @param localId
+     * @param annoId
+     * @return true if yes, otherwise false
+     */
+//    @ExistsQuery("{'dsId':'?0', 'lcId':'?1', 'ans.anId':'?2'}")
+    public boolean existsWithAnnoId(String datasetId, String localId, String annoId) {
+        DBCollection col = datastore.getCollection(AnnoPage.class);
+        DBObject query= new BasicDBObject();
+        query.put("dsId", datasetId);
+        query.put("lcId", localId);
+        query.put("ans.anId", annoId);
+        DBCursor cur = col.find(query).limit(1);
+        int count = cur.count();
+        cur.close();
+        return (count >= 1);
     }
 
-    public AnnoPage findByDatasetLocalAndPageId(String datasetId, String localId, String pageId) {
+    /**
+     * Find and return an AnnoPage that matches the given parameters
+     * @param datasetId
+     * @param localId
+     * @param pageId
+     * @return AnnoPage
+     */
+    public AnnoPage findByDatasetLocalPageId(String datasetId, String localId, String pageId) {
         Query<AnnoPage> findDLPQuery = datastore.createQuery(AnnoPage.class)
                 .filter("dsId ==", datasetId)
                 .filter("lcId ==", localId)
@@ -112,88 +133,47 @@ public class AnnoPageRepositoryImpl extends BaseRepository<AnnoPage, ObjectId> i
         return findDLPQuery.get();
     }
 
-    // psst ... fake to let it build
-    public boolean existsWithAnnoId(String datasetId, String localId, String annoId) {
-        return true;
-    }
-
-    // psst ... fake to let it build
-    public AnnoPage findByDatasetLocalAndAnnoId(String datasetId, String localId, String annoId) {
+    /**
+     * Find and return AnnoPage that contains an annotation that matches the given parameters
+     * @param datasetId
+     * @param localId
+     * @param annoId
+     * @return AnnoPage
+     */
+    public AnnoPage findByDatasetLocalAnnoId(String datasetId, String localId, String annoId) {
         Query<AnnoPage> findDLPQuery = datastore.createQuery(AnnoPage.class)
                                                 .filter("dsId ==", datasetId)
                                                 .filter("lcId ==", localId)
-                                                .filter("pgId ==", annoId);
+                                                .filter("ans.anId ==", annoId);
         return findDLPQuery.get();
     }
 
-
-
+    // used in MongoIntegrationTest
     public AnnoPage getAnnoPageByKey(Key<AnnoPage> key){
         return datastore.getByKey(AnnoPage.class, key);
     }
 
-//                                                        createQuery(AnnoPage.class)
-//                                                .and()
-//                                              .filter("user", user);
-//        datastore
-//    }
 
-//    /**
-//     * Check if an AnnoPage exists that matches the given parameters
-//     * @param datasetId
-//     * @param localId
-//     * @param pageId
-//     * @return Boolean.TRUE if yes, otherwise Boolean.FALSE
-//     */
-//    @ExistsQuery("{'dsId':'?0', 'lcId':'?1', 'pgId':'?2'}")
-//    Boolean existsWithPageId(String datasetId, String localId, String pageId);
-//
-//    /**
-//     * Find AnnoPage that matches the given parameters
-//     * @param datasetId
-//     * @param localId
-//     * @param pageId
-//     * @return List containing matching AnnoPage(s) (should be just one)
-//     */
-//    @Query("{'dsId':'?0', 'lcId':'?1', 'pgId':'?2'}")
-//    List<AnnoPage> findByDatasetLocalAndPageId(String datasetId, String localId, String pageId);
-//
-//    /**
-//     * Check if an AnnoPage exists that contains an Annotation that matches the given parameters
-//     * @param datasetId
-//     * @param localId
-//     * @param annoId
-//     * @return Boolean.TRUE if yes, otherwise Boolean.FALSE
-//     */
-//    @ExistsQuery("{'dsId':'?0', 'lcId':'?1', 'ans.anId':'?2'}")
-//    Boolean existsWithAnnoId(String datasetId, String localId, String annoId);
-//
-//    /**
-//     * Find AnnoPage that contains an annotation with the given parameters
-//     * @param datasetId
-//     * @param localId
-//     * @param annoId
-//     * @return List containing matching AnnoPage(s) (should be just one)
-//     */
-//    @Query("{'dsId':'?0', 'lcId':'?1', 'ans.anId':'?2'}")
-//    List<AnnoPage> findByDatasetLocalAndAnnoId(String datasetId, String localId, String annoId);
-//
-//    /**
-//     * Deletes all annotation pages part of a particular dataset
-//     * @param datasetId
-//     * @return the number of deleted annotation pages
-//     */
-//    @DeleteQuery("{'dsId':'?0'}")
-//    long deleteDataset(String datasetId);
-//
-//
-//    @Deprecated // keeping this temporarily for testing speed (EA-1239)
-//    @CountQuery("{'dsId':'?0', 'lcId':'?1', 'pgId':'?2'}")
-//    Integer countWithId(String datasetId, String localId, String pageId);
-//
-//    @Deprecated // keeping this temporarily for testing speed (EA-1239)
-//    @Query("{'dsId':'?0', 'lcId':'?1', 'pgId':'?2'}{ _id : 1}")
-//    AnnoPage findOneWithId(String datasetId, String localId, String pageId);
+    /**
+     * Deletes all annotation pages part of a particular dataset
+     * @param datasetId
+     * @return the number of deleted annotation pages
+     */
+    public int deleteDataset(String datasetId) {
+        DBCollection col = datastore.getCollection(AnnoPage.class);
+        DBObject deleteDSQuery= new BasicDBObject();
+        deleteDSQuery.put("dsId", datasetId);
+        WriteResult result = col.remove(deleteDSQuery);
+        return result.getN();
+    }
 
+    public AnnoPage saveAndReturn(AnnoPage apToSave){
+        Key<AnnoPage> apKeySaved = create(apToSave);
+        return (AnnoPage) getObjectByKey(AnnoPage.class, apKeySaved);
+    }
+
+    public void save(AnnoPage apToSave){
+        create(apToSave);
+    }
 
 }
