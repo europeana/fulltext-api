@@ -35,6 +35,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -100,19 +101,29 @@ public class LoadArchiveService extends SimpleFileVisitor<Path> {
     }
 
     /**
-     * Loads a zip file and starts processing it
+     * Work around problem with a lambda function throwing a LoaderException, by bypassing the compiler check.
+     * Not particularly elegant, but it works.
+     */
+    @SuppressWarnings("unchecked")
+    static <T extends Exception, R> R sneakyThrow(Exception t) throws T {
+        throw (T) t; // ( ͡° ͜ʖ ͡°)
+    }
+
+    /**
+     * Loads a zip file and starts processing it.
      * @param path
      */
     public String processArchive(String path, MongoSaveMode saveMode) throws LoaderException {
         LogFile.setFileName(path);
         LogFile.OUT.info("Processing archive {} with save mode {}", path, saveMode);
+        apList.clear();
+        apCounter = 0;
 
         ProgressLogger progressLog = new ProgressLogger(30);
         try (ZipFile archive = new ZipFile(path)) {
 
-            // Note that normally size() returns the number of files AND folders in the zip, but for some reason for
-            // newspaper archives it only returns the number of files, so no need to take folders into account
-            long size = archive.size();
+            // the size() method counts the folders as well
+            int size = getNrOfFiles(archive);
             LogFile.OUT.info("Archive has {} files", size);
             progressLog.setExpectedItems(size);
 
@@ -123,8 +134,7 @@ public class LoadArchiveService extends SimpleFileVisitor<Path> {
                         try {
                             parseArchiveFile(p, archive, progressLog, saveMode);
                         } catch (LoaderException e) {
-                            throw new LoaderException(e.getMessage(), e.getCause());
-                            e.printStackTrace();
+                            sneakyThrow(new LoaderException(e.getMessage(), e.getCause()));
                         }
                     });
 
@@ -145,8 +155,20 @@ public class LoadArchiveService extends SimpleFileVisitor<Path> {
         return results;
     }
 
-    private void parseArchiveFile(ZipEntry element, ZipFile archive, ProgressLogger progressLog, MongoSaveMode saveMode) throws
-                                                                                                                         LoaderException {
+    private int getNrOfFiles(ZipFile zips){
+        int count = 0;
+        Enumeration<? extends ZipEntry> zippies = zips.entries();
+        while (zippies.hasMoreElements()) {
+            ZipEntry zippy = zippies.nextElement();
+            if (!zippy.isDirectory()) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private void parseArchiveFile(ZipEntry element, ZipFile archive, ProgressLogger progressLog, MongoSaveMode saveMode)
+            throws LoaderException {
         LOG.debug("Parsing file {} ", element.getName());
         try (InputStream  inputStream = archive.getInputStream(element);
             StringWriter writer      = new StringWriter()) {
