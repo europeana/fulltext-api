@@ -26,13 +26,14 @@ import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_EDM_JSON
 import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_IIIF_V3;
 import static eu.europeana.fulltext.api.config.FTDefinitions.V3_ANNO_PAGE_TYPE;
 
+import eu.europeana.fulltext.api.model.AnnotationWrapper;
 import eu.europeana.fulltext.api.model.JsonLdIdType;
 
 /**
  * Created by luthien on 14/06/2018.
  */
 @JsonPropertyOrder({"context", "id"})
-public class AnnotationPageV3 extends JsonLdIdType implements Serializable{
+public class AnnotationPageV3 extends JsonLdIdType implements Serializable, AnnotationWrapper {
 
     private static final long serialVersionUID = 3567695991809278386L;
 
@@ -40,15 +41,8 @@ public class AnnotationPageV3 extends JsonLdIdType implements Serializable{
     private String[] context = new String[]{MEDIA_TYPE_IIIF_V3, MEDIA_TYPE_EDM_JSONLD};
     private AnnotationV3[] items;
 
-    private AnnotationPageV3(String id) {
+    public AnnotationPageV3(String id) {
         super(id, V3_ANNO_PAGE_TYPE);
-    }
-
-    public AnnotationPageV3(String id, boolean includeContext) {
-        this(id);
-        if (!includeContext){
-            context = null;
-        }
     }
 
     public AnnotationV3[] getItems() {
@@ -59,4 +53,13 @@ public class AnnotationPageV3 extends JsonLdIdType implements Serializable{
         this.items = items;
     }
 
+    @Override
+    public String[] getContext() {
+        return new String[0];
+    }
+
+    @Override
+    public void setContext(String[] context) {
+
+    }
 }

@@ -19,6 +19,7 @@ package eu.europeana.fulltext.api.model.v2;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import eu.europeana.fulltext.api.model.AnnotationWrapper;
 import ioinformarics.oss.jackson.module.jsonld.annotation.JsonldType;
 
 import java.io.Serializable;
@@ -31,7 +32,7 @@ import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_IIIF_V2;
  */
 @JsonldType(value = "sc:AnnotationList")
 @JsonPropertyOrder({"context", "id"})
-public class AnnotationPageV2 extends JsonLdId implements Serializable{
+public class AnnotationPageV2 extends JsonLdId implements Serializable, AnnotationWrapper {
 
     private static final long serialVersionUID = -491589144458820254L;
 
@@ -39,15 +40,8 @@ public class AnnotationPageV2 extends JsonLdId implements Serializable{
     private String[] context = new String[]{MEDIA_TYPE_IIIF_V2, MEDIA_TYPE_EDM_JSONLD};
     private AnnotationV2[] resources;
 
-    private AnnotationPageV2(String id) {
+    public AnnotationPageV2(String id) {
         super(id);
-    }
-
-    public AnnotationPageV2(String id, boolean includeContext) {
-        this(id);
-        if (!includeContext){
-            context = null;
-        }
     }
 
     public AnnotationV2[] getResources() {
@@ -58,4 +52,13 @@ public class AnnotationPageV2 extends JsonLdId implements Serializable{
         this.resources = resources;
     }
 
+    @Override
+    public String[] getContext() {
+        return new String[0];
+    }
+
+    @Override
+    public void setContext(String[] context) {
+
+    }
 }

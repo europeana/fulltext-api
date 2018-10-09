@@ -18,10 +18,9 @@
 package eu.europeana.fulltext.common.repository.impl;
 
 import com.mongodb.*;
-import eu.europeana.fulltext.common.entity.AnnoPage;
 import eu.europeana.fulltext.common.entity.Resource;
 import eu.europeana.fulltext.common.repository.ResourceRepository;
-import org.mongodb.morphia.Datastore;
+import org.mongodb.morphia.AdvancedDatastore;
 import org.mongodb.morphia.Key;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -38,7 +37,7 @@ public class ResourceRepositoryImpl extends BaseRepository<Resource, String> imp
     }
 
     @Autowired
-    private Datastore datastore;
+    private AdvancedDatastore datastore;
 
     /**
      * Check if a Resource exists that matches the given parameters

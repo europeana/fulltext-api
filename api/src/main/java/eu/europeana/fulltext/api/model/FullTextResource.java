@@ -42,17 +42,10 @@ public class FullTextResource extends JsonLdIdType implements Serializable {
         super(id, EDM_FULLTESTRESOURCE_TYPE);
     }
 
-    private FullTextResource(String id, String language, String value) {
+    public FullTextResource(String id, String language, String value) {
         this(id);
         this.language = language;
         this.value = value;
-    }
-
-    public FullTextResource(String id, String language, String value, boolean includeContext) {
-        this(id, language, value);
-        if (!includeContext) {
-            context = null;
-        }
     }
 
     public String getLanguage() {
@@ -61,6 +54,14 @@ public class FullTextResource extends JsonLdIdType implements Serializable {
 
     public String getValue() {
         return value;
+    }
+
+    public String getContext() {
+        return context;
+    }
+
+    public void setContext(String context) {
+        this.context = context;
     }
 }
 

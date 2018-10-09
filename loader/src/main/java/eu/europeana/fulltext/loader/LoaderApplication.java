@@ -1,8 +1,11 @@
 package eu.europeana.fulltext.loader;
 
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.data.rest.RepositoryRestMvcAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.PropertySource;
 
@@ -14,8 +17,7 @@ import org.springframework.context.annotation.PropertySource;
  */
 @SpringBootApplication(scanBasePackages = {
         "eu.europeana.fulltext.loader",
-        "eu.europeana.fulltext.common.repository",
-        "eu.europeana.fulltext.common.config"}, exclude = RepositoryRestMvcAutoConfiguration.class)
+        "eu.europeana.fulltext.common"}, exclude = RepositoryRestMvcAutoConfiguration.class)
 
 @PropertySource(value = "classpath:build.properties", ignoreResourceNotFound = true)
 public class LoaderApplication extends SpringBootServletInitializer {

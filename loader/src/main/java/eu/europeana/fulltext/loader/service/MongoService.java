@@ -107,7 +107,7 @@ public class MongoService {
     }
 
 
-    private AnnoPage createAnnoPage(AnnoPageRdf annoPageRdf, Resource res) {
+    public AnnoPage createAnnoPage(AnnoPageRdf annoPageRdf, Resource res) {
         AnnoPage result = new AnnoPage(
                 annoPageRdf.getDatasetId(),
                 annoPageRdf.getLocalId(),

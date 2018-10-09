@@ -21,7 +21,7 @@ import java.io.Serializable;
 
 import com.mongodb.WriteResult;
 import eu.europeana.fulltext.common.repository.CrudRepository;
-import org.mongodb.morphia.Datastore;
+import org.mongodb.morphia.AdvancedDatastore;
 import org.mongodb.morphia.Key;
 import org.mongodb.morphia.query.UpdateOperations;
 import org.mongodb.morphia.query.UpdateResults;
@@ -33,8 +33,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class BaseRepository <T, ID extends Serializable> implements CrudRepository<T, ID> {
     @Autowired
-    private Datastore datastore;
-    private Class<T> t;
+    private AdvancedDatastore datastore;
+    private Class<T>          t;
 
 	BaseRepository(Class<T> t) {
         this.t = t;

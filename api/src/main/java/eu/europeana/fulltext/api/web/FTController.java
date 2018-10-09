@@ -1,5 +1,7 @@
 package eu.europeana.fulltext.api.web;
 
+import eu.europeana.fulltext.api.model.AnnotationWrapper;
+import eu.europeana.fulltext.api.model.FullTextResource;
 import eu.europeana.fulltext.api.model.JsonErrorResponse;
 import eu.europeana.fulltext.api.service.FTService;
 import eu.europeana.fulltext.api.service.exception.AnnoPageDoesNotExistException;
@@ -80,13 +82,13 @@ public class FTController {
             media_type_iiif_v3 = MEDIA_TYPE_IIIF_JSONLD_V3;
         }
 
-        Object annotationPage;
+        AnnotationWrapper annotationPage;
         try {
             if ("3".equalsIgnoreCase(iiifVersion)) {
-                annotationPage = fts.getAnnotationPageV3(datasetId, recordId, pageId, includeContext);
+                annotationPage = fts.getAnnotationPageV3(datasetId, recordId, pageId);
                 headers.add("Content-Type", media_type_iiif_v3);
             } else {
-                annotationPage = fts.getAnnotationPageV2(datasetId, recordId, pageId, includeContext);
+                annotationPage = fts.getAnnotationPageV2(datasetId, recordId, pageId);
                 headers.add("Content-Type", media_type_iiif_v2);
             }
         } catch (AnnoPageDoesNotExistException e) {
@@ -95,6 +97,10 @@ public class FTController {
                                         headers,
                                         HttpStatus.NOT_FOUND);
         }
+        if (!includeContext){
+            annotationPage.setContext(null);
+        }
+
         return new ResponseEntity<>(fts.serializeResource(annotationPage),
                                     headers,
                                     HttpStatus.OK);
@@ -136,13 +142,13 @@ public class FTController {
             media_type_iiif_v3 = MEDIA_TYPE_IIIF_JSONLD_V3;
         }
 
-        Object annotation;
+        AnnotationWrapper annotation;
         try {
             if ("3".equalsIgnoreCase(iiifVersion)) {
-                annotation = fts.getAnnotationV3(datasetId, recordId, annoID, includeContext);
+                annotation = fts.getAnnotationV3(datasetId, recordId, annoID);
                 headers.add("Content-Type", media_type_iiif_v3);
             } else {
-                annotation = fts.getAnnotationV2(datasetId, recordId, annoID, includeContext);
+                annotation = fts.getAnnotationV2(datasetId, recordId, annoID);
                 headers.add("Content-Type", media_type_iiif_v2);
             }
         } catch (AnnoPageDoesNotExistException e) {
@@ -151,6 +157,11 @@ public class FTController {
                                         headers,
                                         HttpStatus.NOT_FOUND);
         }
+
+        if (!includeContext){
+            annotation.setContext(null);
+        }
+
         return new ResponseEntity<>(fts.serializeResource(annotation),
                                     headers,
                                     HttpStatus.OK);
@@ -181,14 +192,17 @@ public class FTController {
             headers.add("Content-Type", MEDIA_TYPE_JSONLD);
         }
 
-        Object resource;
+        FullTextResource resource;
         try {
-            resource = fts.getFullTextResource(datasetId, recordId, resId, includeContext);
+            resource = fts.getFullTextResource(datasetId, recordId, resId);
         } catch (ResourceDoesNotExistException e) {
             LOG.error(e.getMessage(), e);
             return new ResponseEntity<>(fts.serializeResource(new JsonErrorResponse(e.getMessage())),
                                         headers,
                                         HttpStatus.NOT_FOUND);
+        }
+        if (!includeContext){
+            resource.setContext(null);
         }
         return new ResponseEntity<>(fts.serializeResource(resource),
                                     headers,
