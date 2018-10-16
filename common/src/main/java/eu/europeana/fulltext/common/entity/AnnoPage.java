@@ -21,6 +21,9 @@ import org.bson.types.ObjectId;
 import lombok.Data;
 import org.mongodb.morphia.annotations.*;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -43,6 +46,7 @@ public class AnnoPage {
     private String           tgtId; // IIIF_API_BASE_URL/      /      /canvas/{tgtId} USE WHOLE URL!!
     private Annotation       pgAn;  // Annotation
     private List<Annotation> ans;   // List of Annotations
+    private Date             modified = Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant());
 
     @Reference
     private Resource res;           // RESOURCE_BASE_URL/      /      /{resId} (= resource)
@@ -112,5 +116,9 @@ public class AnnoPage {
 
     public void setAns(List<Annotation> ans) {
         this.ans = ans;
+    }
+
+    public Date getModified() {
+        return modified;
     }
 }

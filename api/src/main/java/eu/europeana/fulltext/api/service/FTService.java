@@ -93,6 +93,13 @@ public class FTService {
         return mapper;
     }
 
+    /**
+     * @return ManifestSettings object containing settings loaded from properties file
+     */
+    public FTSettings getSettings() {
+        return ftSettings;
+    }
+
     // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
     public AnnotationPageV2 getAnnotationPageV2(String datasetId, String localId, String pageId)
@@ -128,7 +135,7 @@ public class FTService {
 
     // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
-    private AnnoPage fetchAnnoPage(String datasetId, String localId, String pageId)
+    public AnnoPage fetchAnnoPage(String datasetId, String localId, String pageId)
             throws AnnoPageDoesNotExistException {
         if (doesAnnoPageExistByLimitOne(datasetId, localId, pageId)){
             return annoPageRepositoryImpl.findByDatasetLocalPageId(datasetId, localId, pageId);
@@ -138,7 +145,7 @@ public class FTService {
         }
     }
 
-    private AnnoPage fetchAPAnnotation(String datasetId, String localId, String annoId)
+    public AnnoPage fetchAPAnnotation(String datasetId, String localId, String annoId)
             throws AnnoPageDoesNotExistException {
         if (doesAnnotationExist(datasetId, localId, annoId)){
             return annoPageRepositoryImpl.findByDatasetLocalAnnoId(datasetId, localId, annoId);
@@ -197,7 +204,7 @@ public class FTService {
 
     // = = [ generate JSON objects ] = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
-    private AnnotationPageV3 generateAnnoPageV3(AnnoPage annoPage){
+    public AnnotationPageV3 generateAnnoPageV3(AnnoPage annoPage){
         long start = System.currentTimeMillis();
         AnnotationPageV3 result = EDM2IIIFMapping.getAnnotationPageV3(annoPage);
         if (LOG.isDebugEnabled()) {
@@ -206,7 +213,7 @@ public class FTService {
         return result;
     }
 
-    private AnnotationPageV2 generateAnnoPageV2(AnnoPage annoPage){
+    public AnnotationPageV2 generateAnnoPageV2(AnnoPage annoPage){
         long start = System.currentTimeMillis();
         AnnotationPageV2 result = EDM2IIIFMapping.getAnnotationPageV2(annoPage);
         if (LOG.isDebugEnabled()) {
@@ -215,7 +222,7 @@ public class FTService {
         return result;
     }
 
-    private AnnotationV3 generateAnnotationV3(AnnoPage annoPage, String annoId){
+    public AnnotationV3 generateAnnotationV3(AnnoPage annoPage, String annoId){
         long start = System.currentTimeMillis();
         AnnotationV3 result = EDM2IIIFMapping.getSingleAnnotationV3(annoPage, annoId);
         if (LOG.isDebugEnabled()) {
@@ -224,7 +231,7 @@ public class FTService {
         return result;
     }
 
-    private AnnotationV2 generateAnnotationV2(AnnoPage annoPage, String annoId){
+    public AnnotationV2 generateAnnotationV2(AnnoPage annoPage, String annoId){
         long start = System.currentTimeMillis();
         AnnotationV2 result = EDM2IIIFMapping.getSingleAnnotationV2(annoPage, annoId);
         if (LOG.isDebugEnabled()) {

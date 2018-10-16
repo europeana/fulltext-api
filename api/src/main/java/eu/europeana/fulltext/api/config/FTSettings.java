@@ -17,10 +17,15 @@
 
 package eu.europeana.fulltext.api.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
+
+import java.io.InputStream;
+import java.util.Properties;
 
 /**
  * Contains settings from fulltext.properties and fulltext.user.properties files
@@ -48,7 +53,10 @@ public class FTSettings {
     private String annoPageDirectory;
 
     @Value("${annotation.directory}")
-    private String annotationDirectory;
+    private String      annotationDirectory;
+
+    @Autowired
+    private Environment environment;
 
     /**
      * For production we want to suppress exceptions that arise from parsing record data, but for testing/debugging we
@@ -57,6 +65,22 @@ public class FTSettings {
      */
     public Boolean getSuppressParseException() {
         return suppressParseException;
+    }
+
+    /**
+     * Note: this does not work when running the exploded build from the IDE because the values in the build.properties
+     * are substituted only in the .war file. It returns 'default' in that case.
+     * @return String containing app version, used in the eTag SHA hash generation
+     */
+    public String getAppVersion() {
+        Properties  buildProperties  = new Properties();
+        InputStream resourceAsStream = this.getClass().getResourceAsStream("/build.properties");
+        try {
+            buildProperties.load(resourceAsStream);
+            return environment.getProperty("info.app.version");
+        } catch (Exception e) {
+            return "default";
+        }
     }
 
     public String getAnnoPageBaseUrl() {
