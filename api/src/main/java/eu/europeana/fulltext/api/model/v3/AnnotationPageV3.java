@@ -60,6 +60,6 @@ public class AnnotationPageV3 extends JsonLdIdType implements Serializable, Anno
 
     @Override
     public void setContext(String[] context) {
-
+        this.context = context;
     }
 }

@@ -72,16 +72,17 @@ public class EDM2IIIFMapping {
     private static AnnotationV2[] getAnnotationV2Array(AnnoPage annoPage){
         ArrayList<AnnotationV2> annoArrayList = new ArrayList<>();
         for (Annotation ftAnno : annoPage.getAns()){
-            annoArrayList.add(getAnnotationV2(annoPage, ftAnno));
+            annoArrayList.add(getAnnotationV2(annoPage, ftAnno, false));
         }
         return annoArrayList.toArray(new AnnotationV2[0]);
     }
 
-    private static AnnotationV2 getAnnotationV2(AnnoPage annoPage, Annotation annotation){
+    private static AnnotationV2 getAnnotationV2(AnnoPage annoPage, Annotation annotation, boolean includeContext){
         String       resourceIdUrl  = getResourceIdUrl(annoPage, annotation);
         AnnotationV2 ann            = new AnnotationV2(getAnnotationIdUrl(annoPage, annotation));
-        ann.setContext(new String[]{MEDIA_TYPE_IIIF_V2, MEDIA_TYPE_EDM_JSONLD});
-
+        if (includeContext){
+            ann.setContext(new String[]{MEDIA_TYPE_IIIF_V2, MEDIA_TYPE_EDM_JSONLD});
+        }
         ann.setMotivation(StringUtils.isNotBlank(annotation.getMotiv()) ? annotation.getMotiv() : V2_MOTIVATION);
         ann.setDcType(expandDCType(annotation.getDcType()));
         ann.setOn(getFTTargetArray(annoPage, annotation));
@@ -106,16 +107,18 @@ public class EDM2IIIFMapping {
     private static AnnotationV3[] getAnnotationV3Array(AnnoPage annoPage){
         ArrayList<AnnotationV3> annoArrayList = new ArrayList<>();
         for (Annotation ftAnno : annoPage.getAns()){
-            annoArrayList.add(getAnnotationV3(annoPage, ftAnno));
+            annoArrayList.add(getAnnotationV3(annoPage, ftAnno, false));
         }
         return annoArrayList.toArray(new AnnotationV3[0]);
     }
 
-    private static AnnotationV3 getAnnotationV3(AnnoPage annoPage, Annotation annotation){
+    private static AnnotationV3 getAnnotationV3(AnnoPage annoPage, Annotation annotation, boolean includeContext){
         String       body = getResourceIdUrl(annoPage, annotation);
         AnnotationV3 ann  = new AnnotationV3(getAnnotationIdUrl(annoPage, annotation));
         AnnotationBodyV3 anb;
-        ann.setContext(new String[]{MEDIA_TYPE_IIIF_V3, MEDIA_TYPE_EDM_JSONLD});
+        if (includeContext) {
+            ann.setContext(new String[]{MEDIA_TYPE_IIIF_V3, MEDIA_TYPE_EDM_JSONLD});
+        }
 
         ann.setMotivation(StringUtils.isNotBlank(annotation.getMotiv()) ? annotation.getMotiv() : V3_MOTIVATION);
         ann.setDcType(expandDCType(annotation.getDcType()));
@@ -132,17 +135,15 @@ public class EDM2IIIFMapping {
     }
 
     static AnnotationV3 getSingleAnnotationV3(AnnoPage annoPage, String annoId){
-        Annotation           annotation;
         Optional<Annotation> maybe = annoPage.getAns().stream().filter(o -> o.getAnId().equals(annoId)).findFirst();
         // NOTE this shouldn't fail because in that case the annoPage would not have been found in the first place
-        return maybe.map(annotation1 -> getAnnotationV3(annoPage, annotation1)).orElse(null);
+        return maybe.map(annotation1 -> getAnnotationV3(annoPage, annotation1, true)).orElse(null);
     }
 
     static AnnotationV2 getSingleAnnotationV2(AnnoPage annoPage, String annoId){
-        Annotation           annotation;
         Optional<Annotation> maybe = annoPage.getAns().stream().filter(o -> o.getAnId().equals(annoId)).findFirst();
         // NOTE this shouldn't fail because in that case the annoPage would not have been found in the first place
-        return maybe.map(annotation1 -> getAnnotationV2(annoPage, annotation1)).orElse(null);
+        return maybe.map(annotation1 -> getAnnotationV2(annoPage, annotation1, true)).orElse(null);
     }
 
     private static String[] getFTTargetArray(AnnoPage annoPage, Annotation annotation){
