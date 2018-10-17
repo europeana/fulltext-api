@@ -1,6 +1,7 @@
 package eu.europeana.fulltext.api;
 
 
+import eu.europeana.fulltext.api.config.FTSettings;
 import eu.europeana.fulltext.api.service.FTService;
 import eu.europeana.fulltext.api.service.exception.AnnoPageDoesNotExistException;
 import eu.europeana.fulltext.api.service.exception.SerializationException;
@@ -53,19 +54,32 @@ public class FTControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
-    private FTService ftService;
+    private FTService  ftService;
+    @MockBean
+    private FTSettings ftSettings;
 
     @Before
     public void setup() throws AnnoPageDoesNotExistException, SerializationException {
-        given(ftService.getAnnotationPageV2(any(), any(), any())).willReturn(anpv2_1);
-        given(ftService.getAnnotationV2(any(), any(), eq("an1"))).willReturn(annv2_1);
-        given(ftService.getAnnotationV2(any(), any(), eq("an2"))).willReturn(annv2_2);
-        given(ftService.getAnnotationV2(any(), any(), eq("an3"))).willReturn(annv2_3);
+//        given(ftService.getAnnotationPageV2(any(), any(), any())).willReturn(anpv2_1);
+//        given(ftService.getAnnotationV2(any(), any(), eq("an1"))).willReturn(annv2_1);
+//        given(ftService.getAnnotationV2(any(), any(), eq("an2"))).willReturn(annv2_2);
+//        given(ftService.getAnnotationV2(any(), any(), eq("an3"))).willReturn(annv2_3);
+//
+//        given(ftService.getAnnotationPageV3(any(), any(), any())).willReturn(anpv3_1);
+//        given(ftService.getAnnotationV3(any(), any(), eq("an1"))).willReturn(annv3_1);
+//        given(ftService.getAnnotationV3(any(), any(), eq("an2"))).willReturn(annv3_2);
+//        given(ftService.getAnnotationV3(any(), any(), eq("an3"))).willReturn(annv3_3);
 
-        given(ftService.getAnnotationPageV3(any(), any(), any())).willReturn(anpv3_1);
-        given(ftService.getAnnotationV3(any(), any(), eq("an1"))).willReturn(annv3_1);
-        given(ftService.getAnnotationV3(any(), any(), eq("an2"))).willReturn(annv3_2);
-        given(ftService.getAnnotationV3(any(), any(), eq("an3"))).willReturn(annv3_3);
+        given(ftService.fetchAnnoPage(any(), any(), any())).willReturn(anp_1);
+        given(ftService.generateAnnoPageV2(anp_1)).willReturn(anpv2_1);
+        given(ftService.generateAnnoPageV3(anp_1)).willReturn(anpv3_1);
+        given(ftService.fetchAPAnnotation(any(), any(), any())).willReturn(anp_1);
+        given(ftService.generateAnnotationV2(any(), eq("an1"))).willReturn(annv2_1);
+        given(ftService.generateAnnotationV2(any(), eq("an2"))).willReturn(annv2_2);
+        given(ftService.generateAnnotationV2(any(), eq("an3"))).willReturn(annv2_3);
+        given(ftService.generateAnnotationV3(any(), eq("an1"))).willReturn(annv3_1);
+        given(ftService.generateAnnotationV3(any(), eq("an2"))).willReturn(annv3_2);
+        given(ftService.generateAnnotationV3(any(), eq("an3"))).willReturn(annv3_3);
 
         given(ftService.serializeResource(anpv2_1)).willReturn(JSONLD_ANP_V2_OUTPUT);
         given(ftService.serializeResource(annv2_1)).willReturn(JSONLD_ANN_V2_1_OUTPUT);
@@ -78,6 +92,9 @@ public class FTControllerTest {
 
         given(ftService.doesAnnoPageExistByLimitOne(any(), any(), startsWith("a"))).willReturn(true);
         given(ftService.doesAnnoPageExistByLimitOne(any(), any(), startsWith("z"))).willReturn(false);
+
+        given(ftSettings.getAppVersion()).willReturn("v1.0-test");
+        given(ftService.getSettings()).willReturn(ftSettings);
     }
 
     /**

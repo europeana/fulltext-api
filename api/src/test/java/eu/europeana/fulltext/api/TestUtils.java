@@ -106,14 +106,14 @@ class TestUtils {
 
     public static void prepareAnnotationPageV2(){
         buildAnnotationBodiesV2();
-        buildAnnotationsV2();
+        buildAnnotationsV2(false);
         ansv2_1 = new AnnotationV2[] {annv2_1, annv2_2, annv2_3};
         anpv2_1 = createAnnotationPageV2("page_1", ansv2_1);
     }
 
     public static void prepareAnnotationPageV3(){
         buildAnnotationBodiesV3();
-        buildAnnotationsV3();
+        buildAnnotationsV3(false);
         ansv3_1 = new AnnotationV3[] {annv3_1, annv3_2, annv3_3};
         anpv3_1 = createAnnotationPageV3("page_1", ansv3_1);
     }
@@ -121,13 +121,13 @@ class TestUtils {
     // prepares Annotations entity beans only (Annotations WITH context)
     public static void prepareAnnotationsV2(){
         buildAnnotationBodiesV2();
-        buildAnnotationsV2();
+        buildAnnotationsV2(true);
     }
 
     // prepares Annotations entity beans only (Annotations WITH context)
     public static void prepareAnnotationsV3(){
         buildAnnotationBodiesV3();
-        buildAnnotationsV3();
+        buildAnnotationsV3(true);
     }
 
     private static void buildAnnotationBodiesV2(){
@@ -136,17 +136,17 @@ class TestUtils {
         anbv2_3 = createAnnotationBodyV2("0", "214", "fulltext_1");
     }
 
-    private static void buildAnnotationsV2(){
+    private static void buildAnnotationsV2(boolean includeContext){
         annv2_1 = createAnnotationV2("anno_1", anbv2_1,
                                      new String[]{getTargetIdUrl("page_1", "60","100","30","14")},
-                                     "Word");
+                                     "Word", includeContext);
         annv2_2 = createAnnotationV2("anno_2", anbv2_2,
                                      new String[]{getTargetIdUrl("page_1", "95","102","53","15")},
-                                     "Word");
+                                     "Word", includeContext);
         annv2_3 = createAnnotationV2("anno_3", anbv2_3,
                                      new String[]{getTargetIdUrl("page_1", "60","96","404","19"),
                                              getTargetIdUrl("page_1", "59","138","133","25")},
-                                     "Line");
+                                     "Line", includeContext);
     }
 
     private static void buildAnnotationBodiesV3(){
@@ -155,17 +155,17 @@ class TestUtils {
         anbv3_3 = createAnnotationBodyV3("0", "214", "fulltext_1");
     }
 
-    private static void buildAnnotationsV3(){
+    private static void buildAnnotationsV3(boolean includeContext){
         annv3_1 = createAnnotationV3("anno_1", anbv3_1,
                                      new String[]{getTargetIdUrl("page_1", "60","100","30","14")},
-                                     "Word");
+                                     "Word", includeContext);
         annv3_2 = createAnnotationV3("anno_2", anbv3_2,
                                      new String[]{getTargetIdUrl("page_1", "95","102","53","15")},
-                                     "Word");
+                                     "Word", includeContext);
         annv3_3 = createAnnotationV3("anno_3", anbv3_3,
                                      new String[]{getTargetIdUrl("page_1", "60","96","404","19"),
                                              getTargetIdUrl("page_1", "59","138","133","25")},
-                                     "Line");
+                                     "Line", includeContext);
     }
 
     private static AnnotationPageV2 createAnnotationPageV2(String pageId, AnnotationV2[] resources){
@@ -186,10 +186,9 @@ class TestUtils {
     }
 
     private static AnnotationV2 createAnnotationV2(String annoId, AnnotationBodyV2 resource,
-                                                   String[] on, String dcType) {
+                                                   String[] on, String dcType, boolean includeContext) {
         AnnotationV2 ann = new AnnotationV2(getAnnoIdUrl(annoId));
-        ann.setContext(new String[]{MEDIA_TYPE_IIIF_V2, MEDIA_TYPE_EDM_JSONLD});
-
+        if (includeContext) ann.setContext(new String[]{MEDIA_TYPE_IIIF_V2, MEDIA_TYPE_EDM_JSONLD});
         ann.setResource(resource);
         ann.setOn(on);
         ann.setDcType(dcType);
@@ -215,10 +214,9 @@ class TestUtils {
     }
 
     private static AnnotationV3 createAnnotationV3(String annoId, AnnotationBodyV3 body,
-                                                   String[] target, String dcType) {
+                                                   String[] target, String dcType, boolean includeContext) {
         AnnotationV3 ann = new AnnotationV3(getAnnoIdUrl(annoId));
-        ann.setContext(new String[]{MEDIA_TYPE_IIIF_V3, MEDIA_TYPE_EDM_JSONLD});
-
+        if (includeContext) ann.setContext(new String[]{MEDIA_TYPE_IIIF_V3, MEDIA_TYPE_EDM_JSONLD});
         ann.setBody(body);
         ann.setTarget(target);
         ann.setDcType(dcType);

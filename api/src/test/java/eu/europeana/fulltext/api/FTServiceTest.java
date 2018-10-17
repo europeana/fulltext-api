@@ -89,8 +89,7 @@ public class FTServiceTest {
     @Test
     public void testGetAnnotationPageV2() throws AnnoPageDoesNotExistException {
         prepareAnnotationPageV2();
-        AnnotationPageV2 ap = ftService.getAnnotationPageV2(
-                "dataset_1", "local_1", "page_1");
+        AnnotationPageV2 ap = ftService.generateAnnoPageV2(ftService.fetchAnnoPage("dataset_1", "local_1", "page_1"));
         assertReflectionEquals(anpv2_1, ap);
     }
 
@@ -102,40 +101,39 @@ public class FTServiceTest {
     @Test
     public void testGetAnnotationPageV3() throws AnnoPageDoesNotExistException {
         prepareAnnotationPageV3();
-        AnnotationPageV3 ap = ftService.getAnnotationPageV3(
-                "dataset_1", "local_1", "page_1");
+        AnnotationPageV3 ap = ftService.generateAnnoPageV3(ftService.fetchAnnoPage("dataset_1", "local_1", "page_1"));
         assertReflectionEquals(anpv3_1, ap);
     }
 
     @Test
     public void testGetAnnotationsV2() throws AnnoPageDoesNotExistException {
         prepareAnnotationsV2();
-        AnnotationV2 an = ftService.getAnnotationV2(
-                "dataset_1", "local_1", "anno_1");
+        AnnotationV2 an = ftService.generateAnnotationV2(ftService.fetchAPAnnotation(
+                "dataset_1", "local_1", "anno_1"), "anno_1");
         assertReflectionEquals(annv2_1, an);
 
-        an = ftService.getAnnotationV2(
-                "dataset_1", "local_1", "anno_2");
+        an = ftService.generateAnnotationV2(ftService.fetchAPAnnotation(
+                "dataset_1", "local_1", "anno_2"), "anno_2");
         assertReflectionEquals(annv2_2, an);
 
-        an = ftService.getAnnotationV2(
-                "dataset_1", "local_1", "anno_3");
+        an = ftService.generateAnnotationV2(ftService.fetchAPAnnotation(
+                "dataset_1", "local_1", "anno_3"), "anno_3");
         assertReflectionEquals(annv2_3, an);
     }
 
     @Test
     public void testGetAnnotationsV3() throws AnnoPageDoesNotExistException {
         prepareAnnotationsV3();
-        AnnotationV3 an = ftService.getAnnotationV3(
-                "dataset_1", "local_1", "anno_1");
+        AnnotationV3 an = ftService.generateAnnotationV3(ftService.fetchAPAnnotation(
+                "dataset_1", "local_1", "anno_1"), "anno_1");
         assertReflectionEquals(annv3_1, an);
 
-        an = ftService.getAnnotationV3(
-                "dataset_1", "local_1", "anno_2");
+        an = ftService.generateAnnotationV3(ftService.fetchAPAnnotation(
+                "dataset_1", "local_1", "anno_2"), "anno_2");
         assertReflectionEquals(annv3_2, an);
 
-        an = ftService.getAnnotationV3(
-                "dataset_1", "local_1", "anno_3");
+        an = ftService.generateAnnotationV3(ftService.fetchAPAnnotation(
+                "dataset_1", "local_1", "anno_3"), "anno_3");
         assertReflectionEquals(annv3_3, an);
     }
 

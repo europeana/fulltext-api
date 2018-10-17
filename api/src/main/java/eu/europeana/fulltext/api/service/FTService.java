@@ -102,26 +102,6 @@ public class FTService {
 
     // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
-    public AnnotationPageV2 getAnnotationPageV2(String datasetId, String localId, String pageId)
-            throws AnnoPageDoesNotExistException {
-        return generateAnnoPageV2(fetchAnnoPage(datasetId, localId, pageId));
-    }
-
-    public AnnotationPageV3 getAnnotationPageV3(String datasetId, String localId, String pageId)
-            throws AnnoPageDoesNotExistException {
-        return generateAnnoPageV3(fetchAnnoPage(datasetId, localId, pageId));
-    }
-
-    public AnnotationV2 getAnnotationV2(String datasetId, String localId, String annoId)
-            throws AnnoPageDoesNotExistException {
-        return generateAnnotationV2(fetchAPAnnotation(datasetId, localId, annoId), annoId);
-    }
-
-    public AnnotationV3 getAnnotationV3(String datasetId, String localId, String annoId)
-            throws AnnoPageDoesNotExistException {
-        return generateAnnotationV3(fetchAPAnnotation(datasetId, localId, annoId), annoId);
-    }
-
     public FullTextResource getFullTextResource(String datasetId, String localId, String resId)
             throws ResourceDoesNotExistException {
         if (doesResourceExist(datasetId, localId, resId)){
