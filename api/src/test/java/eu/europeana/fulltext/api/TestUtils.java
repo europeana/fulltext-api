@@ -178,8 +178,8 @@ class TestUtils {
         return new AnnotationBodyV2(getResourceIdUrl(from, to, resId));
     }
 
-    private static AnnotationFullBodyV2 createAnnotationFullBodyV2(String to, String from, String language, String resId){
-        AnnotationFullBodyV2 anb = new AnnotationFullBodyV2(getResourceIdUrl(to, from, resId));
+    private static AnnotationFullBodyV2 createAnnotationFullBodyV2(String from, String to, String language, String resId){
+        AnnotationFullBodyV2 anb = new AnnotationFullBodyV2(getResourceIdUrl(from, to, resId));
         anb.setFull(getResourceIdBaseUrl(resId));
         anb.setLanguage(language);
         return anb;

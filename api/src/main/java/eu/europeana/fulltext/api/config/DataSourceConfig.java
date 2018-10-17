@@ -15,13 +15,12 @@
  *  the Licence.
  */
 
-package eu.europeana.fulltext.common.config;
+package eu.europeana.fulltext.api.config;
 
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import org.mongodb.morphia.AdvancedDatastore;
 import org.mongodb.morphia.Morphia;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,12 +32,13 @@ import org.springframework.context.annotation.PropertySource;
 
 //@Component
 @Configuration
+
+// TODO check if we can load fulltext.properties, fulltext.user.properties, loader.properties and loader.user.properties
+// here instead, so we can prevent having to defining 3 different property files.
+
 @PropertySource("classpath:fulltext.properties")
 @PropertySource(value = "classpath:fulltext.user.properties", ignoreResourceNotFound = true)
 public class DataSourceConfig {
-    // Inject an instance of Spring-Boot MongoProperties
-    @Autowired
-    private MongoProperties mongoProperties;
 
     private Morphia morphia() {
         final Morphia morphia = new Morphia();
@@ -50,7 +50,8 @@ public class DataSourceConfig {
     }
 
     @Bean
-    public AdvancedDatastore datastore(MongoClient mongoClient) {
+    public AdvancedDatastore datastore(MongoClient mongoClient, MongoProperties mongoProperties) {
+
         // create the Datastore connecting to the default port on the local host
         MongoClientURI          uri = new MongoClientURI(mongoProperties.getUri());
         String                  defaultDatabase = uri.getDatabase();

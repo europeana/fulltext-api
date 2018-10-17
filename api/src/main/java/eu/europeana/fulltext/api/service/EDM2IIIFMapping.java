@@ -56,7 +56,7 @@ public class EDM2IIIFMapping {
     private static final String V2_MOTIVATION = "sc:painting";
     private static final String V3_MOTIVATION = "transcribing";
 
-    private static final Logger LOG = LogManager.getLogger(EDM2IIIFMapping.class);
+    //private static final Logger LOG = LogManager.getLogger(EDM2IIIFMapping.class);
 
     @Autowired
     private EDM2IIIFMapping(FTSettings fts) {

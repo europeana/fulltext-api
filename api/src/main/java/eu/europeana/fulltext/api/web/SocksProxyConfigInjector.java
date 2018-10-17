@@ -40,15 +40,6 @@ public class SocksProxyConfigInjector {
     }
 
     /**
-     * Load socks configuration from a Properties object
-     *
-     * @param properties
-     */
-    private SocksProxyConfigInjector(Properties properties) {
-        addProperties(properties);
-    }
-
-    /**
      * Add additional properties from a file with the provided file name (file should be on the classpath)
      *
      * @param propertiesFileName
@@ -62,15 +53,6 @@ public class SocksProxyConfigInjector {
                 props.load(in);
             }
         }
-    }
-
-    /**
-     * Add additional properties from a Properties object
-     *
-     * @param properties
-     */
-    private void addProperties(Properties properties) {
-        props.putAll(properties);
     }
 
     /**

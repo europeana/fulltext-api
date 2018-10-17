@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Created by luthien on 01/10/2018.
  */
 public class BaseRepository <T, ID extends Serializable> implements CrudRepository<T, ID> {
+
     @Autowired
     private AdvancedDatastore datastore;
     private Class<T>          t;

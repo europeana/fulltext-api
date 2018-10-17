@@ -21,10 +21,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 /**
- * Contains settings from fulltext.properties and fulltext.user.properties files
+ * Contains settings from loader.properties and loader.user.properties files
  * @author Lúthien
  * Created on 31/05/2018
  */

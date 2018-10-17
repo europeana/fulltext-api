@@ -87,19 +87,6 @@ public class LoadArchiveService extends SimpleFileVisitor<Path> {
         return "Finished";
     }
 
-    public String importBatch(String directory, MongoSaveMode saveMode) {
-        LoadFiles lf = new LoadFiles(parser, mongoService, saveMode, settings);
-        String batchDir = settings.getBatchBaseDirectory()
-                + (StringUtils.isNotBlank(directory) ? "/" + directory : "");
-        try {
-            // TODO collect results for each zip and return that as result
-            Files.walkFileTree(Paths.get(batchDir), lf);
-        } catch (IOException e) {
-            LogFile.OUT.error("I/O error occurred reading contents of: " + directory , e);
-        }
-        return "Finished";
-    }
-
     /**
      * Work around problem with a lambda function throwing a LoaderException, by bypassing the compiler check.
      * Not particularly elegant, but it works.

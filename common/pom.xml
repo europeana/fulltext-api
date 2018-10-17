@@ -5,16 +5,16 @@
 
     <groupId>eu.europeana.fulltext</groupId>
     <artifactId>common</artifactId>
-    <version>0.4.1-SNAPSHOT</version>
+    <version>0.5-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>common</name>
+    <name>Common functionality (Mongo and Entity definitions)</name>
     <description>Mongodb connectivity and document mapping for Fulltext API and Loader</description>
 
     <parent>
         <artifactId>fulltext</artifactId>
         <groupId>eu.europeana</groupId>
-        <version>0.4.1-SNAPSHOT</version>
+        <version>0.5-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 

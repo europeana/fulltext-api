@@ -25,7 +25,6 @@ import java.io.IOException;
 		"eu.europeana.fulltext.api",
 		"eu.europeana.fulltext.common.repository",
 		"eu.europeana.fulltext.common.config"})
-//@PropertySource(value = "classpath:build.properties", ignoreResourceNotFound = true)
 @PropertySource(value = "classpath:build.properties")
 public class FTApplication extends SpringBootServletInitializer {
 
