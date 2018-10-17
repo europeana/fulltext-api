@@ -81,7 +81,11 @@ public class LoadFiles extends SimpleFileVisitor<Path> {
         if (null != apList){
             if (!apList.isEmpty()){
                 LOG.debug("... batch " + dir.getFileName().toString() + " parsed, saving to MongoDB ...");
-                ftService.saveAPList(apList, this.saveMode);
+                try {
+                    ftService.saveAPList(apList, this.saveMode);
+                } catch (LoaderException e) {
+                    e.printStackTrace();
+                }
                 LOG.info("... done, leaving directory " + dir.getFileName().toString());
                 apList = null;
             } else {

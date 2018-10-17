@@ -15,23 +15,17 @@
  *  the Licence.
  */
 
-package eu.europeana.fulltext.api.entity;
+package eu.europeana.fulltext.common.entity;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.CompoundIndex;
-import org.springframework.data.mongodb.core.index.CompoundIndexes;
-import org.springframework.data.mongodb.core.mapping.Document;
+import lombok.Data;
+import org.mongodb.morphia.annotations.*;
 
 /**
  * Created by luthien on 31/05/2018.
  */
-@Document(collection = "Resource")
-//@Entity(noClassnameStored = true)
-@CompoundIndexes({
-                         @CompoundIndex(name = "dataset_local_res",
-                                        unique = true,
-                                        def = "{'dsId' : 1, 'lcId': 1, '_id': 1}")
-                 })
+@Data
+@Entity(value = "Resource")
+@Indexes(@Index(fields = { @Field("dsId"), @Field("lcId"), @Field("_id") }, options = @IndexOptions(unique = true)))
 public class Resource {
 
     @Id

@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(HttpStatus.NOT_FOUND)
 public class AnnoPageDoesNotExistException extends FTException {
 
+    private static final long serialVersionUID = -8172379300509594428L;
+
     public AnnoPageDoesNotExistException(String id) {
         super(id, ErrorCode.ID_DOES_NOT_EXIST);
     }

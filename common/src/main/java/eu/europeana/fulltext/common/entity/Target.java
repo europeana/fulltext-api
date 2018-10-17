@@ -15,55 +15,60 @@
  *  the Licence.
  */
 
-package eu.europeana.fulltext.api.entity;
+package eu.europeana.fulltext.common.entity;
+
+import org.mongodb.morphia.annotations.Embedded;
 
 /**
  * Created by luthien on 26/06/2018.
  */
+@Embedded
 public class Target {
 
-    private Integer X;
-    private Integer Y;
-    private Integer W;
-    private Integer H;
+    private Integer x;
+    private Integer y;
+    private Integer w;
+    private Integer h;
 
-    public Target(Integer X, Integer Y, Integer W, Integer H) {
-        this.X = X;
-        this.Y = Y;
-        this.W = W;
-        this.H = H;
+    public Target(){}
+
+    public Target(Integer x, Integer y, Integer w, Integer h) {
+        this.x = x;
+        this.y = y;
+        this.w = w;
+        this.h = h;
     }
 
     public Integer getX() {
-        return X;
+        return x;
     }
 
     public void setX(Integer x) {
-        this.X = x;
+        this.x = x;
     }
 
     public Integer getY() {
-        return Y;
+        return y;
     }
 
     public void setY(Integer y) {
-        this.Y = y;
+        this.y = y;
     }
 
     public Integer getW() {
-        return W;
+        return w;
     }
 
     public void setW(Integer w) {
-        this.W = w;
+        this.w = w;
     }
 
     public Integer getH() {
-        return H;
+        return h;
     }
 
     public void setH(Integer h) {
-        this.H = h;
+        this.h = h;
     }
 
 }

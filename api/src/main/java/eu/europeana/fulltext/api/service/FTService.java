@@ -9,22 +9,17 @@ import com.jayway.jsonpath.spi.json.JacksonJsonNodeJsonProvider;
 import com.jayway.jsonpath.spi.json.JsonProvider;
 import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
 import com.jayway.jsonpath.spi.mapper.MappingProvider;
-import eu.europeana.fulltext.api.config.FTDefinitions;
 import eu.europeana.fulltext.api.config.FTSettings;
-import eu.europeana.fulltext.api.entity.AnnoPage;
-import eu.europeana.fulltext.api.entity.Annotation;
-import eu.europeana.fulltext.api.entity.Resource;
-import eu.europeana.fulltext.api.entity.Target;
+import eu.europeana.fulltext.common.entity.AnnoPage;
+import eu.europeana.fulltext.common.entity.Resource;
 import eu.europeana.fulltext.api.model.FullTextResource;
 import eu.europeana.fulltext.api.model.v2.AnnotationPageV2;
 import eu.europeana.fulltext.api.model.v2.AnnotationV2;
 import eu.europeana.fulltext.api.model.v3.AnnotationPageV3;
 import eu.europeana.fulltext.api.model.v3.AnnotationV3;
-import eu.europeana.fulltext.api.repository.AnnoPageRepository;
-import eu.europeana.fulltext.api.repository.AnnotationRepository;
-import eu.europeana.fulltext.api.repository.ResourceRepository;
+import eu.europeana.fulltext.common.repository.impl.AnnoPageRepositoryImpl;
+import eu.europeana.fulltext.common.repository.impl.ResourceRepositoryImpl;
 import eu.europeana.fulltext.api.service.exception.*;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,8 +27,6 @@ import ioinformarics.oss.jackson.module.jsonld.JsonldModule;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -48,13 +41,10 @@ public class FTService {
     private static final Logger LOG      = LogManager.getLogger(FTService.class);
 
     @Autowired
-    ResourceRepository resourceRepository;
+    ResourceRepositoryImpl resourceRepositoryImpl;
 
     @Autowired
-    AnnotationRepository annotationRepository;
-
-    @Autowired
-    AnnoPageRepository annoPageRepository;
+    AnnoPageRepositoryImpl annoPageRepositoryImpl;
 
 
     // create a single objectMapper for efficiency purposes (see https://github.com/FasterXML/jackson-docs/wiki/Presentation:-Jackson-Performance)
@@ -103,85 +93,98 @@ public class FTService {
         return mapper;
     }
 
-    public AnnotationPageV2 getAnnotationPageV2(String datasetId, String localId, String pageId)
-            throws AnnoPageDoesNotExistException {
-        return generateAnnoPageV2(fetchAnnoPage(datasetId, localId, pageId));
+    /**
+     * @return ManifestSettings object containing settings loaded from properties file
+     */
+    public FTSettings getSettings() {
+        return ftSettings;
     }
 
-    public AnnotationPageV3 getAnnotationPageV3(String datasetId, String localId, String pageId)
-            throws AnnoPageDoesNotExistException {
-        return generateAnnoPageV3(fetchAnnoPage(datasetId, localId, pageId));
-    }
-
-    public AnnotationV2 getAnnotationV2(String datasetId, String localId, String annoId)
-            throws AnnoPageDoesNotExistException {
-        return generateAnnotationV2(fetchAPAnnotation(datasetId, localId, annoId), annoId);
-    }
-
-    public AnnotationV3 getAnnotationV3(String datasetId, String localId, String annoId)
-            throws AnnoPageDoesNotExistException {
-        return generateAnnotationV3(fetchAPAnnotation(datasetId, localId, annoId), annoId);
-    }
+    // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
     public FullTextResource getFullTextResource(String datasetId, String localId, String resId)
             throws ResourceDoesNotExistException {
-        Resource resource;
-        try{
-            resource = resourceRepository.findByDatasetLocalAndResId(datasetId, localId, resId).get(0);
-        } catch (java.lang.IndexOutOfBoundsException e) {
+        if (doesResourceExist(datasetId, localId, resId)){
+            return generateFullTextResource(
+                    resourceRepositoryImpl.findByDatasetLocalResId(datasetId, localId, resId));
+        } else {
             throw new ResourceDoesNotExistException("No Fulltext Resource with resourceId: " + resId
-                  + " was found that is associated with datasetId: " + datasetId + " and localId: " + localId );
+                      + " was found that is associated with datasetId: " + datasetId + " and localId: " + localId );
         }
-        return generateFullTextResource(resource);
     }
 
-    private AnnoPage fetchAnnoPage(String datasetId, String localId, String pageId)
+    // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+    public AnnoPage fetchAnnoPage(String datasetId, String localId, String pageId)
             throws AnnoPageDoesNotExistException {
-        try {
-            return annoPageRepository.findByDatasetLocalAndPageId(datasetId, localId, pageId).get(0);
-        } catch (java.lang.IndexOutOfBoundsException e) {
+        if (doesAnnoPageExistByLimitOne(datasetId, localId, pageId)){
+            return annoPageRepositoryImpl.findByDatasetLocalPageId(datasetId, localId, pageId);
+        } else {
             throw new AnnoPageDoesNotExistException("No AnnoPage with datasetId: " + datasetId + ", localId: "
-                                                    + localId + " and pageId: " + pageId + " could be found");
+                      + localId + " and pageId: " + pageId + " could be found");
         }
     }
 
-    private AnnoPage fetchAPAnnotation(String datasetId, String localId, String annoId)
+    public AnnoPage fetchAPAnnotation(String datasetId, String localId, String annoId)
             throws AnnoPageDoesNotExistException {
-        try {
-            return annoPageRepository.findByDatasetLocalAndAnnoId(datasetId, localId, annoId).get(0);
-        } catch (java.lang.IndexOutOfBoundsException e) {
+        if (doesAnnotationExist(datasetId, localId, annoId)){
+            return annoPageRepositoryImpl.findByDatasetLocalAnnoId(datasetId, localId, annoId);
+        } else {
             throw new AnnoPageDoesNotExistException("No AnnoPage with datasetId: " + datasetId + " and localId: "
-                      + localId + " could be found that contains an Annotation with annotationId: " + annoId);
+                       + localId + " could be found that contains an Annotation with annotationId: " + annoId);
         }
     }
 
-    @Deprecated // keeping this temporarily for testing speed (EA-1239)
-    public boolean doesAnnoPageExist_findNotEmpty(String datasetId, String localId, String annoId){
-        return !annoPageRepository.findByDatasetLocalAndPageId(datasetId, localId, annoId).isEmpty();
-    }
 
-    @Deprecated // keeping this temporarily for testing speed (EA-1239)
-    public boolean doesAnnoPageExist_findOneNotNull(String datasetId, String localId, String annoId){
-        return annoPageRepository.findOneWithId(datasetId, localId, annoId) != null;
-    }
+    // = = [ check Document existence ]= = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
     /**
      * Check if a particular annotation page with the provided ids exists or not
      * @param datasetId
      * @param localId
-     * @param annoId
+     * @param pageId
      * @return true if it exists, otherwise false
      */
-    public boolean doesAnnoPageExist_exists(String datasetId, String localId, String annoId){
-        return annoPageRepository.existsWithId(datasetId, localId, annoId);
+    public boolean doesAnnoPageExistByLimitOne(String datasetId, String localId, String pageId){
+        return annoPageRepositoryImpl.existsByLimitOne(datasetId, localId, pageId);
     }
 
     @Deprecated // keeping this temporarily for testing speed (EA-1239)
-    public boolean doesAnnoPageExist_countNotZero(String datasetId, String localId, String annoId){
-        return annoPageRepository.countWithId(datasetId, localId, annoId) > 0;
+    public boolean doesAnnoPageExistsByFindOne(String datasetId, String localId, String pageId){
+        return annoPageRepositoryImpl.existsByFindOne(datasetId, localId, pageId);
     }
 
-    private AnnotationPageV3 generateAnnoPageV3(eu.europeana.fulltext.api.entity.AnnoPage annoPage){
+    @Deprecated // keeping this temporarily for testing speed (EA-1239)
+    public boolean doesAnnoPageExistByCount(String datasetId, String localId, String pageId){
+        return annoPageRepositoryImpl.existsByCount(datasetId, localId, pageId);
+    }
+
+    /**
+     * Check if a particular annotation with the provided ids exists or not
+     * @param datasetId
+     * @param localId
+     * @param annoId
+     * @return true if it exists, otherwise false
+     */
+    private boolean doesAnnotationExist(String datasetId, String localId, String annoId){
+        return annoPageRepositoryImpl.existsWithAnnoId(datasetId, localId, annoId);
+    }
+
+    /**
+     * Check if a particular resource with the provided ids exists or not
+     * @param datasetId
+     * @param localId
+     * @param resId
+     * @return true if it exists, otherwise false
+     */
+    private boolean doesResourceExist(String datasetId, String localId, String resId){
+        return resourceRepositoryImpl.existsByLimitOne(datasetId, localId, resId);
+    }
+
+
+    // = = [ generate JSON objects ] = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+    public AnnotationPageV3 generateAnnoPageV3(AnnoPage annoPage){
         long start = System.currentTimeMillis();
         AnnotationPageV3 result = EDM2IIIFMapping.getAnnotationPageV3(annoPage);
         if (LOG.isDebugEnabled()) {
@@ -190,7 +193,7 @@ public class FTService {
         return result;
     }
 
-    private AnnotationPageV2 generateAnnoPageV2(eu.europeana.fulltext.api.entity.AnnoPage annoPage){
+    public AnnotationPageV2 generateAnnoPageV2(AnnoPage annoPage){
         long start = System.currentTimeMillis();
         AnnotationPageV2 result = EDM2IIIFMapping.getAnnotationPageV2(annoPage);
         if (LOG.isDebugEnabled()) {
@@ -199,7 +202,7 @@ public class FTService {
         return result;
     }
 
-    private AnnotationV3 generateAnnotationV3(eu.europeana.fulltext.api.entity.AnnoPage annoPage, String annoId){
+    public AnnotationV3 generateAnnotationV3(AnnoPage annoPage, String annoId){
         long start = System.currentTimeMillis();
         AnnotationV3 result = EDM2IIIFMapping.getSingleAnnotationV3(annoPage, annoId);
         if (LOG.isDebugEnabled()) {
@@ -208,7 +211,7 @@ public class FTService {
         return result;
     }
 
-    private AnnotationV2 generateAnnotationV2(AnnoPage annoPage, String annoId){
+    public AnnotationV2 generateAnnotationV2(AnnoPage annoPage, String annoId){
         long start = System.currentTimeMillis();
         AnnotationV2 result = EDM2IIIFMapping.getSingleAnnotationV2(annoPage, annoId);
         if (LOG.isDebugEnabled()) {

@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(HttpStatus.NOT_FOUND)
 public class ResourceDoesNotExistException extends FTException {
 
+    private static final long serialVersionUID = 6035039021749767912L;
+
     public ResourceDoesNotExistException(String id) {
         super(id, ErrorCode.ID_DOES_NOT_EXIST);
     }

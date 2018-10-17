@@ -15,13 +15,16 @@
  *  the Licence.
  */
 
-package eu.europeana.fulltext.api.entity;
+package eu.europeana.fulltext.common.entity;
+
+import org.mongodb.morphia.annotations.Embedded;
 
 import java.util.List;
 
 /**
  * Created by luthien on 31/05/2018.
  */
+@Embedded
 public class Annotation {
 
     private String       anId;   // IIIF_API_BASE_URL/               /            /annotation/{anId}

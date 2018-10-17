@@ -16,6 +16,10 @@ public class LogFile {
 
     public static final Logger OUT = LogManager.getLogger("logFile");
 
+    private LogFile() {
+        // empty constructor to prevent initialization
+    }
+
     public static void setFileName(String path) {
         // note that this will only work on Linux systems
         String fileName = path.substring(path.lastIndexOf('/') + 1);

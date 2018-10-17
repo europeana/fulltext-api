@@ -38,7 +38,7 @@ public class FullTextResource extends JsonLdIdType implements Serializable {
     private String value;
 
 
-    public FullTextResource(String id) {
+    private FullTextResource(String id) {
         super(id, EDM_FULLTESTRESOURCE_TYPE);
     }
 
@@ -52,9 +52,16 @@ public class FullTextResource extends JsonLdIdType implements Serializable {
         return language;
     }
 
-
     public String getValue() {
         return value;
+    }
+
+    public String getContext() {
+        return context;
+    }
+
+    public void setContext(String context) {
+        this.context = context;
     }
 }
 

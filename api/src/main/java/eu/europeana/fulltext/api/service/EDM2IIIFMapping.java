@@ -18,10 +18,10 @@
 package eu.europeana.fulltext.api.service;
 
 import eu.europeana.fulltext.api.config.FTSettings;
-import eu.europeana.fulltext.api.entity.AnnoPage;
-import eu.europeana.fulltext.api.entity.Annotation;
-import eu.europeana.fulltext.api.entity.Resource;
-import eu.europeana.fulltext.api.entity.Target;
+import eu.europeana.fulltext.common.entity.AnnoPage;
+import eu.europeana.fulltext.common.entity.Annotation;
+import eu.europeana.fulltext.common.entity.Resource;
+import eu.europeana.fulltext.common.entity.Target;
 import eu.europeana.fulltext.api.model.FullTextResource;
 import eu.europeana.fulltext.api.model.v2.*;
 import eu.europeana.fulltext.api.model.v3.AnnotationPageV3;
@@ -56,7 +56,7 @@ public class EDM2IIIFMapping {
     private static final String V2_MOTIVATION = "sc:painting";
     private static final String V3_MOTIVATION = "transcribing";
 
-    private static final Logger LOG = LogManager.getLogger(EDM2IIIFMapping.class);
+    //private static final Logger LOG = LogManager.getLogger(EDM2IIIFMapping.class);
 
     @Autowired
     private EDM2IIIFMapping(FTSettings fts) {
@@ -77,10 +77,10 @@ public class EDM2IIIFMapping {
         return annoArrayList.toArray(new AnnotationV2[0]);
     }
 
-    private static AnnotationV2 getAnnotationV2(AnnoPage annoPage, Annotation annotation, boolean addContext){
+    private static AnnotationV2 getAnnotationV2(AnnoPage annoPage, Annotation annotation, boolean includeContext){
         String       resourceIdUrl  = getResourceIdUrl(annoPage, annotation);
         AnnotationV2 ann            = new AnnotationV2(getAnnotationIdUrl(annoPage, annotation));
-        if (addContext){
+        if (includeContext){
             ann.setContext(new String[]{MEDIA_TYPE_IIIF_V2, MEDIA_TYPE_EDM_JSONLD});
         }
         ann.setMotivation(StringUtils.isNotBlank(annotation.getMotiv()) ? annotation.getMotiv() : V2_MOTIVATION);
@@ -112,13 +112,14 @@ public class EDM2IIIFMapping {
         return annoArrayList.toArray(new AnnotationV3[0]);
     }
 
-    private static AnnotationV3 getAnnotationV3(AnnoPage annoPage, Annotation annotation, boolean addContext){
+    private static AnnotationV3 getAnnotationV3(AnnoPage annoPage, Annotation annotation, boolean includeContext){
         String       body = getResourceIdUrl(annoPage, annotation);
         AnnotationV3 ann  = new AnnotationV3(getAnnotationIdUrl(annoPage, annotation));
         AnnotationBodyV3 anb;
-        if (addContext){
+        if (includeContext) {
             ann.setContext(new String[]{MEDIA_TYPE_IIIF_V3, MEDIA_TYPE_EDM_JSONLD});
         }
+
         ann.setMotivation(StringUtils.isNotBlank(annotation.getMotiv()) ? annotation.getMotiv() : V3_MOTIVATION);
         ann.setDcType(expandDCType(annotation.getDcType()));
         if (StringUtils.isNotBlank(annotation.getLang())){
@@ -134,14 +135,12 @@ public class EDM2IIIFMapping {
     }
 
     static AnnotationV3 getSingleAnnotationV3(AnnoPage annoPage, String annoId){
-        Annotation           annotation;
         Optional<Annotation> maybe = annoPage.getAns().stream().filter(o -> o.getAnId().equals(annoId)).findFirst();
         // NOTE this shouldn't fail because in that case the annoPage would not have been found in the first place
         return maybe.map(annotation1 -> getAnnotationV3(annoPage, annotation1, true)).orElse(null);
     }
 
     static AnnotationV2 getSingleAnnotationV2(AnnoPage annoPage, String annoId){
-        Annotation           annotation;
         Optional<Annotation> maybe = annoPage.getAns().stream().filter(o -> o.getAnId().equals(annoId)).findFirst();
         // NOTE this shouldn't fail because in that case the annoPage would not have been found in the first place
         return maybe.map(annotation1 -> getAnnotationV2(annoPage, annotation1, true)).orElse(null);
@@ -164,9 +163,8 @@ public class EDM2IIIFMapping {
                                     + resource.getDsId() + "/"
                                     + resource.getLcId() + "/"
                                     + resource.getId(),
-                resource.getLang(),
-                resource.getValue());
-
+                                    resource.getLang(),
+                                    resource.getValue());
     }
 
     private static String getResourceIdUrl(AnnoPage annoPage, Annotation annotation){
@@ -187,7 +185,7 @@ public class EDM2IIIFMapping {
     }
 
     private static String expandDCType(String dcTypeCode){
-        String dcType = "";
+        String dcType;
         switch (StringUtils.upperCase(dcTypeCode)) {
             case "P":
                 dcType = "Page";

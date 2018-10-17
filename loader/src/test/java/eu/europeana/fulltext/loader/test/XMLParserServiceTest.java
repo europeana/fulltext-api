@@ -32,7 +32,8 @@ import static org.junit.Assert.assertFalse;
 @RunWith(SpringJUnit4ClassRunner.class)
 @TestPropertySource(locations = "classpath:loader-test.properties")
 @SpringBootTest(classes = {LoaderSettings.class})
-public class XmlXPathParserTest {
+public class XMLParserServiceTest {
+
 
     private static AnnoPageRdf apRdf1;
     private static AnnoPageRdf apRdf2;
@@ -108,10 +109,10 @@ public class XmlXPathParserTest {
     @Test
     public void testImageUrl() {
         assertEquals("https://iiif.europeana.eu/image/7PFJIT3P3MO3RSA24XZ64IVYNMSV7MGXXR3MMBFNL7FLYHTKVHKQ/presentation_images/d0127a20-02ca-11e6-a651-fa163e2dd531/node-3/image/BNL/La_clef_du_cabinet_des_princes_de_l'Europe/1724/09/01/00161/full/full/0/default.jpg",
-                apRdf1.getImgTargetBase());
+                     apRdf1.getImgTargetBase());
 
         assertEquals("https://iiif.europeana.eu/image/5IA65CDOF34YRLIMTNOKBCOKRE55MMCUPIBRPZVBNCREWXJ6STHA/presentation_images/2dea77e0-0232-11e6-a696-fa163e2dd531/node-1/image/NLP/Głos_Śląski/1916/06/22/dodatek/00642/full/full/0/default.jpg",
-                apRdf2.getImgTargetBase());
+                     apRdf2.getImgTargetBase());
     }
 
     /**
@@ -123,7 +124,7 @@ public class XmlXPathParserTest {
         assertEquals(78-1, apRdf1.getAnnotationRdfList().size());
         // 1111 annotations minus 1 page annotation minus 4 that have no proper target, so they are skipped
         assertEquals(1111-1-4, apRdf2.getAnnotationRdfList().size());
-        
+
         // we also check the first processed annotation, first test file
         AnnotationRdf annotation1 = apRdf1.getAnnotationRdfList().get(0);
         assertEquals("64764db9df0b1e87843b2fa3fec0a384", annotation1.getId());

@@ -24,11 +24,14 @@ import java.io.Serializable;
 
 import static eu.europeana.fulltext.api.config.FTDefinitions.V3_ANNOTATION_TYPE;
 
+import eu.europeana.fulltext.api.model.AnnotationWrapper;
+import eu.europeana.fulltext.api.model.JsonLdIdType;
+
 /**
  * Created by luthien target 14/06/2018.
  */
 @JsonPropertyOrder({"context", "id"})
-public class AnnotationV3 extends JsonLdIdType implements Serializable {
+public class AnnotationV3 extends JsonLdIdType implements Serializable, AnnotationWrapper {
 
     private static final long serialVersionUID = 8849251970656404497L;
 
@@ -44,10 +47,12 @@ public class AnnotationV3 extends JsonLdIdType implements Serializable {
         super(id, V3_ANNOTATION_TYPE);
     }
 
+    @Override
     public String[] getContext() {
         return context;
     }
 
+    @Override
     public void setContext(String[] context) {
         this.context = context;
     }

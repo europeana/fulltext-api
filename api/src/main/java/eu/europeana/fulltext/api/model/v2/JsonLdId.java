@@ -33,11 +33,11 @@ public class JsonLdId implements Serializable {
     @JsonldId
     private String id;
 
-    public JsonLdId() {
+    JsonLdId() {
         // empty constructor to make it also deserializable (see SonarQube squid:S2055)
     }
 
-    public JsonLdId(String id) {
+    JsonLdId(String id) {
         this.id = id;
     }
 

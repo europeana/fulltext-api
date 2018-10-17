@@ -15,15 +15,15 @@
  *  the Licence.
  */
 
-package eu.europeana.fulltext.api.entity;
+package eu.europeana.fulltext.common.entity;
 
 import org.bson.types.ObjectId;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.CompoundIndex;
-import org.springframework.data.mongodb.core.index.CompoundIndexes;
-import org.springframework.data.mongodb.core.mapping.DBRef;
-import org.springframework.data.mongodb.core.mapping.Document;
+import lombok.Data;
+import org.mongodb.morphia.annotations.*;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -33,13 +33,9 @@ import java.util.List;
  * Resource base URL: https://www.europeana.eu/api/fulltext/
  *
  */
-@Document(collection = "AnnoPage")
-//@Entity(noClassnameStored = true)
-@CompoundIndexes({
-                         @CompoundIndex(name = "dataset_local_page",
-                                        unique = true,
-                                        def = "{'dsId' : 1, 'lcId': 1, 'pgId': 1}")
-                 })
+@Data
+@Entity(value = "AnnoPage")
+@Indexes(@Index(fields = { @Field("dsId"), @Field("lcId"), @Field("pgId") }, options = @IndexOptions(unique = true)))
 public class AnnoPage {
 
     @Id
@@ -50,8 +46,13 @@ public class AnnoPage {
     private String           tgtId; // IIIF_API_BASE_URL/      /      /canvas/{tgtId} USE WHOLE URL!!
     private Annotation       pgAn;  // Annotation
     private List<Annotation> ans;   // List of Annotations
-    @DBRef
+    private Date             modified = Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant());
+
+    @Reference
     private Resource res;           // RESOURCE_BASE_URL/      /      /{resId} (= resource)
+
+
+    public AnnoPage(){}
 
     public AnnoPage(String dsId, String lcId, String pgId, String tgtId, Resource res) {
         this.dsId  = dsId;
@@ -115,5 +116,9 @@ public class AnnoPage {
 
     public void setAns(List<Annotation> ans) {
         this.ans = ans;
+    }
+
+    public Date getModified() {
+        return modified;
     }
 }

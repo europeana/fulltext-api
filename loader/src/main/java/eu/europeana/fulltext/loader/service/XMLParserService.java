@@ -310,7 +310,7 @@ public class XMLParserService {
     private static String readFileContents(Path file) {
         String content = "";
         try {
-            content = new String(Files.readAllBytes(file));
+            content = new String(Files.readAllBytes(file), "UTF-8");
         } catch (IOException e) {
             LogFile.OUT.error("{} - I/O error reading file", file , e);
         }

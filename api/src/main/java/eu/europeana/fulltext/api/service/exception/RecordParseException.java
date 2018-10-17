@@ -29,6 +29,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 public class RecordParseException extends FTException {
 
+    private static final long serialVersionUID = 781769427991192341L;
+
     public RecordParseException(String msg, Throwable t) {
         super(msg, t);
     }

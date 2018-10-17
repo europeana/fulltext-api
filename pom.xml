@@ -9,9 +9,8 @@
 		<version>2.0</version>
 	</parent>
 
-	<groupId>eu.europeana</groupId>
 	<artifactId>fulltext</artifactId>
-	<version>0.4-SNAPSHOT</version>
+	<version>0.5-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>Europeana Newspapers Fulltext API &amp; Loader</name>
@@ -23,18 +22,28 @@
 		<java.version>1.8</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-
 		<spring-boot.version>2.0.2.RELEASE</spring-boot.version>
 		<jackson.version>2.9.4</jackson.version>
 		<json-path.version>2.4.0</json-path.version>
 		<io-informatics.version>0.1.1</io-informatics.version>
 		<morphia.version>1.3.1</morphia.version>
 		<commons-lang.version>2.6</commons-lang.version>
+		<commons-lang3.version>3.8.1</commons-lang3.version>
 		<commons-io.version>2.4</commons-io.version>
 		<commons-collections4.version>4.0</commons-collections4.version>
+		<maven-surefire-plugin.version>2.19.1</maven-surefire-plugin.version>
+		<junit-platform-surefire-provider.version>1.0.1</junit-platform-surefire-provider.version>
+		<org.junit.platform.version>1.3.1</org.junit.platform.version>
+		<mockito.version>2.15.0</mockito.version>
+		<wiremock.version>2.18.0</wiremock.version>
+		<unitils.version>3.4.6</unitils.version>
+        <!--<morphia-spring-boot.version>1.0.1</morphia-spring-boot.version>-->
+		<morphia.version>1.3.2</morphia.version>
+		<lombok.version>1.18.2</lombok.version>
 	</properties>
 
     <modules>
+        <module>common</module>
 		<module>api</module>
 		<module>loader</module>
 	</modules>

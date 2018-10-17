@@ -34,15 +34,15 @@ public class JsonLdIdType implements Serializable{
     private String id;
     private String type;
 
-    public JsonLdIdType() {
+    protected JsonLdIdType() {
         // empty constructor to make it also deserializable (see SonarQube squid:S2055)
     }
 
-    public JsonLdIdType(String id) {
+    protected JsonLdIdType(String id) {
         this.id = id;
     }
 
-    public JsonLdIdType(String id, String type) {
+    protected JsonLdIdType(String id, String type) {
         this.id = id;
         this.type = type;
     }
