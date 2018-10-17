@@ -34,6 +34,7 @@ import static org.junit.Assert.assertFalse;
 @SpringBootTest(classes = {LoaderSettings.class})
 public class XMLParserServiceTest {
 
+
     private static AnnoPageRdf apRdf1;
     private static AnnoPageRdf apRdf2;
 

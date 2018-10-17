@@ -53,10 +53,11 @@ public class FTSettings {
     private String annoPageDirectory;
 
     @Value("${annotation.directory}")
-    private String      annotationDirectory;
+    private String annotationDirectory;
 
     @Autowired
     private Environment environment;
+
 
     /**
      * For production we want to suppress exceptions that arise from parsing record data, but for testing/debugging we
