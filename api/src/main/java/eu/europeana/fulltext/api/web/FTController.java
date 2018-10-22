@@ -107,7 +107,7 @@ public class FTController {
                 headers.add(CONTENTTYPE, mediaTypeIIIFV2);
             }
         } catch (AnnoPageDoesNotExistException e) {
-            LOG.error(e.getMessage(), e);
+            LOG.warn(e.getMessage());
             return new ResponseEntity<>(fts.serializeResource(new JsonErrorResponse(e.getMessage())),
                                         headers,
                                         HttpStatus.NOT_FOUND);
@@ -172,7 +172,7 @@ public class FTController {
                 headers.add(CONTENTTYPE, mediaTypeIIIFV2);
             }
         } catch (AnnoPageDoesNotExistException e) {
-            LOG.error(e.getMessage(), e);
+            LOG.warn(e.getMessage());
             return new ResponseEntity<>(fts.serializeResource(new JsonErrorResponse(e.getMessage())),
                                         headers,
                                         HttpStatus.NOT_FOUND);
@@ -213,7 +213,7 @@ public class FTController {
         try {
             resource = fts.getFullTextResource(datasetId, recordId, resId);
         } catch (ResourceDoesNotExistException e) {
-            LOG.error(e.getMessage(), e);
+            LOG.warn(e.getMessage());
             return new ResponseEntity<>(fts.serializeResource(new JsonErrorResponse(e.getMessage())),
                                         headers,
                                         HttpStatus.NOT_FOUND);
