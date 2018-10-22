@@ -16,7 +16,7 @@ import org.springframework.context.annotation.PropertySource;
  */
 @SpringBootApplication(scanBasePackages = {
         "eu.europeana.fulltext.loader",
-        "eu.europeana.fulltext.common"}, exclude = RepositoryRestMvcAutoConfiguration.class)
+        "eu.europeana.fulltext.repository"}, exclude = RepositoryRestMvcAutoConfiguration.class)
 
 @PropertySource(value = "classpath:build.properties", ignoreResourceNotFound = true)
 public class LoaderApplication extends SpringBootServletInitializer {

@@ -17,10 +17,10 @@
 
 package eu.europeana.fulltext.api;
 
-import eu.europeana.fulltext.common.entity.AnnoPage;
-import eu.europeana.fulltext.common.entity.Annotation;
-import eu.europeana.fulltext.common.entity.Resource;
-import eu.europeana.fulltext.common.entity.Target;
+import eu.europeana.fulltext.entity.AnnoPage;
+import eu.europeana.fulltext.entity.Annotation;
+import eu.europeana.fulltext.entity.Resource;
+import eu.europeana.fulltext.entity.Target;
 import eu.europeana.fulltext.api.model.v2.AnnotationBodyV2;
 import eu.europeana.fulltext.api.model.v2.AnnotationFullBodyV2;
 import eu.europeana.fulltext.api.model.v2.AnnotationPageV2;
@@ -90,9 +90,9 @@ class TestUtils {
         tgt_2 = new Target(95,102,53,15);
         tgt_3 = new Target(60,96,404,19);
         tgt_4 = new Target(59,138,133,25);
-        ann_1 = new Annotation("anno_1", "W", 0, 7, Arrays.asList(tgt_1));
-        ann_2 = new Annotation("anno_2", "W", 9, 18, Arrays.asList(tgt_2), "en");
-        ann_3 = new Annotation("anno_3", "L", 0, 214, Arrays.asList(tgt_3, tgt_4));
+        ann_1 = new Annotation("anno_1", 'W', 0, 7, Arrays.asList(tgt_1));
+        ann_2 = new Annotation("anno_2", 'W', 9, 18, Arrays.asList(tgt_2), "en");
+        ann_3 = new Annotation("anno_3", 'L', 0, 214, Arrays.asList(tgt_3, tgt_4));
         anp_1 = new AnnoPage(DS_ID, LCL_ID, "page_1", "target_1", res_1);
         anp_1.setAns(Arrays.asList(new Annotation[] {ann_1, ann_2, ann_3}));
         anp_1.setTgtId(getTargetIdBaseUrl("page_1"));

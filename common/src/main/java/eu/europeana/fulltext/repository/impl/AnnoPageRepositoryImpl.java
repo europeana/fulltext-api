@@ -15,11 +15,11 @@
  *  the Licence.
  */
 
-package eu.europeana.fulltext.common.repository.impl;
+package eu.europeana.fulltext.repository.impl;
 
 import com.mongodb.*;
-import eu.europeana.fulltext.common.entity.AnnoPage;
-import eu.europeana.fulltext.common.repository.AnnoPageRepository;
+import eu.europeana.fulltext.entity.AnnoPage;
+import eu.europeana.fulltext.repository.AnnoPageRepository;
 import org.bson.types.ObjectId;
 import org.mongodb.morphia.AdvancedDatastore;
 import org.mongodb.morphia.Key;
@@ -60,6 +60,13 @@ public class AnnoPageRepositoryImpl extends BaseRepository<AnnoPage, ObjectId> i
         int count = cur.count();
         cur.close();
         return (count >= 1);
+    }
+
+    /**
+     * @return the total number of resources in the database
+     */
+    public long count() {
+        return datastore.getCollection(AnnoPage.class).count(new BasicDBObject());
     }
 
     /**

@@ -15,7 +15,7 @@
  *  the Licence.
  */
 
-package eu.europeana.fulltext.common.entity;
+package eu.europeana.fulltext.entity;
 
 import lombok.Data;
 import org.mongodb.morphia.annotations.*;

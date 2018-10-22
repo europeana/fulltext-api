@@ -8,7 +8,7 @@ import eu.europeana.fulltext.api.service.FTService;
 import eu.europeana.fulltext.api.service.exception.AnnoPageDoesNotExistException;
 import eu.europeana.fulltext.api.service.exception.ResourceDoesNotExistException;
 import eu.europeana.fulltext.api.service.exception.SerializationException;
-import eu.europeana.fulltext.common.entity.AnnoPage;
+import eu.europeana.fulltext.entity.AnnoPage;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

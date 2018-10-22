@@ -18,18 +18,16 @@
 package eu.europeana.fulltext.api.service;
 
 import eu.europeana.fulltext.api.config.FTSettings;
-import eu.europeana.fulltext.common.entity.AnnoPage;
-import eu.europeana.fulltext.common.entity.Annotation;
-import eu.europeana.fulltext.common.entity.Resource;
-import eu.europeana.fulltext.common.entity.Target;
+import eu.europeana.fulltext.entity.AnnoPage;
+import eu.europeana.fulltext.entity.Annotation;
+import eu.europeana.fulltext.entity.Resource;
+import eu.europeana.fulltext.entity.Target;
 import eu.europeana.fulltext.api.model.FullTextResource;
 import eu.europeana.fulltext.api.model.v2.*;
 import eu.europeana.fulltext.api.model.v3.AnnotationPageV3;
 import eu.europeana.fulltext.api.model.v3.AnnotationV3;
 import eu.europeana.fulltext.api.model.v3.AnnotationBodyV3;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -184,19 +182,19 @@ public class EDM2IIIFMapping {
         return fts.getAnnotationBaseUrl() + annoPage.getDsId() + "/" + annoPage.getLcId() + fts.getAnnotationDirectory() + annotation.getAnId();
     }
 
-    private static String expandDCType(String dcTypeCode){
+    private static String expandDCType(char dcTypeCode){
         String dcType;
-        switch (StringUtils.upperCase(dcTypeCode)) {
-            case "P":
+        switch (Character.toUpperCase(dcTypeCode)) {
+            case 'P':
                 dcType = "Page";
                 break;
-            case "B":
+            case 'B':
                 dcType = "Block";
                 break;
-            case "L":
+            case 'L':
                 dcType = "Line";
                 break;
-            case "W":
+            case 'W':
                 dcType = "Word";
                 break;
             default:

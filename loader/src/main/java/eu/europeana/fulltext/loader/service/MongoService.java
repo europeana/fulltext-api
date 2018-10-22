@@ -1,22 +1,15 @@
 package eu.europeana.fulltext.loader.service;
 
-import eu.europeana.fulltext.common.entity.AnnoPage;
-import eu.europeana.fulltext.common.entity.Resource;
-import eu.europeana.fulltext.common.entity.Annotation;
-import eu.europeana.fulltext.common.entity.Target;
-import eu.europeana.fulltext.common.repository.impl.AnnoPageRepositoryImpl;
-import eu.europeana.fulltext.common.repository.impl.ResourceRepositoryImpl;
+import eu.europeana.fulltext.entity.AnnoPage;
+import eu.europeana.fulltext.entity.Resource;
+import eu.europeana.fulltext.repository.impl.AnnoPageRepositoryImpl;
+import eu.europeana.fulltext.repository.impl.ResourceRepositoryImpl;
 import eu.europeana.fulltext.loader.exception.LoaderException;
-import eu.europeana.fulltext.loader.model.AnnoPageRdf;
-import eu.europeana.fulltext.loader.model.AnnotationRdf;
-import eu.europeana.fulltext.loader.model.TargetRdf;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -35,46 +28,47 @@ public class MongoService {
     AnnoPageRepositoryImpl annoPageRepositoryImpl;
 
 
-    void saveAPList(List<AnnoPageRdf> apList, MongoSaveMode saveMode) throws LoaderException {
+    void saveAPList(List<AnnoPage> apList, MongoSaveMode saveMode) throws LoaderException {
         LOG.debug("Saving {} annoPages...", apList.size());
-        for (AnnoPageRdf annoPageRdf : apList){
 
+        long resourceCount = resourceRepositoryImpl.count();
+        long annoPageCount = annoPageRepositoryImpl.count();
+        for (AnnoPage annoPage : apList){
             if (MongoSaveMode.INSERT.equals(saveMode)) {
-                Resource resource = saveResource(annoPageRdf.getResourceId(),
-                        annoPageRdf.getFtLang(),
-                        annoPageRdf.getFtText(),
-                        annoPageRdf.getDatasetId(),
-                        annoPageRdf.getLocalId());
-                saveAnnoPage(annoPageRdf, resource);
+                saveResource(annoPage.getRes());
+                saveAnnoPage(annoPage);
             }
+        }
+        long newResourceCount = resourceRepositoryImpl.count();
+        long newAnnoPageCount = annoPageRepositoryImpl.count();
+        if (resourceCount + apList.size() != newResourceCount) {
+            LogFile.OUT.warn("Expected number of resource in database is {}, but actual number is {}",
+                    resourceCount + apList.size());
+        }
+        if (annoPageCount + apList.size() != newAnnoPageCount) {
+            LogFile.OUT.warn("Expected number of annotation pages in database is {}, but actual number is {}",
+                    annoPageCount + apList.size());
         }
         LOG.debug("Saving done.");
     }
 
     /**
      * Saves a Resource object to the database
-     * @param id
-     * @param lang
-     * @param value
-     * @param dsId
-     * @param lcId
      * @return the saved resource object
      */
-    private Resource saveResource(String id, String lang, String value, String dsId, String lcId) throws
-                                                                                                  LoaderException {
-        Resource result = null;
+    private void saveResource(Resource resource) throws LoaderException {
+        String dsId = resource.getDsId();
+        String lcId = resource.getLcId();
+        String id = resource.getId();
         try{
-            result = new Resource(id, lang, value, dsId, lcId);
-            result = resourceRepositoryImpl.saveAndReturn(result);
-            LOG.info("{}/{} - resource saved with id {}", dsId, lcId, id);
+            resourceRepositoryImpl.save(resource);
+            LOG.info("{}/{}/{} - Resource saved", dsId, lcId, id);
         } catch (Exception e){
-            LogFile.OUT.error("{}/{} - Error saving resource with id {}", dsId, lcId, id, e);
-            throw new LoaderException("Error saving Resource with dsId: " + dsId +
+            LogFile.OUT.error("{}/{}/{} - Error saving resource", dsId, lcId, id, e);
+            throw new LoaderException("Error saving resource with dsId: " + dsId +
                                       ", lcId: " + lcId +
-                                      ", id:" + id +
-                                      ". Message: " + e.getMessage());
+                                      ", id:" + id, e);
         }
-        return result;
     }
 
     /**
@@ -88,34 +82,21 @@ public class MongoService {
 
     /**
      * Saves an AnnoPage object to the database with embedded Annotations and linking to a resource
-     * @param annoPageRdf
-     * @param res
+     * @param annoPage
      */
-    private void saveAnnoPage(AnnoPageRdf annoPageRdf, Resource res) throws LoaderException {
+    private void saveAnnoPage(AnnoPage annoPage) throws LoaderException {
+        String dsId = annoPage.getDsId();
+        String lcId = annoPage.getLcId();
+        String pgId = annoPage.getPgId();
         try{
-            annoPageRepositoryImpl.save(createAnnoPage(annoPageRdf, res));
-            LOG.debug("{}/{}/{} annopage saved");
+            annoPageRepositoryImpl.save(annoPage);
+            LOG.debug("{}/{}/{} AnnoPage saved", dsId, lcId, pgId);
         } catch (Exception e){
-            LogFile.OUT.error("{}/{}/{} - Error saving AnnoPage",
-                              annoPageRdf.getDatasetId(), annoPageRdf.getLocalId(), annoPageRdf.getPageId(), e);
-
-            throw new LoaderException("Error saving Annopage with dsId: " + annoPageRdf.getDatasetId() +
-                                      ", lcId: " + annoPageRdf.getLocalId() +
-                                      ", pgId:" + annoPageRdf.getPageId() +
-                                      ". Message: " + e.getMessage());
+            LogFile.OUT.error("{}/{}/{} - Error saving AnnoPage", dsId, lcId, pgId, e);
+            throw new LoaderException("Error saving Annopage with dsId: " + dsId +
+                                      ", lcId: " + lcId +
+                                      ", pgId:" + pgId, e);
         }
-    }
-
-
-    public AnnoPage createAnnoPage(AnnoPageRdf annoPageRdf, Resource res) {
-        AnnoPage result = new AnnoPage(
-                annoPageRdf.getDatasetId(),
-                annoPageRdf.getLocalId(),
-                annoPageRdf.getPageId(),
-                annoPageRdf.getImgTargetBase(),
-                res);
-        result.setAns(createAnnoList(annoPageRdf, annoPageRdf.getDatasetId()));
-        return result;
     }
 
     /**
@@ -127,60 +108,5 @@ public class MongoService {
         return annoPageRepositoryImpl.deleteDataset(datasetId);
     }
 
-    private List<Annotation> createAnnoList(AnnoPageRdf annoPageRdf, String dataSetId){
-        List<Annotation> annotationList = new ArrayList<>();
-        for (AnnotationRdf annotationRdf : annoPageRdf.getAnnotationRdfList()){
-            Annotation annotation = new Annotation(
-                    annotationRdf.getId(),
-                    getDcTypeCode(annotationRdf.getDcType(), dataSetId, annoPageRdf.getPageId(), annotationRdf.getId()),
-                    annotationRdf.getFrom(),
-                    annotationRdf.getTo());
-            if (StringUtils.isNotBlank(annotationRdf.getLang())){
-                annotation.setLang(annotationRdf.getLang());
-            }
-            annotation.setTgs(createFTTargetList(annotationRdf));
-            annotationList.add(annotation);
-        }
-        return annotationList;
-    }
-
-    private List<Target> createFTTargetList(AnnotationRdf annotationRdf){
-        List<Target> targetList = new ArrayList<>();
-        for (TargetRdf targetRdf : annotationRdf.getTargetRdfList()){
-            targetList.add(new Target(targetRdf.getX(),
-                                      targetRdf.getY(),
-                                      targetRdf.getW(),
-                                      targetRdf.getH()));
-        }
-        return targetList;
-    }
-
-    private static String getDcTypeCode(String dcType, String dataSetId, String pageId, String annoId){
-        String dcTypeCode;
-        if (StringUtils.isBlank(dcType)){
-            String error = "Data error: dc:type not set or null for Annotation with ID: " + annoId
-                           + " on Annotation Page: " + pageId + " for Dataset: " + dataSetId;
-
-            LogFile.OUT.error(error);
-        }
-        switch (dcType.toLowerCase()) {
-            case "page":
-                dcTypeCode = "P";
-                break;
-            case "block":
-                dcTypeCode = "B";
-                break;
-            case "line":
-                dcTypeCode = "L";
-                break;
-            case "word":
-                dcTypeCode = "W";
-                break;
-            default:
-                dcTypeCode = "";
-                break;
-        }
-        return dcTypeCode;
-    }
 
 }

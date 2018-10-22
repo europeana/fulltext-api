@@ -15,7 +15,7 @@
  *  the Licence.
  */
 
-package eu.europeana.fulltext.common.entity;
+package eu.europeana.fulltext.entity;
 
 import org.mongodb.morphia.annotations.Embedded;
 
@@ -29,7 +29,7 @@ public class Annotation {
 
     private String       anId;   // IIIF_API_BASE_URL/               /            /annotation/{anId}
 
-    private String       dcType;
+    private char         dcType;
     private String       motiv;  // can be stored but is initially not used for output
     private String       lang;   // optional, to override the page-level (actually resource-level) language
     private Integer      from;
@@ -52,7 +52,7 @@ public class Annotation {
     public Annotation(){}
 
     public Annotation(String      anId,
-                      String      dcType,
+                      char      dcType,
                       Integer     from,
                       Integer     to) {
         this.anId   = anId;
@@ -62,7 +62,7 @@ public class Annotation {
     }
 
     public Annotation(String       anId,
-                      String       dcType,
+                      char       dcType,
                       Integer      from,
                       Integer      to,
                       List<Target> tgs) {
@@ -71,7 +71,7 @@ public class Annotation {
     }
 
     public Annotation(String       anId,
-                      String       dcType,
+                      char       dcType,
                       Integer      from,
                       Integer      to,
                       List<Target> tgs,
@@ -88,11 +88,11 @@ public class Annotation {
         this.anId = anId;
     }
 
-    public String getDcType() {
+    public char getDcType() {
         return dcType;
     }
 
-    public void setDcType(String dcType) {
+    public void setDcType(char dcType) {
         this.dcType = dcType;
     }
 

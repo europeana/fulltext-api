@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.1" encoding="UTF-8"?>
 <!DOCTYPE RDF [
 <!ENTITY text  "http://data.europeana.eu/fulltext/9200357/BibliographicResource_3000095247417/3136946e43beab1a0b2396ab18b63455" >
 <!ENTITY img   "https://iiif.europeana.eu/image/5IA65CDOF34YRLIMTNOKBCOKRE55MMCUPIBRPZVBNCREWXJ6STHA/presentation_images/2dea77e0-0232-11e6-a696-fa163e2dd531/node-1/image/NLP/Głos_Śląski/1916/06/22/dodatek/00642/full/full/0/default.jpg" >
@@ -25,6 +25,7 @@
 	<oa:styledBy rdf:resource="&style;"/>
 	<oa:hasBody>
 		<oa:SpecificResource rdf:about="&text;#char=0,3">
+			<dc:language>en</dc:language>
 			<oa:hasSource rdf:resource="&text;"/>
 			<oa:styleClass>size-11</oa:styleClass>
 		</oa:SpecificResource>

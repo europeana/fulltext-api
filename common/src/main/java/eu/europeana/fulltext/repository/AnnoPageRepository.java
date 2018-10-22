@@ -15,11 +15,11 @@
  *  the Licence.
  */
 
-package eu.europeana.fulltext.common.repository;
-
-import eu.europeana.fulltext.common.entity.Resource;
+package eu.europeana.fulltext.repository;
+import eu.europeana.fulltext.entity.AnnoPage;
+import org.bson.types.ObjectId;
 
 /**
  * Created by luthien on 01/10/2018.
  */
-public interface ResourceRepository extends CrudRepository<Resource, String>{}
+public interface AnnoPageRepository extends CrudRepository<AnnoPage, ObjectId>{}
