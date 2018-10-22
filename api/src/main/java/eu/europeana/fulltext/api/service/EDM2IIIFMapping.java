@@ -146,14 +146,17 @@ public class EDM2IIIFMapping {
 
     private static String[] getFTTargetArray(AnnoPage annoPage, Annotation annotation){
         ArrayList<String> ftTargetURLList = new ArrayList<>();
-        for (Target target : annotation.getTgs()){
-            ftTargetURLList.add(annoPage.getTgtId() + "#xywh="
-                                + target.getX() + ","
-                                + target.getY() + ","
-                                + target.getW() + ","
-                                + target.getH());
+        if (annotation.getTgs() != null) {
+            for (Target target : annotation.getTgs()) {
+                ftTargetURLList.add(annoPage.getTgtId() + "#xywh="
+                        + target.getX() + ","
+                        + target.getY() + ","
+                        + target.getW() + ","
+                        + target.getH());
+            }
+            return ftTargetURLList.toArray(new String[0]);
         }
-        return ftTargetURLList.toArray(new String[0]);
+        return null;
     }
 
     static FullTextResource getFullTextResource(Resource resource){
