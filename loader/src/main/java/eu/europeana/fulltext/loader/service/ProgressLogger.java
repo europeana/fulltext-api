@@ -32,7 +32,8 @@ public class ProgressLogger {
      * Create a new progressLogger. This also sets the operation start Time
      * @param expectedItems total number of items that are expected to be retrieved. The value is optional, if
      *                      specified then logging will include an estimate of the remaining time
-     * @param logAfterSeconds to prevent too much logging, only log every x seconds
+     * @param logAfterSeconds to prevent too much logging, only log every x seconds. If zero or a negative value is
+     *                        provided then nothing is logged
      */
     public ProgressLogger(long expectedItems, int logAfterSeconds) {
         this.startTime = System.currentTimeMillis();
@@ -55,6 +56,14 @@ public class ProgressLogger {
 
     public long getItemsDone() {
         return this.itemsFail + this.itemsOk;
+    }
+
+    public long getItemsOk() {
+        return this.itemsOk;
+    }
+
+    public long getItemsFail() {
+        return this.itemsFail;
     }
 
     /**
@@ -96,7 +105,7 @@ public class ProgressLogger {
      */
     public String getResults() {
         return("Processed " +getItemsDone()+" files in " +getDurationText(System.currentTimeMillis()-startTime)+
-                " (expected "+expectedItems+" files). " +itemsFail+" files were skipped");
+                " (expected "+expectedItems+" files). " +itemsFail+" files were skipped.");
     }
 
     /**

@@ -44,13 +44,13 @@ import java.util.zip.ZipFile;
 @Service
 public class LoadArchiveService extends SimpleFileVisitor<Path> {
 
-    private static final Logger      LOG       = LogManager.getLogger(LoadArchiveService.class);
+    private static final Logger LOG = LogManager.getLogger(LoadArchiveService.class);
 
     private XMLParserService parser;
     private MongoService mongoService;
     private LoaderSettings settings;
-    private int               apCounter = 0;
-    private List<AnnoPage> apList    = new ArrayList<>();
+    private int apCounter = 0;
+    private List<AnnoPage> apList = new ArrayList<>();
 
     public LoadArchiveService(XMLParserService parser, MongoService mongoService, LoaderSettings settings) {
         this.parser = parser;
@@ -104,20 +104,21 @@ public class LoadArchiveService extends SimpleFileVisitor<Path> {
         apList.clear();
         apCounter = 0;
 
-        ProgressLogger progressLog = new ProgressLogger(30);
+        ProgressLogger progressFiles = new ProgressLogger(30);
+        ProgressLogger progressAnnotations = new ProgressLogger(-1);
         try (ZipFile archive = new ZipFile(path)) {
 
             // the size() method counts the folders as well
             int size = getNrOfFiles(archive);
             LogFile.OUT.info("Archive has {} files", size);
-            progressLog.setExpectedItems(size);
+            progressFiles.setExpectedItems(size);
 
             archive.stream()
                     .filter(p -> p.getName().contains(".xml"))
                     .filter(p -> !p.getName().startsWith("__"))
                     .forEach(p -> {
                         try {
-                            parseArchiveFile(p, archive, progressLog, saveMode);
+                            parseArchiveFile(p, archive, progressFiles, progressAnnotations, saveMode);
                         } catch (LoaderException e) {
                             sneakyThrow(new LoaderException(e.getMessage(), e.getCause()));
                         }
@@ -135,9 +136,13 @@ public class LoadArchiveService extends SimpleFileVisitor<Path> {
             return "Unable to read archive " + path + "; message:" + e.getMessage();
         }
 
-        String results = progressLog.getResults();
-        LogFile.OUT.info(results);
-        return results;
+        StringBuilder results = new StringBuilder(progressFiles.getResults());
+        results.append(" ");
+        results.append(progressAnnotations.getItemsFail());
+        results.append(" annotations were skipped.");
+        String result = results.toString();
+        LogFile.OUT.info(result);
+        return result;
     }
 
     private int getNrOfFiles(ZipFile zips){
@@ -152,17 +157,17 @@ public class LoadArchiveService extends SimpleFileVisitor<Path> {
         return count;
     }
 
-    private void parseArchiveFile(ZipEntry element, ZipFile archive, ProgressLogger progressLog, MongoSaveMode saveMode)
-            throws LoaderException {
+    private void parseArchiveFile(ZipEntry element, ZipFile archive, ProgressLogger progressFiles,
+                                  ProgressLogger progressAnnotations, MongoSaveMode saveMode) throws LoaderException {
         LOG.debug("Parsing file {} ", element.getName());
         try (InputStream  inputStream = archive.getInputStream(element)) {
             String pageId = getPageIdFromFileName(element.getName());
-            AnnoPage ap = parser.parse(pageId, inputStream, element.getName());
+            AnnoPage ap = parser.parse(pageId, inputStream, element.getName(), progressAnnotations);
             apList.add(ap);
             apCounter++;
-            progressLog.addItemOk();
+            progressFiles.addItemOk();
         } catch (IOException | LoaderException e) {
-            progressLog.addItemFail();
+            progressFiles.addItemFail();
             LogFile.OUT.error("{} - Error parsing file: {}", element.getName(), getRootCauseMsg(e), e);
         }
 

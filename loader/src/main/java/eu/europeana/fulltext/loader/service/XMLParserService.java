@@ -116,6 +116,20 @@ public class XMLParserService {
      * @throws LoaderException when there is a fatal error processing this file
      */
     public AnnoPage parse(String pageId, InputStream xmlStream, String file) throws LoaderException {
+        return parse(pageId, xmlStream, file, null);
+    }
+
+    /**
+     * Parse an fulltext xml file and return an AnnoPage object that is ready to be stored in the database
+     * @param pageId full text page number
+     * @param xmlStream xml file input stream
+     * @param file name of the xml file (for logging purposes)
+     * @param progressAnnotation keep track of number of processed annotations
+     * @return AnnotationPage object
+     * @throws LoaderException when there is a fatal error processing this file
+     */
+    public AnnoPage parse(String pageId, InputStream xmlStream, String file, ProgressLogger progressAnnotation) throws LoaderException {
+
         AnnoPage result = new AnnoPage();
         result.setPgId(pageId);
 
@@ -130,7 +144,7 @@ public class XMLParserService {
                     switch (se.getName().getLocalPart()) {
                         case RDF              : break; // simply ignore
                         case FULLTEXTRESOURCE : parseFullTextResource(reader, se, result, file); break;
-                        case ANNOTATION       : parseAnnotation(reader, se, result, file); break;
+                        case ANNOTATION       : parseAnnotation(reader, se, result, progressAnnotation, file); break;
                         default: logUnknownElement(file, se);
                     }
                 }
@@ -217,10 +231,13 @@ public class XMLParserService {
     /**
      * Processes an oa:Annotation element and adds it to the AnnoPage. Note that if an error occurs we skip the
      * annotation and do not add it to the AnnoPage. We do log all annotations that are skipped
+     * @return true if annotation was processed and added to AnnoPage object, otherwise false
      */
-    private void parseAnnotation(XMLEventReader reader, StartElement annotationElement, AnnoPage annoPage, String file)
+    private boolean parseAnnotation(XMLEventReader reader, StartElement annotationElement, AnnoPage annoPage,
+                                    ProgressLogger progressAnnotation, String file)
             throws XMLStreamException {
         Annotation anno = new Annotation();
+        boolean result = false;
         try {
             parseAnnotationId(annotationElement, anno);
             while (reader.hasNext()) {
@@ -243,10 +260,21 @@ public class XMLParserService {
                     // do nothing, just skip other (end) elements until we get to end of annotation
                 }
             }
-            addAnnotationToAnnoPage(annoPage, anno);
+            result = addAnnotationToAnnoPage(annoPage, anno);
+            if (progressAnnotation != null) {
+                if (result) {
+                    progressAnnotation.addItemOk();
+                } else {
+                    progressAnnotation.addItemFail();
+                }
+            }
         } catch (LoaderException e) {
             LogFile.OUT.error("{} - Skipping annotation with id {} because {}", file, anno.getAnId(), e.getMessage());
+            if (progressAnnotation != null) {
+                progressAnnotation.addItemFail();
+            }
         }
+        return result;
     }
 
     /**
@@ -255,8 +283,9 @@ public class XMLParserService {
      * 2. The annotation type is 'W', 'B' or 'L' (i.e. NOT 'P') and has a target
      * 3.    or the annotation type is 'P'
      * Note that if there are no text coordinates, we do save it
+     * @return true if a new annotation was added to the list, otherwise false
      */
-    private void addAnnotationToAnnoPage(AnnoPage annoPage, Annotation anno) throws LoaderException {
+    private boolean addAnnotationToAnnoPage(AnnoPage annoPage, Annotation anno) throws LoaderException {
         if (anno.getDcType() == Character.MIN_VALUE) {
             throw new MissingDataException("no annotation type defined");
         }
@@ -267,7 +296,7 @@ public class XMLParserService {
         if (annoPage.getAns() == null) {
             annoPage.setAns(new ArrayList<>());
         }
-        annoPage.getAns().add(anno);
+        return annoPage.getAns().add(anno);
     }
 
     /**
