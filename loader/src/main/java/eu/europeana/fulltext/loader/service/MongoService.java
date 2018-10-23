@@ -28,7 +28,7 @@ public class MongoService {
     AnnoPageRepositoryImpl annoPageRepositoryImpl;
 
 
-    void saveAPList(List<AnnoPage> apList, MongoSaveMode saveMode) throws LoaderException {
+    void saveAnnoPageList(List<AnnoPage> apList, MongoSaveMode saveMode) throws LoaderException {
         LOG.debug("Saving {} annoPages...", apList.size());
 
         long resourceCount = resourceRepositoryImpl.count();
@@ -43,11 +43,11 @@ public class MongoService {
         long newAnnoPageCount = annoPageRepositoryImpl.count();
         if (resourceCount + apList.size() != newResourceCount) {
             LogFile.OUT.warn("Expected number of resource in database is {}, but actual number is {}",
-                    resourceCount + apList.size());
+                    resourceCount + apList.size(), newResourceCount);
         }
         if (annoPageCount + apList.size() != newAnnoPageCount) {
             LogFile.OUT.warn("Expected number of annotation pages in database is {}, but actual number is {}",
-                    annoPageCount + apList.size());
+                    annoPageCount + apList.size(), annoPageCount);
         }
         LOG.debug("Saving done.");
     }

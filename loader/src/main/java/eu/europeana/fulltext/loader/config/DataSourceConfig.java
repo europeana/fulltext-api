@@ -35,22 +35,13 @@ import org.springframework.context.annotation.PropertySource;
 @PropertySource(value = "classpath:loader.user.properties", ignoreResourceNotFound = true)
 public class DataSourceConfig {
 
-    private Morphia morphia() {
-        final Morphia morphia = new Morphia();
-        // tell Morphia where to find your classes
-        // can be called multiple times with different packages or classes
-        morphia.mapPackage("eu.europeana.fulltext.api.entity");
-
-        return morphia;
-    }
-
     @Bean
     public AdvancedDatastore datastore(MongoClient mongoClient, MongoProperties mongoProperties) {
 
         // create the Datastore connecting to the default port on the local host
         MongoClientURI          uri = new MongoClientURI(mongoProperties.getUri());
         String                  defaultDatabase = uri.getDatabase();
-        final AdvancedDatastore datastore = (AdvancedDatastore) morphia().createDatastore(mongoClient, defaultDatabase);
+        final AdvancedDatastore datastore = (AdvancedDatastore) new Morphia().createDatastore(mongoClient, defaultDatabase);
         datastore.ensureIndexes();
         return datastore;
     }

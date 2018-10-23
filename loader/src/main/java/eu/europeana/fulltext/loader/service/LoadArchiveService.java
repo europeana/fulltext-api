@@ -125,7 +125,7 @@ public class LoadArchiveService extends SimpleFileVisitor<Path> {
 
             if (apCounter > 0) {
                 LOG.debug("... remaining {} xml files parsed, flushing to MongoDB ...", apCounter);
-                mongoService.saveAPList(apList, saveMode);
+                mongoService.saveAnnoPageList(apList, saveMode);
                 LOG.debug("... done.");
                 apList = new ArrayList<>();
                 apCounter = 0;
@@ -168,7 +168,7 @@ public class LoadArchiveService extends SimpleFileVisitor<Path> {
 
         if (apCounter > 99){
             LOG.debug("... 100 xml files parsed, flushing to MongoDB ...");
-            mongoService.saveAPList(apList, saveMode);
+            mongoService.saveAnnoPageList(apList, saveMode);
             LOG.debug("... done, continuing ...");
             apList.clear();
             apCounter = 0;
