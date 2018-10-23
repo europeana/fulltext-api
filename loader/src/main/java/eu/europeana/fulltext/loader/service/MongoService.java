@@ -62,7 +62,7 @@ public class MongoService {
         String id = resource.getId();
         try{
             resourceRepositoryImpl.save(resource);
-            LOG.info("{}/{}/{} - Resource saved", dsId, lcId, id);
+            LOG.debug("{}/{}/{} - Resource saved", dsId, lcId, id);
         } catch (Exception e){
             LogFile.OUT.error("{}/{}/{} - Error saving resource", dsId, lcId, id, e);
             throw new LoaderException("Error saving resource with dsId: " + dsId +
