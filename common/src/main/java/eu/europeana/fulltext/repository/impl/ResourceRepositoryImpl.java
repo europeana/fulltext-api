@@ -15,11 +15,11 @@
  *  the Licence.
  */
 
-package eu.europeana.fulltext.common.repository.impl;
+package eu.europeana.fulltext.repository.impl;
 
 import com.mongodb.*;
-import eu.europeana.fulltext.common.entity.Resource;
-import eu.europeana.fulltext.common.repository.ResourceRepository;
+import eu.europeana.fulltext.entity.Resource;
+import eu.europeana.fulltext.repository.ResourceRepository;
 import org.mongodb.morphia.AdvancedDatastore;
 import org.mongodb.morphia.Key;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +56,13 @@ public class ResourceRepositoryImpl extends BaseRepository<Resource, String> imp
         int      count = cur.count();
         cur.close();
         return (count >= 1);
+    }
+
+    /**
+     * @return the total number of resources in the database
+     */
+    public long count() {
+        return datastore.getCollection(Resource.class).count(new BasicDBObject());
     }
 
     /**

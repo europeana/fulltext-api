@@ -15,12 +15,12 @@
  *  the Licence.
  */
 
-package eu.europeana.fulltext.common.repository.impl;
+package eu.europeana.fulltext.repository.impl;
 
 import java.io.Serializable;
 
 import com.mongodb.WriteResult;
-import eu.europeana.fulltext.common.repository.CrudRepository;
+import eu.europeana.fulltext.repository.CrudRepository;
 import org.mongodb.morphia.AdvancedDatastore;
 import org.mongodb.morphia.Key;
 import org.mongodb.morphia.query.UpdateOperations;

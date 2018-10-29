@@ -17,11 +17,10 @@
 
 package eu.europeana.fulltext.loader.service;
 
+import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.loader.config.LoaderDefinitions;
 import eu.europeana.fulltext.loader.config.LoaderSettings;
 import eu.europeana.fulltext.loader.exception.LoaderException;
-import eu.europeana.fulltext.loader.model.AnnoPageRdf;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,7 +28,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -46,13 +44,13 @@ import java.util.zip.ZipFile;
 @Service
 public class LoadArchiveService extends SimpleFileVisitor<Path> {
 
-    private static final Logger      LOG       = LogManager.getLogger(LoadArchiveService.class);
+    private static final Logger LOG = LogManager.getLogger(LoadArchiveService.class);
 
     private XMLParserService parser;
     private MongoService mongoService;
     private LoaderSettings settings;
-    private int               apCounter = 0;
-    private List<AnnoPageRdf> apList    = new ArrayList<>();
+    private int apCounter = 0;
+    private List<AnnoPage> apList = new ArrayList<>();
 
     public LoadArchiveService(XMLParserService parser, MongoService mongoService, LoaderSettings settings) {
         this.parser = parser;
@@ -106,20 +104,21 @@ public class LoadArchiveService extends SimpleFileVisitor<Path> {
         apList.clear();
         apCounter = 0;
 
-        ProgressLogger progressLog = new ProgressLogger(30);
+        ProgressLogger progressFiles = new ProgressLogger(30);
+        ProgressLogger progressAnnotations = new ProgressLogger(-1);
         try (ZipFile archive = new ZipFile(path)) {
 
             // the size() method counts the folders as well
             int size = getNrOfFiles(archive);
             LogFile.OUT.info("Archive has {} files", size);
-            progressLog.setExpectedItems(size);
+            progressFiles.setExpectedItems(size);
 
             archive.stream()
                     .filter(p -> p.getName().contains(".xml"))
                     .filter(p -> !p.getName().startsWith("__"))
                     .forEach(p -> {
                         try {
-                            parseArchiveFile(p, archive, progressLog, saveMode);
+                            parseArchiveFile(p, archive, progressFiles, progressAnnotations, saveMode);
                         } catch (LoaderException e) {
                             sneakyThrow(new LoaderException(e.getMessage(), e.getCause()));
                         }
@@ -127,7 +126,7 @@ public class LoadArchiveService extends SimpleFileVisitor<Path> {
 
             if (apCounter > 0) {
                 LOG.debug("... remaining {} xml files parsed, flushing to MongoDB ...", apCounter);
-                mongoService.saveAPList(apList, saveMode);
+                mongoService.saveAnnoPageList(apList, saveMode);
                 LOG.debug("... done.");
                 apList = new ArrayList<>();
                 apCounter = 0;
@@ -137,9 +136,13 @@ public class LoadArchiveService extends SimpleFileVisitor<Path> {
             return "Unable to read archive " + path + "; message:" + e.getMessage();
         }
 
-        String results = progressLog.getResults();
-        LogFile.OUT.info(results);
-        return results;
+        StringBuilder results = new StringBuilder(progressFiles.getResults());
+        results.append(" ");
+        results.append(progressAnnotations.getItemsFail());
+        results.append(" annotations were skipped.");
+        String result = results.toString();
+        LogFile.OUT.info(result);
+        return result;
     }
 
     private int getNrOfFiles(ZipFile zips){
@@ -154,36 +157,36 @@ public class LoadArchiveService extends SimpleFileVisitor<Path> {
         return count;
     }
 
-    private void parseArchiveFile(ZipEntry element, ZipFile archive, ProgressLogger progressLog, MongoSaveMode saveMode)
-            throws LoaderException {
+    private void parseArchiveFile(ZipEntry element, ZipFile archive, ProgressLogger progressFiles,
+                                  ProgressLogger progressAnnotations, MongoSaveMode saveMode) throws LoaderException {
         LOG.debug("Parsing file {} ", element.getName());
-        try (InputStream  inputStream = archive.getInputStream(element);
-            StringWriter writer      = new StringWriter()) {
-            IOUtils.copy(inputStream, writer, "UTF-8");
-            String pageId = element.getName();
-            if (StringUtils.contains(element.toString(), "/")) {
-                pageId = StringUtils.substringAfterLast(element.getName(), "/");
-            }
-            pageId = StringUtils.removeEndIgnoreCase(pageId, ".xml");
-
-            AnnoPageRdf ap = parser.eatIt(element.getName(), writer.toString(), pageId);
+        try (InputStream  inputStream = archive.getInputStream(element)) {
+            String pageId = getPageIdFromFileName(element.getName());
+            AnnoPage ap = parser.parse(pageId, inputStream, element.getName(), progressAnnotations);
             apList.add(ap);
             apCounter++;
-            progressLog.addItemOk();
-        }
-        catch (IOException e){
-            progressLog.addItemFail();
-            LogFile.OUT.error("{} - Unable to read file: {}", element.getName(), getRootCauseMsg(e), e);
+            progressFiles.addItemOk();
+        } catch (IOException | LoaderException e) {
+            progressFiles.addItemFail();
+            LogFile.OUT.error("{} - Error parsing file: {}", element.getName(), getRootCauseMsg(e), e);
         }
 
         if (apCounter > 99){
             LOG.debug("... 100 xml files parsed, flushing to MongoDB ...");
-            mongoService.saveAPList(apList, saveMode);
+            mongoService.saveAnnoPageList(apList, saveMode);
             LOG.debug("... done, continuing ...");
             apList.clear();
             apCounter = 0;
         }
         LOG.debug("Done parsing file {} ", element.toString());
+    }
+
+    private String getPageIdFromFileName(String fileName ) {
+        String pageId = fileName;
+        if (StringUtils.contains(pageId, "/")) {
+            pageId = StringUtils.substringAfterLast(pageId, "/");
+        }
+        return StringUtils.removeEndIgnoreCase(pageId, ".xml");
     }
 
     private String getRootCauseMsg(Throwable e) {

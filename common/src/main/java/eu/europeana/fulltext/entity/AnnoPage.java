@@ -15,7 +15,7 @@
  *  the Licence.
  */
 
-package eu.europeana.fulltext.common.entity;
+package eu.europeana.fulltext.entity;
 
 import org.bson.types.ObjectId;
 import lombok.Data;
@@ -44,7 +44,6 @@ public class AnnoPage {
     private String           lcId;  // IIIF_API_BASE_URL/      /{lcId}/annopage/
     private String           pgId;  // IIIF_API_BASE_URL/      /      /annopage/{pgId}
     private String           tgtId; // IIIF_API_BASE_URL/      /      /canvas/{tgtId} USE WHOLE URL!!
-    private Annotation       pgAn;  // Annotation
     private List<Annotation> ans;   // List of Annotations
     private Date             modified = Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant());
 
@@ -52,7 +51,7 @@ public class AnnoPage {
     private Resource res;           // RESOURCE_BASE_URL/      /      /{resId} (= resource)
 
 
-    public AnnoPage(){}
+    public AnnoPage() {}
 
     public AnnoPage(String dsId, String lcId, String pgId, String tgtId, Resource res) {
         this.dsId  = dsId;
@@ -100,14 +99,6 @@ public class AnnoPage {
 
     public void setTgtId(String tgtId) {
         this.tgtId = tgtId;
-    }
-
-    public Annotation getPgAn() {
-        return pgAn;
-    }
-
-    public void setPgAn(Annotation pgAn) {
-        this.pgAn = pgAn;
     }
 
     public List<Annotation> getAns() {
