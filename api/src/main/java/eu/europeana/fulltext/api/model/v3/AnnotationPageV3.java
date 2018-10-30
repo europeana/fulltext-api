@@ -55,7 +55,7 @@ public class AnnotationPageV3 extends JsonLdIdType implements Serializable, Anno
 
     @Override
     public String[] getContext() {
-        return new String[0];
+        return context;
     }
 
     @Override
