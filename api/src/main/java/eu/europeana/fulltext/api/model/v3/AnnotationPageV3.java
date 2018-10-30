@@ -32,7 +32,8 @@ import eu.europeana.fulltext.api.model.JsonLdIdType;
 /**
  * Created by luthien on 14/06/2018.
  */
-@JsonPropertyOrder({"context", "id"})
+
+@JsonPropertyOrder({"context", "id", "type"})
 public class AnnotationPageV3 extends JsonLdIdType implements Serializable, AnnotationWrapper {
 
     private static final long serialVersionUID = 3567695991809278386L;

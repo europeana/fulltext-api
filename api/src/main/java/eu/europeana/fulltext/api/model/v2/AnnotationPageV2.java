@@ -30,14 +30,18 @@ import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_IIIF_V2;
 /**
  * Created by luthien on 14/06/2018.
  */
-@JsonldType(value = "sc:AnnotationList")
-@JsonPropertyOrder({"context", "id"})
+//@JsonldType(value = "sc:AnnotationList") // commenting this out works for property ordering #EA-1310
+@JsonPropertyOrder({"context", "id", "type"})
 public class AnnotationPageV2 extends JsonLdId implements Serializable, AnnotationWrapper {
 
     private static final long serialVersionUID = -491589144458820254L;
 
     @JsonProperty("@context")
     private String[] context = new String[]{MEDIA_TYPE_IIIF_V2, MEDIA_TYPE_EDM_JSONLD};
+
+    @JsonProperty("@type")
+    private String type = "sc:AnnotationList";
+
     private AnnotationV2[] resources;
 
     public AnnotationPageV2(String id) {

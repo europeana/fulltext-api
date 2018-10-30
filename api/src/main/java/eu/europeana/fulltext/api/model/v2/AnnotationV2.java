@@ -27,8 +27,8 @@ import java.io.Serializable;
 /**
  * Created by luthien on 14/06/2018.
  */
-@JsonldType(value = "oa:Annotation")
-@JsonPropertyOrder({"context", "id"})
+//@JsonldType(value = "oa:Annotation") // commenting this out works for property ordering #EA-1310
+@JsonPropertyOrder({"context", "id", "type", "motivation", "dcType", "resource", "on"})
 public class AnnotationV2 extends JsonLdId implements Serializable, AnnotationWrapper {
 
     private static final long serialVersionUID = 7120324589144279826L;
@@ -36,6 +36,10 @@ public class AnnotationV2 extends JsonLdId implements Serializable, AnnotationWr
     @JsonProperty("@context")
     // note that we only set context for a single annotation and not for an array of annotations part of an annotationpage
     private String[] context;
+
+    @JsonProperty("@type")
+    private String type = "oa:Annotation";
+
     private String              motivation;
     private String              dcType;
     private AnnotationBodyV2    resource;

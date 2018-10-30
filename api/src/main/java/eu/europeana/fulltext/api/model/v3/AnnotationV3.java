@@ -30,7 +30,7 @@ import eu.europeana.fulltext.api.model.JsonLdIdType;
 /**
  * Created by luthien target 14/06/2018.
  */
-@JsonPropertyOrder({"context", "id"})
+@JsonPropertyOrder({"context", "id", "type", "motivation", "dcType", "body", "target"})
 public class AnnotationV3 extends JsonLdIdType implements Serializable, AnnotationWrapper {
 
     private static final long serialVersionUID = 8849251970656404497L;
