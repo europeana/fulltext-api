@@ -17,6 +17,7 @@
 
 package eu.europeana.fulltext.loader.service;
 
+import com.ctc.wstx.api.WstxInputProperties;
 import com.ctc.wstx.evt.WDTD;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Annotation;
@@ -99,6 +100,9 @@ public class XMLParserService {
     // parser configuration
     static {
         inputFactory.setProperty(XMLInputFactory.IS_REPLACING_ENTITY_REFERENCES, true);
+        // We need to raise the maximum number of entities expansions in 1 file because some xml files will go over the
+        // default limit of 100.000
+        inputFactory.setProperty(WstxInputProperties.P_MAX_ENTITY_COUNT, 1_000_000);
     }
 
     private LoaderSettings settings;

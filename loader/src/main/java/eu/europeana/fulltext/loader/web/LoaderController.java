@@ -51,8 +51,9 @@ public class LoaderController {
         s.append(" annopages and ");
         s.append(mongoService.deleteAllResources(datasetId));
         s.append(" resources");
-        LogManager.getLogger(LoaderController.class).debug("Delete finished.");
-        return s.toString();
+        String result = s.toString();
+        LogManager.getLogger(LoaderController.class).info(result);
+        return result;
     }
 
 
