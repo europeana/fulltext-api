@@ -19,22 +19,24 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.time.ZonedDateTime;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static eu.europeana.fulltext.api.config.FTDefinitions.*;
-import static eu.europeana.fulltext.api.service.CacheUtils.IFMATCH;
-import static eu.europeana.fulltext.api.service.CacheUtils.IFNONEMATCH;
+import static eu.europeana.fulltext.api.service.CacheUtils.generateETag;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 /**
  * Rest controller that handles incoming fulltext requests
  * @author Lúthien
  * Created on 27-02-2018
+ * Note that the eTag for the Fulltext response is created from a concatenation of:
+ * - datasetId + recordId + pageId / AnnoId;
+ * - modified date (toString()) of the fetched document;
+ * - the requested IIIF version (2 or 3); and the
+ * - Fulltext API version as defined in the pom.xml
  */
 @RestController
 @EnableWebMvc
@@ -89,10 +91,13 @@ public class FTController {
         AnnotationWrapper annotationPage;
 
         try {
-            // first retrieve AnnoPage to do http caching processing
             AnnoPage                annoPage = fts.fetchAnnoPage(datasetId, recordId, pageId);
             ZonedDateTime           modified = CacheUtils.dateToZonedUTC(annoPage.getModified());
-            String                  eTag     = generateETag(datasetId + recordId + pageId, modified, version);
+            String                  eTag     = generateETag(datasetId + recordId + pageId,
+                                                            modified,
+                                                            version,
+                                                            fts.getSettings().getAppVersion(),
+                                                            true);
             ResponseEntity<String>  cached   = CacheUtils.checkCached(request, modified, eTag);
 
             if (null != cached){
@@ -153,10 +158,13 @@ public class FTController {
 
         AnnotationWrapper annotation;
         try {
-            // first retrieve AnnoPage containing this Annotation to do http caching processing
             AnnoPage                annoPage = fts.fetchAPAnnotation(datasetId, recordId, annoID);
             ZonedDateTime           modified = CacheUtils.dateToZonedUTC(annoPage.getModified());
-            String                  eTag     = generateETag(datasetId + recordId + annoID, modified, version);
+            String                  eTag     = generateETag(datasetId + recordId + annoID,
+                                                            modified,
+                                                            version,
+                                                            fts.getSettings().getAppVersion(),
+                                                            true);
             ResponseEntity<String>  cached   = CacheUtils.checkCached(request, modified, eTag);
 
             if (cached != null) {
@@ -184,7 +192,6 @@ public class FTController {
                                     headers,
                                     HttpStatus.OK);
     }
-
 
     /**
      * Handles fetching a Fulltext Resource
@@ -231,7 +238,7 @@ public class FTController {
      * @return ResponseEntity
      */
     @RequestMapping(value    = {"/{datasetId}/{recordId}/annopage/{pageId}",
-            "/{datasetId}/{recordId}/annopage-limitone/{pageId}"},
+                                "/{datasetId}/{recordId}/annopage-limitone/{pageId}"},
                     method   = RequestMethod.HEAD)
     public ResponseEntity annoPageHeadExistsOne(@PathVariable String datasetId,
                                               @PathVariable String recordId,
@@ -291,13 +298,13 @@ public class FTController {
                (StringUtils.containsIgnoreCase(accept, MEDIA_TYPE_JSONLD));
     }
 
-    private String generateETag(String id, ZonedDateTime modified, String iiifVersion) {
-        StringBuilder hashData = new StringBuilder(id);
-        hashData.append(modified.toString());
-        hashData.append(fts.getSettings().getAppVersion());
-        hashData.append(iiifVersion);
-        return CacheUtils.generateETag(hashData.toString(), true);
-    }
+//    private String generateETag(String id, ZonedDateTime modified, String iiifVersion) {
+//        StringBuilder hashData = new StringBuilder(id);
+//        hashData.append(modified.toString());
+//        hashData.append(fts.getSettings().getAppVersion());
+//        hashData.append(iiifVersion);
+//        return CacheUtils.generateETag(hashData.toString(), true);
+//    }
 
 
     // ---- deprecated testing stuff ----

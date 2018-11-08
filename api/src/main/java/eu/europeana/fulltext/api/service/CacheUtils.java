@@ -45,8 +45,8 @@ import java.util.Objects;
 public class CacheUtils {
 
     private static final Logger  LOG             = LogManager.getLogger(CacheUtils.class);
-    public  static final String  IFNONEMATCH     = "If-None-Match";
-    public  static final String  IFMATCH         = "If-Match";
+    private static final String  IFNONEMATCH     = "If-None-Match";
+    private static final String  IFMATCH         = "If-Match";
     private static final String  IFMODIFIEDSINCE = "If-Modified-Since";
     private static final String  ANY             = "\"*\"";
     private static final String  ALLOWED         = "GET, HEAD";
@@ -61,11 +61,15 @@ public class CacheUtils {
 
     /**
      * Generates an eTag surrounded with double quotes
-     * @param data
-     * @param weakETag if true then the eTag will start with W/
+     * @param id            concatenated datasetID + localID + [pageID | annoId]
+     * @param modified      modified ZonedDateTime contained within MongoDB document
+     * @param iiifVersion   requested IIIF version [2|3]
+     * @param appVersion    version of this API as defined in the pom.xml
+     * @param weakETag      if true then the eTag will start with W/
      * @return
      */
-    public static String generateETag(String data, boolean weakETag) {
+    public static String generateETag(String id, ZonedDateTime modified, String iiifVersion, String appVersion, boolean weakETag) {
+        String data = id + zonedDateTimeToString(modified) + iiifVersion + appVersion;
         String eTag = "\"" + getSHA256Hash(data) + "\"";
         if (weakETag) {
             return "W/"+eTag;
@@ -75,11 +79,11 @@ public class CacheUtils {
 
     /**
      * Formats the given date according to the RFC 1123 pattern (e.g. Thu, 4 Oct 2018 10:34:20 GMT)
-     * @param lastModified
+     * @param zonedDateTime
      * @return
      */
-    public static String zonedDateTimeToString(ZonedDateTime lastModified) {
-        return lastModified.format(DateTimeFormatter.RFC_1123_DATE_TIME);
+    public static String zonedDateTimeToString(ZonedDateTime zonedDateTime) {
+        return zonedDateTime.format(DateTimeFormatter.RFC_1123_DATE_TIME);
     }
 
     /**
@@ -113,7 +117,6 @@ public class CacheUtils {
             if (doesPreconditionFail(request, eTag)){
                 return new ResponseEntity<>(HttpStatus.PRECONDITION_FAILED);
             }
-
             // check if If-Modified-Since is present and on or after timestamp_updated
             // yes: return HTTP 304 no: continue
         } else if (isNotModifiedSince(request, modified)){
@@ -157,7 +160,7 @@ public class CacheUtils {
      *                           ( contains matching eTag OR == "*" ) )
      *         Otherwise false
      */
-    public static boolean doesAnyIfNoneMatch(HttpServletRequest request, String eTag){
+    private static boolean doesAnyIfNoneMatch(HttpServletRequest request, String eTag){
         return ( StringUtils.isNotBlank(request.getHeader(IFNONEMATCH)) &&
                  ( doesAnyETagMatch(request.getHeader(IFNONEMATCH), eTag)));
     }
@@ -169,7 +172,7 @@ public class CacheUtils {
      *                         is after or on the timestamp_updated
      *         Otherwise false
      */
-    public static boolean isNotModifiedSince(HttpServletRequest request, ZonedDateTime modified){
+    private static boolean isNotModifiedSince(HttpServletRequest request, ZonedDateTime modified){
         return (StringUtils.isNotBlank(request.getHeader(IFMODIFIEDSINCE)) &&
                 Objects.requireNonNull(stringToZonedUTC(request.getHeader(IFMODIFIEDSINCE)))
                        .compareTo(modified) >= 0 );
@@ -183,7 +186,7 @@ public class CacheUtils {
      *                         NOT (contains matching eTag OR == "*") )
      *         otherwise false
      */
-    public static boolean doesPreconditionFail(HttpServletRequest request, String eTag){
+    private static boolean doesPreconditionFail(HttpServletRequest request, String eTag){
         return (StringUtils.isNotBlank(request.getHeader(IFMATCH)) &&
                 (!doesAnyETagMatch(request.getHeader(IFMATCH), eTag)));
     }

@@ -22,6 +22,7 @@ import eu.europeana.fulltext.api.model.v2.AnnotationPageV2;
 import eu.europeana.fulltext.api.model.v2.AnnotationV2;
 import eu.europeana.fulltext.api.model.v3.AnnotationPageV3;
 import eu.europeana.fulltext.api.model.v3.AnnotationV3;
+import eu.europeana.fulltext.api.service.CacheUtils;
 import eu.europeana.fulltext.repository.impl.AnnoPageRepositoryImpl;
 import eu.europeana.fulltext.repository.impl.ResourceRepositoryImpl;
 import eu.europeana.fulltext.api.service.EDM2IIIFMapping;
@@ -61,21 +62,21 @@ public class FTServiceTest {
 
     @Before
     public void setup(){
-        given(apRepository.existsByLimitOne(eq("dataset_1"), eq("local_1"), eq("page_1")))
+        given(apRepository.existsByLimitOne(eq("ds1"), eq("lc1"), eq("pg1")))
                 .willReturn(true);
-        given(apRepository.findByDatasetLocalPageId(eq("dataset_1"), eq("local_1"), eq("page_1")))
+        given(apRepository.findByDatasetLocalPageId(eq("ds1"), eq("lc1"), eq("pg1")))
                 .willReturn(anp_1);
-        given(apRepository.existsWithAnnoId(eq("dataset_1"), eq("local_1"), eq("anno_1")))
+        given(apRepository.existsWithAnnoId(eq("ds1"), eq("lc1"), eq("an1")))
                 .willReturn(true);
-        given(apRepository.findByDatasetLocalAnnoId(eq("dataset_1"), eq("local_1"), eq("anno_1")))
+        given(apRepository.findByDatasetLocalAnnoId(eq("ds1"), eq("lc1"), eq("an1")))
                 .willReturn(anp_1);
-        given(apRepository.existsWithAnnoId(eq("dataset_1"), eq("local_1"), eq("anno_2")))
+        given(apRepository.existsWithAnnoId(eq("ds1"), eq("lc1"), eq("an2")))
                 .willReturn(true);
-        given(apRepository.findByDatasetLocalAnnoId(eq("dataset_1"), eq("local_1"), eq("anno_2")))
+        given(apRepository.findByDatasetLocalAnnoId(eq("ds1"), eq("lc1"), eq("an2")))
                 .willReturn(anp_1);
-        given(apRepository.existsWithAnnoId(eq("dataset_1"), eq("local_1"), eq("anno_3")))
+        given(apRepository.existsWithAnnoId(eq("ds1"), eq("lc1"), eq("an3")))
                 .willReturn(true);
-        given(apRepository.findByDatasetLocalAnnoId(eq("dataset_1"), eq("local_1"), eq("anno_3")))
+        given(apRepository.findByDatasetLocalAnnoId(eq("ds1"), eq("lc1"), eq("an3")))
                 .willReturn(anp_1);
     }
 
@@ -89,7 +90,7 @@ public class FTServiceTest {
     @Test
     public void testGetAnnotationPageV2() throws AnnoPageDoesNotExistException {
         prepareAnnotationPageV2();
-        AnnotationPageV2 ap = ftService.generateAnnoPageV2(ftService.fetchAnnoPage("dataset_1", "local_1", "page_1"));
+        AnnotationPageV2 ap = ftService.generateAnnoPageV2(ftService.fetchAnnoPage("ds1", "lc1", "pg1"));
         assertReflectionEquals(anpv2_1, ap);
     }
 
@@ -101,7 +102,7 @@ public class FTServiceTest {
     @Test
     public void testGetAnnotationPageV3() throws AnnoPageDoesNotExistException {
         prepareAnnotationPageV3();
-        AnnotationPageV3 ap = ftService.generateAnnoPageV3(ftService.fetchAnnoPage("dataset_1", "local_1", "page_1"));
+        AnnotationPageV3 ap = ftService.generateAnnoPageV3(ftService.fetchAnnoPage("ds1", "lc1", "pg1"));
         assertReflectionEquals(anpv3_1, ap);
     }
 
@@ -109,15 +110,15 @@ public class FTServiceTest {
     public void testGetAnnotationsV2() throws AnnoPageDoesNotExistException {
         prepareAnnotationsV2();
         AnnotationV2 an = ftService.generateAnnotationV2(ftService.fetchAPAnnotation(
-                "dataset_1", "local_1", "anno_1"), "anno_1");
+                "ds1", "lc1", "an1"), "an1");
         assertReflectionEquals(annv2_1, an);
 
         an = ftService.generateAnnotationV2(ftService.fetchAPAnnotation(
-                "dataset_1", "local_1", "anno_2"), "anno_2");
+                "ds1", "lc1", "an2"), "an2");
         assertReflectionEquals(annv2_2, an);
 
         an = ftService.generateAnnotationV2(ftService.fetchAPAnnotation(
-                "dataset_1", "local_1", "anno_3"), "anno_3");
+                "ds1", "lc1", "an3"), "an3");
         assertReflectionEquals(annv2_3, an);
     }
 
@@ -125,15 +126,15 @@ public class FTServiceTest {
     public void testGetAnnotationsV3() throws AnnoPageDoesNotExistException {
         prepareAnnotationsV3();
         AnnotationV3 an = ftService.generateAnnotationV3(ftService.fetchAPAnnotation(
-                "dataset_1", "local_1", "anno_1"), "anno_1");
+                "ds1", "lc1", "an1"), "an1");
         assertReflectionEquals(annv3_1, an);
 
         an = ftService.generateAnnotationV3(ftService.fetchAPAnnotation(
-                "dataset_1", "local_1", "anno_2"), "anno_2");
+                "ds1", "lc1", "an2"), "an2");
         assertReflectionEquals(annv3_2, an);
 
         an = ftService.generateAnnotationV3(ftService.fetchAPAnnotation(
-                "dataset_1", "local_1", "anno_3"), "anno_3");
+                "ds1", "lc1", "an3"), "an3");
         assertReflectionEquals(annv3_3, an);
     }
 
