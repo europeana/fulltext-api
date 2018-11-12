@@ -16,6 +16,14 @@ This Fulltext API implements the functionality described in §3.3 & 3.4 of the E
 
 Version history:
 
+v.0.5
+Initial release:
+- split into 3 modules: API, Loader and common
+- added HTTP caching
+- switched to using Morphia (to enable read-only connections)
+- switched to use the Stax parser for the loader
+- added unit tests
+
 v.0.4-SNAPSHOT
 split into 2 modules
 fix loading bugs (EA-1276, EA-1277)
