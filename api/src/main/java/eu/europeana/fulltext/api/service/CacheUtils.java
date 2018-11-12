@@ -21,11 +21,13 @@ import eu.europeana.fulltext.api.web.FTController;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.DateUtils;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -33,6 +35,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * Created by luthien on 16/10/2018, copied from IIIF Api's CacheUtils utility class to facilitate handling
@@ -41,17 +44,32 @@ import java.util.Date;
  */
 public class CacheUtils {
 
+    private static final Logger  LOG             = LogManager.getLogger(CacheUtils.class);
+    private static final String  IFNONEMATCH     = "If-None-Match";
+    private static final String  IFMATCH         = "If-Match";
+    private static final String  IFMODIFIEDSINCE = "If-Modified-Since";
+    private static final String  ANY             = "\"*\"";
+    private static final String  ALLOWED         = "GET, HEAD";
+    private static final String  ALLOWHEADERS    = "If-Match, If-None-Match, If-Modified-Since";
+    private static final String  EXPOSEHEADERS   = "Allow, ETag, Last-Modified, Link";
+    private static final String  CACHECONTROL    = "no-cache";
+    private static final String  ACCEPT          = "Accept";
+
     private CacheUtils() {
         // empty constructor to prevent initialization
     }
 
     /**
      * Generates an eTag surrounded with double quotes
-     * @param data
-     * @param weakETag if true then the eTag will start with W/
+     * @param id            concatenated datasetID + localID + [pageID | annoId]
+     * @param modified      modified ZonedDateTime contained within MongoDB document
+     * @param iiifVersion   requested IIIF version [2|3]
+     * @param appVersion    version of this API as defined in the pom.xml
+     * @param weakETag      if true then the eTag will start with W/
      * @return
      */
-    public static String generateETag(String data, boolean weakETag) {
+    public static String generateETag(String id, ZonedDateTime modified, String iiifVersion, String appVersion, boolean weakETag) {
+        String data = id + zonedDateTimeToString(modified) + iiifVersion + appVersion;
         String eTag = "\"" + getSHA256Hash(data) + "\"";
         if (weakETag) {
             return "W/"+eTag;
@@ -60,44 +78,17 @@ public class CacheUtils {
     }
 
     /**
-     * Generate the default headers for sending a response with caching
-     * @param cacheControl optional, if not null then a Cache-Control header is added
-     * @param eTag optional, if not null then an eTag header is added
-     * @param lastModified optional, if not null then a Last-Modified header is added
-     * @param vary optional, if not null, then a Vary header is added
-     * @return
-     */
-    public static HttpHeaders generateCacheHeaders(String cacheControl, String eTag, ZonedDateTime lastModified, String vary) {
-        HttpHeaders headers = new HttpHeaders();
-        // TODO move Cache control to the Spring Boot security configuration when that's implemented
-        if (cacheControl != null) {
-            headers.add("Cache-Control", cacheControl);
-        }
-        if (eTag != null) {
-            headers.add("eTag", eTag);
-        }
-        if (lastModified != null) {
-            headers.add("Last-Modified", headerDateToString(lastModified));
-        }
-        if (vary != null) {
-            // using the Vary header is debatable: https://www.smashingmagazine.com/2017/11/understanding-vary-header/
-            headers.add("Vary", vary);
-        }
-        return headers;
-    }
-
-    /**
      * Formats the given date according to the RFC 1123 pattern (e.g. Thu, 4 Oct 2018 10:34:20 GMT)
-     * @param lastModified
+     * @param zonedDateTime
      * @return
      */
-    private static String headerDateToString(ZonedDateTime lastModified) {
-        return lastModified.format(DateTimeFormatter.RFC_1123_DATE_TIME);
+    public static String zonedDateTimeToString(ZonedDateTime zonedDateTime) {
+        return zonedDateTime.format(DateTimeFormatter.RFC_1123_DATE_TIME);
     }
 
     /**
      * Transforms a java.util.Date object to a ZonedDateTime object
-     * @param date
+     * @param  date
      * @return ZonedDateTime
      */
     public static ZonedDateTime dateToZonedUTC(Date date){
@@ -105,52 +96,118 @@ public class CacheUtils {
     }
 
     /**
-     * @param request incoming HttpServletRequest
-     * @param headers headers that should be sent back in the response
-     * @param lastModified ZonedDateTime that indicates the lastModified date of the requested data
-     * @param eTag String with the calculated eTag of the requested data
+     * Should be RFC-7232 compliant, incl. ability to process multiple eTags for an If-*-Match header
+     * @param request  incoming HttpServletRequest
+     * @param modified ZonedDateTime that indicates the lastModified date of the requested data
+     * @param eTag     String with the calculated eTag of the requested data
      * @return ResponseEntity with 304 or 312 status if requested object has not changed, otherwise null
      */
-    public static ResponseEntity checkCached(HttpServletRequest request, HttpHeaders headers,
-                                             ZonedDateTime lastModified, String eTag) {
-        // chosen this implementation instead of the 'shallow' out-of-the-box spring boot version because that does not
-        // offer the advantage of saving on processing time
-        ZonedDateTime requestLastModified = headerStringToDate(request.getHeader("If-Modified-Since"));
-        if((requestLastModified !=null && requestLastModified.compareTo(lastModified) > 0) ||
-           (StringUtils.isNotEmpty(request.getHeader("If-None-Match")) &&
-            StringUtils.equalsIgnoreCase(request.getHeader("If-None-Match"), eTag))) {
-            // TODO Also we ignore possible multiple eTags for now
-            return new ResponseEntity<>(headers, HttpStatus.NOT_MODIFIED);
-        } else if (StringUtils.isNotEmpty(request.getHeader("If-Match")) &&
-                   (!StringUtils.equalsIgnoreCase(request.getHeader("If-Match"), eTag) &&
-                    !StringUtils.equalsIgnoreCase(request.getHeader("If-Match"), "*"))) {
-            // Note that according to the specification we have to use strong ETags here (but for now we just ignore that)
-            // see https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.24
-            // TODO Also we ignore possible multiple eTags for now
-            return new ResponseEntity<>(headers, HttpStatus.PRECONDITION_FAILED);
+    public static ResponseEntity<String> checkCached(HttpServletRequest request, ZonedDateTime modified, String eTag) {
+        HttpHeaders headers;
+        // If If-None-Match is present: check if it contains a matching eTag OR == '*"
+        // Yes: return HTTP 304 + cache headers. Ignore If-Modified-Since (RFC 7232)
+        if (StringUtils.isNotBlank(request.getHeader(IFNONEMATCH))){
+            if (doesAnyIfNoneMatch(request, eTag)) {
+                headers = CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
+                return new ResponseEntity<>(headers, HttpStatus.NOT_MODIFIED);
+            }
+            // If If-Match is present: check if it contains a matching eTag OR == '*"
+            // Yes: proceed. No: return HTTP 412, no cache headers
+        } else if (StringUtils.isNotBlank(request.getHeader(IFMATCH))){
+            if (doesPreconditionFail(request, eTag)){
+                return new ResponseEntity<>(HttpStatus.PRECONDITION_FAILED);
+            }
+            // check if If-Modified-Since is present and on or after timestamp_updated
+            // yes: return HTTP 304 no: continue
+        } else if (isNotModifiedSince(request, modified)){
+            return new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
         }
         return null;
     }
 
     /**
-     * Parses the date string received in a request header
-     * @param dateString
-     * @return Date
+     * Generate the default headers for sending a response with caching
+     * @param request       required to determine whether the 'Origin' request header is set
+     * @param eTag          optional, if not null then an ETag header is added
+     * @param modified      optional, if not null then a Last-Modified header is added
+     * @return HttpServletResponse
      */
-    private static ZonedDateTime headerStringToDate(String dateString) {
-        if (StringUtils.isEmpty(dateString)) {
-            return null;
+    public static HttpHeaders generateHeaders(HttpServletRequest request, String eTag, String modified){
+        HttpHeaders headers = new HttpHeaders();
+        if (StringUtils.isNotBlank(request.getHeader("Origin"))){
+            headers.add("Access-Control-Allow-Methods", ALLOWED);
+            headers.add("Access-Control-Allow-Headers", ALLOWHEADERS);
+            headers.add("Access-Control-Expose-Headers", EXPOSEHEADERS);
+            headers.add("Access-Control-Max-Age", "600");
         }
-        // Note that Apache DateUtils can parse all 3 date format patterns allowed by RFC 2616
-        Date headerDate = DateUtils.parseDate(dateString);
-        if (headerDate == null) {
-            LogManager.getLogger(FTController.class).error("Error parsing request header Date string: {}", dateString);
-            return null;
+        if (StringUtils.isNotBlank(eTag)) {
+            headers.add("ETag", eTag);
         }
-        return headerDate.toInstant().atOffset(ZoneOffset.UTC).toZonedDateTime();
+        if (StringUtils.isNotBlank(modified)) {
+            headers.add("Last-Modified", modified);
+        }
+        headers.add("Allow", ALLOWED);
+        headers.add("Cache-Control", CACHECONTROL);
+        headers.add("Vary", ACCEPT);
+        return headers;
     }
 
+    /**
+     * Supports multiple values in the "If-None-Match" header
+     * @param  request      incoming HttpServletRequest
+     * @param  eTag         String with the calculated eTag of the requested data
+     * @return boolean true IF ( If-None-Match header is supplied AND
+     *                           ( contains matching eTag OR == "*" ) )
+     *         Otherwise false
+     */
+    private static boolean doesAnyIfNoneMatch(HttpServletRequest request, String eTag){
+        return ( StringUtils.isNotBlank(request.getHeader(IFNONEMATCH)) &&
+                 ( doesAnyETagMatch(request.getHeader(IFNONEMATCH), eTag)));
+    }
 
+    /**
+     * @param  request      incoming HttpServletRequest
+     * @param  modified     ZonedDateTime representing the FullBean's timestamp_updated
+     * @return boolean true IF If-Modified-Since header is supplied AND
+     *                         is after or on the timestamp_updated
+     *         Otherwise false
+     */
+    private static boolean isNotModifiedSince(HttpServletRequest request, ZonedDateTime modified){
+        return (StringUtils.isNotBlank(request.getHeader(IFMODIFIEDSINCE)) &&
+                Objects.requireNonNull(stringToZonedUTC(request.getHeader(IFMODIFIEDSINCE)))
+                       .compareTo(modified) >= 0 );
+    }
+
+    /**
+     * Supports multiple values in the "If-Match" header
+     * @param request      incoming HttpServletRequest
+     * @param eTag         String with the calculated eTag of the requested data
+     * @return boolean true IF ("If-Match" header is supplied AND
+     *                         NOT (contains matching eTag OR == "*") )
+     *         otherwise false
+     */
+    private static boolean doesPreconditionFail(HttpServletRequest request, String eTag){
+        return (StringUtils.isNotBlank(request.getHeader(IFMATCH)) &&
+                (!doesAnyETagMatch(request.getHeader(IFMATCH), eTag)));
+    }
+
+    private static boolean doesAnyETagMatch(String eTags, String eTagToMatch){
+        if (StringUtils.equals(ANY, eTags)){
+            return true;
+        }
+        if (StringUtils.isNoneBlank(eTags, eTagToMatch)){
+            for (String eTag : StringUtils.stripAll(StringUtils.split(eTags, ","))){
+                if (StringUtils.equalsIgnoreCase(spicAndSpan(eTag),spicAndSpan(eTagToMatch))){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static String spicAndSpan(String header){
+        return StringUtils.remove(StringUtils.stripStart(header, "W/"), "\"");
+    }
 
     /**
      * Calculates SHA256 hash of a particular data string
@@ -179,5 +236,22 @@ public class CacheUtils {
             hexString.append(hex);
         }
         return hexString.toString();
+    }
+    /**
+     * Parses the given string into a ZonedDateTime object
+     * @param dateString
+     * @return ZonedDateTime
+     */
+    private static ZonedDateTime stringToZonedUTC(String dateString) {
+        if (StringUtils.isEmpty(dateString)) {
+            return null;
+        }
+        // Note that Apache DateUtils can parse all 3 date format patterns allowed by RFC 2616
+        Date date = DateUtils.parseDate(dateString);
+        if (date == null) {
+            LOG.error("Error parsing request header Date string: " + dateString);
+            return null;
+        }
+        return dateToZonedUTC(date);
     }
 }

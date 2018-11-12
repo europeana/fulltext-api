@@ -19,19 +19,24 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.time.ZonedDateTime;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static eu.europeana.fulltext.api.config.FTDefinitions.*;
+import static eu.europeana.fulltext.api.service.CacheUtils.generateETag;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 /**
  * Rest controller that handles incoming fulltext requests
  * @author Lúthien
  * Created on 27-02-2018
+ * Note that the eTag for the Fulltext response is created from a concatenation of:
+ * - datasetId + recordId + pageId / AnnoId;
+ * - modified date (toString()) of the fetched document;
+ * - the requested IIIF version (2 or 3); and the
+ * - Fulltext API version as defined in the pom.xml
  */
 @RestController
 @EnableWebMvc
@@ -63,13 +68,11 @@ public class FTController {
                            @PathVariable String recordId,
                            @PathVariable String pageId,
                            @RequestParam(value = "format", required = false) String version,
-                           HttpServletRequest request,
-                           HttpServletResponse response) throws SerializationException {
+                           HttpServletRequest request) throws SerializationException {
         LOG.debug("Retrieve Annopage: " + datasetId + "/" + recordId + "/" + pageId);
-        boolean includeContext = true;
-        HttpHeaders headers = null;
+        boolean includeContext    = true;
         String acceptHeaderStatus = processAcceptHeader(request, version);
-
+        HttpHeaders headers;
         if (StringUtils.equalsIgnoreCase(acceptHeaderStatus, "X")){
             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
         } else {
@@ -88,16 +91,20 @@ public class FTController {
         AnnotationWrapper annotationPage;
 
         try {
-            // first retrieve AnnoPage to do http caching processing
-            AnnoPage annoPage      = fts.fetchAnnoPage(datasetId, recordId, pageId);
-            ZonedDateTime modified = CacheUtils.dateToZonedUTC(annoPage.getModified());
-            String           eTag  = generateETag(datasetId + recordId + pageId, modified, version);
-            headers                = CacheUtils.generateCacheHeaders("no-cache", eTag, modified, ACCEPT);
-            ResponseEntity cached  = CacheUtils.checkCached(request, headers, modified, eTag);
+            AnnoPage                annoPage = fts.fetchAnnoPage(datasetId, recordId, pageId);
+            ZonedDateTime           modified = CacheUtils.dateToZonedUTC(annoPage.getModified());
+            String                  eTag     = generateETag(datasetId + recordId + pageId,
+                                                            modified,
+                                                            version,
+                                                            fts.getSettings().getAppVersion(),
+                                                            true);
+            ResponseEntity<String>  cached   = CacheUtils.checkCached(request, modified, eTag);
 
-            if (cached != null) {
+            if (null != cached){
                 return cached;
             }
+
+            headers = CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
 
             if ("3".equalsIgnoreCase(version)) {
                 annotationPage = fts.generateAnnoPageV3(annoPage);
@@ -109,7 +116,6 @@ public class FTController {
         } catch (AnnoPageDoesNotExistException e) {
             LOG.warn(e.getMessage());
             return new ResponseEntity<>(fts.serializeResource(new JsonErrorResponse(e.getMessage())),
-                                        headers,
                                         HttpStatus.NOT_FOUND);
         }
         if (!includeContext){
@@ -129,11 +135,10 @@ public class FTController {
                              @PathVariable String recordId,
                              @PathVariable String annoID,
                              @RequestParam(value = "format", required = false) String version,
-                             HttpServletRequest request,
-                             HttpServletResponse response) throws SerializationException {
+                             HttpServletRequest request) throws SerializationException {
         LOG.debug("Retrieve Annotation: " + datasetId + "/" + recordId + "/" + annoID);
         boolean includeContext = true;
-        HttpHeaders headers = null;
+        HttpHeaders headers;
         String acceptHeaderStatus = processAcceptHeader(request, version);
 
         if (StringUtils.equalsIgnoreCase(acceptHeaderStatus, "X")){
@@ -153,16 +158,20 @@ public class FTController {
 
         AnnotationWrapper annotation;
         try {
-            // first retrieve AnnoPage containing this Annotation to do http caching processing
-            AnnoPage annoPage      = fts.fetchAPAnnotation(datasetId, recordId, annoID);
-            ZonedDateTime modified = CacheUtils.dateToZonedUTC(annoPage.getModified());
-            String           eTag  = generateETag(datasetId + recordId + annoID, modified, version);
-            headers                = CacheUtils.generateCacheHeaders("no-cache", eTag, modified, ACCEPT);
-            ResponseEntity cached  = CacheUtils.checkCached(request, headers, modified, eTag);
+            AnnoPage                annoPage = fts.fetchAPAnnotation(datasetId, recordId, annoID);
+            ZonedDateTime           modified = CacheUtils.dateToZonedUTC(annoPage.getModified());
+            String                  eTag     = generateETag(datasetId + recordId + annoID,
+                                                            modified,
+                                                            version,
+                                                            fts.getSettings().getAppVersion(),
+                                                            true);
+            ResponseEntity<String>  cached   = CacheUtils.checkCached(request, modified, eTag);
 
             if (cached != null) {
                 return cached;
             }
+
+            headers = CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
 
             if ("3".equalsIgnoreCase(version)) {
                 annotation = fts.generateAnnotationV3(annoPage, annoID);
@@ -174,7 +183,6 @@ public class FTController {
         } catch (AnnoPageDoesNotExistException e) {
             LOG.warn(e.getMessage());
             return new ResponseEntity<>(fts.serializeResource(new JsonErrorResponse(e.getMessage())),
-                                        headers,
                                         HttpStatus.NOT_FOUND);
         }
         if (!includeContext){
@@ -185,7 +193,6 @@ public class FTController {
                                     HttpStatus.OK);
     }
 
-
     /**
      * Handles fetching a Fulltext Resource
      * @return ResponseEntity
@@ -194,8 +201,7 @@ public class FTController {
     public ResponseEntity<String> fulltextJsonLd(@PathVariable String datasetId,
                                  @PathVariable String recordId,
                                  @PathVariable String resId,
-                                 HttpServletRequest request,
-                                 HttpServletResponse response) throws SerializationException {
+                                 HttpServletRequest request) throws SerializationException {
         LOG.debug("Retrieve Resource: " + datasetId + "/" + recordId + "/" + resId);
         boolean includeContext = true;
         HttpHeaders headers = new HttpHeaders();
@@ -232,9 +238,9 @@ public class FTController {
      * @return ResponseEntity
      */
     @RequestMapping(value    = {"/{datasetId}/{recordId}/annopage/{pageId}",
-            "/{datasetId}/{recordId}/annopage-limitone/{pageId}"},
+                                "/{datasetId}/{recordId}/annopage-limitone/{pageId}"},
                     method   = RequestMethod.HEAD)
-    public ResponseEntity annoPageHead_existsOne(@PathVariable String datasetId,
+    public ResponseEntity annoPageHeadExistsOne(@PathVariable String datasetId,
                                               @PathVariable String recordId,
                                               @PathVariable String pageId) {
         if (fts.doesAnnoPageExistByLimitOne(datasetId, recordId, pageId)){
@@ -292,13 +298,13 @@ public class FTController {
                (StringUtils.containsIgnoreCase(accept, MEDIA_TYPE_JSONLD));
     }
 
-    private String generateETag(String id, ZonedDateTime modified, String iiifVersion) {
-        StringBuilder hashData = new StringBuilder(id);
-        hashData.append(modified.toString());
-        hashData.append(fts.getSettings().getAppVersion());
-        hashData.append(iiifVersion);
-        return CacheUtils.generateETag(hashData.toString(), true);
-    }
+//    private String generateETag(String id, ZonedDateTime modified, String iiifVersion) {
+//        StringBuilder hashData = new StringBuilder(id);
+//        hashData.append(modified.toString());
+//        hashData.append(fts.getSettings().getAppVersion());
+//        hashData.append(iiifVersion);
+//        return CacheUtils.generateETag(hashData.toString(), true);
+//    }
 
 
     // ---- deprecated testing stuff ----
@@ -311,7 +317,7 @@ public class FTController {
     @RequestMapping(value    = "/{datasetId}/{recordId}/annopage-countone/{pageId}",
                     method   = RequestMethod.HEAD,
                     produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity annoPageHead_countOne(@PathVariable String datasetId,
+    public ResponseEntity annoPageHeadCountOne(@PathVariable String datasetId,
                                        @PathVariable String recordId,
                                        @PathVariable String pageId) {
         if (fts.doesAnnoPageExistByCount(datasetId, recordId, pageId)){
@@ -329,7 +335,7 @@ public class FTController {
     @RequestMapping(value    = "/{datasetId}/{recordId}/annopage-findone/{pageId}",
             method   = RequestMethod.HEAD,
             produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity annoPageHead_findOne(@PathVariable String datasetId,
+    public ResponseEntity annoPageHeadFindOne(@PathVariable String datasetId,
                                        @PathVariable String recordId,
                                        @PathVariable String pageId) {
         if (fts.doesAnnoPageExistsByFindOne(datasetId, recordId, pageId)){
@@ -337,6 +343,15 @@ public class FTController {
         } else {
             return new ResponseEntity(HttpStatus.NOT_FOUND);
         }
+    }
+
+    /**
+     * For testing retrieving the version from the pom file
+     */
+    @GetMapping(value = "/showversion")
+    public ResponseEntity<String> showVersion() throws SerializationException {
+        String response = "The version of this API is: " + fts.getSettings().getAppVersion();
+        return new ResponseEntity<>(fts.serializeResource(response), HttpStatus.I_AM_A_TEAPOT);
     }
 
 }

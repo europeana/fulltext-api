@@ -110,4 +110,8 @@ public class AnnoPage {
     public Date getModified() {
         return modified;
     }
+
+    public void setModified(Date modified) {
+        this.modified = modified;
+    }
 }
