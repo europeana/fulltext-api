@@ -102,7 +102,7 @@ public class FTController {
             return new ResponseEntity<>(fts.serializeResource(new JsonErrorResponse(e.getMessage())),
                                         HttpStatus.NOT_FOUND);
         }
-        if (!StringUtils.equalsIgnoreCase(acceptHeaderJsonOrLd(request), "JSON")){
+        if (StringUtils.equalsIgnoreCase(acceptHeaderJsonOrLd(request), "JSON")){
             annotationPage.setContext(null);
         }
         return new ResponseEntity<>(fts.serializeResource(annotationPage),
@@ -174,7 +174,7 @@ public class FTController {
             return new ResponseEntity<>(fts.serializeResource(new JsonErrorResponse(e.getMessage())),
                                         HttpStatus.NOT_FOUND);
         }
-        if (!StringUtils.equalsIgnoreCase(acceptHeaderJsonOrLd(request), "JSON")){
+        if (StringUtils.equalsIgnoreCase(acceptHeaderJsonOrLd(request), "JSON")){
             annotation.setContext(null);
         }
         return new ResponseEntity<>(fts.serializeResource(annotation),
@@ -197,7 +197,7 @@ public class FTController {
 
         if (StringUtils.equalsIgnoreCase(acceptHeaderJsonOrLd(request), "X")){
             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
-        } else if (StringUtils.containsIgnoreCase(request.getHeader(ACCEPT), "JSON")){
+        } else if (StringUtils.equalsIgnoreCase(acceptHeaderJsonOrLd(request), "JSON")){
             headers.add(CONTENTTYPE, MEDIA_TYPE_JSON +";"+UTF_8);
             includeContext = false;
         } else {
