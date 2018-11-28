@@ -28,6 +28,7 @@ public class FTDefinitions {
     public static final String V3_ANNOTATION_TYPE         = "Annotation";
     public static final String V3_ANNO_BODY_TYPE          = "SpecificResource";
     public static final String EDM_FULLTESTRESOURCE_TYPE  = "FullTextResource";
+    public static final String UTF_8                      = "charset=UTF-8";
 
     /**
      * Media type for IIIF version 2
@@ -52,7 +53,7 @@ public class FTDefinitions {
                                                            + ";profile=\""
                                                            + MEDIA_TYPE_IIIF_V2
                                                            + "\""
-                                                           + ";charset=UTF-8";
+                                                           + ";"+UTF_8;
 
     /**
      * Default Content-type returned on manifest requests for version 3
@@ -61,7 +62,7 @@ public class FTDefinitions {
                                                            + ";profile=\""
                                                            + MEDIA_TYPE_IIIF_V3
                                                            + "\""
-                                                           + ";charset=UTF-8";
+                                                           + ";"+UTF_8;
 
     /**
      * JSON Content-type returned on manifest requests for version 2
@@ -70,7 +71,7 @@ public class FTDefinitions {
                                                            + ";profile=\""
                                                            + MEDIA_TYPE_IIIF_V2
                                                            + "\""
-                                                           + ";charset=UTF-8";
+                                                           + ";"+UTF_8;
 
     /**
      * JSON Content-type returned on manifest requests for version 3
@@ -79,6 +80,6 @@ public class FTDefinitions {
                                                            + ";profile=\""
                                                            + MEDIA_TYPE_IIIF_V3
                                                            + "\""
-                                                           + ";charset=UTF-8";
+                                                           + ";"+UTF_8;
 
 }
