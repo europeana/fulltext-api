@@ -298,20 +298,12 @@ public class FTController {
                (StringUtils.containsIgnoreCase(accept, MEDIA_TYPE_JSONLD));
     }
 
-//    private String generateETag(String id, ZonedDateTime modified, String iiifVersion) {
-//        StringBuilder hashData = new StringBuilder(id);
-//        hashData.append(modified.toString());
-//        hashData.append(fts.getSettings().getAppVersion());
-//        hashData.append(iiifVersion);
-//        return CacheUtils.generateETag(hashData.toString(), true);
-//    }
-
-
     // ---- deprecated testing stuff ----
 
     /**
      * for testing HEAD request performance (EA-1239)
      * @return
+     * @deprecated
      */
     @Deprecated
     @RequestMapping(value    = "/{datasetId}/{recordId}/annopage-countone/{pageId}",
@@ -330,6 +322,7 @@ public class FTController {
     /**
      * for testing HEAD request performance (EA-1239)
      * @return
+     * @deprecated
      */
     @Deprecated
     @RequestMapping(value    = "/{datasetId}/{recordId}/annopage-findone/{pageId}",
