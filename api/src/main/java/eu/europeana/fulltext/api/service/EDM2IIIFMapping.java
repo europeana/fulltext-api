@@ -54,8 +54,6 @@ public class EDM2IIIFMapping {
     private static final String V2_MOTIVATION = "sc:painting";
     private static final String V3_MOTIVATION = "transcribing";
 
-    //private static final Logger LOG = LogManager.getLogger(EDM2IIIFMapping.class);
-
     @Autowired
     private EDM2IIIFMapping(FTSettings fts) {
         EDM2IIIFMapping.fts = fts;
@@ -169,7 +167,14 @@ public class EDM2IIIFMapping {
     }
 
     private static String getResourceIdUrl(AnnoPage annoPage, Annotation annotation){
-        return getResourceIdBaseUrl(annoPage) + "#char=" + annotation.getFrom() + "," + annotation.getTo();
+        StringBuilder s = new StringBuilder(getResourceIdBaseUrl(annoPage));
+        if (annotation.getFrom() != null || annotation.getTo() != null) {
+            s.append("#char=");
+            s.append(annotation.getFrom());
+            s.append(",");
+            s.append(annotation.getTo());
+        }
+        return s.toString();
     }
 
     private static String getResourceIdBaseUrl(AnnoPage annoPage){

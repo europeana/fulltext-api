@@ -48,16 +48,13 @@ public class FTController {
     private static final String CONTENTTYPE = "Content-Type";
 
     /* for parsing accept headers */
-    private Pattern acceptProfilePattern = Pattern.compile("profile=\"(.*?)\"");
+    private static final Pattern acceptProfilePattern = Pattern.compile("profile=\"(.*?)\"");
 
     private FTService fts;
 
     public  FTController(FTService ftService) {
         this.fts = ftService;
     }
-
-    private String mediaTypeIIIFV2;
-    private String mediaTypeIIIFV3;
 
     /**
      * Handles fetching a page (resource) with all its annotations
@@ -70,26 +67,15 @@ public class FTController {
                            @RequestParam(value = "format", required = false) String version,
                            HttpServletRequest request) throws SerializationException {
         LOG.debug("Retrieve Annopage: " + datasetId + "/" + recordId + "/" + pageId);
-        boolean includeContext    = true;
         String acceptHeaderStatus = processAcceptHeader(request, version);
-        HttpHeaders headers;
         if (StringUtils.equalsIgnoreCase(acceptHeaderStatus, "X")){
             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
         } else {
             version = acceptHeaderStatus;
         }
 
-        if (StringUtils.equalsIgnoreCase(acceptHeaderJsonOrLd(request), "JSON")){
-            mediaTypeIIIFV2 = MEDIA_TYPE_IIIF_JSON_V2;
-            mediaTypeIIIFV3 = MEDIA_TYPE_IIIF_JSON_V3;
-            includeContext = false;
-        } else {
-            mediaTypeIIIFV2 = MEDIA_TYPE_IIIF_JSONLD_V2;
-            mediaTypeIIIFV3 = MEDIA_TYPE_IIIF_JSONLD_V3;
-        }
-
         AnnotationWrapper annotationPage;
-
+        HttpHeaders headers;
         try {
             AnnoPage                annoPage = fts.fetchAnnoPage(datasetId, recordId, pageId);
             ZonedDateTime           modified = CacheUtils.dateToZonedUTC(annoPage.getModified());
@@ -99,31 +85,46 @@ public class FTController {
                                                             fts.getSettings().getAppVersion(),
                                                             true);
             ResponseEntity<String>  cached   = CacheUtils.checkCached(request, modified, eTag);
-
             if (null != cached){
                 return cached;
             }
 
             headers = CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
-
+            headers = addContentTypeToResponseHeader(headers, request, version);
             if ("3".equalsIgnoreCase(version)) {
                 annotationPage = fts.generateAnnoPageV3(annoPage);
-                headers.add(CONTENTTYPE, mediaTypeIIIFV3);
             } else {
                 annotationPage = fts.generateAnnoPageV2(annoPage);
-                headers.add(CONTENTTYPE, mediaTypeIIIFV2);
             }
+
         } catch (AnnoPageDoesNotExistException e) {
             LOG.warn(e.getMessage());
             return new ResponseEntity<>(fts.serializeResource(new JsonErrorResponse(e.getMessage())),
                                         HttpStatus.NOT_FOUND);
         }
-        if (!includeContext){
+        if (StringUtils.equalsIgnoreCase(acceptHeaderJsonOrLd(request), "JSON")){
             annotationPage.setContext(null);
         }
         return new ResponseEntity<>(fts.serializeResource(annotationPage),
                                     headers,
                                     HttpStatus.OK);
+    }
+
+    private HttpHeaders addContentTypeToResponseHeader(HttpHeaders headers, HttpServletRequest request, String version) {
+        if ("3".equalsIgnoreCase(version)) {
+            if (StringUtils.equalsIgnoreCase(acceptHeaderJsonOrLd(request), "JSON")) {
+                headers.add(CONTENTTYPE, MEDIA_TYPE_IIIF_JSON_V3);
+            } else {
+                headers.add(CONTENTTYPE, MEDIA_TYPE_IIIF_JSONLD_V3);
+            }
+        } else {
+            if (StringUtils.equalsIgnoreCase(acceptHeaderJsonOrLd(request), "JSON")) {
+                headers.add(CONTENTTYPE, MEDIA_TYPE_IIIF_JSON_V2);
+            } else {
+                headers.add(CONTENTTYPE, MEDIA_TYPE_IIIF_JSONLD_V2);
+            }
+        }
+        return headers;
     }
 
     /**
@@ -137,8 +138,6 @@ public class FTController {
                              @RequestParam(value = "format", required = false) String version,
                              HttpServletRequest request) throws SerializationException {
         LOG.debug("Retrieve Annotation: " + datasetId + "/" + recordId + "/" + annoID);
-        boolean includeContext = true;
-        HttpHeaders headers;
         String acceptHeaderStatus = processAcceptHeader(request, version);
 
         if (StringUtils.equalsIgnoreCase(acceptHeaderStatus, "X")){
@@ -147,15 +146,7 @@ public class FTController {
             version = acceptHeaderStatus;
         }
 
-        if (StringUtils.equalsIgnoreCase(acceptHeaderJsonOrLd(request), "JSON")){
-            mediaTypeIIIFV2 = MEDIA_TYPE_IIIF_JSON_V2;
-            mediaTypeIIIFV3 = MEDIA_TYPE_IIIF_JSON_V3;
-            includeContext = false;
-        } else {
-            mediaTypeIIIFV2 = MEDIA_TYPE_IIIF_JSONLD_V2;
-            mediaTypeIIIFV3 = MEDIA_TYPE_IIIF_JSONLD_V3;
-        }
-
+        HttpHeaders headers;
         AnnotationWrapper annotation;
         try {
             AnnoPage                annoPage = fts.fetchAPAnnotation(datasetId, recordId, annoID);
@@ -166,26 +157,24 @@ public class FTController {
                                                             fts.getSettings().getAppVersion(),
                                                             true);
             ResponseEntity<String>  cached   = CacheUtils.checkCached(request, modified, eTag);
-
             if (cached != null) {
                 return cached;
             }
 
             headers = CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
+            headers = addContentTypeToResponseHeader(headers, request, version);
 
             if ("3".equalsIgnoreCase(version)) {
                 annotation = fts.generateAnnotationV3(annoPage, annoID);
-                headers.add(CONTENTTYPE, mediaTypeIIIFV3);
             } else {
                 annotation = fts.generateAnnotationV2(annoPage, annoID);
-                headers.add(CONTENTTYPE, mediaTypeIIIFV2);
             }
         } catch (AnnoPageDoesNotExistException e) {
             LOG.warn(e.getMessage());
             return new ResponseEntity<>(fts.serializeResource(new JsonErrorResponse(e.getMessage())),
                                         HttpStatus.NOT_FOUND);
         }
-        if (!includeContext){
+        if (StringUtils.equalsIgnoreCase(acceptHeaderJsonOrLd(request), "JSON")){
             annotation.setContext(null);
         }
         return new ResponseEntity<>(fts.serializeResource(annotation),
@@ -208,11 +197,11 @@ public class FTController {
 
         if (StringUtils.equalsIgnoreCase(acceptHeaderJsonOrLd(request), "X")){
             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
-        } else if (StringUtils.containsIgnoreCase(request.getHeader(ACCEPT), "JSON")){
-            headers.add(CONTENTTYPE, MEDIA_TYPE_JSON);
+        } else if (StringUtils.equalsIgnoreCase(acceptHeaderJsonOrLd(request), "JSON")){
+            headers.add(CONTENTTYPE, MEDIA_TYPE_JSON +";" + UTF_8);
             includeContext = false;
         } else {
-            headers.add(CONTENTTYPE, MEDIA_TYPE_JSONLD);
+            headers.add(CONTENTTYPE, MEDIA_TYPE_JSONLD +";" + UTF_8);
         }
 
         FullTextResource resource;
@@ -298,20 +287,12 @@ public class FTController {
                (StringUtils.containsIgnoreCase(accept, MEDIA_TYPE_JSONLD));
     }
 
-//    private String generateETag(String id, ZonedDateTime modified, String iiifVersion) {
-//        StringBuilder hashData = new StringBuilder(id);
-//        hashData.append(modified.toString());
-//        hashData.append(fts.getSettings().getAppVersion());
-//        hashData.append(iiifVersion);
-//        return CacheUtils.generateETag(hashData.toString(), true);
-//    }
-
-
     // ---- deprecated testing stuff ----
 
     /**
      * for testing HEAD request performance (EA-1239)
      * @return
+     * @deprecated
      */
     @Deprecated
     @RequestMapping(value    = "/{datasetId}/{recordId}/annopage-countone/{pageId}",
@@ -330,6 +311,7 @@ public class FTController {
     /**
      * for testing HEAD request performance (EA-1239)
      * @return
+     * @deprecated
      */
     @Deprecated
     @RequestMapping(value    = "/{datasetId}/{recordId}/annopage-findone/{pageId}",

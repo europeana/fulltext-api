@@ -155,13 +155,13 @@ public class XMLParserService {
                 }
             }
         } catch (XMLStreamException e) {
-            throw new ArchiveReadException("Error reading file "+file, e);
+            throw new ArchiveReadException("Error reading file " + file, e);
         } finally {
             if (reader != null) {
                 try {
                     reader.close();
                 } catch (XMLStreamException e) {
-                    LOG.error("Error closing input stream "+file, e);
+                    LOG.error("Error closing input stream " + file, e);
                 }
             }
         }
@@ -220,7 +220,7 @@ public class XMLParserService {
             String identifiers = StringUtils.removeStartIgnoreCase(ftResourceUrl, settings.getResourceBaseUrl());
             String[] ids = StringUtils.split(identifiers, '/');
             if (ids.length != 3){
-                throw new MissingDataException(file + " - Error retrieving ids from text url: "+ftResourceUrl);
+                throw new MissingDataException(file + " - Error retrieving ids from text url: " + ftResourceUrl);
             }
             annoPage.setDsId(ids[0]);
             annoPage.setLcId(ids[1]);
@@ -388,7 +388,7 @@ public class XMLParserService {
         } else {
             String[] urlAndCoordinates = att.getValue().split(ANNOTATION_HASBODY_RESOURCE_CHARPOS);
             if (urlAndCoordinates.length == 1) {
-                LogFile.OUT.warn(file + " - No " + ANNOTATION_HASBODY_RESOURCE_CHARPOS + " defined in resource text " +att.getValue());
+                LogFile.OUT.warn(file + " - No " + ANNOTATION_HASBODY_RESOURCE_CHARPOS + " defined in resource text " + att.getValue());
             } else {
                 String[] fromTo = urlAndCoordinates[1].split(",");
                 parseFromToInteger(fromTo[0], FromTo.FROM, anno, file);

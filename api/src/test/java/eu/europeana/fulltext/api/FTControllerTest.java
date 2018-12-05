@@ -202,7 +202,7 @@ public class FTControllerTest {
 
         this.mockMvc.perform(get("/presentation/makkers/staakt_uw/annopage/wild_geraasch")
                                      .header("Accept",
-                                             "application/ld+json;profile=\"" + MEDIA_TYPE_IIIF_V3 +" \""))
+                                             "application/ld+json;profile=\"" + MEDIA_TYPE_IIIF_V3 + " \""))
                     .andExpect(status().isOk())
                     .andExpect(header().string(HEADER_CONTENTTYPE,
                                                containsString("profile=\"" + MEDIA_TYPE_IIIF_V3 + "\"")))
@@ -239,7 +239,7 @@ public class FTControllerTest {
                     .andDo(print());
 
         this.mockMvc.perform(get("/presentation/let_me_take_you_down/cause_im_going_to/anno/an3")
-                                     .header("Accept", "application/ld+json;profile=\""+MEDIA_TYPE_IIIF_V2+"\""))
+                                     .header("Accept", "application/ld+json;profile=\"" + MEDIA_TYPE_IIIF_V2 + "\""))
                     .andExpect(status().isOk())
                     .andExpect(header().string(HEADER_CONTENTTYPE,
                                                containsString("profile=\"" + MEDIA_TYPE_IIIF_V2 + "\"")))
@@ -247,7 +247,7 @@ public class FTControllerTest {
                     .andDo(print());
 
         this.mockMvc.perform(get("/presentation/strawberry_fields/nothing_is_real/anno/an2")
-                                     .header("Accept", "application/ld+json;profile=\""+MEDIA_TYPE_IIIF_V3+"\""))
+                                     .header("Accept", "application/ld+json;profile=\"" + MEDIA_TYPE_IIIF_V3 + "\""))
                     .andExpect(status().isOk())
                     .andExpect(header().string(HEADER_CONTENTTYPE,
                                                containsString("profile=\"" + MEDIA_TYPE_IIIF_V3 + "\"")))

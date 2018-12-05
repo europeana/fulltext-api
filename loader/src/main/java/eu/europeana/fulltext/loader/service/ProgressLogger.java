@@ -104,8 +104,8 @@ public class ProgressLogger {
      * Return current results
      */
     public String getResults() {
-        return("Processed " +getItemsDone()+" files in " +getDurationText(System.currentTimeMillis()-startTime)+
-                " (expected "+expectedItems+" files). " +itemsFail+" files were skipped.");
+        return("Processed " + getItemsDone()+" files in " + getDurationText(System.currentTimeMillis() - startTime)+
+                " (expected "+ expectedItems+" files). " + itemsFail + " files were skipped.");
     }
 
     /**

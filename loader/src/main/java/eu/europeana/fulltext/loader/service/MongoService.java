@@ -2,6 +2,7 @@ package eu.europeana.fulltext.loader.service;
 
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Resource;
+import eu.europeana.fulltext.loader.config.LoaderSettings;
 import eu.europeana.fulltext.repository.impl.AnnoPageRepositoryImpl;
 import eu.europeana.fulltext.repository.impl.ResourceRepositoryImpl;
 import eu.europeana.fulltext.loader.exception.LoaderException;
@@ -27,8 +28,13 @@ public class MongoService {
     @Autowired
     AnnoPageRepositoryImpl annoPageRepositoryImpl;
 
+    private LoaderSettings settings;
 
-    void saveAnnoPageList(List<AnnoPage> apList, MongoSaveMode saveMode) throws LoaderException {
+    public MongoService(LoaderSettings settings) {
+        this.settings = settings;
+    }
+
+    public void saveAnnoPageList(List<AnnoPage> apList, MongoSaveMode saveMode) throws LoaderException {
         LOG.debug("Saving {} annoPages...", apList.size());
 
         long resourceCount = resourceRepositoryImpl.count();
@@ -54,20 +60,24 @@ public class MongoService {
 
     /**
      * Saves a Resource object to the database
-     * @return the saved resource object
+     * @return true if the object was saved properly, otherwise false
      */
-    private void saveResource(Resource resource) throws LoaderException {
+    public boolean saveResource(Resource resource) throws LoaderException {
         String dsId = resource.getDsId();
         String lcId = resource.getLcId();
         String id = resource.getId();
         try{
             resourceRepositoryImpl.save(resource);
             LOG.debug("{}/{}/{} - Resource saved", dsId, lcId, id);
+            return true;
         } catch (Exception e){
             LogFile.OUT.error("{}/{}/{} - Error saving resource", dsId, lcId, id, e);
-            throw new LoaderException("Error saving resource with dsId: " + dsId +
-                                      ", lcId: " + lcId +
-                                      ", id:" + id, e);
+            if (settings.isStopOnSaveError()) {
+                throw new LoaderException("Error saving resource with dsId: " + dsId +
+                                          ", lcId: " + lcId +
+                                          ", id:" + id, e);
+            }
+            return false;
         }
     }
 
@@ -83,19 +93,24 @@ public class MongoService {
     /**
      * Saves an AnnoPage object to the database with embedded Annotations and linking to a resource
      * @param annoPage
+     * @return true if the object was saved properly, otherwise false     *
      */
-    private void saveAnnoPage(AnnoPage annoPage) throws LoaderException {
+    public boolean saveAnnoPage(AnnoPage annoPage) throws LoaderException {
         String dsId = annoPage.getDsId();
         String lcId = annoPage.getLcId();
         String pgId = annoPage.getPgId();
         try{
             annoPageRepositoryImpl.save(annoPage);
             LOG.debug("{}/{}/{} AnnoPage saved", dsId, lcId, pgId);
+            return true;
         } catch (Exception e){
             LogFile.OUT.error("{}/{}/{} - Error saving AnnoPage", dsId, lcId, pgId, e);
-            throw new LoaderException("Error saving Annopage with dsId: " + dsId +
-                                      ", lcId: " + lcId +
-                                      ", pgId:" + pgId, e);
+            if (settings.isStopOnSaveError()) {
+                throw new LoaderException("Error saving Annopage with dsId: " + dsId +
+                                          ", lcId: " + lcId +
+                                          ", pgId:" + pgId, e);
+            }
+            return false;
         }
     }
 

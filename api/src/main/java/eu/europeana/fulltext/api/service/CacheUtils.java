@@ -72,7 +72,7 @@ public class CacheUtils {
         String data = id + zonedDateTimeToString(modified) + iiifVersion + appVersion;
         String eTag = "\"" + getSHA256Hash(data) + "\"";
         if (weakETag) {
-            return "W/"+eTag;
+            return "W/" + eTag;
         }
         return eTag;
     }
