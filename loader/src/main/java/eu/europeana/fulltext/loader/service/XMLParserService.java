@@ -274,7 +274,7 @@ public class XMLParserService {
                 }
             }
         } catch (LoaderException e) {
-            LogFile.OUT.error("{} - Skipping annotation with id {} because {}", file, anno.getAnId(), e.getMessage());
+            LogFile.OUT.error("{} - Skipping annotation {} because {}", file, anno.getAnId(), e.getMessage());
             if (progressAnnotation != null) {
                 progressAnnotation.addItemFail();
             }
@@ -384,11 +384,12 @@ public class XMLParserService {
         }
 
         if (att == null || StringUtils.isEmpty(att.getValue())) {
-            LogFile.OUT.warn(file + " - No specific resource text defined");
+            LogFile.OUT.warn(file + " - Annotation " +anno.getAnId() + " has no specific resource text defined");
         } else {
             String[] urlAndCoordinates = att.getValue().split(ANNOTATION_HASBODY_RESOURCE_CHARPOS);
             if (urlAndCoordinates.length == 1) {
-                LogFile.OUT.warn(file + " - No " + ANNOTATION_HASBODY_RESOURCE_CHARPOS + " defined in resource text " + att.getValue());
+                LogFile.OUT.warn(file + " - Annotation " +anno.getAnId() + " has no " +
+                        ANNOTATION_HASBODY_RESOURCE_CHARPOS + " defined in resource text " + att.getValue());
             } else {
                 String[] fromTo = urlAndCoordinates[1].split(",");
                 parseFromToInteger(fromTo[0], FromTo.FROM, anno, file);
@@ -400,7 +401,7 @@ public class XMLParserService {
     private enum FromTo { FROM, TO }
     private void parseFromToInteger(String value, FromTo fromTo, Annotation anno, String file) {
         if (StringUtils.isEmpty(value)) {
-            LogFile.OUT.warn(file + " - Empty resource text " + fromTo + " value");
+            LogFile.OUT.warn(file + " - Annotation " + anno.getAnId() + " has empty resource text " + fromTo + " value");
         } else {
             try {
                 if (FromTo.FROM.equals(fromTo)) {
@@ -409,8 +410,8 @@ public class XMLParserService {
                     anno.setTo(Integer.valueOf(value));
                 }
             } catch (NumberFormatException nfe) {
-                LogFile.OUT.error(file + " - Resource text " + fromTo +" value '" + value +
-                        "' is not an integer");
+                LogFile.OUT.error(file + " - Annotation " + anno.getAnId() + " resource text " + fromTo +
+                        " value '" + value + "' is not an integer");
             }
         }
     }
