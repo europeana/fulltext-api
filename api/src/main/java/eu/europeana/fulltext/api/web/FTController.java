@@ -198,10 +198,10 @@ public class FTController {
         if (StringUtils.equalsIgnoreCase(acceptHeaderJsonOrLd(request), "X")){
             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
         } else if (StringUtils.equalsIgnoreCase(acceptHeaderJsonOrLd(request), "JSON")){
-            headers.add(CONTENTTYPE, MEDIA_TYPE_JSON +";"+UTF_8);
+            headers.add(CONTENTTYPE, MEDIA_TYPE_JSON +";" + UTF_8);
             includeContext = false;
         } else {
-            headers.add(CONTENTTYPE, MEDIA_TYPE_JSONLD +";"+UTF_8);
+            headers.add(CONTENTTYPE, MEDIA_TYPE_JSONLD +";" + UTF_8);
         }
 
         FullTextResource resource;

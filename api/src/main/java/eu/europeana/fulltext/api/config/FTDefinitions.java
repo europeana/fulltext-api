@@ -53,7 +53,7 @@ public class FTDefinitions {
                                                            + ";profile=\""
                                                            + MEDIA_TYPE_IIIF_V2
                                                            + "\""
-                                                           + ";"+UTF_8;
+                                                           + ";" + UTF_8;
 
     /**
      * Default Content-type returned on manifest requests for version 3
@@ -62,7 +62,7 @@ public class FTDefinitions {
                                                            + ";profile=\""
                                                            + MEDIA_TYPE_IIIF_V3
                                                            + "\""
-                                                           + ";"+UTF_8;
+                                                           + ";" + UTF_8;
 
     /**
      * JSON Content-type returned on manifest requests for version 2
@@ -71,7 +71,7 @@ public class FTDefinitions {
                                                            + ";profile=\""
                                                            + MEDIA_TYPE_IIIF_V2
                                                            + "\""
-                                                           + ";"+UTF_8;
+                                                           + ";" + UTF_8;
 
     /**
      * JSON Content-type returned on manifest requests for version 3
@@ -80,6 +80,6 @@ public class FTDefinitions {
                                                            + ";profile=\""
                                                            + MEDIA_TYPE_IIIF_V3
                                                            + "\""
-                                                           + ";"+UTF_8;
+                                                           + ";" + UTF_8;
 
 }

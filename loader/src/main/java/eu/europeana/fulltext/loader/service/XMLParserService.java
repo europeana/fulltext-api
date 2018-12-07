@@ -94,6 +94,7 @@ public class XMLParserService {
     private static final String ANNOTATION_HASBODY = "hasBody";
     private static final String ANNOTATION_HASBODY_RESOURCE = "specificResource";
     private static final String ANNOTATION_HASBODY_RESOURCE_VALUE = "about";
+    private static final String ANNOTATION_HASBODY_ATTRIBUTE_VALUE = "resource";
     private static final String ANNOTATION_HASBODY_RESOURCE_CHARPOS = "#char=";
     private static final String ANNOTATION_HASBODY_RESOURCE_LANGUAGE = "language";
 
@@ -154,13 +155,13 @@ public class XMLParserService {
                 }
             }
         } catch (XMLStreamException e) {
-            throw new ArchiveReadException("Error reading file "+file, e);
+            throw new ArchiveReadException("Error reading file " + file, e);
         } finally {
             if (reader != null) {
                 try {
                     reader.close();
                 } catch (XMLStreamException e) {
-                    LOG.error("Error closing input stream "+file, e);
+                    LOG.error("Error closing input stream " + file, e);
                 }
             }
         }
@@ -219,7 +220,7 @@ public class XMLParserService {
             String identifiers = StringUtils.removeStartIgnoreCase(ftResourceUrl, settings.getResourceBaseUrl());
             String[] ids = StringUtils.split(identifiers, '/');
             if (ids.length != 3){
-                throw new MissingDataException(file + " - Error retrieving ids from text url: "+ftResourceUrl);
+                throw new MissingDataException(file + " - Error retrieving ids from text url: " + ftResourceUrl);
             }
             annoPage.setDsId(ids[0]);
             annoPage.setLcId(ids[1]);
@@ -256,7 +257,7 @@ public class XMLParserService {
                             // October 2018: for now there is no need for this 'motivation' information so we skip it
                             //this.parseAnnotationMotivation(se, anno);
                             break;
-                        case ANNOTATION_HASBODY   : this.parseAnnotationHasBody(reader, anno, file); break;
+                        case ANNOTATION_HASBODY   : this.parseAnnotationHasBody(se, reader, anno, file); break;
                         case ANNOTATION_TARGET    : this.parseAnnotationTarget(se, annoPage, anno); break;
                         default: // do nothing, just skip unknown start elements (e.g. confidence, styledBy)
                     }
@@ -341,40 +342,53 @@ public class XMLParserService {
     }
 
     /**
-     * The oa:hasBody element should contain a oa:SpecificResource which holds the start and end coordinates of the text
-     * of an annotation
+     * The oa:hasBody element should contain:
+     * - either a oa:SpecificResource which holds the start and end coordinates of the text of an annotation
+     * - or else have an inline rdf:resource attribute with those coordinates
      */
-    private void parseAnnotationHasBody(XMLEventReader reader, Annotation anno, String file)
+    private void parseAnnotationHasBody(StartElement hasBodyElement, XMLEventReader reader, Annotation anno, String file)
             throws XMLStreamException {
-        while (reader.hasNext()) {
-            XMLEvent e = reader.nextEvent();
-            if (reachedEndElement(e, ANNOTATION_HASBODY)) {
-                break;
-            } else if (e.isStartElement()) {
-                StartElement se = (StartElement) e;
-                if (ANNOTATION_HASBODY_RESOURCE.equalsIgnoreCase(se.getName().getLocalPart())) {
-                   parseAnnotationTextCoordinates(se, anno, file);
-                } else if (ANNOTATION_HASBODY_RESOURCE_LANGUAGE.equalsIgnoreCase(se.getName().getLocalPart())) {
-                    parseAnnotationTextLanguage(reader.getElementText(), anno);
-                } else {
-                   // we simply ignore unknown elements here like 'hasSource' and 'styleClass'
+        if (hasBodyElement.getAttributes().hasNext() &&
+            hasBodyElement.getAttributeByName(new QName(RDF_NAMESPACE, ANNOTATION_HASBODY_ATTRIBUTE_VALUE)).isSpecified()){
+            parseAnnotationTextCoordinates(hasBodyElement, anno, file, true);
+        } else {
+            while (reader.hasNext()) {
+                XMLEvent e = reader.nextEvent();
+                if (reachedEndElement(e, ANNOTATION_HASBODY)) {
+                    break;
+                } else if (e.isStartElement()) {
+                    StartElement se = (StartElement) e;
+                    if (ANNOTATION_HASBODY_RESOURCE.equalsIgnoreCase(se.getName().getLocalPart())) {
+                       parseAnnotationTextCoordinates(se, anno, file, false);
+                    } else if (ANNOTATION_HASBODY_RESOURCE_LANGUAGE.equalsIgnoreCase(se.getName().getLocalPart())) {
+                        parseAnnotationTextLanguage(reader.getElementText(), anno);
+                    } else {
+                       // we simply ignore unknown elements here like 'hasSource' and 'styleClass'
+                    }
                 }
             }
         }
     }
 
     /**
-     * Parse the text coordinates at the end attribute value of the  oa:hasBody/oa:specificResource tag
+     * Parse the text coordinates at the end attribute value of either the the oa:hasBody/oa:specificResource tag
+     * or the oa:hasBody rdf:resource attribute.
      * Note that we rely on the calling method to go the the end of the 'oa:hasBody' section when we're done
      */
-    private void parseAnnotationTextCoordinates(StartElement specificRsElement, Annotation anno, String file) {
-        Attribute att = specificRsElement.getAttributeByName(new QName(RDF_NAMESPACE, ANNOTATION_HASBODY_RESOURCE_VALUE));
+    private void parseAnnotationTextCoordinates(StartElement specificRsElement, Annotation anno, String file, boolean inlineHasbody) {
+        Attribute att;
+        if (inlineHasbody){
+            att = specificRsElement.getAttributeByName(new QName(RDF_NAMESPACE, ANNOTATION_HASBODY_ATTRIBUTE_VALUE));
+        } else {
+            att = specificRsElement.getAttributeByName(new QName(RDF_NAMESPACE, ANNOTATION_HASBODY_RESOURCE_VALUE));
+        }
+
         if (att == null || StringUtils.isEmpty(att.getValue())) {
             LogFile.OUT.warn(file + " - No specific resource text defined");
         } else {
             String[] urlAndCoordinates = att.getValue().split(ANNOTATION_HASBODY_RESOURCE_CHARPOS);
             if (urlAndCoordinates.length == 1) {
-                LogFile.OUT.warn(file + " - No " + ANNOTATION_HASBODY_RESOURCE_CHARPOS + " defined in resource text " +att.getValue());
+                LogFile.OUT.warn(file + " - No " + ANNOTATION_HASBODY_RESOURCE_CHARPOS + " defined in resource text " + att.getValue());
             } else {
                 String[] fromTo = urlAndCoordinates[1].split(",");
                 parseFromToInteger(fromTo[0], FromTo.FROM, anno, file);
