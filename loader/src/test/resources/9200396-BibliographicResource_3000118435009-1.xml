@@ -1036,12 +1036,7 @@
 	<dc:type>Line</dc:type>
 	<oa:motivatedBy rdf:resource="&motv;"/>
 	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=285,318">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-9</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
+	<oa:hasBody rdf:resource="&text;#char=285,318"/>
 	<oa:hasTarget rdf:resource="&img;#xywh=373,1647,491,37"/>
 </oa:Annotation>
 

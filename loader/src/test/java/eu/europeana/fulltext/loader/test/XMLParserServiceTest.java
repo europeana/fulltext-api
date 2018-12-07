@@ -20,11 +20,13 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 import static junit.framework.TestCase.assertNull;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Tests the XMLXPathParser using 2 example data xml files
@@ -46,12 +48,14 @@ public class XMLParserServiceTest {
     public void loadExampleFiles() throws LoaderException, IOException {
         XMLParserService parser = new XMLParserService(settings);
 
-        // this example file contains an image entity with special characters (e.g. &apos;), plus 78 annotations
+        // This made-up example file is based on an existing one and contains an image entity with special characters
+        // (e.g. &apos;). There are 78 annotations and one of the annotations (d10b792f3170d6b9f1628729c08fa293) has 2
+        // targets and another one (1b51b0714445f9d442f4e230ba712ac1) has a simplified annotation
         String file1 = "9200396-BibliographicResource_3000118435009-1.xml";
         annoPage1 = parser.parse("1", loadXmlFile(file1), file1);
 
-        // this example file contains 1111 annotations, including 4 annotations without a target of which 2 annotations
-        // have the exact same id
+        // this example file contains 1111 annotations, including 4 annotations without a target (of which 2 annotations
+        // have the exact same id)
         String file2 = "9200357-BibliographicResource_3000095247417-2.xml";
         annoPage2 = parser.parse("2", loadXmlFile(file2), file2);
     }
@@ -154,6 +158,40 @@ public class XMLParserServiceTest {
     }
 
     /**
+     * Tests if annotations with more than 1 target are processed okay
+     */
+    @Test
+    public void testAnnotationWithDoubleTarget() {
+        Annotation a = getAnnotationWithId(annoPage1.getAns(), "d10b792f3170d6b9f1628729c08fa293");
+        assertNotNull("Annotation with double target not found!", a);
+        assertEquals(2, a.getTgs().size());
+        testTarget(a.getTgs().get(0), 793,1425,133,34);
+        testTarget(a.getTgs().get(1), 377,1488,63,33);
+    }
+
+    /**
+     * Most annotations have a hasBody tag that contains a SpecificResource tag. However there can also be hasBody's
+     * without a SpecificResource. This test checks if we handle this correctly.
+     */
+    @Test
+    public void testAnnotationWithSimpleHasBody() {
+        Annotation a = getAnnotationWithId(annoPage1.getAns(), "1b51b0714445f9d442f4e230ba712ac1");
+        assertNotNull("Annotation with simple hasBody tag not found!", a);
+        testCharFromTo(a, 285,318);
+    }
+
+    private Annotation getAnnotationWithId(List<Annotation> annotations, String anId) {
+        Annotation result = null;
+        for (Annotation a : annotations) {
+            if (anId.equals(a.getAnId())) {
+                result = a;
+                break;
+            }
+        }
+        return result;
+    }
+
+    /**
      * Since many targets are empty in the provided xml files, we test especially for proper handling of this
      */
     private void testTarget(Target target, Integer expectedX, Integer expectedY, Integer expectedW, Integer expectedH) {
@@ -166,7 +204,6 @@ public class XMLParserServiceTest {
     private void testCharFromTo(Annotation anno, Integer expectedFrom, Integer expectedTo) {
         assertEquals(expectedFrom, anno.getFrom());
         assertEquals(expectedTo, anno.getTo());
-
     }
 
     /**
