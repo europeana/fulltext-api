@@ -385,7 +385,7 @@ public class XMLParserService {
 
         if (att == null || StringUtils.isEmpty(att.getValue())) {
             LogFile.OUT.warn(file + " - Annotation " +anno.getAnId() + " has no specific resource text defined");
-        } else {
+        } else if (anno.getDcType() != ANNOTATION_TYPE_PAGE){
             String[] urlAndCoordinates = att.getValue().split(ANNOTATION_HASBODY_RESOURCE_CHARPOS);
             if (urlAndCoordinates.length == 1) {
                 LogFile.OUT.warn(file + " - Annotation " +anno.getAnId() + " has no " +
