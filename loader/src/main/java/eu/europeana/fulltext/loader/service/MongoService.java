@@ -39,21 +39,21 @@ public class MongoService {
 
         long resourceCount = resourceRepositoryImpl.count();
         long annoPageCount = annoPageRepositoryImpl.count();
-        for (AnnoPage annoPage : apList){
-            if (MongoSaveMode.INSERT.equals(saveMode)) {
+        if (MongoSaveMode.INSERT.equals(saveMode)) {
+            for (AnnoPage annoPage : apList) {
                 saveResource(annoPage.getRes());
                 saveAnnoPage(annoPage);
             }
-        }
-        long newResourceCount = resourceRepositoryImpl.count();
-        long newAnnoPageCount = annoPageRepositoryImpl.count();
-        if (resourceCount + apList.size() != newResourceCount) {
-            LogFile.OUT.warn("Expected number of resource in database is {}, but actual number is {}",
-                    resourceCount + apList.size(), newResourceCount);
-        }
-        if (annoPageCount + apList.size() != newAnnoPageCount) {
-            LogFile.OUT.warn("Expected number of annotation pages in database is {}, but actual number is {}",
-                    annoPageCount + apList.size(), annoPageCount);
+            long newResourceCount = resourceRepositoryImpl.count();
+            long newAnnoPageCount = annoPageRepositoryImpl.count();
+            if (resourceCount + apList.size() != newResourceCount) {
+                LogFile.OUT.warn("Expected number of resource in database is {}, but actual number is {}",
+                        resourceCount + apList.size(), newResourceCount);
+            }
+            if (annoPageCount + apList.size() != newAnnoPageCount) {
+                LogFile.OUT.warn("Expected number of annotation pages in database is {}, but actual number is {}",
+                        annoPageCount + apList.size(), annoPageCount);
+            }
         }
         LOG.debug("Saving done.");
     }
