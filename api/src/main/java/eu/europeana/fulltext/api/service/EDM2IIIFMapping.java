@@ -68,7 +68,12 @@ public class EDM2IIIFMapping {
     private static AnnotationV2[] getAnnotationV2Array(AnnoPage annoPage){
         ArrayList<AnnotationV2> annoArrayList = new ArrayList<>();
         for (Annotation ftAnno : annoPage.getAns()){
-            annoArrayList.add(getAnnotationV2(annoPage, ftAnno, false));
+            // make sure page annotations are listed first.
+            if (ftAnno.getDcType() == 'P') {
+                annoArrayList.add(0, getAnnotationV2(annoPage, ftAnno, false));
+            } else {
+                annoArrayList.add(getAnnotationV2(annoPage, ftAnno, false));
+            }
         }
         return annoArrayList.toArray(new AnnotationV2[0]);
     }
@@ -103,7 +108,12 @@ public class EDM2IIIFMapping {
     private static AnnotationV3[] getAnnotationV3Array(AnnoPage annoPage){
         ArrayList<AnnotationV3> annoArrayList = new ArrayList<>();
         for (Annotation ftAnno : annoPage.getAns()){
-            annoArrayList.add(getAnnotationV3(annoPage, ftAnno, false));
+            // make sure page annotations are listed first.
+            if (ftAnno.getDcType() == 'P') {
+                annoArrayList.add(0, getAnnotationV3(annoPage, ftAnno, false));
+            } else {
+                annoArrayList.add(getAnnotationV3(annoPage, ftAnno, false));
+            }
         }
         return annoArrayList.toArray(new AnnotationV3[0]);
     }
@@ -155,7 +165,6 @@ public class EDM2IIIFMapping {
             }
             return ftTargetURLList.toArray(new String[0]);
         } else if (annotation.getDcType() == 'P') {
-            // for page annotation we always generate a target (without coordinates), even if there is none saved
             ftTargetURLList.add(annoPage.getTgtId());
             return ftTargetURLList.toArray(new String[0]);
         }
