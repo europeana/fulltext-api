@@ -83,16 +83,16 @@ public class MongoService {
 
     /**
      * Deletes all resources that belong to a particular dataset
-     * @param datasetId
+     * @param datasetId id of the dataset for which all resources should be deleted
      * @return the number of deleted resources
      */
-    public int deleteAllResources(String datasetId) {
+    public long deleteAllResources(String datasetId) {
         return resourceRepositoryImpl.deleteDataset(datasetId);
     }
 
     /**
      * Saves an AnnoPage object to the database with embedded Annotations and linking to a resource
-     * @param annoPage
+     * @param annoPage object that should be saved
      * @return true if the object was saved properly, otherwise false     *
      */
     public boolean saveAnnoPage(AnnoPage annoPage) throws LoaderException {
@@ -116,7 +116,7 @@ public class MongoService {
 
     /**
      * Deletes all annotation pages that belong to a particular dataset
-     * @param datasetId
+     * @param datasetId id of the dataset for which all annopages should be deleted
      * @return the number of deleted annopages
      */
     public long deleteAllAnnoPages(String datasetId) {

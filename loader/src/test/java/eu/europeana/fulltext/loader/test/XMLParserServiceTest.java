@@ -5,6 +5,7 @@ import eu.europeana.fulltext.entity.Annotation;
 import eu.europeana.fulltext.entity.Resource;
 import eu.europeana.fulltext.entity.Target;
 import eu.europeana.fulltext.loader.config.LoaderSettings;
+import eu.europeana.fulltext.loader.exception.DuplicateDefinitionException;
 import eu.europeana.fulltext.loader.exception.LoaderException;
 import eu.europeana.fulltext.loader.service.ProgressLogger;
 import eu.europeana.fulltext.loader.service.XMLParserService;
@@ -44,6 +45,7 @@ public class XMLParserServiceTest {
     @Autowired
     private LoaderSettings settings;
 
+    // TODO find a way to run this once at start
     @Before
     public void loadExampleFiles() throws LoaderException, IOException {
         XMLParserService parser = new XMLParserService(settings);
@@ -115,6 +117,13 @@ public class XMLParserServiceTest {
         // we only check the start of this document because the rest is poorly OCR-ed and not entirely correct
         assertTrue(annoPage1.getRes().getValue().startsWith("LA CLEF DU CABINET\n"));
         assertTrue(annoPage2.getRes().getValue().startsWith("ići O\n"));
+    }
+
+    @Test(expected = DuplicateDefinitionException.class)
+    public void testResourceDuplicate() throws LoaderException, IOException {
+        XMLParserService parser = new XMLParserService(settings);
+        String file = "duplicate_resource.xml";
+        annoPage1 = parser.parse("1", loadXmlFile(file), file);
     }
 
     /**

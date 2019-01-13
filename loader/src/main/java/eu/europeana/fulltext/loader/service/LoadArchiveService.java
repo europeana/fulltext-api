@@ -20,12 +20,15 @@ package eu.europeana.fulltext.loader.service;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.loader.config.LoaderDefinitions;
 import eu.europeana.fulltext.loader.config.LoaderSettings;
+import eu.europeana.fulltext.loader.exception.ArchiveNotFoundException;
+import eu.europeana.fulltext.loader.exception.ArchiveReadException;
 import eu.europeana.fulltext.loader.exception.LoaderException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -60,27 +63,25 @@ public class LoadArchiveService extends SimpleFileVisitor<Path> {
 
     /**
      * Load a single zip file (or all available zip files)
-     * @param archive
-     * @param saveMode
+     * @param archiveFile path to archive file
+     * @param saveMode whether or not to save data to the mongo database
      * @return string containing summary of results (but only for a single zip, doesn't work for all archives yet)
+     * @throws LoaderException when there is a problem reading the archive file
      */
-    public String importZipBatch(String archive, MongoSaveMode saveMode) {
+    public String importZipBatch(String archiveFile, MongoSaveMode saveMode) throws LoaderException {
         String batchBaseDirectory = settings.getBatchBaseDirectory();
         String zipBatchDir = StringUtils.removeEnd(batchBaseDirectory, "/") + "/";
 
-        if (StringUtils.equalsIgnoreCase(archive, LoaderDefinitions.ALL_ARCHIVES)) {
+        if (StringUtils.equalsIgnoreCase(archiveFile, LoaderDefinitions.ALL_ARCHIVES)) {
             try {
                 // TODO collect results for each zip and return that as result
                 Files.walkFileTree(Paths.get(zipBatchDir), this);
             } catch (IOException e) {
-                LogFile.OUT.error("I/O error occurred reading archives at: " + archive , e);
+                LogFile.OUT.error("I/O error occurred reading archive {} ", archiveFile , e);
+                throw new ArchiveReadException ("I/O error occurred reading archive " + archiveFile , e);
             }
         } else {
-            try {
-                return processArchive(zipBatchDir + archive, saveMode);
-            } catch (LoaderException e) {
-                return "Unable to load data in MongoDB: " + e.getMessage();
-            }
+            return processArchive(zipBatchDir + archiveFile, saveMode);
         }
         return "Finished";
     }
@@ -96,17 +97,18 @@ public class LoadArchiveService extends SimpleFileVisitor<Path> {
 
     /**
      * Loads a zip file and starts processing it.
-     * @param path
+     * @param archivePath path to the archive file
+     * @throws LoaderException when there are problems reading or processing the archive file
      */
-    public String processArchive(String path, MongoSaveMode saveMode) throws LoaderException {
-        LogFile.setFileName(path);
-        LogFile.OUT.info("Processing archive {} with save mode {}", path, saveMode);
+    public String processArchive(String archivePath, MongoSaveMode saveMode) throws LoaderException {
+        LogFile.setFileName(archivePath);
+        LogFile.OUT.info("Processing archive {} with save mode {}", archivePath, saveMode);
         apList.clear();
         apCounter = 0;
 
         ProgressLogger progressFiles = new ProgressLogger(30);
         ProgressLogger progressAnnotations = new ProgressLogger(-1);
-        try (ZipFile archive = new ZipFile(path)) {
+        try (ZipFile archive = new ZipFile(archivePath)) {
 
             // the size() method counts the folders as well
             int size = getNrOfFiles(archive);
@@ -131,9 +133,12 @@ public class LoadArchiveService extends SimpleFileVisitor<Path> {
                 apList = new ArrayList<>();
                 apCounter = 0;
             }
+        } catch (FileNotFoundException fe) {
+            LogFile.OUT.error("Archive not found: " + fe.getMessage());
+            throw new ArchiveNotFoundException("Archive not found: " + fe.getMessage(), fe);
         } catch (IOException  e) {
-            LogFile.OUT.error("Unable to read archive {}", path, e);
-            return "Unable to read archive " + path + "; message:" + e.getMessage();
+            LogFile.OUT.error("Unable to read archive {}", archivePath, e);
+            throw new ArchiveReadException("Unable to read archive " + archivePath + ": " + e.getMessage(), e);
         }
 
         StringBuilder results = new StringBuilder(progressFiles.getResults());
