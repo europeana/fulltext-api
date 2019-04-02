@@ -117,7 +117,7 @@ public class FTService {
 
     public AnnoPage fetchAnnoPage(String datasetId, String localId, String pageId)
             throws AnnoPageDoesNotExistException {
-        if (doesAnnoPageExistByLimitOne(datasetId, localId, pageId)){
+        if (doesAnnoPageExist(datasetId, localId, pageId)){
             return annoPageRepositoryImpl.findByDatasetLocalPageId(datasetId, localId, pageId);
         } else {
             throw new AnnoPageDoesNotExistException("No AnnoPage with datasetId: " + datasetId + ", localId: "
@@ -145,18 +145,8 @@ public class FTService {
      * @param pageId
      * @return true if it exists, otherwise false
      */
-    public boolean doesAnnoPageExistByLimitOne(String datasetId, String localId, String pageId){
-        return annoPageRepositoryImpl.existsByLimitOne(datasetId, localId, pageId);
-    }
-
-    @Deprecated // keeping this temporarily for testing speed (EA-1239)
-    public boolean doesAnnoPageExistsByFindOne(String datasetId, String localId, String pageId){
-        return annoPageRepositoryImpl.existsByFindOne(datasetId, localId, pageId);
-    }
-
-    @Deprecated // keeping this temporarily for testing speed (EA-1239)
-    public boolean doesAnnoPageExistByCount(String datasetId, String localId, String pageId){
-        return annoPageRepositoryImpl.existsByCount(datasetId, localId, pageId);
+    public boolean doesAnnoPageExist(String datasetId, String localId, String pageId){
+        return annoPageRepositoryImpl.existsByPageId(datasetId, localId, pageId);
     }
 
     /**
