@@ -26,7 +26,6 @@ import java.util.regex.Pattern;
 
 import static eu.europeana.fulltext.api.config.FTDefinitions.*;
 import static eu.europeana.fulltext.api.service.CacheUtils.generateETag;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 /**
  * Rest controller that handles incoming fulltext requests
@@ -222,17 +221,15 @@ public class FTController {
     }
 
     /**
-     * For testing HEAD request performance (EA-1239)
-     * This is currently also the method that is used in production, as it seems to be the fastest (together with count)
+     * HTTP Head endpoint to check for existence of an AnnoPage
      * @return ResponseEntity
      */
-    @RequestMapping(value    = {"/{datasetId}/{recordId}/annopage/{pageId}",
-                                "/{datasetId}/{recordId}/annopage-limitone/{pageId}"},
+    @RequestMapping(value    = {"/{datasetId}/{recordId}/annopage/{pageId}"},
                     method   = RequestMethod.HEAD)
-    public ResponseEntity annoPageHeadExistsOne(@PathVariable String datasetId,
-                                              @PathVariable String recordId,
-                                              @PathVariable String pageId) {
-        if (fts.doesAnnoPageExistByLimitOne(datasetId, recordId, pageId)){
+    public ResponseEntity annoPageHeadExists(@PathVariable String datasetId,
+                                             @PathVariable String recordId,
+                                             @PathVariable String pageId) {
+        if (fts.doesAnnoPageExist(datasetId, recordId, pageId)){
             return new ResponseEntity(HttpStatus.OK);
         } else {
             return new ResponseEntity(HttpStatus.NOT_FOUND);
@@ -285,46 +282,6 @@ public class FTController {
         return (StringUtils.containsIgnoreCase(accept, "*/*")) ||
                (StringUtils.containsIgnoreCase(accept, MEDIA_TYPE_JSON)) ||
                (StringUtils.containsIgnoreCase(accept, MEDIA_TYPE_JSONLD));
-    }
-
-    // ---- deprecated testing stuff ----
-
-    /**
-     * for testing HEAD request performance (EA-1239)
-     * @return
-     * @deprecated
-     */
-    @Deprecated
-    @RequestMapping(value    = "/{datasetId}/{recordId}/annopage-countone/{pageId}",
-                    method   = RequestMethod.HEAD,
-                    produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity annoPageHeadCountOne(@PathVariable String datasetId,
-                                       @PathVariable String recordId,
-                                       @PathVariable String pageId) {
-        if (fts.doesAnnoPageExistByCount(datasetId, recordId, pageId)){
-            return new ResponseEntity(HttpStatus.OK);
-        } else {
-            return new ResponseEntity(HttpStatus.NOT_FOUND);
-        }
-    }
-
-    /**
-     * for testing HEAD request performance (EA-1239)
-     * @return
-     * @deprecated
-     */
-    @Deprecated
-    @RequestMapping(value    = "/{datasetId}/{recordId}/annopage-findone/{pageId}",
-            method   = RequestMethod.HEAD,
-            produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity annoPageHeadFindOne(@PathVariable String datasetId,
-                                       @PathVariable String recordId,
-                                       @PathVariable String pageId) {
-        if (fts.doesAnnoPageExistsByFindOne(datasetId, recordId, pageId)){
-            return new ResponseEntity(HttpStatus.OK);
-        } else {
-            return new ResponseEntity(HttpStatus.NOT_FOUND);
-        }
     }
 
     /**

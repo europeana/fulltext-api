@@ -43,26 +43,6 @@ public class AnnoPageRepositoryImpl extends BaseRepository<AnnoPage, ObjectId> i
 
 
     /**
-     * Check if an AnnoPage exists that contains an Annotation that matches the given parameters
-     * using DBCursor = DBCollection.find().limit(1) & DBCursor.count()
-     * @param datasetId
-     * @param localId
-     * @param pageId
-     * @return true if yes, otherwise false
-     */
-    public boolean existsByLimitOne(String datasetId, String localId, String pageId) {
-        DBCollection col = datastore.getCollection(AnnoPage.class);
-        DBObject query= new BasicDBObject();
-        query.put("dsId", datasetId);
-        query.put("lcId", localId);
-        query.put("pgId", pageId);
-        DBCursor cur = col.find(query).limit(1);
-        int count = cur.count();
-        cur.close();
-        return (count >= 1);
-    }
-
-    /**
      * @return the total number of resources in the database
      */
     public long count() {
@@ -71,32 +51,13 @@ public class AnnoPageRepositoryImpl extends BaseRepository<AnnoPage, ObjectId> i
 
     /**
      * Check if an AnnoPage exists that contains an Annotation that matches the given parameters
-     * using DBCollection.findOne()
+     * using DBCollection.count(). In ticket EA-1464 this method was tested as the best performing.
      * @param datasetId
      * @param localId
      * @param pageId
      * @return true if yes, otherwise false
      */
-    @Deprecated // keeping this temporarily for testing speed (EA-1239)
-    public boolean existsByFindOne(String datasetId, String localId, String pageId) {
-        DBCollection col = datastore.getCollection(AnnoPage.class);
-        DBObject query= new BasicDBObject();
-        query.put("dsId", datasetId);
-        query.put("lcId", localId);
-        query.put("pgId", pageId);
-        return (null != col.findOne(query));
-    }
-
-    /**
-     * Check if an AnnoPage exists that contains an Annotation that matches the given parameters
-     * using DBCollection.count()
-     * @param datasetId
-     * @param localId
-     * @param pageId
-     * @return true if yes, otherwise false
-     */
-    @Deprecated // keeping this temporarily for testing speed (EA-1239)
-    public boolean existsByCount(String datasetId, String localId, String pageId) {
+    public boolean existsByPageId(String datasetId, String localId, String pageId) {
         DBCollection col = datastore.getCollection(AnnoPage.class);
         DBObject query= new BasicDBObject();
         query.put("dsId", datasetId);
