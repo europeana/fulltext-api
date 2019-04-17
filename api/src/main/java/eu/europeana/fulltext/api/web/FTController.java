@@ -1,5 +1,6 @@
 package eu.europeana.fulltext.api.web;
 
+import eu.europeana.fulltext.api.config.FTDefinitions;
 import eu.europeana.fulltext.api.model.AnnotationWrapper;
 import eu.europeana.fulltext.api.model.FullTextResource;
 import eu.europeana.fulltext.api.model.JsonErrorResponse;
@@ -43,8 +44,18 @@ import static eu.europeana.fulltext.api.service.CacheUtils.generateETag;
 public class FTController {
 
     private static final Logger LOG = LogManager.getLogger(FTController.class);
+
     private static final String ACCEPT = "Accept";
-    private static final String CONTENTTYPE = "Content-Type";
+    private static final String ACCEPT_JSON = "Accept=" + FTDefinitions.MEDIA_TYPE_JSON;
+    private static final String ACCEPT_JSONLD = "Accept=" + FTDefinitions.MEDIA_TYPE_JSONLD;
+    // We misuse the Accept=*/* so Spring will use that mapping as the default when there is no accept header
+    // The drawback is that we have to check if the Accept header contains only unsupported types or not.
+    private static final String ACCEPT_DEFAULT = "Accept=*/*";
+
+    private static final String ACCEPT_VERSION_INVALID = "Unknown profile or format version";
+    private static final String ACCEPT_TYPE_INVALID = "Media type not supported";
+
+    private static final String CONTENT_TYPE = "Content-Type";
 
     /* for parsing accept headers */
     private static final Pattern acceptProfilePattern = Pattern.compile("profile=\"(.*?)\"");
@@ -57,20 +68,40 @@ public class FTController {
 
     /**
      * Handles fetching a page (resource) with all its annotations
-     * @return ResponseEntity
+     * @return response in json format
      */
-    @GetMapping(value    = "/{datasetId}/{recordId}/annopage/{pageId}")
-    public ResponseEntity<String> annopage(@PathVariable String datasetId,
-                           @PathVariable String recordId,
-                           @PathVariable String pageId,
-                           @RequestParam(value = "format", required = false) String version,
-                           HttpServletRequest request) throws SerializationException {
+    @GetMapping(value = "/{datasetId}/{recordId}/annopage/{pageId}", headers = ACCEPT_JSON)
+    public ResponseEntity<String> annoPageJson(@PathVariable String datasetId,
+                                               @PathVariable String recordId,
+                                               @PathVariable String pageId,
+                                               @RequestParam(value = "format", required = false) String versionParam,
+                                               HttpServletRequest request) throws SerializationException {
+        return annoPage(datasetId, recordId, pageId, versionParam, request, true);
+    }
+
+    /**
+     * Handles fetching a page (resource) with all its annotations
+     * @return response in json-ld format
+     */
+    @GetMapping(value = "/{datasetId}/{recordId}/annopage/{pageId}", headers = {ACCEPT_JSONLD, ACCEPT_DEFAULT})
+    public ResponseEntity<String> annoPageJsonLd(@PathVariable String datasetId,
+                                                 @PathVariable String recordId,
+                                                 @PathVariable String pageId,
+                                                 @RequestParam(value = "format", required = false) String versionParam,
+                                                 HttpServletRequest request,
+                                                 @RequestHeader(value="accept") String accept) throws SerializationException {
+        if (StringUtils.isEmpty(accept) || accept.contains("*/*") || accept.contains(FTDefinitions.MEDIA_TYPE_JSONLD)) {
+            return annoPage(datasetId, recordId, pageId, versionParam, request, false);
+        }
+        return new ResponseEntity<>(ACCEPT_TYPE_INVALID, HttpStatus.NOT_ACCEPTABLE);
+    }
+
+    private ResponseEntity<String> annoPage(String datasetId, String recordId, String pageId, String versionParam,
+                                            HttpServletRequest request, boolean isJson) throws SerializationException {
         LOG.debug("Retrieve Annopage: " + datasetId + "/" + recordId + "/" + pageId);
-        String acceptHeaderStatus = processAcceptHeader(request, version);
-        if (StringUtils.equalsIgnoreCase(acceptHeaderStatus, "X")){
-            return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
-        } else {
-            version = acceptHeaderStatus;
+        String requestVersion = getRequestVersion(request, versionParam);
+        if (ACCEPT_VERSION_INVALID.equals(requestVersion)){
+            return new ResponseEntity<>(ACCEPT_VERSION_INVALID, HttpStatus.NOT_ACCEPTABLE);
         }
 
         AnnotationWrapper annotationPage;
@@ -80,7 +111,7 @@ public class FTController {
             ZonedDateTime           modified = CacheUtils.dateToZonedUTC(annoPage.getModified());
             String                  eTag     = generateETag(datasetId + recordId + pageId,
                                                             modified,
-                                                            version,
+                                                            requestVersion,
                                                             fts.getSettings().getAppVersion(),
                                                             true);
             ResponseEntity<String>  cached   = CacheUtils.checkCached(request, modified, eTag);
@@ -89,19 +120,19 @@ public class FTController {
             }
 
             headers = CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
-            headers = addContentTypeToResponseHeader(headers, request, version);
-            if ("3".equalsIgnoreCase(version)) {
+            headers = addContentTypeToResponseHeader(headers, requestVersion, isJson);
+            if ("3".equalsIgnoreCase(requestVersion)) {
                 annotationPage = fts.generateAnnoPageV3(annoPage);
             } else {
                 annotationPage = fts.generateAnnoPageV2(annoPage);
             }
 
         } catch (AnnoPageDoesNotExistException e) {
-            LOG.warn(e.getMessage());
+            LOG.debug(e.getMessage());
             return new ResponseEntity<>(fts.serializeResource(new JsonErrorResponse(e.getMessage())),
                                         HttpStatus.NOT_FOUND);
         }
-        if (StringUtils.equalsIgnoreCase(acceptHeaderJsonOrLd(request), "JSON")){
+        if (isJson) {
             annotationPage.setContext(null);
         }
         return new ResponseEntity<>(fts.serializeResource(annotationPage),
@@ -109,18 +140,18 @@ public class FTController {
                                     HttpStatus.OK);
     }
 
-    private HttpHeaders addContentTypeToResponseHeader(HttpHeaders headers, HttpServletRequest request, String version) {
+    private HttpHeaders addContentTypeToResponseHeader(HttpHeaders headers, String version, boolean isJson) {
         if ("3".equalsIgnoreCase(version)) {
-            if (StringUtils.equalsIgnoreCase(acceptHeaderJsonOrLd(request), "JSON")) {
-                headers.add(CONTENTTYPE, MEDIA_TYPE_IIIF_JSON_V3);
+            if (isJson) {
+                headers.add(CONTENT_TYPE, MEDIA_TYPE_IIIF_JSON_V3);
             } else {
-                headers.add(CONTENTTYPE, MEDIA_TYPE_IIIF_JSONLD_V3);
+                headers.add(CONTENT_TYPE, MEDIA_TYPE_IIIF_JSONLD_V3);
             }
         } else {
-            if (StringUtils.equalsIgnoreCase(acceptHeaderJsonOrLd(request), "JSON")) {
-                headers.add(CONTENTTYPE, MEDIA_TYPE_IIIF_JSON_V2);
+            if (isJson) {
+                headers.add(CONTENT_TYPE, MEDIA_TYPE_IIIF_JSON_V2);
             } else {
-                headers.add(CONTENTTYPE, MEDIA_TYPE_IIIF_JSONLD_V2);
+                headers.add(CONTENT_TYPE, MEDIA_TYPE_IIIF_JSONLD_V2);
             }
         }
         return headers;
@@ -128,21 +159,41 @@ public class FTController {
 
     /**
      * Handles fetching a single annotation
-     * @return ResponseEntity
+     * @return response in json format
      */
-    @GetMapping(value = "/{datasetId}/{recordId}/anno/{annoID}")
-    public ResponseEntity<String> annotation(@PathVariable String datasetId,
-                             @PathVariable String recordId,
-                             @PathVariable String annoID,
-                             @RequestParam(value = "format", required = false) String version,
-                             HttpServletRequest request) throws SerializationException {
-        LOG.debug("Retrieve Annotation: " + datasetId + "/" + recordId + "/" + annoID);
-        String acceptHeaderStatus = processAcceptHeader(request, version);
+    @GetMapping(value = "/{datasetId}/{recordId}/anno/{annoID}", headers = ACCEPT_JSON)
+    public ResponseEntity<String> annotationJson(@PathVariable String datasetId,
+                                             @PathVariable String recordId,
+                                             @PathVariable String annoID,
+                                             @RequestParam(value = "format", required = false) String versionParam,
+                                             HttpServletRequest request) throws SerializationException {
+        return annotation(datasetId, recordId, annoID, versionParam, request, true);
+    }
 
-        if (StringUtils.equalsIgnoreCase(acceptHeaderStatus, "X")){
-            return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
-        } else {
-            version = acceptHeaderStatus;
+    /**
+     * Handles fetching a single annotation
+     * @return response in json-ld format
+     */
+    @GetMapping(value = "/{datasetId}/{recordId}/anno/{annoID}", headers = {ACCEPT_JSONLD, ACCEPT_DEFAULT})
+    public ResponseEntity<String> annotationJsonLd(@PathVariable String datasetId,
+                                                 @PathVariable String recordId,
+                                                 @PathVariable String annoID,
+                                                 @RequestParam(value = "format", required = false) String versionParam,
+                                                 HttpServletRequest request,
+                                                 @RequestHeader(value="accept") String accept) throws SerializationException {
+        if (StringUtils.isEmpty(accept) || accept.contains("*/*") || accept.contains(FTDefinitions.MEDIA_TYPE_JSONLD)) {
+            return annotation(datasetId, recordId, annoID, versionParam, request, false);
+        }
+        return new ResponseEntity<>(ACCEPT_TYPE_INVALID, HttpStatus.NOT_ACCEPTABLE);
+    }
+
+    public ResponseEntity<String> annotation(String datasetId, String recordId, String annoID, String versionParam,
+                             HttpServletRequest request, boolean isJson) throws SerializationException {
+        LOG.debug("Retrieve Annotation: " + datasetId + "/" + recordId + "/" + annoID);
+
+        String requestVersion = getRequestVersion(request, versionParam);
+        if (ACCEPT_VERSION_INVALID.equals(requestVersion)){
+            return new ResponseEntity<>(ACCEPT_VERSION_INVALID, HttpStatus.NOT_ACCEPTABLE);
         }
 
         HttpHeaders headers;
@@ -152,7 +203,7 @@ public class FTController {
             ZonedDateTime           modified = CacheUtils.dateToZonedUTC(annoPage.getModified());
             String                  eTag     = generateETag(datasetId + recordId + annoID,
                                                             modified,
-                                                            version,
+                                                            requestVersion,
                                                             fts.getSettings().getAppVersion(),
                                                             true);
             ResponseEntity<String>  cached   = CacheUtils.checkCached(request, modified, eTag);
@@ -161,19 +212,19 @@ public class FTController {
             }
 
             headers = CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
-            headers = addContentTypeToResponseHeader(headers, request, version);
+            headers = addContentTypeToResponseHeader(headers, requestVersion, isJson);
 
-            if ("3".equalsIgnoreCase(version)) {
+            if ("3".equalsIgnoreCase(requestVersion)) {
                 annotation = fts.generateAnnotationV3(annoPage, annoID);
             } else {
                 annotation = fts.generateAnnotationV2(annoPage, annoID);
             }
         } catch (AnnoPageDoesNotExistException e) {
-            LOG.warn(e.getMessage());
+            LOG.debug(e.getMessage());
             return new ResponseEntity<>(fts.serializeResource(new JsonErrorResponse(e.getMessage())),
                                         HttpStatus.NOT_FOUND);
         }
-        if (StringUtils.equalsIgnoreCase(acceptHeaderJsonOrLd(request), "JSON")){
+        if (isJson){
             annotation.setContext(null);
         }
         return new ResponseEntity<>(fts.serializeResource(annotation),
@@ -182,42 +233,51 @@ public class FTController {
     }
 
     /**
-     * Handles fetching a Fulltext Resource
-     * @return ResponseEntity
+     * Handles fetching a Fulltext Resource.
+     * @return response in json-ld format
      */
-    @GetMapping(value = "/{datasetId}/{recordId}/{resId}")
+    @GetMapping(value = "/{datasetId}/{recordId}/{resId}", headers = {ACCEPT_JSONLD, ACCEPT_DEFAULT})
     public ResponseEntity<String> fulltextJsonLd(@PathVariable String datasetId,
-                                 @PathVariable String recordId,
-                                 @PathVariable String resId,
-                                 HttpServletRequest request) throws SerializationException {
-        LOG.debug("Retrieve Resource: " + datasetId + "/" + recordId + "/" + resId);
-        boolean includeContext = true;
-        HttpHeaders headers = new HttpHeaders();
-
-        if (StringUtils.equalsIgnoreCase(acceptHeaderJsonOrLd(request), "X")){
-            return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
-        } else if (StringUtils.equalsIgnoreCase(acceptHeaderJsonOrLd(request), "JSON")){
-            headers.add(CONTENTTYPE, MEDIA_TYPE_JSON +";" + UTF_8);
-            includeContext = false;
-        } else {
-            headers.add(CONTENTTYPE, MEDIA_TYPE_JSONLD +";" + UTF_8);
+                                                 @PathVariable String recordId,
+                                                 @PathVariable String resId,
+                                                 @RequestHeader(value="accept") String accept) throws SerializationException {
+        if (StringUtils.isEmpty(accept) || accept.contains("*/*") || accept.contains(FTDefinitions.MEDIA_TYPE_JSONLD)) {
+            return fulltext(datasetId, recordId, resId, false);
         }
+        return new ResponseEntity<>(ACCEPT_TYPE_INVALID, HttpStatus.NOT_ACCEPTABLE);
+    }
 
+    /**
+     * Handles fetching a Fulltext Resource
+     * @return response in json format
+     */
+    @GetMapping(value = "/{datasetId}/{recordId}/{resId}", headers = ACCEPT_JSON)
+    public ResponseEntity<String> fulltextJson(@PathVariable String datasetId,
+                                               @PathVariable String recordId,
+                                               @PathVariable String resId) throws SerializationException {
+        return fulltext(datasetId, recordId, resId, true);
+    }
+
+    private ResponseEntity<String> fulltext(String datasetId, String recordId, String resId, boolean isJson) throws SerializationException {
+        LOG.debug("Retrieve Resource: " + datasetId + "/" + recordId + "/" + resId);
         FullTextResource resource;
         try {
             resource = fts.getFullTextResource(datasetId, recordId, resId);
         } catch (ResourceDoesNotExistException e) {
-            LOG.warn(e.getMessage());
+            LOG.debug(e.getMessage());
             return new ResponseEntity<>(fts.serializeResource(new JsonErrorResponse(e.getMessage())),
-                                        headers,
                                         HttpStatus.NOT_FOUND);
         }
-        if (!includeContext){
+
+        HttpHeaders headers = new HttpHeaders();
+        if (isJson){
+            headers.add( CONTENT_TYPE, MEDIA_TYPE_JSON + ";" + FTDefinitions.UTF_8);
             resource.setContext(null);
+        } else {
+            headers.add( CONTENT_TYPE, MEDIA_TYPE_JSONLD + ";" + FTDefinitions.UTF_8);
         }
-        return new ResponseEntity<>(fts.serializeResource(resource),
-                                    headers,
-                                    HttpStatus.OK);
+
+        return new ResponseEntity<>(fts.serializeResource(resource), headers, HttpStatus.OK);
     }
 
     /**
@@ -236,11 +296,15 @@ public class FTController {
         }
     }
 
-
-    private String processAcceptHeader(HttpServletRequest request, String format) {
-        String result = "0";
+    /**
+     * Retrieve the requested version from the accept header, or if not present from the format parameter. If nothing
+     * is specified then 2 is returned as default
+     * @return either version 2, 3 or ACCEPT_INVALID
+     */
+    private String getRequestVersion(HttpServletRequest request, String format) {
+        String result = null;
         String accept = request.getHeader(ACCEPT);
-        if (validateAcceptFormat(accept) && StringUtils.isNotEmpty(accept)) {
+        if (StringUtils.isNotEmpty(accept)) {
             Matcher m = acceptProfilePattern.matcher(accept);
             if (m.find()) { // found a Profile parameter in the Accept header
                 String profiles = m.group(1);
@@ -249,40 +313,25 @@ public class FTController {
                 } else if (profiles.toLowerCase(Locale.getDefault()).contains(MEDIA_TYPE_IIIF_V2)) {
                     result = "2";
                 } else {
-                    result = "X"; // in case a Profile is found that matches neither version => HTTP 406
+                    result = ACCEPT_VERSION_INVALID; // in case a Profile is found that matches neither version => HTTP 406
                 }
             }
-        }  else if (StringUtils.isNotEmpty(accept)) { // validateAcceptFormat(accept) = false => HTTP 406
-            result = "X";
         }
-        // if result == "0": request header is empty, or does not contain a Profile parameter
-        if (StringUtils.equalsIgnoreCase(result, "0")) {
+
+        if (result == null) {
+            // Request header is empty, or does not contain a Profile parameter
             if (StringUtils.isBlank(format)){
                 result = "2";    // if format not given, fall back to default "2"
-            } else {
+            } else if ("2".equals(format) || "3".equals(format)) {
                 result = format; // else use the format parameter
+            } else {
+                result = ACCEPT_VERSION_INVALID;
             }
+
         }
         return result;
     }
 
-    private String acceptHeaderJsonOrLd(HttpServletRequest request){
-        String accept = request.getHeader(ACCEPT);
-        String result = "JSONLD";
-        if (StringUtils.containsIgnoreCase(accept, MEDIA_TYPE_JSON)){
-            result = "JSON";
-        } else if (!StringUtils.containsIgnoreCase(accept, MEDIA_TYPE_JSONLD) &&
-                   !StringUtils.containsIgnoreCase(accept, "*/*")){
-            result = "X";
-        }
-        return result;
-    }
-
-    private boolean validateAcceptFormat(String accept){
-        return (StringUtils.containsIgnoreCase(accept, "*/*")) ||
-               (StringUtils.containsIgnoreCase(accept, MEDIA_TYPE_JSON)) ||
-               (StringUtils.containsIgnoreCase(accept, MEDIA_TYPE_JSONLD));
-    }
 
     /**
      * For testing retrieving the version from the pom file
