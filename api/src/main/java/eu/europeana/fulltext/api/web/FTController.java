@@ -1,6 +1,5 @@
 package eu.europeana.fulltext.api.web;
 
-import eu.europeana.fulltext.api.config.FTDefinitions;
 import eu.europeana.fulltext.api.model.AnnotationWrapper;
 import eu.europeana.fulltext.api.model.FullTextResource;
 import eu.europeana.fulltext.api.model.JsonErrorResponse;
@@ -15,9 +14,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.ZonedDateTime;
@@ -39,28 +41,33 @@ import static eu.europeana.fulltext.api.service.CacheUtils.generateETag;
  * - Fulltext API version as defined in the pom.xml
  */
 @RestController
-@EnableWebMvc
 @RequestMapping("/presentation")
 public class FTController {
 
     private static final Logger LOG = LogManager.getLogger(FTController.class);
 
     private static final String ACCEPT = "Accept";
-    private static final String ACCEPT_JSON = "Accept=" + FTDefinitions.MEDIA_TYPE_JSON;
-    private static final String ACCEPT_JSONLD = "Accept=" + FTDefinitions.MEDIA_TYPE_JSONLD;
-    // We misuse the Accept=*/* so Spring will use that mapping as the default when there is no accept header
-    // The drawback is that we have to check if the Accept header contains only unsupported types or not.
-    private static final String ACCEPT_DEFAULT = "Accept=*/*";
-
+    private static final String ACCEPT_JSON = "Accept=" + MEDIA_TYPE_JSON;
+    private static final String ACCEPT_JSONLD = "Accept=" + MEDIA_TYPE_JSONLD;
     private static final String ACCEPT_VERSION_INVALID = "Unknown profile or format version";
-    private static final String ACCEPT_TYPE_INVALID = "Media type not supported";
-
     private static final String CONTENT_TYPE = "Content-Type";
 
-    /* for parsing accept headers */
+    /* for parsing profile part in accept headers */
     private static final Pattern acceptProfilePattern = Pattern.compile("profile=\"(.*?)\"");
 
     private FTService fts;
+
+    /**
+     * This will set json-ld as the default type if there is no accept header specified or if it's * /*
+     */
+    @EnableWebMvc
+    public class WebConfig implements WebMvcConfigurer {
+        @Override
+        public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
+            configurer.defaultContentType(MediaType.valueOf(MEDIA_TYPE_JSONLD));
+        }
+    }
+
 
     public  FTController(FTService ftService) {
         this.fts = ftService;
@@ -83,17 +90,13 @@ public class FTController {
      * Handles fetching a page (resource) with all its annotations
      * @return response in json-ld format
      */
-    @GetMapping(value = "/{datasetId}/{recordId}/annopage/{pageId}", headers = {ACCEPT_JSONLD, ACCEPT_DEFAULT})
+    @GetMapping(value = "/{datasetId}/{recordId}/annopage/{pageId}", headers = ACCEPT_JSONLD)
     public ResponseEntity<String> annoPageJsonLd(@PathVariable String datasetId,
                                                  @PathVariable String recordId,
                                                  @PathVariable String pageId,
                                                  @RequestParam(value = "format", required = false) String versionParam,
-                                                 HttpServletRequest request,
-                                                 @RequestHeader(value="accept") String accept) throws SerializationException {
-        if (StringUtils.isEmpty(accept) || accept.contains("*/*") || accept.contains(FTDefinitions.MEDIA_TYPE_JSONLD)) {
-            return annoPage(datasetId, recordId, pageId, versionParam, request, false);
-        }
-        return new ResponseEntity<>(ACCEPT_TYPE_INVALID, HttpStatus.NOT_ACCEPTABLE);
+                                                 HttpServletRequest request) throws SerializationException {
+        return annoPage(datasetId, recordId, pageId, versionParam, request, false);
     }
 
     private ResponseEntity<String> annoPage(String datasetId, String recordId, String pageId, String versionParam,
@@ -174,17 +177,13 @@ public class FTController {
      * Handles fetching a single annotation
      * @return response in json-ld format
      */
-    @GetMapping(value = "/{datasetId}/{recordId}/anno/{annoID}", headers = {ACCEPT_JSONLD, ACCEPT_DEFAULT})
+    @GetMapping(value = "/{datasetId}/{recordId}/anno/{annoID}", headers = ACCEPT_JSONLD)
     public ResponseEntity<String> annotationJsonLd(@PathVariable String datasetId,
                                                  @PathVariable String recordId,
                                                  @PathVariable String annoID,
                                                  @RequestParam(value = "format", required = false) String versionParam,
-                                                 HttpServletRequest request,
-                                                 @RequestHeader(value="accept") String accept) throws SerializationException {
-        if (StringUtils.isEmpty(accept) || accept.contains("*/*") || accept.contains(FTDefinitions.MEDIA_TYPE_JSONLD)) {
-            return annotation(datasetId, recordId, annoID, versionParam, request, false);
-        }
-        return new ResponseEntity<>(ACCEPT_TYPE_INVALID, HttpStatus.NOT_ACCEPTABLE);
+                                                 HttpServletRequest request) throws SerializationException {
+        return annotation(datasetId, recordId, annoID, versionParam, request, false);
     }
 
     public ResponseEntity<String> annotation(String datasetId, String recordId, String annoID, String versionParam,
@@ -236,22 +235,20 @@ public class FTController {
      * Handles fetching a Fulltext Resource.
      * @return response in json-ld format
      */
-    @GetMapping(value = "/{datasetId}/{recordId}/{resId}", headers = {ACCEPT_JSONLD, ACCEPT_DEFAULT})
+    @GetMapping(value = "/{datasetId}/{recordId}/{resId}", headers = ACCEPT_JSONLD,
+                produces = MEDIA_TYPE_JSONLD + ";" + UTF_8)
     public ResponseEntity<String> fulltextJsonLd(@PathVariable String datasetId,
                                                  @PathVariable String recordId,
-                                                 @PathVariable String resId,
-                                                 @RequestHeader(value="accept") String accept) throws SerializationException {
-        if (StringUtils.isEmpty(accept) || accept.contains("*/*") || accept.contains(FTDefinitions.MEDIA_TYPE_JSONLD)) {
-            return fulltext(datasetId, recordId, resId, false);
-        }
-        return new ResponseEntity<>(ACCEPT_TYPE_INVALID, HttpStatus.NOT_ACCEPTABLE);
+                                                 @PathVariable String resId) throws SerializationException {
+        return fulltext(datasetId, recordId, resId, false);
     }
 
     /**
      * Handles fetching a Fulltext Resource
      * @return response in json format
      */
-    @GetMapping(value = "/{datasetId}/{recordId}/{resId}", headers = ACCEPT_JSON)
+    @GetMapping(value = "/{datasetId}/{recordId}/{resId}", headers = ACCEPT_JSON,
+                produces = MEDIA_TYPE_JSON + ";" + UTF_8)
     public ResponseEntity<String> fulltextJson(@PathVariable String datasetId,
                                                @PathVariable String recordId,
                                                @PathVariable String resId) throws SerializationException {
@@ -269,15 +266,10 @@ public class FTController {
                                         HttpStatus.NOT_FOUND);
         }
 
-        HttpHeaders headers = new HttpHeaders();
-        if (isJson){
-            headers.add( CONTENT_TYPE, MEDIA_TYPE_JSON + ";" + FTDefinitions.UTF_8);
+        if (isJson) {
             resource.setContext(null);
-        } else {
-            headers.add( CONTENT_TYPE, MEDIA_TYPE_JSONLD + ";" + FTDefinitions.UTF_8);
         }
-
-        return new ResponseEntity<>(fts.serializeResource(resource), headers, HttpStatus.OK);
+        return new ResponseEntity<>(fts.serializeResource(resource), HttpStatus.OK);
     }
 
     /**
