@@ -4,30 +4,27 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jayway.jsonpath.Option;
-import com.jayway.jsonpath.spi.json.JacksonJsonNodeJsonProvider;
-import com.jayway.jsonpath.spi.json.JsonProvider;
-import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
-import com.jayway.jsonpath.spi.mapper.MappingProvider;
 import eu.europeana.fulltext.api.config.FTSettings;
-import eu.europeana.fulltext.entity.AnnoPage;
-import eu.europeana.fulltext.entity.Resource;
 import eu.europeana.fulltext.api.model.FullTextResource;
 import eu.europeana.fulltext.api.model.v2.AnnotationPageV2;
 import eu.europeana.fulltext.api.model.v2.AnnotationV2;
 import eu.europeana.fulltext.api.model.v3.AnnotationPageV3;
 import eu.europeana.fulltext.api.model.v3.AnnotationV3;
+import eu.europeana.fulltext.api.service.exception.AnnoPageDoesNotExistException;
+import eu.europeana.fulltext.api.service.exception.RecordParseException;
+import eu.europeana.fulltext.api.service.exception.ResourceDoesNotExistException;
+import eu.europeana.fulltext.api.service.exception.SerializationException;
+import eu.europeana.fulltext.entity.AnnoPage;
+import eu.europeana.fulltext.entity.Resource;
 import eu.europeana.fulltext.repository.impl.AnnoPageRepositoryImpl;
 import eu.europeana.fulltext.repository.impl.ResourceRepositoryImpl;
-import eu.europeana.fulltext.api.service.exception.*;
+import ioinformarics.oss.jackson.module.jsonld.JsonldModule;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import ioinformarics.oss.jackson.module.jsonld.JsonldModule;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.*;
 
 /**
  *
@@ -54,35 +51,6 @@ public class FTService {
     private FTSettings ftSettings;
 
     public FTService() {
-
-        // configure jsonpath: we use jsonpath in combination with Jackson because that makes it easier to know what
-        // type of objects are returned (see also https://stackoverflow.com/a/40963445)
-        com.jayway.jsonpath.Configuration.setDefaults(new com.jayway.jsonpath.Configuration.Defaults() {
-
-            private final JsonProvider jsonProvider = new JacksonJsonNodeJsonProvider();
-            private final MappingProvider mappingProvider = new JacksonMappingProvider();
-
-            @Override
-            public JsonProvider jsonProvider() {
-                return jsonProvider;
-            }
-
-            @Override
-            public MappingProvider mappingProvider() {
-                return mappingProvider;
-            }
-
-            @Override
-            public Set<Option> options() {
-                if (ftSettings.getSuppressParseException()) {
-                    // we want to be fault tolerant in production, but for testing we may want to disable this option
-                    return EnumSet.of(Option.SUPPRESS_EXCEPTIONS);
-                } else {
-                    return EnumSet.noneOf(Option.class);
-                }
-            }
-        });
-
         // configure Jackson serialization
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
