@@ -20,6 +20,7 @@
     <properties>
         <spring.boot.mainclass>eu.europeana.fulltext.loader.LoaderApplication</spring.boot.mainclass>
         <spring-boot.version>2.0.2.RELEASE</spring-boot.version>
+        <json-path.version>2.4.0</json-path.version>
         <timestamp>${maven.build.timestamp}</timestamp>
         <maven.build.timestamp.format>yyyy-MM-dd-HH:mm</maven.build.timestamp.format>
     </properties>
