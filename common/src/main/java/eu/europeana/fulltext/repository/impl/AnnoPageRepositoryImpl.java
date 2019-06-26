@@ -4,9 +4,9 @@ import com.mongodb.*;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.repository.AnnoPageRepository;
 import org.bson.types.ObjectId;
-import org.mongodb.morphia.AdvancedDatastore;
-import org.mongodb.morphia.Key;
-import org.mongodb.morphia.query.Query;
+import dev.morphia.AdvancedDatastore;
+import dev.morphia.Key;
+import dev.morphia.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 

@@ -1,6 +1,6 @@
 package eu.europeana.fulltext.entity;
 
-import org.mongodb.morphia.annotations.Embedded;
+import dev.morphia.annotations.Embedded;
 
 /**
  * Created by luthien on 26/06/2018.
@@ -12,6 +12,8 @@ public class Target {
     private Integer y;
     private Integer w;
     private Integer h;
+    private Long    start;
+    private Long    end;
 
     public Target(){}
 
@@ -20,6 +22,11 @@ public class Target {
         this.y = y;
         this.w = w;
         this.h = h;
+    }
+
+    public Target(Long start, Long end) {
+        this.start = start;
+        this.end = end;
     }
 
     public Integer getX() {
@@ -54,4 +61,19 @@ public class Target {
         this.h = h;
     }
 
+    public Long getStart() {
+        return start;
+    }
+
+    public void setStart(Long start) {
+        this.start = start;
+    }
+
+    public Long getEnd() {
+        return end;
+    }
+
+    public void setEnd(Long end) {
+        this.end = end;
+    }
 }

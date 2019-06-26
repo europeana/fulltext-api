@@ -2,9 +2,9 @@ package eu.europeana.fulltext.repository;
 
 import java.io.Serializable;
 
-import org.mongodb.morphia.Key;
-import org.mongodb.morphia.query.UpdateOperations;
-import org.mongodb.morphia.query.UpdateResults;
+import dev.morphia.Key;
+import dev.morphia.query.UpdateOperations;
+import dev.morphia.query.UpdateResults;
 
 import com.mongodb.WriteResult;
 

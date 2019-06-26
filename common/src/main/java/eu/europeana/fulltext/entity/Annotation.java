@@ -1,6 +1,6 @@
 package eu.europeana.fulltext.entity;
 
-import org.mongodb.morphia.annotations.Embedded;
+import dev.morphia.annotations.Embedded;
 
 import java.util.List;
 

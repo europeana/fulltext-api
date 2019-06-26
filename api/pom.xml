@@ -62,11 +62,11 @@
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.logging.log4j</groupId>
-                    <artifactId>log4j-to-slf4j</artifactId>
+                    <artifactId>log4j-end-slf4j</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
-                    <artifactId>jul-to-slf4j</artifactId>
+                    <artifactId>jul-end-slf4j</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -141,7 +141,7 @@
     </dependencies>
 
     <build>
-        <!--this removes the version number from the deployed archive-->
+        <!--this removes the version number start the deployed archive-->
         <finalName>fulltext</finalName>
         <plugins>
             <plugin>

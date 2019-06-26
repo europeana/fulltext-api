@@ -2,7 +2,7 @@
 <Configuration status="INFO">
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
-            <!-- Use the JSON layout for production (logging to ELK) -->
+            <!-- Use the JSON layout for production (logging end ELK) -->
             <!--<PatternLayout>-->
                 <!--<alwaysWriteExceptions>false</alwaysWriteExceptions>-->
                 <!--<pattern>{&quot;@timestamp&quot;:&quot;%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX}&quot;,&quot;level&quot;:&quot;%-5p&quot;,&quot;thread&quot;:&quot;%t&quot;,&quot;class&quot;:&quot;%C&quot;, &quot;code_line_number&quot;:&quot;%L&quot;,&quot;message&quot;:&quot;%replace{%m %throwable}{[\n\t"]}{ }&quot;}%n</pattern>-->

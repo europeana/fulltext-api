@@ -3,8 +3,9 @@ package eu.europeana.fulltext.repository.impl;
 import com.mongodb.*;
 import eu.europeana.fulltext.entity.Resource;
 import eu.europeana.fulltext.repository.ResourceRepository;
-import org.mongodb.morphia.AdvancedDatastore;
-import org.mongodb.morphia.Key;
+import dev.morphia.AdvancedDatastore;
+import dev.morphia.Key;
+import dev.morphia.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -56,8 +57,7 @@ public class ResourceRepositoryImpl extends BaseRepository<Resource, String> imp
      * @return List containing matching Resource(s) (should be just one)
      */
     public Resource findByDatasetLocalResId(String datasetId, String localId, String resId) {
-        org.mongodb.morphia.query.Query<Resource> findDLPQuery =
-                datastore.createQuery(Resource.class)
+        Query<Resource> findDLPQuery = datastore.createQuery(Resource.class)
                          .filter("dsId ==", datasetId)
                          .filter("lcId ==", localId)
                          .filter("_id ==", resId);

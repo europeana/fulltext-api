@@ -1,7 +1,7 @@
 package eu.europeana.fulltext.entity;
 
 import org.bson.types.ObjectId;
-import org.mongodb.morphia.annotations.*;
+import dev.morphia.annotations.*;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
