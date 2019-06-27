@@ -1,6 +1,7 @@
 package eu.europeana.fulltext.entity;
 
 import dev.morphia.annotations.Embedded;
+import dev.morphia.annotations.Transient;
 
 import java.util.List;
 
@@ -18,6 +19,18 @@ public class Annotation {
     private Integer      from;
     private Integer      to;
     private List<Target> tgs;    // Only the coordinates. Can be multiple e.g. in case of abbreviated words
+
+    /*
+     * These two boolean parameters facilitate processing the Annotation during the loading process, to avoid having to
+     * check dcType all the time.
+     * isMedia is true in case of annotations for video/audio captioning, transcribing or subtitles, false for fulltext
+     * isTopLevel is true if the annotation pertains to the whole Page of media file; false for all other annotations
+     */
+    @Transient
+    private boolean      isMedia;
+
+    @Transient
+    private boolean      isTopLevel;
 
     /*
      * Parameters below are only used when the Annotation's datasetId and /or localId differ from the other
@@ -119,35 +132,19 @@ public class Annotation {
         this.tgs = tgs;
     }
 
-//    public String getAnDsId() {
-//        return anDsId;
-//    }
-//
-//    public void setAnDsId(String anDsId) {
-//        this.anDsId = anDsId;
-//    }
-//
-//    public String getAnLcId() {
-//        return anLcId;
-//    }
-//
-//    public void setAnLcId(String anLcId) {
-//        this.anLcId = anLcId;
-//    }
-//
-//    public String getAnResUrl() {
-//        return anResUrl;
-//    }
-//
-//    public void setAnResUrl(String anResUrl) {
-//        this.anResUrl = anResUrl;
-//    }
-//
-//    public String getAnTgUrl() {
-//        return anTgUrl;
-//    }
-//
-//    public void setAnTgUrl(String anTgUrl) {
-//        this.anTgUrl = anTgUrl;
-//    }
+    public boolean isMedia() {
+        return isMedia;
+    }
+
+    public void setMedia(boolean media) {
+        isMedia = media;
+    }
+
+    public boolean isTopLevel() {
+        return isTopLevel;
+    }
+
+    public void setTopLevel(boolean topLevel) {
+        isTopLevel = topLevel;
+    }
 }
