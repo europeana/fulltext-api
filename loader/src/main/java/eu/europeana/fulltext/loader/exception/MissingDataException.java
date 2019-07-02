@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 public class MissingDataException extends LoaderException {
 
+    private static final long serialVersionUID = -4903836469940244722L;
+
     public MissingDataException(String msg) {
         super(msg);
     }

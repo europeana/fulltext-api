@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(HttpStatus.NOT_FOUND)
 public class ArchiveNotFoundException extends LoaderException {
 
+    private static final long serialVersionUID = 8810368137414990588L;
+
     public ArchiveNotFoundException(String msg) {
         super(msg);
     }
@@ -23,6 +25,7 @@ public class ArchiveNotFoundException extends LoaderException {
     /**
      * @return boolean indicating whether this type of exception should be logged or not
      */
+    @Override
     public boolean doLog() {
         return false;
     }

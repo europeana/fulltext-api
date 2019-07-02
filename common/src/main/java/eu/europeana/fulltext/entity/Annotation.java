@@ -32,19 +32,6 @@ public class Annotation {
     @Transient
     private boolean      isTopLevel;
 
-    /*
-     * Parameters below are only used when the Annotation's datasetId and /or localId differ from the other
-     * Annotations for this AnnoPage. At time of first implementation it was uncertain if this would really be
-     * needed, but I provided the possibility in any case by way of 'future-proofing' If necessary, these can be
-     * removed with little effort, they are only read EDM2IIIFMapping.getResourceIdBaseUrl(), .getAnnotationIdUrl(),
-     * and getTargetIdBaseUrl() and can be removed there without side effects
-     * UPDATE aug 7: I removed them from the mapping class
-     */
-    private String anDsId;      // IIIF_API_BASE_URL/{anDsId}/        /annotation/..
-    private String anLcId;      // IIIF_API_BASE_URL/        /{anLcId}/annotation/..
-    private String anResUrl;    // Resource Base URL using a different namespace, eg for external resources
-    private String anTgUrl;     // Target URL using a different namespace, eg for external targets
-
     public Annotation(){}
 
     public Annotation(String      anId,

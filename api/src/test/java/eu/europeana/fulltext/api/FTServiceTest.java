@@ -5,9 +5,8 @@ import eu.europeana.fulltext.api.model.v2.AnnotationPageV2;
 import eu.europeana.fulltext.api.model.v2.AnnotationV2;
 import eu.europeana.fulltext.api.model.v3.AnnotationPageV3;
 import eu.europeana.fulltext.api.model.v3.AnnotationV3;
-import eu.europeana.fulltext.api.service.CacheUtils;
-import eu.europeana.fulltext.repository.impl.AnnoPageRepositoryImpl;
-import eu.europeana.fulltext.repository.impl.ResourceRepositoryImpl;
+import eu.europeana.fulltext.repository.AnnoPageRepository;
+import eu.europeana.fulltext.repository.ResourceRepository;
 import eu.europeana.fulltext.api.service.EDM2IIIFMapping;
 import eu.europeana.fulltext.api.service.FTService;
 import eu.europeana.fulltext.api.service.exception.AnnoPageDoesNotExistException;
@@ -38,9 +37,9 @@ public class FTServiceTest {
     private FTService ftService;
 
     @MockBean
-    private AnnoPageRepositoryImpl apRepository;
+    private AnnoPageRepository apRepository;
     @MockBean
-    private ResourceRepositoryImpl resRepository;
+    private ResourceRepository resRepository;
 
 
     @Before

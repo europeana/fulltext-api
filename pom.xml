@@ -26,7 +26,7 @@
 		<io-informatics.version>0.1.1</io-informatics.version>
 		<morphia.version>1.5.3</morphia.version>
 		<mongodb.version>3.10.2</mongodb.version>
-		<commons-lang3.version>3.8.1</commons-lang3.version>
+		<commons-lang3.version>3.9</commons-lang3.version>
 		<commons-io.version>2.4</commons-io.version>
 		<commons-collections4.version>4.0</commons-collections4.version>
 		<maven-surefire-plugin.version>2.19.1</maven-surefire-plugin.version>

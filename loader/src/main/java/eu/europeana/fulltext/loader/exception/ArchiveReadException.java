@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 public class ArchiveReadException extends LoaderException {
 
+    private static final long serialVersionUID = -4445313907998967811L;
+
     public ArchiveReadException(String msg) {
         super(msg);
     }

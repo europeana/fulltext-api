@@ -16,8 +16,8 @@ import eu.europeana.fulltext.api.service.exception.ResourceDoesNotExistException
 import eu.europeana.fulltext.api.service.exception.SerializationException;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Resource;
-import eu.europeana.fulltext.repository.impl.AnnoPageRepositoryImpl;
-import eu.europeana.fulltext.repository.impl.ResourceRepositoryImpl;
+import eu.europeana.fulltext.repository.AnnoPageRepository;
+import eu.europeana.fulltext.repository.ResourceRepository;
 import ioinformarics.oss.jackson.module.jsonld.JsonldModule;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,10 +38,10 @@ public class FTService {
     private static final Logger LOG      = LogManager.getLogger(FTService.class);
 
     @Autowired
-    ResourceRepositoryImpl resourceRepositoryImpl;
+    ResourceRepository resourceRepository;
 
     @Autowired
-    AnnoPageRepositoryImpl annoPageRepositoryImpl;
+    AnnoPageRepository annoPageRepository;
 
 
     // create a single objectMapper for efficiency purposes (see https://github.com/FasterXML/jackson-docs/wiki/Presentation:-Jackson-Performance)
@@ -74,7 +74,7 @@ public class FTService {
             throws ResourceDoesNotExistException {
         if (doesResourceExist(datasetId, localId, resId)){
             return generateFullTextResource(
-                    resourceRepositoryImpl.findByDatasetLocalResId(datasetId, localId, resId));
+                    resourceRepository.findByDatasetLocalResId(datasetId, localId, resId));
         } else {
             throw new ResourceDoesNotExistException("No Fulltext Resource with resourceId: " + resId
                       + " was found that is associated with datasetId: " + datasetId + " and localId: " + localId );
@@ -86,7 +86,7 @@ public class FTService {
     public AnnoPage fetchAnnoPage(String datasetId, String localId, String pageId)
             throws AnnoPageDoesNotExistException {
         if (doesAnnoPageExist(datasetId, localId, pageId)){
-            return annoPageRepositoryImpl.findByDatasetLocalPageId(datasetId, localId, pageId);
+            return annoPageRepository.findByDatasetLocalPageId(datasetId, localId, pageId);
         } else {
             throw new AnnoPageDoesNotExistException("No AnnoPage with datasetId: " + datasetId + ", localId: "
                       + localId + " and pageId: " + pageId + " could be found");
@@ -96,7 +96,7 @@ public class FTService {
     public AnnoPage fetchAPAnnotation(String datasetId, String localId, String annoId)
             throws AnnoPageDoesNotExistException {
         if (doesAnnotationExist(datasetId, localId, annoId)){
-            return annoPageRepositoryImpl.findByDatasetLocalAnnoId(datasetId, localId, annoId);
+            return annoPageRepository.findByDatasetLocalAnnoId(datasetId, localId, annoId);
         } else {
             throw new AnnoPageDoesNotExistException("No AnnoPage with datasetId: " + datasetId + " and localId: "
                        + localId + " could be found that contains an Annotation with annotationId: " + annoId);
@@ -114,7 +114,7 @@ public class FTService {
      * @return true if it exists, otherwise false
      */
     public boolean doesAnnoPageExist(String datasetId, String localId, String pageId){
-        return annoPageRepositoryImpl.existsByPageId(datasetId, localId, pageId);
+        return annoPageRepository.existsByPageId(datasetId, localId, pageId);
     }
 
     /**
@@ -125,7 +125,7 @@ public class FTService {
      * @return true if it exists, otherwise false
      */
     private boolean doesAnnotationExist(String datasetId, String localId, String annoId){
-        return annoPageRepositoryImpl.existsWithAnnoId(datasetId, localId, annoId);
+        return annoPageRepository.existsWithAnnoId(datasetId, localId, annoId);
     }
 
     /**
@@ -136,7 +136,7 @@ public class FTService {
      * @return true if it exists, otherwise false
      */
     private boolean doesResourceExist(String datasetId, String localId, String resId){
-        return resourceRepositoryImpl.existsByLimitOne(datasetId, localId, resId);
+        return resourceRepository.existsByLimitOne(datasetId, localId, resId);
     }
 
 

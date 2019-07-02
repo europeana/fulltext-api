@@ -13,6 +13,7 @@ import eu.europeana.fulltext.loader.exception.DuplicateDefinitionException;
 import eu.europeana.fulltext.loader.exception.IllegalValueException;
 import eu.europeana.fulltext.loader.exception.LoaderException;
 import eu.europeana.fulltext.loader.exception.MissingDataException;
+import eu.europeana.fulltext.util.NormalPlayTime;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,6 +32,7 @@ import javax.xml.stream.events.ProcessingInstruction;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 import java.io.InputStream;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -259,7 +261,7 @@ public class XMLParserService {
                     progressAnnotation.addItemFail();
                 }
             }
-        } catch (LoaderException e) {
+        } catch (LoaderException | ParseException e) {
             LogFile.OUT.error("{} - Skipping annotation {} because {}", file, anno.getAnId(), e.getMessage());
             if (progressAnnotation != null) {
                 progressAnnotation.addItemFail();
@@ -419,7 +421,7 @@ public class XMLParserService {
      * Also coordinates and image url are required, hence the validity checks
      */
     private void parseAnnotationTarget(StartElement targetElement, AnnoPage annoPage,
-                                       Annotation anno) throws LoaderException {
+                                       Annotation anno) throws LoaderException, ParseException {
         Attribute att = targetElement.getAttributeByName(new QName(RDF_NAMESPACE, ANNOTATION_TARGET_RESOURCE));
         if (att == null || StringUtils.isEmpty(att.getValue()) ) {
             throw new MissingDataException("no annotation target url defined");
@@ -458,7 +460,7 @@ public class XMLParserService {
         }
     }
 
-    private Target createTarget(String coordinates, boolean isMedia) throws LoaderException {
+    private Target createTarget(String coordinates, boolean isMedia) throws LoaderException, ParseException {
 
         String[] separatedCoordinates = coordinates.split(",");
 
@@ -467,8 +469,11 @@ public class XMLParserService {
                 throw new IllegalValueException("target '" + coordinates +  "' must contain 2 NormalPlayTime-formatted " +
                                                 "parameters for start and end time, separated with a comma");
             }
-            return new Target(checkNPTFormat(separatedCoordinates[0]),
-                              checkNPTFormat(separatedCoordinates[1]));
+
+            NormalPlayTime nptStart = NormalPlayTime.parse(checkNPTFormat(separatedCoordinates[0]));
+            NormalPlayTime nptEnd = NormalPlayTime.parse(checkNPTFormat(separatedCoordinates[1]));
+
+            return new Target((int) nptStart.getTimeOffsetMs(), (int) nptEnd.getTimeOffsetMs());
 
         } else {
 

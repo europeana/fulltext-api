@@ -41,7 +41,7 @@ public class NormalPlayTime {
     }
 
     /**
-     * Returns the offset it milliseconds, -1l for NOW.
+     * Returns the offset in milliseconds, -1l for NOW.
      */
     public long getTimeOffsetMs() {
         return ms;

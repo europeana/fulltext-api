@@ -12,8 +12,8 @@ public class Target {
     private Integer y;
     private Integer w;
     private Integer h;
-    private String  start;
-    private String  end;
+    private Integer start;
+    private Integer end;
 
     public Target(){}
 
@@ -24,7 +24,7 @@ public class Target {
         this.h = h;
     }
 
-    public Target(String start, String end) {
+    public Target(Integer start, Integer end) {
         this.start = start;
         this.end = end;
     }
@@ -61,19 +61,19 @@ public class Target {
         this.h = h;
     }
 
-    public String getStart() {
+    public Integer getStart() {
         return start;
     }
 
-    public void setStart(String start) {
+    public void setStart(Integer start) {
         this.start = start;
     }
 
-    public String getEnd() {
+    public Integer getEnd() {
         return end;
     }
 
-    public void setEnd(String end) {
+    public void setEnd(Integer end) {
         this.end = end;
     }
 }
