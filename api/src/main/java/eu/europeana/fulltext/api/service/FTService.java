@@ -35,7 +35,8 @@ import java.io.IOException;
 @Service
 public class FTService {
 
-    private static final Logger LOG      = LogManager.getLogger(FTService.class);
+    private static final String GENERATED_IN    = "Generated in {} ms ";
+    private static final Logger LOG             = LogManager.getLogger(FTService.class);
 
     @Autowired
     ResourceRepository resourceRepository;
@@ -146,7 +147,7 @@ public class FTService {
         long start = System.currentTimeMillis();
         AnnotationPageV3 result = EDM2IIIFMapping.getAnnotationPageV3(annoPage);
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Generated in {} ms ", System.currentTimeMillis() - start);
+            LOG.debug(GENERATED_IN, System.currentTimeMillis() - start);
         }
         return result;
     }
@@ -155,7 +156,7 @@ public class FTService {
         long start = System.currentTimeMillis();
         AnnotationPageV2 result = EDM2IIIFMapping.getAnnotationPageV2(annoPage);
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Generated in {} ms ", System.currentTimeMillis() - start);
+            LOG.debug(GENERATED_IN, System.currentTimeMillis() - start);
         }
         return result;
     }
@@ -164,7 +165,7 @@ public class FTService {
         long start = System.currentTimeMillis();
         AnnotationV3 result = EDM2IIIFMapping.getSingleAnnotationV3(annoPage, annoId);
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Generated in {} ms ", System.currentTimeMillis() - start);
+            LOG.debug(GENERATED_IN, System.currentTimeMillis() - start);
         }
         return result;
     }
@@ -173,7 +174,7 @@ public class FTService {
         long start = System.currentTimeMillis();
         AnnotationV2 result = EDM2IIIFMapping.getSingleAnnotationV2(annoPage, annoId);
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Generated in {} ms ", System.currentTimeMillis() - start);
+            LOG.debug(GENERATED_IN, System.currentTimeMillis() - start);
         }
         return result;
     }
@@ -182,7 +183,7 @@ public class FTService {
         long start = System.currentTimeMillis();
         FullTextResource result = EDM2IIIFMapping.getFullTextResource(resource);
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Generated in {} ms ", System.currentTimeMillis() - start);
+            LOG.debug(GENERATED_IN, System.currentTimeMillis() - start);
         }
         return result;
     }

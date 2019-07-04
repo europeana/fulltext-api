@@ -10,18 +10,16 @@ package eu.europeana.fulltext.api.service.exception;
 class FTException extends Exception {
 
     private static final long serialVersionUID = 6584353234989077456L;
-    private ErrorCode errorCode;
 
-    public FTException(String msg, Throwable t) {
+    FTException(String msg, Throwable t) {
         super(msg, t);
     }
 
-    public FTException(String msg, ErrorCode errorCode) {
-        super(msg);
-        this.errorCode = errorCode;
+    FTException(String msg, ErrorCode errorCode) {
+        super("Error code: " + errorCode.toString() + "; message: " + msg);
     }
 
-    public FTException(String msg) {
+    FTException(String msg) {
         super(msg);
     }
 

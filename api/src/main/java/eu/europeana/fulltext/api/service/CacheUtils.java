@@ -1,6 +1,5 @@
 package eu.europeana.fulltext.api.service;
 
-import eu.europeana.fulltext.api.web.FTController;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.DateUtils;
 import org.apache.logging.log4j.LogManager;
@@ -10,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

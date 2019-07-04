@@ -20,16 +20,16 @@ import java.util.List;
 public class AnnoPage {
 
     @Id
-    private ObjectId         _id;   // Mongo ObjectId
-    private String           dsId;  // IIIF_API_BASE_URL/{dsId}/      /annopage/
-    private String           lcId;  // IIIF_API_BASE_URL/      /{lcId}/annopage/
-    private String           pgId;  // IIIF_API_BASE_URL/      /      /annopage/{pgId}
-    private String           tgtId; // IIIF_API_BASE_URL/      /      /canvas/{tgtId} USE WHOLE URL!!
-    private List<Annotation> ans;   // List of Annotations
+    private ObjectId         _id;
+    private String           dsId;
+    private String           lcId;
+    private String           pgId;
+    private String           tgtId;
+    private List<Annotation> ans;
     private Date             modified = Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant());
 
     @Reference
-    private Resource res;           // RESOURCE_BASE_URL/      /      /{resId} (= resource)
+    private Resource res;
 
 
     public AnnoPage() {}

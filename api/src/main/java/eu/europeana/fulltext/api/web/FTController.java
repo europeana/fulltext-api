@@ -123,7 +123,7 @@ public class FTController {
             }
 
             headers = CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
-            headers = addContentTypeToResponseHeader(headers, requestVersion, isJson);
+            addContentTypeToResponseHeader(headers, requestVersion, isJson);
             if ("3".equalsIgnoreCase(requestVersion)) {
                 annotationPage = fts.generateAnnoPageV3(annoPage);
             } else {
@@ -211,7 +211,7 @@ public class FTController {
             }
 
             headers = CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
-            headers = addContentTypeToResponseHeader(headers, requestVersion, isJson);
+            addContentTypeToResponseHeader(headers, requestVersion, isJson);
 
             if ("3".equalsIgnoreCase(requestVersion)) {
                 annotation = fts.generateAnnotationV3(annoPage, annoID);

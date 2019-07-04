@@ -58,33 +58,36 @@ public class XMLParserService {
     private static final String RDF_NAMESPACE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
     private static final String RDF = "RDF";
 
-    private static final String FULLTEXTRESOURCE = "FullTextResource";
-    private static final String FULLTEXTRESOURCE_ABOUT = "about";
-    private static final String FULLTEXTRESOURCE_VALUE = "value";
-    private static final String FULLTEXTRESOURCE_LANGUAGE = "language";
+    private static final String FULLTEXTRESOURCE            = "FullTextResource";
+    private static final String FULLTEXTRESOURCE_ABOUT      = "about";
+    private static final String FULLTEXTRESOURCE_VALUE      = "value";
+    private static final String FULLTEXTRESOURCE_LANGUAGE   = "language";
 
-    private static final String ANNOTATION = "Annotation";
-    private static final String ANNOTATION_ID = "ID";
+    private static final String ANNOTATION                  = "Annotation";
+    private static final String ANNOTATION_ID               = "ID";
 
-    private static final String ANNOTATION_TYPE = "type";
-    private static final char   ANNOTATION_TYPE_PAGE = 'P';
-    private static final char   ANNOTATION_TYPE_MEDIA = 'M';
-    private static final char   ANNOTATION_TYPE_CAPTION = 'C';
+    private static final String ANNOTATION_TYPE             = "type";
+    private static final char   ANNOTATION_TYPE_PAGE        = 'P';
+    private static final char   ANNOTATION_TYPE_MEDIA       = 'M';
+    private static final char   ANNOTATION_TYPE_CAPTION     = 'C';
 
-    private static final String ANNOTATION_MOTIVATION = "motivatedBy";
-    private static final String ANNOTATION_MOTIVATION_TEXT = "resource";
+    private static final String ANNOTATION_MOTIVATION       = "motivatedBy";
+    private static final String ANNOTATION_MOTIVATION_TEXT  = "resource";
 
-    private static final String ANNOTATION_TARGET = "hasTarget";
-    private static final String ANNOTATION_TARGET_RESOURCE = "resource";
-    private static final String ANNOTATION_TARGET_XYWHPOS    = "#xywh=";
+    private static final String ANNOTATION_TARGET           = "hasTarget";
+    private static final String ANNOTATION_TARGET_RESOURCE  = "resource";
+    private static final String ANNOTATION_TARGET_XYWHPOS   = "#xywh=";
     private static final String ANNOTATION_TARGET_NPTIME    = "#t=";
 
-    private static final String ANNOTATION_HASBODY = "hasBody";
+    private static final String ANNOTATION_HASBODY          = "hasBody";
     private static final String ANNOTATION_HASBODY_RESOURCE = "specificResource";
-    private static final String ANNOTATION_HASBODY_RESOURCE_VALUE = "about";
-    private static final String ANNOTATION_HASBODY_ATTRIBUTE_VALUE = "resource";
-    private static final String ANNOTATION_HASBODY_RESOURCE_CHARPOS = "#char=";
-    private static final String ANNOTATION_HASBODY_RESOURCE_LANGUAGE = "language";
+    private static final String ANNOTATION_HASBODY_RESOURCE_VALUE       = "about";
+    private static final String ANNOTATION_HASBODY_ATTRIBUTE_VALUE      = "resource";
+    private static final String ANNOTATION_HASBODY_RESOURCE_CHARPOS     = "#char=";
+    private static final String ANNOTATION_HASBODY_RESOURCE_LANGUAGE    = "language";
+
+    private static final String TARGET      = "target '";
+    private static final String THISANNO    = " - Annotation ";
 
     // parser configuration
     static {
@@ -373,11 +376,11 @@ public class XMLParserService {
         }
 
         if (att == null || StringUtils.isEmpty(att.getValue())) {
-            LogFile.OUT.warn(file + " - Annotation " +anno.getAnId() + " has no specific resource text defined");
+            LogFile.OUT.warn(file + THISANNO + anno.getAnId() + " has no specific resource text defined");
         } else if (!anno.isTopLevel()){
             String[] urlAndCoordinates = att.getValue().split(ANNOTATION_HASBODY_RESOURCE_CHARPOS);
             if (urlAndCoordinates.length == 1) {
-                LogFile.OUT.warn(file + " - Annotation " +anno.getAnId() + " has no " +
+                LogFile.OUT.warn(file + THISANNO + anno.getAnId() + " has no " +
                         ANNOTATION_HASBODY_RESOURCE_CHARPOS + " defined in resource text " + att.getValue());
             } else {
                 String[] fromTo = urlAndCoordinates[1].split(",");
@@ -390,7 +393,7 @@ public class XMLParserService {
     private enum FromTo { FROM, TO }
     private void parseFromToInteger(String value, FromTo fromTo, Annotation anno, String file) {
         if (StringUtils.isEmpty(value)) {
-            LogFile.OUT.warn(file + " - Annotation " + anno.getAnId() + " has empty resource text " + fromTo + " value");
+            LogFile.OUT.warn(file + THISANNO + anno.getAnId() + " has empty resource text " + fromTo + " value");
         } else {
             try {
                 if (FromTo.FROM.equals(fromTo)) {
@@ -399,7 +402,7 @@ public class XMLParserService {
                     anno.setTo(Integer.valueOf(value));
                 }
             } catch (NumberFormatException nfe) {
-                LogFile.OUT.error(file + " - Annotation " + anno.getAnId() + " resource text " + fromTo +
+                LogFile.OUT.error(file + THISANNO + anno.getAnId() + " resource text " + fromTo +
                         " value '" + value + "' is not an integer");
             }
         }
@@ -466,7 +469,7 @@ public class XMLParserService {
 
         if (isMedia){
             if (separatedCoordinates.length != 2) {
-                throw new IllegalValueException("target '" + coordinates +  "' must contain 2 NormalPlayTime-formatted " +
+                throw new IllegalValueException(TARGET + coordinates +  "' must contain 2 NormalPlayTime-formatted " +
                                                 "parameters for start and end time, separated with a comma");
             }
 
@@ -478,7 +481,7 @@ public class XMLParserService {
         } else {
 
             if (separatedCoordinates.length != 4) {
-                throw new IllegalValueException("target '" + coordinates +
+                throw new IllegalValueException(TARGET + coordinates +
                         "' doesn't have 4 integers separated with a comma");
             }
             try {
@@ -487,7 +490,7 @@ public class XMLParserService {
                                   Integer.valueOf(separatedCoordinates[2]),
                                   Integer.valueOf(separatedCoordinates[3]));
             } catch (NumberFormatException nfe) {
-                throw new IllegalValueException("target '" + coordinates +
+                throw new IllegalValueException(TARGET + coordinates +
                         "' doesn't have 4 integers separated with a comma");
             }
         }

@@ -11,14 +11,13 @@ import java.util.List;
 @Embedded
 public class Annotation {
 
-    private String       anId;   // IIIF_API_BASE_URL/               /            /annotation/{anId}
-
+    private String       anId;
     private char         dcType;
-    private String       motiv;  // can be stored but is initially not used for output
-    private String       lang;   // optional, to override the page-level (actually resource-level) language
+    private String       motiv;
+    private String       lang;
     private Integer      from;
     private Integer      to;
-    private List<Target> tgs;    // Only the coordinates. Can be multiple e.g. in case of abbreviated words
+    private List<Target> tgs;
 
     /*
      * These two boolean parameters facilitate processing the Annotation during the loading process, to avoid having to

@@ -151,7 +151,7 @@ public class EDM2IIIFMapping {
             ftTargetURLList.add(annoPage.getTgtId());
             return ftTargetURLList.toArray(new String[0]);
         }
-        return null;
+        return new String[0];
     }
 
     static FullTextResource getFullTextResource(Resource resource){
