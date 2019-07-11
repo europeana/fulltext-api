@@ -65,11 +65,11 @@
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.logging.log4j</groupId>
-                    <artifactId>log4j-end-slf4j</artifactId>
+                    <artifactId>log4j-to-slf4j</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
-                    <artifactId>jul-end-slf4j</artifactId>
+                    <artifactId>jul-to-slf4j</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
