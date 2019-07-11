@@ -320,7 +320,6 @@ public class XMLParserService {
             throw new MissingDataException("no annotation type found for annotation " + anno.getAnId());
         }
         anno.setDcType(typeValue.toUpperCase(Locale.GERMANY).charAt(0));
-        setAnnoDoohickeys(anno); // sets transient helper boolean values
     }
 
     /**
@@ -497,10 +496,10 @@ public class XMLParserService {
     }
 
     // facilitates juggling with the annotation types
-    private void setAnnoDoohickeys(Annotation anno){
-        anno.setMedia(anno.getDcType() == ANNOTATION_TYPE_MEDIA || anno.getDcType() == ANNOTATION_TYPE_CAPTION);
-        anno.setTopLevel(anno.getDcType() == ANNOTATION_TYPE_MEDIA || anno.getDcType() == ANNOTATION_TYPE_PAGE);
-    }
+//    private void setAnnoDoohickeys(Annotation anno){
+//        anno.setMedia(anno.getDcType() == ANNOTATION_TYPE_MEDIA || anno.getDcType() == ANNOTATION_TYPE_CAPTION);
+//        anno.setTopLevel(anno.getDcType() == ANNOTATION_TYPE_MEDIA || anno.getDcType() == ANNOTATION_TYPE_PAGE);
+//    }
 
     private String checkNPTFormat(String str) throws IllegalValueException {
         if (str.matches("\\d{2}:\\d{2}:\\d{2}\\.\\d{3}")) {

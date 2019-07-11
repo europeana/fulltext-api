@@ -2,6 +2,7 @@ package eu.europeana.fulltext.entity;
 
 import dev.morphia.annotations.Embedded;
 import dev.morphia.annotations.Transient;
+import eu.europeana.fulltext.config.AnnoTypes;
 
 import java.util.List;
 
@@ -119,18 +120,11 @@ public class Annotation {
     }
 
     public boolean isMedia() {
-        return isMedia;
-    }
-
-    public void setMedia(boolean media) {
-        isMedia = media;
+        return (getDcType() == AnnoTypes.ANNOTATION_TYPE_MEDIA || getDcType() == AnnoTypes.ANNOTATION_TYPE_CAPTION);
     }
 
     public boolean isTopLevel() {
-        return isTopLevel;
+        return (getDcType() == AnnoTypes.ANNOTATION_TYPE_MEDIA || getDcType() == AnnoTypes.ANNOTATION_TYPE_PAGE);
     }
 
-    public void setTopLevel(boolean topLevel) {
-        isTopLevel = topLevel;
-    }
 }

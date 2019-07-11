@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 import static eu.europeana.fulltext.api.config.FTDefinitions.*;
+import static eu.europeana.fulltext.util.NormalPlayTime.msToHHmmss;
 
 /**
  * This class contains the methods for mapping Annotation / AnnoPage Mongo bean objects to IIIF v2 / v3 fulltext
@@ -52,7 +53,7 @@ public class EDM2IIIFMapping {
         ArrayList<AnnotationV2> annoArrayList = new ArrayList<>();
         for (Annotation ftAnno : annoPage.getAns()){
             // make sure page annotations are listed first.
-            if (ftAnno.getDcType() == 'P') {
+            if (ftAnno.isTopLevel()) {
                 annoArrayList.add(0, getAnnotationV2(annoPage, ftAnno, false));
             } else {
                 annoArrayList.add(getAnnotationV2(annoPage, ftAnno, false));
@@ -92,7 +93,7 @@ public class EDM2IIIFMapping {
         ArrayList<AnnotationV3> annoArrayList = new ArrayList<>();
         for (Annotation ftAnno : annoPage.getAns()){
             // make sure page annotations are listed first.
-            if (ftAnno.getDcType() == 'P') {
+            if (ftAnno.isTopLevel()) {
                 annoArrayList.add(0, getAnnotationV3(annoPage, ftAnno, false));
             } else {
                 annoArrayList.add(getAnnotationV3(annoPage, ftAnno, false));
@@ -140,25 +141,36 @@ public class EDM2IIIFMapping {
         if (annotation.getTgs() != null) {
             // generate target if it exists
             for (Target target : annotation.getTgs()) {
-                ftTargetURLList.add(annoPage.getTgtId() + "#xywh="
-                        + target.getX() + ","
-                        + target.getY() + ","
-                        + target.getW() + ","
-                        + target.getH());
+                ftTargetURLList.add(annoPage.getTgtId() + generateTargetCoordinates(target, annotation.isMedia()));
             }
             return ftTargetURLList.toArray(new String[0]);
-        } else if (annotation.getDcType() == 'P') {
+        } else if (annotation.isTopLevel()) {
             ftTargetURLList.add(annoPage.getTgtId());
             return ftTargetURLList.toArray(new String[0]);
         }
         return new String[0];
     }
 
+    private static String generateTargetCoordinates(Target target, boolean isMedia){
+        if (isMedia) {
+            return "#t=" +
+                   msToHHmmss(target.getStart().longValue()) + "," +
+                   msToHHmmss(target.getEnd().longValue());
+
+        } else {
+            return "#xywh=" +
+                   target.getX() + "," +
+                   target.getY() + "," +
+                   target.getW() + "," +
+                   target.getH();
+        }
+    }
+
     static FullTextResource getFullTextResource(Resource resource){
-        return new FullTextResource(fts.getResourceBaseUrl()
-                                    + resource.getDsId() + "/"
-                                    + resource.getLcId() + "/"
-                                    + resource.getId(),
+        return new FullTextResource(fts.getResourceBaseUrl() +
+                                    resource.getDsId() + "/" +
+                                    resource.getLcId() + "/" +
+                                    resource.getId(),
                                     resource.getLang(),
                                     resource.getValue());
     }
@@ -193,6 +205,9 @@ public class EDM2IIIFMapping {
             case 'P':
                 dcType = "Page";
                 break;
+            case 'M':
+                dcType = "Media";
+                break;
             case 'B':
                 dcType = "Block";
                 break;
@@ -201,6 +216,9 @@ public class EDM2IIIFMapping {
                 break;
             case 'W':
                 dcType = "Word";
+                break;
+            case 'C':
+                dcType = "Caption";
                 break;
             default:
                 dcType = "undefined";

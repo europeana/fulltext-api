@@ -15,7 +15,7 @@ public class NormalPlayTime {
     /**
      * The NormalPlayType 'now'
      */
-    public static final NormalPlayTime NOW = new NormalPlayTime(true, -1l);
+    public static final NormalPlayTime NOW = new NormalPlayTime(true, -1L);
 
     private boolean isNow;
     private long    ms;
@@ -87,8 +87,8 @@ public class NormalPlayTime {
             return "now";
         }
 
-        long seconds  = ms / 1000l;
-        long fraction = ms % 1000l;
+        long seconds  = ms / 1000L;
+        long fraction = ms % 1000L;
         if (fraction == 0) {
             return Long.toString(seconds);
         }
@@ -105,17 +105,20 @@ public class NormalPlayTime {
         if (isNow) {
             return "now";
         }
+        return msToHHmmss(ms);
+    }
 
-        long fraction     = ms % 1000l;
-        long totalseconds = ms / 1000l;
-        long seconds      = totalseconds % 60l;
-        long totalminutes = totalseconds / 60l;
-        long minutes      = totalminutes % 60l;
-        long hours        = totalminutes / 60l;
+    public static String msToHHmmss(long millis){
+        long fraction     = millis % 1000L;
+        long totalseconds = millis / 1000L;
+        long seconds      = totalseconds % 60L;
+        long totalminutes = totalseconds / 60L;
+        long minutes      = totalminutes % 60L;
+        long hours        = totalminutes / 60L;
         if (fraction > 0) {
             return String.format("%1$02d:%2$02d:%3$02d.%4$03d", hours, minutes, seconds, fraction);
         } else {
-            return String.format("%1$02d:%2$02d:%3$02d", hours, minutes, seconds);
+            return String.format("%1$02d:%2$02d:%3$02d.000", hours, minutes, seconds);
         }
     }
 
@@ -151,9 +154,9 @@ public class NormalPlayTime {
                 assertCurrentIs(':');
                 next();
                 long seconds = parseNumber();
-                ms = ((((hours * 60l) + minutes) * 60l) + seconds) * 1000l;
+                ms = ((((hours * 60L) + minutes) * 60L) + seconds) * 1000L;
             } else {
-                ms = first * 1000l;
+                ms = first * 1000L;
             }
             if (current == '.') {
                 next();
