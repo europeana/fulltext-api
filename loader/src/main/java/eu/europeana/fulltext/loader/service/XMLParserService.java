@@ -35,6 +35,7 @@ import java.io.InputStream;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.Objects;
 
 /**
  * Service for parsing fulltext xml files
@@ -67,9 +68,6 @@ public class XMLParserService {
     private static final String ANNOTATION_ID               = "ID";
 
     private static final String ANNOTATION_TYPE             = "type";
-    private static final char   ANNOTATION_TYPE_PAGE        = 'P';
-    private static final char   ANNOTATION_TYPE_MEDIA       = 'M';
-    private static final char   ANNOTATION_TYPE_CAPTION     = 'C';
 
     private static final String ANNOTATION_MOTIVATION       = "motivatedBy";
     private static final String ANNOTATION_MOTIVATION_TEXT  = "resource";
@@ -229,11 +227,11 @@ public class XMLParserService {
      * annotation and do not add it to the AnnoPage. We do log all annotations that are skipped
      * @return true if annotation was processed and added to AnnoPage object, otherwise false
      */
-    private boolean parseAnnotation(XMLEventReader reader, StartElement annotationElement, AnnoPage annoPage,
+    private void parseAnnotation(XMLEventReader reader, StartElement annotationElement, AnnoPage annoPage,
                                     ProgressLogger progressAnnotation, String file)
             throws XMLStreamException {
         Annotation anno = new Annotation();
-        boolean result = false;
+        boolean result;
         try {
             parseAnnotationId(annotationElement, anno);
             while (reader.hasNext()) {
@@ -246,15 +244,15 @@ public class XMLParserService {
                         case ANNOTATION_TYPE      : this.parseAnnotationType(reader.getElementText(), anno); break;
                         case ANNOTATION_MOTIVATION:
                             // October 2018: for now there is no need for this 'motivation' information so we skip it
-                            //this.parseAnnotationMotivation(se, anno);
+                            // this.parseAnnotationMotivation(se, anno);
                             break;
                         case ANNOTATION_HASBODY   : this.parseAnnotationHasBody(se, reader, anno, file); break;
                         case ANNOTATION_TARGET    : this.parseAnnotationTarget(se, annoPage, anno); break;
                         default: // do nothing, just skip unknown start elements (e.g. confidence, styledBy)
                     }
-                } else {
+                } // else {
                     // do nothing, just skip other (end) elements until we get to end of annotation
-                }
+                //}
             }
             result = addAnnotationToAnnoPage(annoPage, anno);
             if (progressAnnotation != null) {
@@ -264,13 +262,12 @@ public class XMLParserService {
                     progressAnnotation.addItemFail();
                 }
             }
-        } catch (LoaderException | ParseException e) {
+        } catch (LoaderException e) {
             LogFile.OUT.error("{} - Skipping annotation {} because {}", file, anno.getAnId(), e.getMessage());
             if (progressAnnotation != null) {
                 progressAnnotation.addItemFail();
             }
         }
-        return result;
     }
 
     /**
@@ -353,9 +350,9 @@ public class XMLParserService {
                        parseAnnotationTextCoordinates(se, anno, file, false);
                     } else if (ANNOTATION_HASBODY_RESOURCE_LANGUAGE.equalsIgnoreCase(se.getName().getLocalPart())) {
                         parseAnnotationTextLanguage(reader.getElementText(), anno);
-                    } else {
+                    } // else {
                        // we simply ignore unknown elements here like 'hasSource' and 'styleClass'
-                    }
+                    //}
                 }
             }
         }
@@ -423,7 +420,7 @@ public class XMLParserService {
      * Also coordinates and image url are required, hence the validity checks
      */
     private void parseAnnotationTarget(StartElement targetElement, AnnoPage annoPage,
-                                       Annotation anno) throws LoaderException, ParseException {
+                                       Annotation anno) throws LoaderException {
         Attribute att = targetElement.getAttributeByName(new QName(RDF_NAMESPACE, ANNOTATION_TARGET_RESOURCE));
         if (att == null || StringUtils.isEmpty(att.getValue()) ) {
             throw new MissingDataException("no annotation target url defined");
@@ -462,7 +459,7 @@ public class XMLParserService {
         }
     }
 
-    private Target createTarget(String coordinates, boolean isMedia) throws LoaderException, ParseException {
+    private Target createTarget(String coordinates, boolean isMedia) throws LoaderException {
 
         String[] separatedCoordinates = coordinates.split(",");
 
@@ -471,11 +468,26 @@ public class XMLParserService {
                 throw new IllegalValueException(TARGET + coordinates +  "' must contain 2 NormalPlayTime-formatted " +
                                                 "parameters for start and end time, separated with a comma");
             }
+            try {
+                NormalPlayTime nptStart = NormalPlayTime.parse(checkNPTFormat(separatedCoordinates[0]));
+                NormalPlayTime nptEnd   = NormalPlayTime.parse(checkNPTFormat(separatedCoordinates[1]));
+                if (nptStart != null && nptEnd != null) {
+                    int start = (int) nptStart.getTimeOffsetMs();
+                    int end   = (int) nptEnd.getTimeOffsetMs();
+                    if (start != end && end > 0){
+                        return new Target(start, end);
+                    } else {
+                        throw new IllegalValueException(TARGET + coordinates +  "' start & end time should be different " +
+                                                        "and the end time should be greater than 0");
+                    }
+                } else {
+                    throw new LoaderException("Error occurred processing the start & end time of " + TARGET + coordinates);
+                }
 
-            NormalPlayTime nptStart = NormalPlayTime.parse(checkNPTFormat(separatedCoordinates[0]));
-            NormalPlayTime nptEnd = NormalPlayTime.parse(checkNPTFormat(separatedCoordinates[1]));
-
-            return new Target((int) nptStart.getTimeOffsetMs(), (int) nptEnd.getTimeOffsetMs());
+            } catch (ParseException e) {
+                throw new IllegalValueException(TARGET + coordinates +  "' must contain 2 NormalPlayTime-formatted " +
+                                                "parameters for start and end time, separated with a comma");
+            }
 
         } else {
 
@@ -494,12 +506,6 @@ public class XMLParserService {
             }
         }
     }
-
-    // facilitates juggling with the annotation types
-//    private void setAnnoDoohickeys(Annotation anno){
-//        anno.setMedia(anno.getDcType() == ANNOTATION_TYPE_MEDIA || anno.getDcType() == ANNOTATION_TYPE_CAPTION);
-//        anno.setTopLevel(anno.getDcType() == ANNOTATION_TYPE_MEDIA || anno.getDcType() == ANNOTATION_TYPE_PAGE);
-//    }
 
     private String checkNPTFormat(String str) throws IllegalValueException {
         if (str.matches("\\d{2}:\\d{2}:\\d{2}\\.\\d{3}")) {

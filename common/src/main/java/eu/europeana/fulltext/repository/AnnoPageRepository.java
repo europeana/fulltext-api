@@ -48,13 +48,19 @@ public class AnnoPageRepository {
      */
 //    @ExistsQuery("{'dsId':'?0', 'lcId':'?1', 'ans.anId':'?2'}")
     public boolean existsWithAnnoId(String datasetId, String localId, String annoId) {
-        Query<AnnoPage> query = datastore.createQuery(AnnoPage.class);
-        query.and(
-                query.criteria("dsId").equal(datasetId),
-                query.criteria("lcId").equal(localId),
-                query.criteria("ans.anId").equal(annoId));
-        return (null != query.first());
+        return datastore.createQuery(AnnoPage.class)
+                        .field("dsId").equal(datasetId)
+                        .field("lcId").equal(localId)
+                        .field("ans.anId").equal(annoId).count() >= 1;
     }
+//    public boolean existsWithAnnoId(String datasetId, String localId, String annoId) {
+//        Query<AnnoPage> query = datastore.createQuery(AnnoPage.class);
+//        query.and(
+//                query.criteria("dsId").equal(datasetId),
+//                query.criteria("lcId").equal(localId),
+//                query.criteria("ans.anId").equal(annoId));
+//        return (null != query.first());
+//    }
 
     /**
      * Find and return an AnnoPage that matches the given parameters

@@ -12,36 +12,19 @@ import java.text.ParseException;
  */
 public class NormalPlayTime {
 
-    /**
-     * The NormalPlayType 'now'
-     */
-    public static final NormalPlayTime NOW = new NormalPlayTime(true, -1L);
-
-    private boolean isNow;
     private long    ms;
 
     /**
      * Creates a NormalPlayTime object.
      * @param ms time offset, in milliseconds
      */
-    public NormalPlayTime(long ms) {
-        this(false, ms);
-    }
 
-    private NormalPlayTime(boolean now, long ms) {
-        isNow = now;
+    private NormalPlayTime(long ms) {
         this.ms = ms;
     }
 
     /**
-     * Check whether this time is the special 'now' time.
-     */
-    public boolean isNow() {
-        return isNow;
-    }
-
-    /**
-     * Returns the offset in milliseconds, -1l for NOW.
+     * Returns the offset in milliseconds
      */
     public long getTimeOffsetMs() {
         return ms;
@@ -60,10 +43,6 @@ public class NormalPlayTime {
             return null;
         }
 
-        if ("now".equals(stringRep)) {
-            return NOW;
-        }
-
         NPTParser parser = new NPTParser(stringRep);
         return new NormalPlayTime(parser.parse());
     }
@@ -80,12 +59,9 @@ public class NormalPlayTime {
      * Gets the standard {@code seconds.fraction } representation
      * for this object.
      *
-     * @return {@code seconds.fraction} or {@code "now"}
+     * @return {@code seconds.fraction}
      */
-    public String getNptSecondsRepresentation() {
-        if (isNow) {
-            return "now";
-        }
+    private String getNptSecondsRepresentation() {
 
         long seconds  = ms / 1000L;
         long fraction = ms % 1000L;
@@ -99,12 +75,9 @@ public class NormalPlayTime {
      * Gets the standard {@code  hh:mm:ss.fraction } representation
      * for this object.
      *
-     * @return {@code hh:mm:ss.fraction} or {@code "now"}
+     * @return {@code hh:mm:ss.fraction}
      */
     public String getNptHhmmssRepresentation() {
-        if (isNow) {
-            return "now";
-        }
         return msToHHmmss(ms);
     }
 
@@ -136,7 +109,7 @@ public class NormalPlayTime {
 
         private static final char EOF = '\0';
 
-        public NPTParser(String text) {
+        NPTParser(String text) {
             this.text = text;
             this.length = text.length();
             currentIndex = -1;
@@ -148,13 +121,12 @@ public class NormalPlayTime {
             int  first = parseNumber();
 
             if (current == ':') {
-                int hours = first;
                 next();
                 long minutes = parseNumber();
                 assertCurrentIs(':');
                 next();
                 long seconds = parseNumber();
-                ms = ((((hours * 60L) + minutes) * 60L) + seconds) * 1000L;
+                ms = ((((first * 60L) + minutes) * 60L) + seconds) * 1000L;
             } else {
                 ms = first * 1000L;
             }
