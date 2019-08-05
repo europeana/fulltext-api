@@ -1,0 +1,55 @@
+{
+    "$schema": "http://www.europeana.eu/schemas/json/iiif#",
+    "title": "IIIF Full-text API v2 schema",
+    "oneOf": [
+        { "$ref": "#/definitions/annopage" },
+        { "$ref": "#/definitions/anno" }
+    ],
+    "definitions": {
+        "context": {
+            "type": "array",
+            "minItems": 2, 
+            "items": { "enum": [ "http://iiif.io/api/presentation/2/context.json"
+                               , "https://www.europeana.eu/schemas/context/edm.jsonld" ] }
+         },
+         "annopage": {
+         "type": "object",
+         "properties": {
+                "@context"   : { "$ref": "#/definitions/context"    },
+                "@id"        : { "type": "string", "format": "uri"  },
+                "@type"      : { "enum": [ "sc:AnnotationList" ]    },
+                "resources"  : { "type": "array", "minItems": 0, "items": { "$ref": "#/definitions/anno"  } }
+             },
+            "required": [ "@id", "@type", "resources" ],
+            "additionalProperties": false
+        },
+		"anno": {
+            "type": "object",
+            "properties": {
+                "@context"   : { "$ref": "#/definitions/context"             },
+                "@id"        : { "type": "string", "format": "uri"           },
+                "@type"      : { "enum": [ "oa:Annotation" ]                 },
+				"motivation" : { "enum": [ "sc:painting"   ]                 },
+				"dcType"     : { "enum": [ "Page", "Block", "Line", "Word" , "Media", "Caption"] },
+				"resource"   : { "$ref": "#/definitions/body"                },
+				"on"         : { "$ref": "#/definitions/targets"             },
+
+		    },
+            "required": [ "@id", "@type", "motivation", "dcType", "resource", "on" ],
+            "additionalProperties": false
+        },
+        "body": {
+            "type": "object",
+            "properties": {
+                "@id"         : { "type": "string", "format": "uri" }
+            },
+            "required": [ "@id" ],
+            "additionalProperties": false
+        },
+        "targets": {
+            "type": "array",
+            "minItems": 1, 
+            "items": { "type": "string",  "format": "uri" }
+        }
+    }
+}
