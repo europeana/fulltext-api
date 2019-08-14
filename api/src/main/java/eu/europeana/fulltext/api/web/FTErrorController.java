@@ -3,7 +3,6 @@ package eu.europeana.fulltext.api.web;
 import eu.europeana.fulltext.api.model.JsonErrorResponse;
 import eu.europeana.fulltext.api.service.FTService;
 import eu.europeana.fulltext.api.service.exception.SerializationException;
-import org.apache.catalina.connector.RequestFacade;
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -31,23 +30,19 @@ public class FTErrorController implements ErrorController {
     public ResponseEntity<String> handleError(HttpServletRequest request) throws SerializationException {
 
         Object status = request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);
-
         String requestedPath = request.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI).toString();
 
         if (status != null) {
-
             int statusCode = Integer.parseInt(status.toString());
-
             if(statusCode == HttpStatus.NOT_FOUND.value()) {
-
                 return new ResponseEntity<>(fts.serializeResource(
                         new JsonErrorResponse("The requested URL: " + requestedPath + " could not be resolved")),
                                             HttpStatus.NOT_FOUND);
             }
         }
         return new ResponseEntity<>(fts.serializeResource(
-                new JsonErrorResponse("Oh dear - I'm afraid you broke the internet now.")),
-                                        HttpStatus.I_AM_A_TEAPOT);
+                new JsonErrorResponse("It seems that an unexpected error occurred.")),
+                                        HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
