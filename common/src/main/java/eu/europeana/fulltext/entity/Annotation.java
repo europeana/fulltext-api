@@ -1,6 +1,7 @@
 package eu.europeana.fulltext.entity;
 
-import org.mongodb.morphia.annotations.Embedded;
+import dev.morphia.annotations.Embedded;
+import dev.morphia.annotations.Transient;
 
 import java.util.List;
 
@@ -10,27 +11,25 @@ import java.util.List;
 @Embedded
 public class Annotation {
 
-    private String       anId;   // IIIF_API_BASE_URL/               /            /annotation/{anId}
-
+    private String       anId;
     private char         dcType;
-    private String       motiv;  // can be stored but is initially not used for output
-    private String       lang;   // optional, to override the page-level (actually resource-level) language
+    private String       motiv;
+    private String       lang;
     private Integer      from;
     private Integer      to;
-    private List<Target> tgs;    // Only the coordinates. Can be multiple e.g. in case of abbreviated words
+    private List<Target> tgs;
 
     /*
-     * Parameters below are only used when the Annotation's datasetId and /or localId differ from the other
-     * Annotations for this AnnoPage. At time of first implementation it was uncertain if this would really be
-     * needed, but I provided the possibility in any case by way of 'future-proofing' If necessary, these can be
-     * removed with little effort, they are only read EDM2IIIFMapping.getResourceIdBaseUrl(), .getAnnotationIdUrl(),
-     * and getTargetIdBaseUrl() and can be removed there without side effects
-     * UPDATE aug 7: I removed them from the mapping class
+     * These two boolean parameters facilitate processing the Annotation during the loading process, to avoid having to
+     * check dcType all the time.
+     * isMedia is true in case of annotations for video/audio captioning, transcribing or subtitles, false for fulltext
+     * isTopLevel is true if the annotation pertains to the whole Page of media file; false for all other annotations
      */
-    private String anDsId;      // IIIF_API_BASE_URL/{anDsId}/        /annotation/..
-    private String anLcId;      // IIIF_API_BASE_URL/        /{anLcId}/annotation/..
-    private String anResUrl;    // Resource Base URL using a different namespace, eg for external resources
-    private String anTgUrl;     // Target URL using a different namespace, eg for external targets
+    @Transient
+    private boolean      isMedia;
+
+    @Transient
+    private boolean      isTopLevel;
 
     public Annotation(){}
 
@@ -119,35 +118,12 @@ public class Annotation {
         this.tgs = tgs;
     }
 
-//    public String getAnDsId() {
-//        return anDsId;
-//    }
-//
-//    public void setAnDsId(String anDsId) {
-//        this.anDsId = anDsId;
-//    }
-//
-//    public String getAnLcId() {
-//        return anLcId;
-//    }
-//
-//    public void setAnLcId(String anLcId) {
-//        this.anLcId = anLcId;
-//    }
-//
-//    public String getAnResUrl() {
-//        return anResUrl;
-//    }
-//
-//    public void setAnResUrl(String anResUrl) {
-//        this.anResUrl = anResUrl;
-//    }
-//
-//    public String getAnTgUrl() {
-//        return anTgUrl;
-//    }
-//
-//    public void setAnTgUrl(String anTgUrl) {
-//        this.anTgUrl = anTgUrl;
-//    }
+    public boolean isMedia() {
+        return (getDcType() == 'M' || getDcType() == 'C');
+    }
+
+    public boolean isTopLevel() {
+        return (getDcType() == 'M' || getDcType() == 'P');
+    }
+
 }

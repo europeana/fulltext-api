@@ -3,8 +3,8 @@ package eu.europeana.fulltext.loader.service;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Resource;
 import eu.europeana.fulltext.loader.config.LoaderSettings;
-import eu.europeana.fulltext.repository.impl.AnnoPageRepositoryImpl;
-import eu.europeana.fulltext.repository.impl.ResourceRepositoryImpl;
+import eu.europeana.fulltext.repository.AnnoPageRepository;
+import eu.europeana.fulltext.repository.ResourceRepository;
 import eu.europeana.fulltext.loader.exception.LoaderException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -23,10 +23,10 @@ public class MongoService {
     private static final Logger LOG = LogManager.getLogger(MongoService.class);
 
     @Autowired
-    ResourceRepositoryImpl resourceRepositoryImpl;
+    ResourceRepository resourceRepository;
 
     @Autowired
-    AnnoPageRepositoryImpl annoPageRepositoryImpl;
+    AnnoPageRepository annoPageRepository;
 
     private LoaderSettings settings;
 
@@ -37,15 +37,15 @@ public class MongoService {
     public void saveAnnoPageList(List<AnnoPage> apList, MongoSaveMode saveMode) throws LoaderException {
         LOG.debug("Saving {} annoPages...", apList.size());
 
-        long resourceCount = resourceRepositoryImpl.count();
-        long annoPageCount = annoPageRepositoryImpl.count();
+        long resourceCount = resourceRepository.count();
+        long annoPageCount = annoPageRepository.count();
         if (MongoSaveMode.INSERT.equals(saveMode)) {
             for (AnnoPage annoPage : apList) {
                 saveResource(annoPage.getRes());
                 saveAnnoPage(annoPage);
             }
-            long newResourceCount = resourceRepositoryImpl.count();
-            long newAnnoPageCount = annoPageRepositoryImpl.count();
+            long newResourceCount = resourceRepository.count();
+            long newAnnoPageCount = annoPageRepository.count();
             if (resourceCount + apList.size() != newResourceCount) {
                 LogFile.OUT.warn("Expected number of resource in database is {}, but actual number is {}",
                         resourceCount + apList.size(), newResourceCount);
@@ -67,7 +67,7 @@ public class MongoService {
         String lcId = resource.getLcId();
         String id = resource.getId();
         try{
-            resourceRepositoryImpl.save(resource);
+            resourceRepository.save(resource);
             LOG.debug("{}/{}/{} - Resource saved", dsId, lcId, id);
             return true;
         } catch (Exception e){
@@ -87,7 +87,7 @@ public class MongoService {
      * @return the number of deleted resources
      */
     public long deleteAllResources(String datasetId) {
-        return resourceRepositoryImpl.deleteDataset(datasetId);
+        return resourceRepository.deleteDataset(datasetId);
     }
 
     /**
@@ -100,7 +100,7 @@ public class MongoService {
         String lcId = annoPage.getLcId();
         String pgId = annoPage.getPgId();
         try{
-            annoPageRepositoryImpl.save(annoPage);
+            annoPageRepository.save(annoPage);
             LOG.debug("{}/{}/{} AnnoPage saved", dsId, lcId, pgId);
             return true;
         } catch (Exception e){
@@ -120,7 +120,7 @@ public class MongoService {
      * @return the number of deleted annopages
      */
     public long deleteAllAnnoPages(String datasetId) {
-        return annoPageRepositoryImpl.deleteDataset(datasetId);
+        return annoPageRepository.deleteDataset(datasetId);
     }
 
 

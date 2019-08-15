@@ -16,8 +16,8 @@ import eu.europeana.fulltext.api.service.exception.ResourceDoesNotExistException
 import eu.europeana.fulltext.api.service.exception.SerializationException;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Resource;
-import eu.europeana.fulltext.repository.impl.AnnoPageRepositoryImpl;
-import eu.europeana.fulltext.repository.impl.ResourceRepositoryImpl;
+import eu.europeana.fulltext.repository.AnnoPageRepository;
+import eu.europeana.fulltext.repository.ResourceRepository;
 import ioinformarics.oss.jackson.module.jsonld.JsonldModule;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -35,13 +35,14 @@ import java.io.IOException;
 @Service
 public class FTService {
 
-    private static final Logger LOG      = LogManager.getLogger(FTService.class);
+    private static final String GENERATED_IN    = "Generated in {} ms ";
+    private static final Logger LOG             = LogManager.getLogger(FTService.class);
 
     @Autowired
-    ResourceRepositoryImpl resourceRepositoryImpl;
+    ResourceRepository resourceRepository;
 
     @Autowired
-    AnnoPageRepositoryImpl annoPageRepositoryImpl;
+    AnnoPageRepository annoPageRepository;
 
 
     // create a single objectMapper for efficiency purposes (see https://github.com/FasterXML/jackson-docs/wiki/Presentation:-Jackson-Performance)
@@ -57,10 +58,6 @@ public class FTService {
         mapper.registerModule(new JsonldModule());
     }
 
-    protected ObjectMapper getJsonMapper() {
-        return mapper;
-    }
-
     /**
      * @return ManifestSettings object containing settings loaded from properties file
      */
@@ -68,38 +65,38 @@ public class FTService {
         return ftSettings;
     }
 
-    // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-
-    public FullTextResource getFullTextResource(String datasetId, String localId, String resId)
-            throws ResourceDoesNotExistException {
-        if (doesResourceExist(datasetId, localId, resId)){
-            return generateFullTextResource(
-                    resourceRepositoryImpl.findByDatasetLocalResId(datasetId, localId, resId));
-        } else {
-            throw new ResourceDoesNotExistException("No Fulltext Resource with resourceId: " + resId
-                      + " was found that is associated with datasetId: " + datasetId + " and localId: " + localId );
-        }
-    }
 
     // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
     public AnnoPage fetchAnnoPage(String datasetId, String localId, String pageId)
             throws AnnoPageDoesNotExistException {
         if (doesAnnoPageExist(datasetId, localId, pageId)){
-            return annoPageRepositoryImpl.findByDatasetLocalPageId(datasetId, localId, pageId);
+            return annoPageRepository.findByDatasetLocalPageId(datasetId, localId, pageId);
         } else {
-            throw new AnnoPageDoesNotExistException("No AnnoPage with datasetId: " + datasetId + ", localId: "
-                      + localId + " and pageId: " + pageId + " could be found");
+            throw new AnnoPageDoesNotExistException("No AnnoPage with datasetId: " + datasetId +
+                                                    ", localId: " + localId +
+                                                    " and pageId: " + pageId + " could be found");
         }
     }
 
     public AnnoPage fetchAPAnnotation(String datasetId, String localId, String annoId)
             throws AnnoPageDoesNotExistException {
         if (doesAnnotationExist(datasetId, localId, annoId)){
-            return annoPageRepositoryImpl.findByDatasetLocalAnnoId(datasetId, localId, annoId);
+            return annoPageRepository.findByDatasetLocalAnnoId(datasetId, localId, annoId);
         } else {
             throw new AnnoPageDoesNotExistException("No AnnoPage with datasetId: " + datasetId + " and localId: "
                        + localId + " could be found that contains an Annotation with annotationId: " + annoId);
+        }
+    }
+
+    public FullTextResource fetchFullTextResource(String datasetId, String localId, String resId)
+            throws ResourceDoesNotExistException {
+        if (doesFullTextResourceExist(datasetId, localId, resId)){
+            return generateFullTextResource(
+                    resourceRepository.findByDatasetLocalResId(datasetId, localId, resId));
+        } else {
+            throw new ResourceDoesNotExistException("No Fulltext Resource with resourceId: " + resId
+                                                    + " was found that is associated with datasetId: " + datasetId + " and localId: " + localId );
         }
     }
 
@@ -108,35 +105,35 @@ public class FTService {
 
     /**
      * Check if a particular annotation page with the provided ids exists or not
-     * @param datasetId
-     * @param localId
-     * @param pageId
+     * @param datasetId Identifier of the dataset
+     * @param localId   Identifier of the item
+     * @param pageId    Identifier of the item's page
      * @return true if it exists, otherwise false
      */
     public boolean doesAnnoPageExist(String datasetId, String localId, String pageId){
-        return annoPageRepositoryImpl.existsByPageId(datasetId, localId, pageId);
+        return annoPageRepository.existsByPageId(datasetId, localId, pageId);
     }
 
     /**
      * Check if a particular annotation with the provided ids exists or not
-     * @param datasetId
-     * @param localId
-     * @param annoId
+     * @param datasetId Identifier of the dataset
+     * @param localId   Identifier of the item
+     * @param annoId    Identifier of the annotation
      * @return true if it exists, otherwise false
      */
     private boolean doesAnnotationExist(String datasetId, String localId, String annoId){
-        return annoPageRepositoryImpl.existsWithAnnoId(datasetId, localId, annoId);
+        return annoPageRepository.existsWithAnnoId(datasetId, localId, annoId);
     }
 
     /**
      * Check if a particular resource with the provided ids exists or not
-     * @param datasetId
-     * @param localId
-     * @param resId
+     * @param datasetId Identifier of the dataset
+     * @param localId   Identifier of the item
+     * @param resId     Identifier of the fulltext resource
      * @return true if it exists, otherwise false
      */
-    private boolean doesResourceExist(String datasetId, String localId, String resId){
-        return resourceRepositoryImpl.existsByLimitOne(datasetId, localId, resId);
+    private boolean doesFullTextResourceExist(String datasetId, String localId, String resId){
+        return resourceRepository.existsByLimitOne(datasetId, localId, resId);
     }
 
 
@@ -146,7 +143,7 @@ public class FTService {
         long start = System.currentTimeMillis();
         AnnotationPageV3 result = EDM2IIIFMapping.getAnnotationPageV3(annoPage);
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Generated in {} ms ", System.currentTimeMillis() - start);
+            LOG.debug(GENERATED_IN, System.currentTimeMillis() - start);
         }
         return result;
     }
@@ -155,7 +152,7 @@ public class FTService {
         long start = System.currentTimeMillis();
         AnnotationPageV2 result = EDM2IIIFMapping.getAnnotationPageV2(annoPage);
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Generated in {} ms ", System.currentTimeMillis() - start);
+            LOG.debug(GENERATED_IN, System.currentTimeMillis() - start);
         }
         return result;
     }
@@ -164,7 +161,7 @@ public class FTService {
         long start = System.currentTimeMillis();
         AnnotationV3 result = EDM2IIIFMapping.getSingleAnnotationV3(annoPage, annoId);
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Generated in {} ms ", System.currentTimeMillis() - start);
+            LOG.debug(GENERATED_IN, System.currentTimeMillis() - start);
         }
         return result;
     }
@@ -173,7 +170,7 @@ public class FTService {
         long start = System.currentTimeMillis();
         AnnotationV2 result = EDM2IIIFMapping.getSingleAnnotationV2(annoPage, annoId);
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Generated in {} ms ", System.currentTimeMillis() - start);
+            LOG.debug(GENERATED_IN, System.currentTimeMillis() - start);
         }
         return result;
     }
@@ -182,20 +179,22 @@ public class FTService {
         long start = System.currentTimeMillis();
         FullTextResource result = EDM2IIIFMapping.getFullTextResource(resource);
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Generated in {} ms ", System.currentTimeMillis() - start);
+            LOG.debug(GENERATED_IN, System.currentTimeMillis() - start);
         }
         return result;
     }
 
+    // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
     /**
-     * Serialize resource from MongoDB to JSON-LD
-     * @param res resource
+     * Serialize data from MongoDB to JSON-LD
+     * @param  data input data
      * @return JSON-LD string
-     * @throws RecordParseException when there is a problem parsing
+     * @throws SerializationException when serialisation seriously severely snaps somewhere
      */
-    public String serializeResource(Object res) throws SerializationException {
+    public String serialise(Object data) throws SerializationException {
         try {
-            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(res);
+            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(data);
         }
         catch (IOException e) {
             throw new SerializationException("Error serializing data: " + e.getMessage(), e);

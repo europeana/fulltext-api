@@ -13,6 +13,7 @@ import eu.europeana.fulltext.loader.exception.DuplicateDefinitionException;
 import eu.europeana.fulltext.loader.exception.IllegalValueException;
 import eu.europeana.fulltext.loader.exception.LoaderException;
 import eu.europeana.fulltext.loader.exception.MissingDataException;
+import eu.europeana.fulltext.util.NormalPlayTime;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,8 +32,10 @@ import javax.xml.stream.events.ProcessingInstruction;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 import java.io.InputStream;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.Objects;
 
 /**
  * Service for parsing fulltext xml files
@@ -73,6 +76,7 @@ public class XMLParserService {
     private static final String ANNOTATION_TARGET = "hasTarget";
     private static final String ANNOTATION_TARGET_RESOURCE = "resource";
     private static final String ANNOTATION_TARGET_XYWHPOS    = "#xywh=";
+    private static final String ANNOTATION_TARGET_NPTIME    = "#t=";
 
     private static final String ANNOTATION_HASBODY = "hasBody";
     private static final String ANNOTATION_HASBODY_RESOURCE = "specificResource";
@@ -80,6 +84,9 @@ public class XMLParserService {
     private static final String ANNOTATION_HASBODY_ATTRIBUTE_VALUE = "resource";
     private static final String ANNOTATION_HASBODY_RESOURCE_CHARPOS = "#char=";
     private static final String ANNOTATION_HASBODY_RESOURCE_LANGUAGE = "language";
+
+    private static final String TARGET      = "target '";
+    private static final String THISANNO    = " - Annotation ";
 
     // parser configuration
     static {
@@ -221,11 +228,11 @@ public class XMLParserService {
      * annotation and do not add it to the AnnoPage. We do log all annotations that are skipped
      * @return true if annotation was processed and added to AnnoPage object, otherwise false
      */
-    private boolean parseAnnotation(XMLEventReader reader, StartElement annotationElement, AnnoPage annoPage,
+    private void parseAnnotation(XMLEventReader reader, StartElement annotationElement, AnnoPage annoPage,
                                     ProgressLogger progressAnnotation, String file)
             throws XMLStreamException {
         Annotation anno = new Annotation();
-        boolean result = false;
+        boolean result;
         try {
             parseAnnotationId(annotationElement, anno);
             while (reader.hasNext()) {
@@ -244,9 +251,9 @@ public class XMLParserService {
                         case ANNOTATION_TARGET    : this.parseAnnotationTarget(se, annoPage, anno); break;
                         default: // do nothing, just skip unknown start elements (e.g. confidence, styledBy)
                     }
-                } else {
+                } // else {
                     // do nothing, just skip other (end) elements until we get to end of annotation
-                }
+                //}
             }
             result = addAnnotationToAnnoPage(annoPage, anno);
             if (progressAnnotation != null) {
@@ -262,14 +269,13 @@ public class XMLParserService {
                 progressAnnotation.addItemFail();
             }
         }
-        return result;
     }
 
     /**
      * Only add the annotation to the list of annotations if:
      * 1. The annotation has an annotation type
-     * 2. The annotation type is 'W', 'B' or 'L' (i.e. NOT 'P') and has a target
-     * 3.    or the annotation type is 'P'
+     * 2. The annotation type is 'W', 'B', 'L' or 'C' (i.e. NOT 'P' NOR 'M') and has a target
+     * 3.    or the annotation type is 'P' or 'M'
      * Note that if there are no text coordinates, we do save it
      * @return true if a new annotation was added to the list, otherwise false
      */
@@ -277,7 +283,7 @@ public class XMLParserService {
         if (anno.getDcType() == Character.MIN_VALUE) {
             throw new MissingDataException("no annotation type defined");
         }
-        if (anno.getDcType() != ANNOTATION_TYPE_PAGE && (anno.getTgs() == null || anno.getTgs().isEmpty())) {
+        if (!anno.isTopLevel() && (anno.getTgs() == null || anno.getTgs().isEmpty())) {
             throw new MissingDataException("no annotation target defined");
         }
 
@@ -345,9 +351,9 @@ public class XMLParserService {
                        parseAnnotationTextCoordinates(se, anno, file, false);
                     } else if (ANNOTATION_HASBODY_RESOURCE_LANGUAGE.equalsIgnoreCase(se.getName().getLocalPart())) {
                         parseAnnotationTextLanguage(reader.getElementText(), anno);
-                    } else {
+                    } // else {
                        // we simply ignore unknown elements here like 'hasSource' and 'styleClass'
-                    }
+                    //}
                 }
             }
         }
@@ -367,11 +373,11 @@ public class XMLParserService {
         }
 
         if (att == null || StringUtils.isEmpty(att.getValue())) {
-            LogFile.OUT.warn(file + " - Annotation " +anno.getAnId() + " has no specific resource text defined");
-        } else if (anno.getDcType() != ANNOTATION_TYPE_PAGE){
+            LogFile.OUT.warn(file + THISANNO + anno.getAnId() + " has no specific resource text defined");
+        } else if (!anno.isTopLevel()){
             String[] urlAndCoordinates = att.getValue().split(ANNOTATION_HASBODY_RESOURCE_CHARPOS);
             if (urlAndCoordinates.length == 1) {
-                LogFile.OUT.warn(file + " - Annotation " +anno.getAnId() + " has no " +
+                LogFile.OUT.warn(file + THISANNO + anno.getAnId() + " has no " +
                         ANNOTATION_HASBODY_RESOURCE_CHARPOS + " defined in resource text " + att.getValue());
             } else {
                 String[] fromTo = urlAndCoordinates[1].split(",");
@@ -384,7 +390,7 @@ public class XMLParserService {
     private enum FromTo { FROM, TO }
     private void parseFromToInteger(String value, FromTo fromTo, Annotation anno, String file) {
         if (StringUtils.isEmpty(value)) {
-            LogFile.OUT.warn(file + " - Annotation " + anno.getAnId() + " has empty resource text " + fromTo + " value");
+            LogFile.OUT.warn(file + THISANNO + anno.getAnId() + " has empty resource text " + fromTo + " value");
         } else {
             try {
                 if (FromTo.FROM.equals(fromTo)) {
@@ -393,7 +399,7 @@ public class XMLParserService {
                     anno.setTo(Integer.valueOf(value));
                 }
             } catch (NumberFormatException nfe) {
-                LogFile.OUT.error(file + " - Annotation " + anno.getAnId() + " resource text " + fromTo +
+                LogFile.OUT.error(file + THISANNO + anno.getAnId() + " resource text " + fromTo +
                         " value '" + value + "' is not an integer");
             }
         }
@@ -409,7 +415,8 @@ public class XMLParserService {
     }
 
     /**
-     * The hasTarget tag should have an attribute with as value the image url and coordinates.
+     * The hasTarget tag should have an attribute with as value either an image url and coordinates or
+     * a media url and start, stop NormalPlayTime strings (#t=HH:mm:ss.SSS,HH:mm:ss.SSS)
      * Note that we only need this for
      * Also coordinates and image url are required, hence the validity checks
      */
@@ -420,11 +427,22 @@ public class XMLParserService {
             throw new MissingDataException("no annotation target url defined");
         }
 
+        String[] urlAndCoordinates;
+        String annotationTargetSpecifier;
+
+
+        if (anno.isMedia()){
+            annotationTargetSpecifier = ANNOTATION_TARGET_NPTIME;
+        } else {
+            annotationTargetSpecifier = ANNOTATION_TARGET_XYWHPOS;
+        }
+
         // parse the target url
-        String[] urlAndCoordinates = att.getValue().split(ANNOTATION_TARGET_XYWHPOS);
-        // for Page annotations the target is optional, for all others it is required
-        if (anno.getDcType() != ANNOTATION_TYPE_PAGE && urlAndCoordinates.length == 1) {
-            throw new MissingDataException("no " + ANNOTATION_TARGET_XYWHPOS + " defined in target url " + att.getValue());
+        urlAndCoordinates = att.getValue().split(annotationTargetSpecifier);
+
+        // for 'top level' annotations the target is optional, for all others it is required
+        if (!anno.isTopLevel() && urlAndCoordinates.length == 1) {
+            throw new MissingDataException("no " + annotationTargetSpecifier + " defined in target url " + att.getValue());
         }
 
         // we only need to set the imageUrl once in the AnnoPage object, all subsequent annotations will have the same url
@@ -434,7 +452,7 @@ public class XMLParserService {
 
         // set target
         if (urlAndCoordinates.length > 1) {
-            Target t = createTarget(urlAndCoordinates[1]);
+            Target t = createTarget(urlAndCoordinates[1], anno.isMedia());
             if (anno.getTgs() == null) {
                 anno.setTgs(new ArrayList<>());
             }
@@ -442,20 +460,60 @@ public class XMLParserService {
         }
     }
 
-    private Target createTarget(String coordinates) throws LoaderException {
+    private Target createTarget(String coordinates, boolean isMedia) throws LoaderException {
+
         String[] separatedCoordinates = coordinates.split(",");
-        if (separatedCoordinates.length != 4) {
-            throw new IllegalValueException("target '" + coordinates +
-                    "' doesn't have 4 integers separated with a comma");
+
+        if (isMedia){
+            if (separatedCoordinates.length != 2) {
+                throw new IllegalValueException(TARGET + coordinates +  "' must contain 2 NormalPlayTime-formatted " +
+                                                "parameters for start and end time, separated with a comma");
+            }
+            try {
+                NormalPlayTime nptStart = NormalPlayTime.parse(checkNPTFormat(separatedCoordinates[0]));
+                NormalPlayTime nptEnd   = NormalPlayTime.parse(checkNPTFormat(separatedCoordinates[1]));
+                if (nptStart != null && nptEnd != null) {
+                    int start = (int) nptStart.getTimeOffsetMs();
+                    int end   = (int) nptEnd.getTimeOffsetMs();
+                    if (start != end && end > 0){
+                        return new Target(start, end);
+                    } else {
+                        throw new IllegalValueException(TARGET + coordinates +  "' start & end time should be different " +
+                                                        "and the end time should be greater than 0");
+                    }
+                } else {
+                    throw new LoaderException("Error occurred processing the start & end time of " + TARGET + coordinates);
+                }
+
+            } catch (ParseException e) {
+                throw new IllegalValueException(TARGET + coordinates +  "' must contain 2 NormalPlayTime-formatted " +
+                                                "parameters for start and end time, separated with a comma");
+            }
+
+        } else {
+
+            if (separatedCoordinates.length != 4) {
+                    throw new IllegalValueException(TARGET + coordinates +
+                        "' doesn't have 4 integers separated with a comma");
+            }
+            try {
+                return new Target(Integer.valueOf(separatedCoordinates[0]),
+                                  Integer.valueOf(separatedCoordinates[1]),
+                                  Integer.valueOf(separatedCoordinates[2]),
+                                  Integer.valueOf(separatedCoordinates[3]));
+            } catch (NumberFormatException nfe) {
+                    throw new IllegalValueException(TARGET + coordinates +
+                        "' doesn't have 4 integers separated with a comma");
+            }
         }
-        try {
-            return new Target(Integer.valueOf(separatedCoordinates[0]),
-                              Integer.valueOf(separatedCoordinates[1]),
-                              Integer.valueOf(separatedCoordinates[2]),
-                              Integer.valueOf(separatedCoordinates[3]));
-        } catch (NumberFormatException nfe) {
-            throw new IllegalValueException("target '" + coordinates +
-                    "' doesn't have 4 integers separated with a comma");
+    }
+
+    private String checkNPTFormat(String str) throws IllegalValueException {
+        if (str.matches("\\d{2}:\\d{2}:\\d{2}\\.\\d{3}")) {
+            return str;
+        } else {
+            throw new IllegalValueException("target parameter '" + str +
+                                            "' doesn't have the required NormalPlayTime HH:mm:ss.SSS format");
         }
     }
 

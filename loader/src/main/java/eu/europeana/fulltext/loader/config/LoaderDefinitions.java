@@ -5,6 +5,8 @@ package eu.europeana.fulltext.loader.config;
  */
 public class LoaderDefinitions {
 
+    private LoaderDefinitions(){}
+
     public static final String ALL_ARCHIVES               = "all";
 
 }

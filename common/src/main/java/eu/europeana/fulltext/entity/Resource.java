@@ -1,6 +1,6 @@
 package eu.europeana.fulltext.entity;
 
-import org.mongodb.morphia.annotations.*;
+import dev.morphia.annotations.*;
 
 /**
  * Created by luthien on 31/05/2018.

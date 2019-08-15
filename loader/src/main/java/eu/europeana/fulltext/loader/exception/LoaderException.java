@@ -9,6 +9,8 @@ package eu.europeana.fulltext.loader.exception;
  */
 public class LoaderException extends Exception {
 
+    private static final long serialVersionUID = 1975175733718282374L;
+
     public LoaderException(String msg, Throwable t) {
         super(msg, t);
     }

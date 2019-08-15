@@ -80,7 +80,7 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
-        
+
         <!-- for serializing -->
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>

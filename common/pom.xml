@@ -36,9 +36,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.mongodb.morphia</groupId>
-            <artifactId>morphia</artifactId>
-            <version>${morphia.version}</version>
+            <groupId>dev.morphia.morphia</groupId>
+            <artifactId>core</artifactId>
         </dependency>
     </dependencies>
 
