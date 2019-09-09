@@ -3,6 +3,7 @@ package eu.europeana.fulltext.api.web;
 import eu.europeana.fulltext.api.model.JsonErrorResponse;
 import eu.europeana.fulltext.api.service.FTService;
 import eu.europeana.fulltext.api.service.exception.SerializationException;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -34,15 +35,20 @@ public class FTErrorController implements ErrorController {
 
         if (status != null) {
             int statusCode = Integer.parseInt(status.toString());
-            if(statusCode == HttpStatus.NOT_FOUND.value()) {
+            if (statusCode == HttpStatus.NOT_FOUND.value()) {
                 return new ResponseEntity<>(fts.serialise(
                         new JsonErrorResponse("The requested URL: " + requestedPath + " could not be resolved")),
                                             HttpStatus.NOT_FOUND);
+            } else {
+                String message = (StringUtils.isNotBlank(request.getAttribute(RequestDispatcher.ERROR_MESSAGE).toString()) ?
+                                  request.getAttribute(RequestDispatcher.ERROR_MESSAGE).toString() :
+                                  "please check your request, considering the HTTP " + statusCode + " return status");
+                return new ResponseEntity<>(fts.serialise(
+                        new JsonErrorResponse(message)),
+                        HttpStatus.valueOf(statusCode));
             }
         }
-        return new ResponseEntity<>(fts.serialise(
-                new JsonErrorResponse("It seems that an unexpected error occurred.")),
-                                        HttpStatus.INTERNAL_SERVER_ERROR);
+        return null;
     }
 
     @Override
