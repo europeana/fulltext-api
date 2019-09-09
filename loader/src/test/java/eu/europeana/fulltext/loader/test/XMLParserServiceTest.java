@@ -80,13 +80,13 @@ public class XMLParserServiceTest {
         assertEquals("BibliographicResource_3000118435009", annoPage1.getLcId());
         assertEquals("1", annoPage1.getPgId());
         assertEquals("https://iiif.europeana.eu/image/7PFJIT3P3MO3RSA24XZ64IVYNMSV7MGXXR3MMBFNL7FLYHTKVHKQ/presentation_images/d0127a20-02ca-11e6-a651-fa163e2dd531/node-3/image/BNL/La_clef_du_cabinet_des_princes_de_l'Europe/1724/09/01/00161/full/full/0/default.jpg",
-                     annoPage1.getTgtId());
+            annoPage1.getTgtId());
 
         assertEquals("9200357", annoPage2.getDsId());
         assertEquals("BibliographicResource_3000095247417", annoPage2.getLcId());
         assertEquals("2", annoPage2.getPgId());
         assertEquals("https://iiif.europeana.eu/image/5IA65CDOF34YRLIMTNOKBCOKRE55MMCUPIBRPZVBNCREWXJ6STHA/presentation_images/2dea77e0-0232-11e6-a696-fa163e2dd531/node-1/image/NLP/Głos_Śląski/1916/06/22/dodatek/00642/full/full/0/default.jpg",
-                     annoPage2.getTgtId());
+            annoPage2.getTgtId());
     }
 
     /**

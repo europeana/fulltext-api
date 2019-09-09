@@ -37,7 +37,7 @@ public class LoaderController {
     @GetMapping(value = "/zipbatch", produces = MediaType.TEXT_PLAIN_VALUE)
     public String zipbatch(@RequestParam(value = "archive", required = true) String archive,
                            @RequestParam(value = "mode", required = false, defaultValue = "INSERT") MongoSaveMode saveMode)
-            throws LoaderException {
+                            throws LoaderException {
         return loadArchiveService.importZipBatch(archive, saveMode);
     }
 

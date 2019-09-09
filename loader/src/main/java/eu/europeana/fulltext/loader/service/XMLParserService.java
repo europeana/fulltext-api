@@ -219,7 +219,7 @@ public class XMLParserService {
             annoPage.getRes().setId(ids[2]);
         } else {
             throw new ConfigurationException(file + " - ENTITY text value '" + ftResourceUrl + "' doesn't start with configured" +
-                                             "resource base url '" + settings.getResourceBaseUrl() + "'");
+                    "resource base url '" + settings.getResourceBaseUrl() + "'");
         }
     }
 
@@ -229,7 +229,7 @@ public class XMLParserService {
      * @return true if annotation was processed and added to AnnoPage object, otherwise false
      */
     private void parseAnnotation(XMLEventReader reader, StartElement annotationElement, AnnoPage annoPage,
-                                 ProgressLogger progressAnnotation, String file)
+                                    ProgressLogger progressAnnotation, String file)
             throws XMLStreamException {
         Annotation anno = new Annotation();
         boolean result;
@@ -252,7 +252,7 @@ public class XMLParserService {
                         default: // do nothing, just skip unknown start elements (e.g. confidence, styledBy)
                     }
                 } // else {
-                // do nothing, just skip other (end) elements until we get to end of annotation
+                    // do nothing, just skip other (end) elements until we get to end of annotation
                 //}
             }
             result = addAnnotationToAnnoPage(annoPage, anno);
@@ -348,11 +348,11 @@ public class XMLParserService {
                 } else if (e.isStartElement()) {
                     StartElement se = (StartElement) e;
                     if (ANNOTATION_HASBODY_RESOURCE.equalsIgnoreCase(se.getName().getLocalPart())) {
-                        parseAnnotationTextCoordinates(se, anno, file, false);
+                       parseAnnotationTextCoordinates(se, anno, file, false);
                     } else if (ANNOTATION_HASBODY_RESOURCE_LANGUAGE.equalsIgnoreCase(se.getName().getLocalPart())) {
                         parseAnnotationTextLanguage(reader.getElementText(), anno);
                     } // else {
-                    // we simply ignore unknown elements here like 'hasSource' and 'styleClass'
+                       // we simply ignore unknown elements here like 'hasSource' and 'styleClass'
                     //}
                 }
             }
@@ -378,7 +378,7 @@ public class XMLParserService {
             String[] urlAndCoordinates = att.getValue().split(ANNOTATION_HASBODY_RESOURCE_CHARPOS);
             if (urlAndCoordinates.length == 1) {
                 LogFile.OUT.warn(file + THISANNO + anno.getAnId() + " has no " +
-                                 ANNOTATION_HASBODY_RESOURCE_CHARPOS + " defined in resource text " + att.getValue());
+                        ANNOTATION_HASBODY_RESOURCE_CHARPOS + " defined in resource text " + att.getValue());
             } else {
                 String[] fromTo = urlAndCoordinates[1].split(",");
                 parseFromToInteger(fromTo[0], FromTo.FROM, anno, file);
@@ -400,7 +400,7 @@ public class XMLParserService {
                 }
             } catch (NumberFormatException nfe) {
                 LogFile.OUT.error(file + THISANNO + anno.getAnId() + " resource text " + fromTo +
-                                  " value '" + value + "' is not an integer");
+                        " value '" + value + "' is not an integer");
             }
         }
     }
@@ -493,8 +493,8 @@ public class XMLParserService {
         } else {
 
             if (separatedCoordinates.length != 4) {
-                throw new IllegalValueException(TARGET + coordinates +
-                                                "' doesn't have 4 integers separated with a comma");
+                    throw new IllegalValueException(TARGET + coordinates +
+                        "' doesn't have 4 integers separated with a comma");
             }
             try {
                 return new Target(Integer.valueOf(separatedCoordinates[0]),
@@ -502,8 +502,8 @@ public class XMLParserService {
                                   Integer.valueOf(separatedCoordinates[2]),
                                   Integer.valueOf(separatedCoordinates[3]));
             } catch (NumberFormatException nfe) {
-                throw new IllegalValueException(TARGET + coordinates +
-                                                "' doesn't have 4 integers separated with a comma");
+                    throw new IllegalValueException(TARGET + coordinates +
+                        "' doesn't have 4 integers separated with a comma");
             }
         }
     }

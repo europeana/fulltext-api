@@ -48,11 +48,11 @@ public class MongoService {
             long newAnnoPageCount = annoPageRepository.count();
             if (resourceCount + apList.size() != newResourceCount) {
                 LogFile.OUT.warn("Expected number of resource in database is {}, but actual number is {}",
-                                 resourceCount + apList.size(), newResourceCount);
+                        resourceCount + apList.size(), newResourceCount);
             }
             if (annoPageCount + apList.size() != newAnnoPageCount) {
                 LogFile.OUT.warn("Expected number of annotation pages in database is {}, but actual number is {}",
-                                 annoPageCount + apList.size(), annoPageCount);
+                        annoPageCount + apList.size(), annoPageCount);
             }
         }
         LOG.debug("Saving done.");
