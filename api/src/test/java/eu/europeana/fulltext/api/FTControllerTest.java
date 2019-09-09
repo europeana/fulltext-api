@@ -208,7 +208,7 @@ public class FTControllerTest {
 
         this.mockMvc.perform(get("/presentation/makkers/staakt_uw/annopage/wild_geraasch")
                                      .header("Accept",
-                                             "application/ld+json;profile=\"" + MEDIA_TYPE_IIIF_V3 +" \""))
+                                             "application/ld+json;profile=\"" + MEDIA_TYPE_IIIF_V3 + " \""))
                     .andExpect(status().isOk())
                     .andExpect(header().string(HEADER_CONTENTTYPE,
                                                containsString("profile=\"" + MEDIA_TYPE_IIIF_V3 + "\"")))
@@ -245,7 +245,7 @@ public class FTControllerTest {
                     .andDo(print());
 
         this.mockMvc.perform(get("/presentation/let_me_take_you_down/cause_im_going_to/anno/an3")
-                                     .header("Accept", "application/ld+json;profile=\""+MEDIA_TYPE_IIIF_V2+"\""))
+                                     .header("Accept", "application/ld+json;profile=\"" + MEDIA_TYPE_IIIF_V2 + "\""))
                     .andExpect(status().isOk())
                     .andExpect(header().string(HEADER_CONTENTTYPE,
                                                containsString("profile=\"" + MEDIA_TYPE_IIIF_V2 + "\"")))
@@ -253,7 +253,7 @@ public class FTControllerTest {
                     .andDo(print());
 
         this.mockMvc.perform(get("/presentation/strawberry_fields/nothing_is_real/anno/an2")
-                                     .header("Accept", "application/ld+json;profile=\""+MEDIA_TYPE_IIIF_V3+"\""))
+                                     .header("Accept", "application/ld+json;profile=\"" + MEDIA_TYPE_IIIF_V3 + "\""))
                     .andExpect(status().isOk())
                     .andExpect(header().string(HEADER_CONTENTTYPE,
                                                containsString("profile=\"" + MEDIA_TYPE_IIIF_V3 + "\"")))
@@ -293,7 +293,6 @@ public class FTControllerTest {
      */
     @Test
     public void testIfNoneMatchAnnoPage() throws Exception {
-
 
         // matching ETag: should return HTTP 304. Also tests if the controller returns the regular headers
         this.mockMvc.perform(get("/presentation/bombombom/heskoembelge/annopage/gevettakkegareziet")
@@ -346,7 +345,6 @@ public class FTControllerTest {
                     .andExpect(content().json(JSONLD_ANP_V3_OUTPUT))
                     .andExpect(status().isOk())
                     .andDo(print());
-
     }
 
     /**
@@ -401,7 +399,6 @@ public class FTControllerTest {
      */
     @Test
     public void testIfNoneMatchAnno() throws Exception {
-
 
         // matching ETag: should return HTTP 304. Also tests if the controller returns the regular headers
         this.mockMvc.perform(get("/presentation/dikkertjedap/zatopdetrap/anno/an1")

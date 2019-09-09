@@ -34,7 +34,7 @@ class TestUtils {
     private static final String RESOURCEBASEURL     = "http://data.europeana.eu/fulltext/";
     private static final String IIIFBASEURL         = "https://iiif.europeana.eu/presentation/";
     private static final String ANNOTATIONBASEURL   = "https://data.europeana.eu/annotation/";
-    
+
     static final String KUCKEBACKENWOLLTE       = "Es war einmal eine Frau, die diese sogenannte 'Kucken' unbedingt backen wollte";
     static final String WUERDEJANICHTAUFGEHEN   = "Aber das Teig würde ja gar nicht aufgehen! Himmeldonnerwetter!";
 
