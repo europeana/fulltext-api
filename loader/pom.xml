@@ -5,13 +5,13 @@
     <parent>
         <artifactId>fulltext</artifactId>
         <groupId>eu.europeana</groupId>
-        <version>0.5</version>
+        <version>0.6</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <groupId>eu.europeana.fulltext</groupId>
     <artifactId>loader</artifactId>
-    <version>0.5</version>
+    <version>0.6</version>
     <packaging>war</packaging>
 
     <name>Europeana Newspapers Fulltext Loader</name>
@@ -19,7 +19,7 @@
 
     <properties>
         <spring.boot.mainclass>eu.europeana.fulltext.loader.LoaderApplication</spring.boot.mainclass>
-        <spring-boot.version>2.0.2.RELEASE</spring-boot.version>
+        <json-path.version>2.4.0</json-path.version>
         <timestamp>${maven.build.timestamp}</timestamp>
         <maven.build.timestamp.format>yyyy-MM-dd-HH:mm</maven.build.timestamp.format>
     </properties>
@@ -28,7 +28,7 @@
         <dependency>
             <groupId>eu.europeana.fulltext</groupId>
             <artifactId>api</artifactId>
-            <version>0.5</version>
+            <version>0.6</version>
             <classifier>classes</classifier>
         </dependency>
 
@@ -76,11 +76,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-rest</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.mongodb.morphia</groupId>
-            <artifactId>morphia</artifactId>
-            <version>${morphia.version}</version>
-        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -95,17 +90,17 @@
         </dependency>
 
         <!-- for parsing record json -->
-        <dependency>
-            <groupId>com.jayway.jsonpath</groupId>
-            <artifactId>json-path</artifactId>
-            <version>${json-path.version}</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>slf4j-api</artifactId>
-                    <groupId>org.slf4j</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
+        <!--<dependency>-->
+<!--            <groupId>com.jayway.jsonpath</groupId>-->
+<!--            <artifactId>json-path</artifactId>-->
+<!--            <version>${json-path.version}</version>-->
+            <!--<exclusions>-->
+                <!--<exclusion>-->
+<!--                    <artifactId>slf4j-api</artifactId>-->
+                    <!--<groupId>org.slf4j</groupId>-->
+                <!--</exclusion>-->
+            <!--</exclusions>-->
+        <!--</dependency>-->
 
         <!-- StringUtils -->
         <dependency>
@@ -113,42 +108,6 @@
             <artifactId>commons-lang3</artifactId>
             <version>${commons-lang3.version}</version>
         </dependency>
-
-        <!--<dependency>-->
-        <!--<groupId>org.springframework.boot</groupId>-->
-        <!--<artifactId>spring-boot-starter-data-mongodb</artifactId>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-        <!--<groupId>io.github.ganchix</groupId>-->
-        <!--<artifactId>morphia-spring-boot</artifactId>-->
-        <!--<version>${morphia-spring-boot.version}</version>-->
-        <!--</dependency>-->
-
-        <!-- for serializing -->
-        <!--<dependency>-->
-            <!--<groupId>com.fasterxml.jackson.dataformat</groupId>-->
-            <!--<artifactId>jackson-dataformat-xml</artifactId>-->
-            <!--<version>${jackson.version}</version>-->
-        <!--</dependency>-->
-
-        <!-- see https://github.com/io-informatics/jackson-jsonld -->
-        <!--<dependency>-->
-            <!--<groupId>com.io-informatics.oss</groupId>-->
-            <!--<artifactId>jackson-jsonld</artifactId>-->
-            <!--<version>${io-informatics.version}</version>-->
-            <!--<exclusions>-->
-                <!--<exclusion>-->
-                    <!--<groupId>org.slf4j</groupId>-->
-                    <!--<artifactId>jcl-over-slf4j</artifactId>-->
-                <!--</exclusion>-->
-            <!--</exclusions>-->
-        <!--</dependency>-->
-
-        <!--<dependency>-->
-            <!--<groupId>org.apache.commons</groupId>-->
-            <!--<artifactId>commons-collections4</artifactId>-->
-            <!--<version>${commons-collections4.version}</version>-->
-        <!--</dependency>-->
 
         <dependency>
             <groupId>commons-io</groupId>
@@ -160,12 +119,6 @@
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
             <version>2.9.9</version>
-        </dependency>
-
-        <dependency>
-            <groupId>de.flapdoodle.embed</groupId>
-            <artifactId>de.flapdoodle.embed.mongo</artifactId>
-            <scope>test</scope>
         </dependency>
 
         <dependency>

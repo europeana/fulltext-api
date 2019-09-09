@@ -1,1113 +1,1108 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE RDF [
-<!ENTITY text  "http://data.europeana.eu/fulltext/9200396/BibliographicResource_3000118435009/575eecd7bc65dabe3ca7881001a22e03" >
-<!ENTITY img   "https://iiif.europeana.eu/image/7PFJIT3P3MO3RSA24XZ64IVYNMSV7MGXXR3MMBFNL7FLYHTKVHKQ/presentation_images/d0127a20-02ca-11e6-a651-fa163e2dd531/node-3/image/BNL/La_clef_du_cabinet_des_princes_de_l&apos;Europe/1724/09/01/00161/full/full/0/default.jpg" >
-<!ENTITY motv  "http://www.w3.org/ns/oa#transcribing" >
-<!ENTITY style  "https://test-solr-mongo.eanadev.org/newspapers/fulltext/styles/fulltext.css" >
-]>
+		<!ENTITY text  "http://data.europeana.eu/fulltext/9200396/BibliographicResource_3000118435009/575eecd7bc65dabe3ca7881001a22e03" >
+		<!ENTITY img   "https://iiif.europeana.eu/image/7PFJIT3P3MO3RSA24XZ64IVYNMSV7MGXXR3MMBFNL7FLYHTKVHKQ/presentation_images/d0127a20-02ca-11e6-a651-fa163e2dd531/node-3/image/BNL/La_clef_du_cabinet_des_princes_de_l&apos;Europe/1724/09/01/00161/full/full/0/default.jpg" >
+		<!ENTITY motv  "http://www.w3.org/ns/oa#transcribing" >
+		<!ENTITY style  "https://test-solr-mongo.eanadev.org/newspapers/fulltext/styles/fulltext.css" >
+		]>
 <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-         xmlns:edm="http://www.europeana.eu/schemas/edm/"
-         xmlns:dc="http://purl.org/dc/elements/1.1/"
-         xmlns:oa="http://www.w3.org/ns/oa#"
-         xmlns:nif="http://persistence.uni-leipzig.org/nlp2rdf/ontologies/nif-core#"
-
-         xml:base="http://data.europeana.eu/annotation/9200396/BibliographicResource_3000118435009">
-
-<edm:FullTextResource rdf:about="&text;">
-	<dc:language>fr</dc:language>
-	<rdf:value>LA CLEF DU CABINET&#xA;DES PRINCES&#xA;DE L’EUROPE,&#xA;Ou Recueil Hiftorique 8c Politique IÙS les Matières du tems.&#xA;SEPTEMBRE&#xA;A LUXEMBOURG, Chez André’ Chevalier , Imprimeur de Sa Majefté Impériale &amp; Catholique  , 6c Marchand Libraire.&#xA;M. DCC. XXIV.&#xA;Avec Privilège de Sa Sacrée Majefté lmperialt &amp; Catholique , Çft Approbation dn Gemmifl/iire üxaminattur^</rdf:value>
-</edm:FullTextResource>
-
-<oa:Annotation rdf:ID="/64764db9df0b1e87843b2fa3fec0a384">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.77</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=0,2">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-26</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=313,239,174,74"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/01c67568b8b4593d47cb983d198654ed">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.7</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=3,7">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-26</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=573,235,378,80"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/dade1fce5c17ff15081e2725d4cfb9ab">
-	<dc:type>Line</dc:type>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=0,7">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-26</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=313,235,638,80"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/77fc956e2a2d58e00af5413fbab467fe">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.385</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=8,10">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-28</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=273,349,176,82"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/f452286d83fdb0466d9e1546e01fe95e">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.6157143</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=11,18">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-28</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=479,345,520,92"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/3c461ee4a4b9e4179a5590ccf66175b4">
-	<dc:type>Line</dc:type>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=8,18">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-28</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=273,345,726,92"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/bdcde2dc4369fb26a52f710aab730222">
-	<dc:type>Block</dc:type>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=0,18">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-26</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=266,229,737,214"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/2103e9329d8d53cb18a3b96e2ed2c4d4">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.68333334</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=19,22">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-17</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=337,485,132,48"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/6a3efe2972fea9f6aa3fbe2cb6f42008">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.57285714</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=23,30">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-17</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=533,483,384,52"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/c5149d7cfad6082154d19d85c7af1279">
-	<dc:type>Line</dc:type>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=19,30">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-17</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=337,483,580,52"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/a0271690a559d2a4cb6e2b549e5199d8">
-	<dc:type>Block</dc:type>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=19,30">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-17</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=331,476,591,65"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/9d4e88594845a893c00b30bdb68e7689">
-	<dc:type>Word</dc:type>
-	<nif:confidence>1.0</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=31,33">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-14</oa:styleClass>
-			<oa:styleClass>bold</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=413,594,82,38"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/571ab9f54ae0125262b51f532eb33243">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.5922222</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=34,43">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-14</oa:styleClass>
-			<oa:styleClass>bold</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=527,592,330,48"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/a64ccf3cb3a94c51a7bb7ea0ef2a1dd8">
-	<dc:type>Line</dc:type>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=31,43">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-14</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=413,592,444,48"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/531b3d0b12a4982bdab51216c3f8e394">
-	<dc:type>Block</dc:type>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=31,43">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-14</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=407,586,456,60"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/5fbd7ce7fa5fc07c7c11f0178a25c23f">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.63</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=44,46">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=267,675,56,32"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/9335e1ddae6d620ab8a7ae63b9332faf">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.45857143</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=47,54">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=349,674,138,33"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/dcdd8a3383841a17b9b2c3e67d43a696">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.424</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=55,65">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=513,675,189,45"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/36a34cfe66de2f2ac4a4a8a0597a627a">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.5</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=66,68">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-			<oa:styleClass>bold</oa:styleClass>
-			<oa:styleClass>italics</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=716,677,36,29"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/cc4974debad387f25311268d37634c6d">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.4211111</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=69,78">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=768,673,162,47"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/85c9ee9278613831b1d22f00207ebbc7">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.42333335</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=79,82">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=947,671,53,35"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/d036efe692fc4dcceb89f8c9cc8937d7">
-	<dc:type>Line</dc:type>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=44,82">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=267,671,733,49"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/b5cea583f4f36e75f779e4d4a7df7b78">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.43666667</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=83,86">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=444,720,46,35"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/030ecbf808e1664d69b30e66b2a1a53d">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.4275</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=87,95">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=506,722,150,33"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/61ad55f47a0b317d64711139cfec9165">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.335</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=96,98">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=671,720,44,36"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/a1190872d4decd0006e4fc348b60bf88">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.528</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=99,104">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=730,732,90,24"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/25a9ef90b2dbc278fa3b5189bce2a0d1">
-	<dc:type>Line</dc:type>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=83,104">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=444,720,376,36"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/e43d3beda67080ddacfa78dd9b1e09a2">
-	<dc:type>Block</dc:type>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=44,104">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=261,665,745,98"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/b2b54ed780d23fbd4c69a3edb6073c17">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.4611111</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=105,114">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=329,806,452,35"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/cecb1b7b45f029f5ed9d7dbe7c3c10d9">
-	<dc:type>Line</dc:type>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=105,114">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=329,806,452,35"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/9c7503dee7c678912a1e5500f23669bf">
-	<dc:type>Block</dc:type>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=105,114">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=328,803,455,40"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/71c29a428639c5cbec38f92177086360">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.86</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=115,116">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=378,1336,29,29"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/ee36aef4754a895d3d842d08152dfacf">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.67545456</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=117,128">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=459,1332,414,39"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/e2756b2b2a542fc502f8375c033625d1">
-	<dc:type>Line</dc:type>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=115,128">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=378,1332,495,39"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/45d6af3c2aed28a616d565e20c0d4aa8">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.2425</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=129,133">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=262,1380,90,36"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/b760f996c69595f9ec42037dc8c6b4d6">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.58</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=134,140">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-9</oa:styleClass>
-			<oa:styleClass>smallcaps</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=381,1383,133,31"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/cece01f10d04ddd1c4247cdc926d9f9c">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.59444445</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=141,150">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-9</oa:styleClass>
-			<oa:styleClass>smallcaps</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=542,1381,203,33"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/619244b3f723b980601c0dbb8486c711">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.61</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=151,152">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=762,1405,11,13"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/e3705118533c29fe78893d7d0d040a6c">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.5</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=153,162">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=800,1379,188,46"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/89407e3460c1d158f1c466f51d6797b2">
-	<dc:type>Line</dc:type>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=129,162">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=262,1379,726,46"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/215b28f6e87182c109d5dd66a2375b15">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.43</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=163,165">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=307,1428,39,33"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/63c840f6e03a0ee432babe933fa2ddc8">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.46</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=166,168">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=363,1430,40,31"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/fd57628086a78003998f8cf3777f6e55">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.31285715</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=169,176">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=420,1429,132,42"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/fa1b7c1d127f90f67870e00157363ab4">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.5988889</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=177,186">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=561,1426,168,48"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/97ad23b66ba91becdd491be8e5ade988">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.79</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=187,188">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=746,1430,35,29"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/d10b792f3170d6b9f1628729c08fa293">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.5566667</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=189,199">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=793,1425,133,34"/>
-	<oa:hasTarget rdf:resource="&img;#xywh=377,1488,63,33"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/5b4e68c428c02e01adb78d8242d419c4">
-	<dc:type>Line</dc:type>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=163,199">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=307,1425,633,49"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/8e979f09979db9d433ca46e4d845443c">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.55</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=201,202">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=451,1502,10,13"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/c3af101243dbdc295607ed209115ae12">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.17</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=203,205">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-			<oa:styleClass>bold</oa:styleClass>
-			<oa:styleClass>italics</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=472,1479,35,30"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/da1b24f66cea20c960a5d1f71d91782d">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.77125</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=206,214">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=525,1474,181,35"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/d9fdf9f402a7db670340ca2c562beb99">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.5088889</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=215,224">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=721,1473,149,34"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/da547bf4a6b09ec301e3ac4507ebbd3c">
-	<dc:type>Line</dc:type>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=200,224">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=377,1473,493,48"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/8a0b1f63f358be5b5a6bf5884ed745bf">
-	<dc:type>Block</dc:type>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=115,224">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=255,1324,740,203"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/c92488bfd1b359b2d941aa00253297a8">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.695</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=225,227">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=460,1559,49,31"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/8f42f0fa09a2e24418fb3aeb92390fb8">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.69</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=228,232">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=535,1559,105,32"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/6b995f695b6553a314399b5f06c38eac">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.676</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=233,238">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=664,1559,124,33"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/ce7e3e40bbbee6754a18de30c9fc8a0c">
-	<dc:type>Line</dc:type>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=225,238">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=460,1559,328,33"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/7d0474816ab920a75b33f007b0f2beae">
-	<dc:type>Block</dc:type>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=225,238">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-11</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=454,1552,340,46"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/5a43f89bd82c18c97c3feaaeeab2bb28">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.565</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=239,243">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-9</oa:styleClass>
-			<oa:styleClass>bold</oa:styleClass>
-			<oa:styleClass>italics</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=282,1605,78,27"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/26f156ca490928ba2f1af1890aa461f7">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.5377778</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=244,253">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-8</oa:styleClass>
-			<oa:styleClass>italics</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=376,1605,128,37"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/860675970cfac9ce23f1d12c2818ad96">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.155</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=254,256">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-8</oa:styleClass>
-			<oa:styleClass>italics</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=517,1608,29,25"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/16ba32e284d5da110833fcb630db0f00">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.66</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=257,259">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-8</oa:styleClass>
-			<oa:styleClass>italics</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=563,1610,32,23"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/b714bb6e224c9e5d0e037861789d8f3a">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.39333335</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=260,266">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-8</oa:styleClass>
-			<oa:styleClass>italics</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=610,1611,85,22"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/38cb91d0db50c4325026939d992dd9c4">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.6942857</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=267,274">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-9</oa:styleClass>
-			<oa:styleClass>bold</oa:styleClass>
-			<oa:styleClass>italics</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=711,1606,108,36"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/05f6870fc3807f6915ffcb1a024fc83c">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.31444445</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=275,284">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-9</oa:styleClass>
-			<oa:styleClass>bold</oa:styleClass>
-			<oa:styleClass>italics</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=829,1605,128,40"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/a0f289c0ffc89bd756735d91c0b9438c">
-	<dc:type>Line</dc:type>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=239,284">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-9</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=282,1605,675,40"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/813eabeabb6a7d831a50509d6757626c">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.15</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=285,286">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-8</oa:styleClass>
-			<oa:styleClass>italics</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=373,1647,33,34"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/fbc0e39b9381873baac2f9550392eab8">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.526</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=287,297">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-8</oa:styleClass>
-			<oa:styleClass>italics</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=422,1647,153,35"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/4cf057ef657c87c410a07ba038abbb2c">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.59</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=298,299">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-8</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=585,1669,6,9"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/c059f72879a65b92d21fc971b21ba79c">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.8</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=300,303">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-8</oa:styleClass>
-			<oa:styleClass>italics</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=602,1647,34,31"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/c28175d4ffe275a8451a68e99f388ce1">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.46</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=304,315">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-9</oa:styleClass>
-			<oa:styleClass>bold</oa:styleClass>
-			<oa:styleClass>italics</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=649,1647,168,37"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/5fd7445faa1acce76466f57513630f0b">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.615</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=316,318">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-9</oa:styleClass>
-			<oa:styleClass>bold</oa:styleClass>
-			<oa:styleClass>italics</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=828,1651,36,26"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/1b51b0714445f9d442f4e230ba712ac1">
-	<dc:type>Line</dc:type>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=285,318">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-9</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=373,1647,491,37"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/258ad097aaf38e8613f4da4762d03745">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.3175</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=319,331">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-9</oa:styleClass>
-			<oa:styleClass>bold</oa:styleClass>
-			<oa:styleClass>italics</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=421,1689,174,37"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/3451e16044cbb15f016e57bf6acbd692">
-	<dc:type>Word</dc:type>
-	<nif:confidence>0.57666665</nif:confidence>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=332,344">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-9</oa:styleClass>
-			<oa:styleClass>bold</oa:styleClass>
-			<oa:styleClass>italics</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=611,1692,195,35"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/ee64f48247faeb36479b161b2947bd87">
-	<dc:type>Line</dc:type>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=319,344">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-9</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=421,1689,385,38"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/d0db672fc7227a00305364fd3ce74e27">
-	<dc:type>Block</dc:type>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:styledBy rdf:resource="&style;"/>
-	<oa:hasBody>
-		<oa:SpecificResource rdf:about="&text;#char=239,344">
-			<oa:hasSource rdf:resource="&text;"/>
-			<oa:styleClass>size-9</oa:styleClass>
-		</oa:SpecificResource>
-	</oa:hasBody>
-	<oa:hasTarget rdf:resource="&img;#xywh=276,1599,688,134"/>
-</oa:Annotation>
-
-<oa:Annotation rdf:ID="/d89c94e39f4a360da26a3fae58ff819a">
-	<dc:type>Page</dc:type>
-	<oa:motivatedBy rdf:resource="&motv;"/>
-	<oa:hasBody rdf:resource="&text;"/>
-	<oa:hasTarget rdf:resource="&img;"/>
-</oa:Annotation>
+		 xmlns:edm="http://www.europeana.eu/schemas/edm/"
+		 xmlns:dc="http://purl.org/dc/elements/1.1/"
+		 xmlns:oa="http://www.w3.org/ns/oa#"
+		 xmlns:nif="http://persistence.uni-leipzig.org/nlp2rdf/ontologies/nif-core#"
+
+		 xml:base="http://data.europeana.eu/annotation/9200396/BibliographicResource_3000118435009">
+
+	<edm:FullTextResource rdf:about="&text;">
+		<dc:language>fr</dc:language>
+		<rdf:value>LA CLEF DU CABINET&#xA;DES PRINCES&#xA;DE L’EUROPE,&#xA;Ou Recueil Hiftorique 8c Politique IÙS les Matières du tems.&#xA;SEPTEMBRE&#xA;A LUXEMBOURG, Chez André’ Chevalier , Imprimeur de Sa Majefté Impériale &amp; Catholique  , 6c Marchand Libraire.&#xA;M. DCC. XXIV.&#xA;Avec Privilège de Sa Sacrée Majefté lmperialt &amp; Catholique , Çft Approbation dn Gemmifl/iire üxaminattur^</rdf:value>
+	</edm:FullTextResource>
+
+	<oa:Annotation rdf:ID="/64764db9df0b1e87843b2fa3fec0a384">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.77</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=0,2">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-26</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=313,239,174,74"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/01c67568b8b4593d47cb983d198654ed">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.7</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=3,7">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-26</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=573,235,378,80"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/dade1fce5c17ff15081e2725d4cfb9ab">
+		<dc:type>Line</dc:type>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=0,7">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-26</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=313,235,638,80"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/77fc956e2a2d58e00af5413fbab467fe">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.385</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=8,10">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-28</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=273,349,176,82"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/f452286d83fdb0466d9e1546e01fe95e">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.6157143</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=11,18">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-28</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=479,345,520,92"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/3c461ee4a4b9e4179a5590ccf66175b4">
+		<dc:type>Line</dc:type>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=8,18">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-28</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=273,345,726,92"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/bdcde2dc4369fb26a52f710aab730222">
+		<dc:type>Block</dc:type>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=0,18">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-26</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=266,229,737,214"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/2103e9329d8d53cb18a3b96e2ed2c4d4">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.68333334</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=19,22">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-17</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=337,485,132,48"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/6a3efe2972fea9f6aa3fbe2cb6f42008">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.57285714</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=23,30">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-17</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=533,483,384,52"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/c5149d7cfad6082154d19d85c7af1279">
+		<dc:type>Line</dc:type>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=19,30">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-17</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=337,483,580,52"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/a0271690a559d2a4cb6e2b549e5199d8">
+		<dc:type>Block</dc:type>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=19,30">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-17</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=331,476,591,65"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/9d4e88594845a893c00b30bdb68e7689">
+		<dc:type>Word</dc:type>
+		<nif:confidence>1.0</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=31,33">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-14</oa:styleClass>
+				<oa:styleClass>bold</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=413,594,82,38"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/571ab9f54ae0125262b51f532eb33243">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.5922222</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=34,43">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-14</oa:styleClass>
+				<oa:styleClass>bold</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=527,592,330,48"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/a64ccf3cb3a94c51a7bb7ea0ef2a1dd8">
+		<dc:type>Line</dc:type>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=31,43">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-14</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=413,592,444,48"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/531b3d0b12a4982bdab51216c3f8e394">
+		<dc:type>Block</dc:type>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=31,43">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-14</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=407,586,456,60"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/5fbd7ce7fa5fc07c7c11f0178a25c23f">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.63</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=44,46">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=267,675,56,32"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/9335e1ddae6d620ab8a7ae63b9332faf">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.45857143</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=47,54">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=349,674,138,33"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/dcdd8a3383841a17b9b2c3e67d43a696">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.424</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=55,65">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=513,675,189,45"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/36a34cfe66de2f2ac4a4a8a0597a627a">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.5</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=66,68">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+				<oa:styleClass>bold</oa:styleClass>
+				<oa:styleClass>italics</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=716,677,36,29"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/cc4974debad387f25311268d37634c6d">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.4211111</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=69,78">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=768,673,162,47"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/85c9ee9278613831b1d22f00207ebbc7">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.42333335</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=79,82">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=947,671,53,35"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/d036efe692fc4dcceb89f8c9cc8937d7">
+		<dc:type>Line</dc:type>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=44,82">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=267,671,733,49"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/b5cea583f4f36e75f779e4d4a7df7b78">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.43666667</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=83,86">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=444,720,46,35"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/030ecbf808e1664d69b30e66b2a1a53d">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.4275</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=87,95">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=506,722,150,33"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/61ad55f47a0b317d64711139cfec9165">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.335</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=96,98">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=671,720,44,36"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/a1190872d4decd0006e4fc348b60bf88">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.528</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=99,104">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=730,732,90,24"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/25a9ef90b2dbc278fa3b5189bce2a0d1">
+		<dc:type>Line</dc:type>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=83,104">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=444,720,376,36"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/e43d3beda67080ddacfa78dd9b1e09a2">
+		<dc:type>Block</dc:type>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=44,104">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=261,665,745,98"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/b2b54ed780d23fbd4c69a3edb6073c17">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.4611111</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=105,114">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=329,806,452,35"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/cecb1b7b45f029f5ed9d7dbe7c3c10d9">
+		<dc:type>Line</dc:type>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=105,114">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=329,806,452,35"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/9c7503dee7c678912a1e5500f23669bf">
+		<dc:type>Block</dc:type>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=105,114">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=328,803,455,40"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/71c29a428639c5cbec38f92177086360">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.86</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=115,116">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=378,1336,29,29"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/ee36aef4754a895d3d842d08152dfacf">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.67545456</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=117,128">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=459,1332,414,39"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/e2756b2b2a542fc502f8375c033625d1">
+		<dc:type>Line</dc:type>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=115,128">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=378,1332,495,39"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/45d6af3c2aed28a616d565e20c0d4aa8">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.2425</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=129,133">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=262,1380,90,36"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/b760f996c69595f9ec42037dc8c6b4d6">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.58</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=134,140">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-9</oa:styleClass>
+				<oa:styleClass>smallcaps</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=381,1383,133,31"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/cece01f10d04ddd1c4247cdc926d9f9c">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.59444445</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=141,150">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-9</oa:styleClass>
+				<oa:styleClass>smallcaps</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=542,1381,203,33"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/619244b3f723b980601c0dbb8486c711">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.61</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=151,152">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=762,1405,11,13"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/e3705118533c29fe78893d7d0d040a6c">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.5</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=153,162">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=800,1379,188,46"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/89407e3460c1d158f1c466f51d6797b2">
+		<dc:type>Line</dc:type>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=129,162">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=262,1379,726,46"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/215b28f6e87182c109d5dd66a2375b15">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.43</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=163,165">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=307,1428,39,33"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/63c840f6e03a0ee432babe933fa2ddc8">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.46</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=166,168">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=363,1430,40,31"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/fd57628086a78003998f8cf3777f6e55">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.31285715</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=169,176">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=420,1429,132,42"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/fa1b7c1d127f90f67870e00157363ab4">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.5988889</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=177,186">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=561,1426,168,48"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/97ad23b66ba91becdd491be8e5ade988">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.79</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=187,188">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=746,1430,35,29"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/d10b792f3170d6b9f1628729c08fa293">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.5566667</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=189,199">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=793,1425,133,34"/>
+		<oa:hasTarget rdf:resource="&img;#xywh=377,1488,63,33"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/5b4e68c428c02e01adb78d8242d419c4">
+		<dc:type>Line</dc:type>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=163,199">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=307,1425,633,49"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/8e979f09979db9d433ca46e4d845443c">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.55</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=201,202">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=451,1502,10,13"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/c3af101243dbdc295607ed209115ae12">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.17</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=203,205">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+				<oa:styleClass>bold</oa:styleClass>
+				<oa:styleClass>italics</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=472,1479,35,30"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/da1b24f66cea20c960a5d1f71d91782d">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.77125</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=206,214">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=525,1474,181,35"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/d9fdf9f402a7db670340ca2c562beb99">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.5088889</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=215,224">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=721,1473,149,34"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/da547bf4a6b09ec301e3ac4507ebbd3c">
+		<dc:type>Line</dc:type>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=200,224">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=377,1473,493,48"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/8a0b1f63f358be5b5a6bf5884ed745bf">
+		<dc:type>Block</dc:type>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=115,224">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=255,1324,740,203"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/c92488bfd1b359b2d941aa00253297a8">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.695</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=225,227">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=460,1559,49,31"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/8f42f0fa09a2e24418fb3aeb92390fb8">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.69</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=228,232">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=535,1559,105,32"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/6b995f695b6553a314399b5f06c38eac">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.676</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=233,238">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=664,1559,124,33"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/ce7e3e40bbbee6754a18de30c9fc8a0c">
+		<dc:type>Line</dc:type>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=225,238">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=460,1559,328,33"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/7d0474816ab920a75b33f007b0f2beae">
+		<dc:type>Block</dc:type>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=225,238">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-11</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=454,1552,340,46"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/5a43f89bd82c18c97c3feaaeeab2bb28">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.565</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=239,243">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-9</oa:styleClass>
+				<oa:styleClass>bold</oa:styleClass>
+				<oa:styleClass>italics</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=282,1605,78,27"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/26f156ca490928ba2f1af1890aa461f7">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.5377778</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=244,253">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-8</oa:styleClass>
+				<oa:styleClass>italics</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=376,1605,128,37"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/860675970cfac9ce23f1d12c2818ad96">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.155</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=254,256">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-8</oa:styleClass>
+				<oa:styleClass>italics</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=517,1608,29,25"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/16ba32e284d5da110833fcb630db0f00">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.66</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=257,259">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-8</oa:styleClass>
+				<oa:styleClass>italics</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=563,1610,32,23"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/b714bb6e224c9e5d0e037861789d8f3a">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.39333335</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=260,266">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-8</oa:styleClass>
+				<oa:styleClass>italics</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=610,1611,85,22"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/38cb91d0db50c4325026939d992dd9c4">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.6942857</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=267,274">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-9</oa:styleClass>
+				<oa:styleClass>bold</oa:styleClass>
+				<oa:styleClass>italics</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=711,1606,108,36"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/05f6870fc3807f6915ffcb1a024fc83c">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.31444445</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=275,284">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-9</oa:styleClass>
+				<oa:styleClass>bold</oa:styleClass>
+				<oa:styleClass>italics</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=829,1605,128,40"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/a0f289c0ffc89bd756735d91c0b9438c">
+		<dc:type>Line</dc:type>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=239,284">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-9</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=282,1605,675,40"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/813eabeabb6a7d831a50509d6757626c">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.15</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=285,286">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-8</oa:styleClass>
+				<oa:styleClass>italics</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=373,1647,33,34"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/fbc0e39b9381873baac2f9550392eab8">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.526</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=287,297">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-8</oa:styleClass>
+				<oa:styleClass>italics</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=422,1647,153,35"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/4cf057ef657c87c410a07ba038abbb2c">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.59</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=298,299">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-8</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=585,1669,6,9"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/c059f72879a65b92d21fc971b21ba79c">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.8</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=300,303">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-8</oa:styleClass>
+				<oa:styleClass>italics</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=602,1647,34,31"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/c28175d4ffe275a8451a68e99f388ce1">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.46</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=304,315">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-9</oa:styleClass>
+				<oa:styleClass>bold</oa:styleClass>
+				<oa:styleClass>italics</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=649,1647,168,37"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/5fd7445faa1acce76466f57513630f0b">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.615</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=316,318">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-9</oa:styleClass>
+				<oa:styleClass>bold</oa:styleClass>
+				<oa:styleClass>italics</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=828,1651,36,26"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/1b51b0714445f9d442f4e230ba712ac1">
+		<dc:type>Line</dc:type>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody rdf:resource="&text;#char=285,318"/>
+		<oa:hasTarget rdf:resource="&img;#xywh=373,1647,491,37"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/258ad097aaf38e8613f4da4762d03745">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.3175</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=319,331">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-9</oa:styleClass>
+				<oa:styleClass>bold</oa:styleClass>
+				<oa:styleClass>italics</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=421,1689,174,37"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/3451e16044cbb15f016e57bf6acbd692">
+		<dc:type>Word</dc:type>
+		<nif:confidence>0.57666665</nif:confidence>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=332,344">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-9</oa:styleClass>
+				<oa:styleClass>bold</oa:styleClass>
+				<oa:styleClass>italics</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=611,1692,195,35"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/ee64f48247faeb36479b161b2947bd87">
+		<dc:type>Line</dc:type>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=319,344">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-9</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=421,1689,385,38"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/d0db672fc7227a00305364fd3ce74e27">
+		<dc:type>Block</dc:type>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:styledBy rdf:resource="&style;"/>
+		<oa:hasBody>
+			<oa:SpecificResource rdf:about="&text;#char=239,344">
+				<oa:hasSource rdf:resource="&text;"/>
+				<oa:styleClass>size-9</oa:styleClass>
+			</oa:SpecificResource>
+		</oa:hasBody>
+		<oa:hasTarget rdf:resource="&img;#xywh=276,1599,688,134"/>
+	</oa:Annotation>
+
+	<oa:Annotation rdf:ID="/d89c94e39f4a360da26a3fae58ff819a">
+		<dc:type>Page</dc:type>
+		<oa:motivatedBy rdf:resource="&motv;"/>
+		<oa:hasBody rdf:resource="&text;"/>
+		<oa:hasTarget rdf:resource="&img;"/>
+	</oa:Annotation>
 
 </rdf:RDF>

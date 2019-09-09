@@ -1,5 +1,6 @@
 package eu.europeana.fulltext.loader.web;
 
+import eu.europeana.fulltext.loader.exception.LoaderException;
 import eu.europeana.fulltext.loader.service.LoadArchiveService;
 import eu.europeana.fulltext.loader.service.MongoSaveMode;
 import eu.europeana.fulltext.loader.service.MongoService;
@@ -30,11 +31,13 @@ public class LoaderController {
 
     /**
      * starts batch importing of a zip-file
-     * @return
+     * @return string describing processing results
+     * @throws LoaderException when there is a problem reading or processing the provided archive file
      */
     @GetMapping(value = "/zipbatch", produces = MediaType.TEXT_PLAIN_VALUE)
     public String zipbatch(@RequestParam(value = "archive", required = true) String archive,
-                           @RequestParam(value = "mode", required = false, defaultValue = "INSERT") MongoSaveMode saveMode) {
+                           @RequestParam(value = "mode", required = false, defaultValue = "INSERT") MongoSaveMode saveMode)
+            throws LoaderException {
         return loadArchiveService.importZipBatch(archive, saveMode);
     }
 

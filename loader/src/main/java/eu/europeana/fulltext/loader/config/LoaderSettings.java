@@ -22,10 +22,20 @@ public class LoaderSettings {
     @Value("${batch.base.directory}")
     private String batchBaseDirectory;
 
+    @Value("${stop.error.save}")
+    private Boolean stopOnSaveError;
+
     public String getResourceBaseUrl() {
         return resourceBaseUrl;
     }
 
     public String getBatchBaseDirectory() { return batchBaseDirectory; }
+
+    /**
+     * @return true if the loader should stop the current loading process when there is an error saving data to Mongo
+     */
+    public Boolean isStopOnSaveError() {
+        return stopOnSaveError;
+    }
 
 }

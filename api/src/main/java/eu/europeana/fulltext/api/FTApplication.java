@@ -42,6 +42,8 @@ public class FTApplication extends SpringBootServletInitializer {
 	 */
 	@SuppressWarnings("squid:S2095") // to avoid sonarqube false positive (see https://stackoverflow.com/a/37073154/741249)
 	public static void main(String[] args)  {
+		LogManager.getLogger(FTApplication.class).info("CF_INSTANCE_INDEX  = {}, CF_INSTANCE_GUID = {}, CF_INSTANCE_IP  = {}",
+				System.getenv("CF_INSTANCE_INDEX"), System.getenv("CF_INSTANCE_GUID"), System.getenv("CF_INSTANCE_IP"));
 		try {
 			injectSocksProxySettings();
 			SpringApplication.run(FTApplication.class, args);
@@ -58,6 +60,8 @@ public class FTApplication extends SpringBootServletInitializer {
 	 */
 	@Override
 	public void onStartup(ServletContext servletContext) throws ServletException {
+		LogManager.getLogger(FTApplication.class).info("CF_INSTANCE_INDEX  = {}, CF_INSTANCE_GUID = {}, CF_INSTANCE_IP  = {}",
+				System.getenv("CF_INSTANCE_INDEX"), System.getenv("CF_INSTANCE_GUID"), System.getenv("CF_INSTANCE_IP"));
 		try {
 			injectSocksProxySettings();
 			super.onStartup(servletContext);

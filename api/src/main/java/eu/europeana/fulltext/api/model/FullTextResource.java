@@ -22,7 +22,7 @@ public class FullTextResource extends JsonLdIdType implements Serializable {
 
 
     private FullTextResource(String id) {
-        super(id, EDM_FULLTESTRESOURCE_TYPE);
+        super(id, EDM_FULLTEXTRESOURCE_TYPE);
     }
 
     public FullTextResource(String id, String language, String value) {

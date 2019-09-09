@@ -1,5 +1,6 @@
 package eu.europeana.fulltext.api;
 
+import eu.europeana.fulltext.api.model.FullTextResource;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Annotation;
 import eu.europeana.fulltext.entity.Resource;
@@ -19,6 +20,7 @@ import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Date;
 
+import static eu.europeana.fulltext.api.FTControllerTest.*;
 import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_EDM_JSONLD;
 import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_IIIF_V2;
 import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_IIIF_V3;
@@ -33,6 +35,9 @@ class TestUtils {
     private static final String IIIFBASEURL         = "https://iiif.europeana.eu/presentation/";
     private static final String ANNOTATIONBASEURL   = "https://data.europeana.eu/annotation/";
     
+    static final String KUCKEBACKENWOLLTE       = "Es war einmal eine Frau, die diese sogenannte 'Kucken' unbedingt backen wollte";
+    static final String WUERDEJANICHTAUFGEHEN   = "Aber das Teig würde ja gar nicht aufgehen! Himmeldonnerwetter!";
+
 
     private static final String DS_ID   = "ds1";
     private static final String LCL_ID  = "lc1";
@@ -56,8 +61,11 @@ class TestUtils {
     static AnnotationV3     annv3_3;
     static AnnotationV3[]   ansv3_1;
     static AnnotationPageV3 anpv3_1;
+    static FullTextResource ftres_1;
+    static FullTextResource ftres_2;
 
     static Resource   res_1;
+    static Resource   res_2;
     static Target     tgt_1;
     static Target     tgt_2;
     static Target     tgt_3;
@@ -77,7 +85,8 @@ class TestUtils {
         prepareAnnotationPages();
 
         // build example AnnoPage bean with all containing entities, to mock the Repository with
-        res_1 = new Resource("ft1", "en", "Wickie willah Koeckebacke!", DS_ID, LCL_ID);
+        res_1 = new Resource("res1", "de", KUCKEBACKENWOLLTE, DS_ID, LCL_ID);
+        res_2 = new Resource("res2", "de", WUERDEJANICHTAUFGEHEN, DS_ID, LCL_ID);
         tgt_1 = new Target(60,100,30,14);
         tgt_2 = new Target(95,102,53,15);
         tgt_3 = new Target(60,96,404,19);
@@ -89,6 +98,9 @@ class TestUtils {
         anp_1.setAns(Arrays.asList(new Annotation[] {ann_1, ann_2, ann_3}));
         anp_1.setTgtId(getTargetIdBaseUrl("pg1"));
         anp_1.setModified(lastModifiedDate);
+
+        // one without context, the other one with
+        buildFTResources();
     }
 
     // prepares AnnotationPage entity beans (Annotations WITHOUT context)
@@ -97,14 +109,14 @@ class TestUtils {
         prepareAnnotationPageV3();
     }
 
-    public static void prepareAnnotationPageV2(){
+    static void prepareAnnotationPageV2(){
         buildAnnotationBodiesV2();
         buildAnnotationsV2(false);
         ansv2_1 = new AnnotationV2[] {annv2_1, annv2_2, annv2_3};
         anpv2_1 = createAnnotationPageV2("pg1", ansv2_1);
     }
 
-    public static void prepareAnnotationPageV3(){
+    static void prepareAnnotationPageV3(){
         buildAnnotationBodiesV3();
         buildAnnotationsV3(false);
         ansv3_1 = new AnnotationV3[] {annv3_1, annv3_2, annv3_3};
@@ -112,21 +124,21 @@ class TestUtils {
     }
 
     // prepares Annotations entity beans only (Annotations WITH context)
-    public static void prepareAnnotationsV2(){
+    static void prepareAnnotationsV2(){
         buildAnnotationBodiesV2();
         buildAnnotationsV2(true);
     }
 
     // prepares Annotations entity beans only (Annotations WITH context)
-    public static void prepareAnnotationsV3(){
+    static void prepareAnnotationsV3(){
         buildAnnotationBodiesV3();
         buildAnnotationsV3(true);
     }
 
     private static void buildAnnotationBodiesV2(){
-        anbv2_1 = createAnnotationBodyV2("0", "7", "ft1");
-        anbv2_2 = createAnnotationFullBodyV2("9", "18", "en", "ft1");
-        anbv2_3 = createAnnotationBodyV2("0", "214", "ft1");
+        anbv2_1 = createAnnotationBodyV2("0", "7", "res1");
+        anbv2_2 = createAnnotationFullBodyV2("9", "18", "en", "res1");
+        anbv2_3 = createAnnotationBodyV2("0", "214", "res1");
     }
 
     private static void buildAnnotationsV2(boolean includeContext){
@@ -143,9 +155,9 @@ class TestUtils {
     }
 
     private static void buildAnnotationBodiesV3(){
-        anbv3_1 = createAnnotationBodyV3("0", "7", "ft1");
-        anbv3_2 = createAnnotationBodyV3("9", "18", "en", "ft1");
-        anbv3_3 = createAnnotationBodyV3("0", "214", "ft1");
+        anbv3_1 = createAnnotationBodyV3("0", "7", "res1");
+        anbv3_2 = createAnnotationBodyV3("9", "18", "en", "res1");
+        anbv3_3 = createAnnotationBodyV3("0", "214", "res1");
     }
 
     private static void buildAnnotationsV3(boolean includeContext){
@@ -159,6 +171,12 @@ class TestUtils {
                                      new String[]{getTargetIdUrl("pg1", "60","96","404","19"),
                                              getTargetIdUrl("pg1", "59","138","133","25")},
                                      "Line", includeContext);
+    }
+
+    static void buildFTResources(){
+        ftres_1 = createFTResource("res1", "de", KUCKEBACKENWOLLTE);
+        ftres_2 = createFTResource("res2", "de", WUERDEJANICHTAUFGEHEN);
+        ftres_2.setContext(MEDIA_TYPE_EDM_JSONLD);
     }
 
     private static AnnotationPageV2 createAnnotationPageV2(String pageId, AnnotationV2[] resources){
@@ -217,6 +235,10 @@ class TestUtils {
         return ann;
     }
 
+    private static FullTextResource createFTResource(String resId, String language, String value){
+        return new FullTextResource(getResourceIdBaseUrl(resId), language, value);
+    }
+
     private static String getResourceIdUrl(String from, String to, String resId){
         return getResourceIdBaseUrl(resId) + "#char=" + from + "," + to;
     }
@@ -239,13 +261,6 @@ class TestUtils {
 
     private static String getAnnopageIdUrl(String pageId){
         return IIIFBASEURL + DS_ID + "/" + LCL_ID + "/annopage/" + pageId;
-    }
-
-    public static String getETagFromIds(String dsId, String lcId, String pgOrAnnoID,
-                                        String iiifVersion, String appVersion, boolean weakETag){
-        return CacheUtils.generateETag(dsId + lcId + pgOrAnnoID,
-                                       CacheUtils.dateToZonedUTC(lastModifiedDate),
-                                       iiifVersion, appVersion, weakETag);
     }
 
 }

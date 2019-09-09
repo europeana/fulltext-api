@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -31,7 +32,7 @@ public class CacheUtils {
     private static final String  IFNONEMATCH     = "If-None-Match";
     private static final String  IFMATCH         = "If-Match";
     private static final String  IFMODIFIEDSINCE = "If-Modified-Since";
-    private static final String  ANY             = "\"*\"";
+    private static final String  ANY             = "*";
     private static final String  ALLOWED         = "GET, HEAD";
     private static final String  ALLOWHEADERS    = "If-Match, If-None-Match, If-Modified-Since";
     private static final String  EXPOSEHEADERS   = "Allow, ETag, Last-Modified, Link";
@@ -44,18 +45,32 @@ public class CacheUtils {
 
     /**
      * Generates an eTag surrounded with double quotes
-     * @param id            concatenated datasetID + localID + [pageID | annoId]
-     * @param modified      modified ZonedDateTime contained within MongoDB document
-     * @param iiifVersion   requested IIIF version [2|3]
-     * @param appVersion    version of this API as defined in the pom.xml
-     * @param weakETag      if true then the eTag will start with W/
+     * @param alldata    concatenated: datasetID + localID + [pageID | annoId]
+     * @param modified   modified ZonedDateTime contained within MongoDB document
+     * @param version    concatenated: requested IIIF version [2|3] + version of this API as defined in the pom.xml
+     * @param weakETag   if True, then the eTag will start with W/
      * @return
      */
-    public static String generateETag(String id, ZonedDateTime modified, String iiifVersion, String appVersion, boolean weakETag) {
-        String data = id + zonedDateTimeToString(modified) + iiifVersion + appVersion;
+    public static String generateETag(String alldata, ZonedDateTime modified, String version, boolean weakETag) {
+        String data = alldata + zonedDateTimeToString(modified) + version;
         String eTag = "\"" + getSHA256Hash(data) + "\"";
         if (weakETag) {
-            return "W/"+eTag;
+            return "W/" + eTag;
+        }
+        return eTag;
+    }
+
+    /**
+     * Generates an eTag surrounded with double quotes - alternate version for the resource
+     * @param data      concatenated: datasetID + localID + resID + language (2-letter code) of the text resource
+     *                  plus version of this API as defined in the pom.xml
+     * @param weakETag  if True, then the eTag will start with W/
+     * @return
+     */
+    public static String generateSimpleETag(String data, boolean weakETag) {
+        String eTag = "\"" + getSHA256Hash(data) + "\"";
+        if (weakETag) {
+            return "W/" + eTag;
         }
         return eTag;
     }
@@ -79,6 +94,15 @@ public class CacheUtils {
     }
 
     /**
+     * returns a ZonedDateTime initiated to Jan 11, 1990
+     * @return ZonedDateTime
+     */
+    public static ZonedDateTime januarificator(){
+        return ZonedDateTime.of(1990, 1, 11, 0, 0,
+                                0, 0, ZoneId.of("UTC"));
+    }
+
+    /**
      * Should be RFC-7232 compliant, incl. ability to process multiple eTags for an If-*-Match header
      * @param request  incoming HttpServletRequest
      * @param modified ZonedDateTime that indicates the lastModified date of the requested data
@@ -91,7 +115,7 @@ public class CacheUtils {
         // Yes: return HTTP 304 + cache headers. Ignore If-Modified-Since (RFC 7232)
         if (StringUtils.isNotBlank(request.getHeader(IFNONEMATCH))){
             if (doesAnyIfNoneMatch(request, eTag)) {
-                headers = CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
+                headers = generateHeaders(request, eTag, zonedDateTimeToString(modified));
                 return new ResponseEntity<>(headers, HttpStatus.NOT_MODIFIED);
             }
             // If If-Match is present: check if it contains a matching eTag OR == '*"

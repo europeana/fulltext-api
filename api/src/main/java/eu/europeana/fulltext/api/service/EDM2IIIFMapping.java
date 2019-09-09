@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 import static eu.europeana.fulltext.api.config.FTDefinitions.*;
+import static eu.europeana.fulltext.util.NormalPlayTime.msToHHmmss;
 
 /**
  * This class contains the methods for mapping Annotation / AnnoPage Mongo bean objects to IIIF v2 / v3 fulltext
@@ -37,8 +38,6 @@ public class EDM2IIIFMapping {
     private static final String V2_MOTIVATION = "sc:painting";
     private static final String V3_MOTIVATION = "transcribing";
 
-    //private static final Logger LOG = LogManager.getLogger(EDM2IIIFMapping.class);
-
     @Autowired
     private EDM2IIIFMapping(FTSettings fts) {
         EDM2IIIFMapping.fts = fts;
@@ -53,7 +52,12 @@ public class EDM2IIIFMapping {
     private static AnnotationV2[] getAnnotationV2Array(AnnoPage annoPage){
         ArrayList<AnnotationV2> annoArrayList = new ArrayList<>();
         for (Annotation ftAnno : annoPage.getAns()){
-            annoArrayList.add(getAnnotationV2(annoPage, ftAnno, false));
+            // make sure page annotations are listed first.
+            if (ftAnno.isTopLevel()) {
+                annoArrayList.add(0, getAnnotationV2(annoPage, ftAnno, false));
+            } else {
+                annoArrayList.add(getAnnotationV2(annoPage, ftAnno, false));
+            }
         }
         return annoArrayList.toArray(new AnnotationV2[0]);
     }
@@ -88,7 +92,12 @@ public class EDM2IIIFMapping {
     private static AnnotationV3[] getAnnotationV3Array(AnnoPage annoPage){
         ArrayList<AnnotationV3> annoArrayList = new ArrayList<>();
         for (Annotation ftAnno : annoPage.getAns()){
-            annoArrayList.add(getAnnotationV3(annoPage, ftAnno, false));
+            // make sure page annotations are listed first.
+            if (ftAnno.isTopLevel()) {
+                annoArrayList.add(0, getAnnotationV3(annoPage, ftAnno, false));
+            } else {
+                annoArrayList.add(getAnnotationV3(annoPage, ftAnno, false));
+            }
         }
         return annoArrayList.toArray(new AnnotationV3[0]);
     }
@@ -130,29 +139,51 @@ public class EDM2IIIFMapping {
     private static String[] getFTTargetArray(AnnoPage annoPage, Annotation annotation){
         ArrayList<String> ftTargetURLList = new ArrayList<>();
         if (annotation.getTgs() != null) {
+            // generate target if it exists
             for (Target target : annotation.getTgs()) {
-                ftTargetURLList.add(annoPage.getTgtId() + "#xywh="
-                        + target.getX() + ","
-                        + target.getY() + ","
-                        + target.getW() + ","
-                        + target.getH());
+                ftTargetURLList.add(annoPage.getTgtId() + generateTargetCoordinates(target, annotation.isMedia()));
             }
             return ftTargetURLList.toArray(new String[0]);
+        } else if (annotation.isTopLevel()) {
+            ftTargetURLList.add(annoPage.getTgtId());
+            return ftTargetURLList.toArray(new String[0]);
         }
-        return null;
+        return new String[0];
+    }
+
+    private static String generateTargetCoordinates(Target target, boolean isMedia){
+        if (isMedia) {
+            return "#t=" +
+                   msToHHmmss(target.getStart().longValue()) + "," +
+                   msToHHmmss(target.getEnd().longValue());
+
+        } else {
+            return "#xywh=" +
+                   target.getX() + "," +
+                   target.getY() + "," +
+                   target.getW() + "," +
+                   target.getH();
+        }
     }
 
     static FullTextResource getFullTextResource(Resource resource){
-        return new FullTextResource(fts.getResourceBaseUrl()
-                                    + resource.getDsId() + "/"
-                                    + resource.getLcId() + "/"
-                                    + resource.getId(),
+        return new FullTextResource(fts.getResourceBaseUrl() +
+                                    resource.getDsId() + "/" +
+                                    resource.getLcId() + "/" +
+                                    resource.getId(),
                                     resource.getLang(),
                                     resource.getValue());
     }
 
     private static String getResourceIdUrl(AnnoPage annoPage, Annotation annotation){
-        return getResourceIdBaseUrl(annoPage) + "#char=" + annotation.getFrom() + "," + annotation.getTo();
+        StringBuilder s = new StringBuilder(getResourceIdBaseUrl(annoPage));
+        if (annotation.getFrom() != null || annotation.getTo() != null) {
+            s.append("#char=");
+            s.append(annotation.getFrom());
+            s.append(",");
+            s.append(annotation.getTo());
+        }
+        return s.toString();
     }
 
     private static String getResourceIdBaseUrl(AnnoPage annoPage){
@@ -174,6 +205,9 @@ public class EDM2IIIFMapping {
             case 'P':
                 dcType = "Page";
                 break;
+            case 'M':
+                dcType = "Media";
+                break;
             case 'B':
                 dcType = "Block";
                 break;
@@ -182,6 +216,9 @@ public class EDM2IIIFMapping {
                 break;
             case 'W':
                 dcType = "Word";
+                break;
+            case 'C':
+                dcType = "Caption";
                 break;
             default:
                 dcType = "undefined";
