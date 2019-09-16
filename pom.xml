@@ -9,7 +9,7 @@
 	</parent>
 
 	<artifactId>fulltext</artifactId>
-	<version>0.5</version>
+	<version>0.6</version>
 	<packaging>pom</packaging>
 
 	<name>Europeana Newspapers Fulltext API &amp; Loader</name>
