@@ -1104,6 +1104,5 @@
 	<oa:hasBody rdf:resource="&text;"/>
 	<oa:hasTarget rdf:resource="&img;"/>
 </oa:Annotation>
->>>>>>> RELEASE-fulltext-0.6
 
 </rdf:RDF>
