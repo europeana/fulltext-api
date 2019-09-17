@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.HEAD;
 
 /**
  * Created by luthien on 2019-08-13.
@@ -35,7 +36,6 @@ public class FTErrorController implements ErrorController {
 
         Object status = request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);
         String requestedPath = request.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI).toString();
-
         if (status != null) {
             int statusCode = Integer.parseInt(status.toString());
             if (statusCode == HttpStatus.NOT_FOUND.value()) {
@@ -47,8 +47,7 @@ public class FTErrorController implements ErrorController {
                                   request.getAttribute(RequestDispatcher.ERROR_MESSAGE).toString() :
                                   "please check your request, considering the HTTP " + statusCode + " return status");
                 return new ResponseEntity<>(fts.serialise(
-                        new JsonErrorResponse(message)),
-                                            HttpStatus.valueOf(statusCode));
+                        new JsonErrorResponse(message)), HttpStatus.valueOf(statusCode));
             }
         }
         return null;
