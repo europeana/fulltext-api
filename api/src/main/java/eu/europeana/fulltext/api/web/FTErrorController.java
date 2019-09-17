@@ -10,6 +10,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.http.HttpServletRequest;
@@ -27,7 +29,8 @@ public class FTErrorController implements ErrorController {
         this.fts = ftService;
     }
 
-    @GetMapping(value = "/error", produces = MediaType.ALL_VALUE)
+    @RequestMapping(value = "/error", produces = MediaType.ALL_VALUE,
+                    method   = {RequestMethod.HEAD, RequestMethod.GET, RequestMethod.POST })
     public ResponseEntity<String> handleError(HttpServletRequest request) throws SerializationException {
 
         Object status = request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);
