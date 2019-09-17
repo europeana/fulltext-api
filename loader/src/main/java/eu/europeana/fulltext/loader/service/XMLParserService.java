@@ -303,7 +303,7 @@ public class XMLParserService {
         }
         String annoId = att.getValue();
         if (annoId.startsWith("/")) {
-            anno.setAnId(annoId.substring(1, annoId.length()));
+            anno.setAnId(annoId.substring(1));
         } else {
             anno.setAnId(annoId);
         }

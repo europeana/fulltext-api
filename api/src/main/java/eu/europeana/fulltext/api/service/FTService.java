@@ -197,7 +197,7 @@ public class FTService {
             return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(data);
         }
         catch (IOException e) {
-            throw new SerializationException("Error serializing data: " + e.getMessage(), e);
+            throw new SerializationException("Error serialising data: " + e.getMessage(), e);
         }
     }
 

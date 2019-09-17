@@ -1,4 +1,5 @@
 package eu.europeana.fulltext.repository;
+
 import eu.europeana.fulltext.entity.AnnoPage;
 import dev.morphia.AdvancedDatastore;
 import dev.morphia.query.Query;
@@ -23,7 +24,7 @@ public class AnnoPageRepository {
        return datastore.createQuery(AnnoPage.class).count();
     }
 
-/**
+    /**
      * Check if an AnnoPage exists that contains an Annotation that matches the given parameters
      * using DBCollection.count(). In ticket EA-1464 this method was tested as the best performing.
      * @param datasetId ID of the dataset
@@ -81,7 +82,7 @@ public class AnnoPageRepository {
      * @param localId   ID of the parent of the Annopage object
      * @param annoId    ID of the annotation
      * @return AnnoPage
- */
+     */
     public AnnoPage findByDatasetLocalAnnoId(String datasetId, String localId, String annoId) {
         return datastore.createQuery(AnnoPage.class)
                         .field("dsId").equal(datasetId)
