@@ -126,16 +126,17 @@ public class EDM2IIIFMapping {
             anb.setLanguage(annotation.getLang());
         } else {
             anb = new AnnotationBodyV3(body);
-        }
-        //dereference fultext
-        if(derefFullText) {
-            FullTextResource fullTextResource= fetchFullTextResource(annoPage);
-            if(fullTextResource!=null) {
-                anb.setType(fullTextResource.getType());
-                anb.setFullTextLanguage(fullTextResource.getLanguage());
-                anb.setValue(fullTextResource.getValue());
+            //dereference fultext
+            if(derefFullText) {
+                FullTextResource fullTextResource= fetchFullTextResource(annoPage);
+                if(fullTextResource!=null) {
+                    anb.setType(fullTextResource.getType());
+                    anb.setLanguage(fullTextResource.getLanguage());
+                    anb.setValue(fullTextResource.getValue());
+                }
             }
         }
+
         ann.setBody(anb);
         ann.setTarget(getFTTargetArray(annoPage, annotation));
         return ann;

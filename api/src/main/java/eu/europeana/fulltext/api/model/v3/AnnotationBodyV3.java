@@ -12,7 +12,6 @@ public class AnnotationBodyV3 extends JsonLdIdType implements Serializable{
     private String source;
     private String language;
     private String type;
-    private String fullTextLanguage;
     private String value;
 
     public AnnotationBodyV3(String id) {
@@ -42,10 +41,6 @@ public class AnnotationBodyV3 extends JsonLdIdType implements Serializable{
     public String getType() { return this.type; }
 
     public void setType(String type) { this.type = type; }
-
-    public String getFullTextLanguage() { return this.fullTextLanguage; }
-
-    public void setFullTextLanguage(String fullTextLanguage) { this.fullTextLanguage = fullTextLanguage; }
 
     public String getValue() { return this.value; }
 
