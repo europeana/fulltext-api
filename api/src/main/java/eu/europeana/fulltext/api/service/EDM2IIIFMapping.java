@@ -1,6 +1,7 @@
 package eu.europeana.fulltext.api.service;
 
 import eu.europeana.fulltext.api.config.FTSettings;
+import eu.europeana.fulltext.api.service.exception.ResourceDoesNotExistException;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Annotation;
 import eu.europeana.fulltext.entity.Resource;
@@ -34,13 +35,15 @@ import static eu.europeana.fulltext.util.NormalPlayTime.msToHHmmss;
 public class EDM2IIIFMapping {
 
     private static FTSettings fts;
+    private static FTService  ftService;
 
     private static final String V2_MOTIVATION = "sc:painting";
     private static final String V3_MOTIVATION = "transcribing";
 
     @Autowired
-    private EDM2IIIFMapping(FTSettings fts) {
+    private EDM2IIIFMapping(FTSettings fts, FTService ftService) {
         EDM2IIIFMapping.fts = fts;
+        EDM2IIIFMapping.ftService=ftService;
     }
 
     static AnnotationPageV2 getAnnotationPageV2(AnnoPage annoPage){
@@ -83,26 +86,31 @@ public class EDM2IIIFMapping {
         return ann;
     }
 
-    static AnnotationPageV3 getAnnotationPageV3(AnnoPage annoPage){
+    static AnnotationPageV3 getAnnotationPageV3(AnnoPage annoPage, boolean derefFullText){
         AnnotationPageV3 annPage = new AnnotationPageV3(getAnnoPageIdUrl(annoPage));
-        annPage.setItems(getAnnotationV3Array(annoPage));
+        annPage.setItems(getAnnotationV3Array(annoPage, derefFullText));
         return annPage;
     }
 
-    private static AnnotationV3[] getAnnotationV3Array(AnnoPage annoPage){
+    private static AnnotationV3[] getAnnotationV3Array(AnnoPage annoPage, boolean derefFullText){
         ArrayList<AnnotationV3> annoArrayList = new ArrayList<>();
         for (Annotation ftAnno : annoPage.getAns()){
             // make sure page annotations are listed first.
             if (ftAnno.isTopLevel()) {
-                annoArrayList.add(0, getAnnotationV3(annoPage, ftAnno, false));
+                if(derefFullText){
+                    annoArrayList.add(0, getAnnotationV3(annoPage, ftAnno, false, true));
+                }
+                else {
+                    annoArrayList.add(0, getAnnotationV3(annoPage, ftAnno, false, false));
+                }
             } else {
-                annoArrayList.add(getAnnotationV3(annoPage, ftAnno, false));
+                annoArrayList.add(getAnnotationV3(annoPage, ftAnno, false, false));
             }
         }
         return annoArrayList.toArray(new AnnotationV3[0]);
     }
 
-    private static AnnotationV3 getAnnotationV3(AnnoPage annoPage, Annotation annotation, boolean includeContext){
+    private static AnnotationV3 getAnnotationV3(AnnoPage annoPage, Annotation annotation, boolean includeContext, boolean derefFullText){
         String       body = getResourceIdUrl(annoPage, annotation);
         AnnotationV3 ann  = new AnnotationV3(getAnnotationIdUrl(annoPage, annotation));
         AnnotationBodyV3 anb;
@@ -119,6 +127,15 @@ public class EDM2IIIFMapping {
         } else {
             anb = new AnnotationBodyV3(body);
         }
+        //dereference fultext
+        if(derefFullText) {
+            FullTextResource fullTextResource= fetchFullTextResource(annoPage);
+            if(fullTextResource!=null) {
+                anb.setType(fullTextResource.getType());
+                anb.setFullTextLanguage(fullTextResource.getLanguage());
+                anb.setValue(fullTextResource.getValue());
+            }
+        }
         ann.setBody(anb);
         ann.setTarget(getFTTargetArray(annoPage, annotation));
         return ann;
@@ -127,7 +144,7 @@ public class EDM2IIIFMapping {
     static AnnotationV3 getSingleAnnotationV3(AnnoPage annoPage, String annoId){
         Optional<Annotation> maybe = annoPage.getAns().stream().filter(o -> o.getAnId().equals(annoId)).findFirst();
         // NOTE this shouldn't fail because in that case the annoPage would not have been found in the first place
-        return maybe.map(annotation1 -> getAnnotationV3(annoPage, annotation1, true)).orElse(null);
+        return maybe.map(annotation1 -> getAnnotationV3(annoPage, annotation1, true, false)).orElse(null);
     }
 
     static AnnotationV2 getSingleAnnotationV2(AnnoPage annoPage, String annoId){
@@ -173,6 +190,16 @@ public class EDM2IIIFMapping {
                                     resource.getId(),
                                     resource.getLang(),
                                     resource.getValue());
+    }
+
+    private static FullTextResource fetchFullTextResource(AnnoPage annoPage) {
+        FullTextResource resource;
+        try {
+            resource=ftService.fetchFullTextResource(annoPage.getDsId(), annoPage.getLcId(), annoPage.getRes().getId());
+        }catch(ResourceDoesNotExistException e) {
+             resource=null;
+        }
+        return resource;
     }
 
     private static String getResourceIdUrl(AnnoPage annoPage, Annotation annotation){

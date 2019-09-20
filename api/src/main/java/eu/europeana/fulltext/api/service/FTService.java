@@ -139,9 +139,9 @@ public class FTService {
 
     // = = [ generate JSON objects ] = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
-    public AnnotationPageV3 generateAnnoPageV3(AnnoPage annoPage){
+    public AnnotationPageV3 generateAnnoPageV3(AnnoPage annoPage, boolean derefFullText){
         long start = System.currentTimeMillis();
-        AnnotationPageV3 result = EDM2IIIFMapping.getAnnotationPageV3(annoPage);
+        AnnotationPageV3 result = EDM2IIIFMapping.getAnnotationPageV3(annoPage, derefFullText);
         if (LOG.isDebugEnabled()) {
             LOG.debug(GENERATED_IN, System.currentTimeMillis() - start);
         }

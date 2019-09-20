@@ -80,8 +80,9 @@ public class FTController {
                                                @PathVariable String recordId,
                                                @PathVariable String pageId,
                                                @RequestParam(value = "format", required = false) String versionParam,
+                                               @RequestParam(value = "profile", required = false) String profile,
                                                HttpServletRequest request) throws SerializationException {
-        return annoPage(datasetId, recordId, pageId, versionParam, request, true);
+        return annoPage(datasetId, recordId, pageId, versionParam, profile, request, true);
     }
 
     /**
@@ -93,18 +94,21 @@ public class FTController {
                                                  @PathVariable String recordId,
                                                  @PathVariable String pageId,
                                                  @RequestParam(value = "format", required = false) String versionParam,
+                                                 @RequestParam(value = "profile", required = false) String profile,
                                                  HttpServletRequest request) throws SerializationException {
-        return annoPage(datasetId, recordId, pageId, versionParam, request, false);
+        return annoPage(datasetId, recordId, pageId, versionParam, profile, request, false);
     }
 
     private ResponseEntity<String> annoPage(String datasetId,
                                             String recordId,
                                             String pageId,
                                             String versionParam,
+                                            String profile,
                                             HttpServletRequest request,
                                             boolean isJson) throws SerializationException {
         LOG.debug("Retrieve Annopage: " + datasetId + "/" + recordId + "/" + pageId);
         String requestVersion = getRequestVersion(request, versionParam);
+        boolean derefFullText = derefFullTextRequired(profile);
         if (ACCEPT_VERSION_INVALID.equals(requestVersion)){
             return new ResponseEntity<>(ACCEPT_VERSION_INVALID, HttpStatus.NOT_ACCEPTABLE);
         }
@@ -126,7 +130,7 @@ public class FTController {
             headers = CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
             addContentTypeToResponseHeader(headers, requestVersion, isJson);
             if ("3".equalsIgnoreCase(requestVersion)) {
-                annotationPage = fts.generateAnnoPageV3(annoPage);
+                annotationPage = fts.generateAnnoPageV3(annoPage, derefFullText);
             } else {
                 annotationPage = fts.generateAnnoPageV2(annoPage);
             }
@@ -359,4 +363,10 @@ public class FTController {
         return new ResponseEntity<>(fts.serialise(response), HttpStatus.I_AM_A_TEAPOT);
     }
 
+    private static boolean derefFullTextRequired(String profile) {
+        if(profile!=null && profile.equals(PROFILE_TEXT)){
+            return true;
+        }
+        return false;
+    }
 }

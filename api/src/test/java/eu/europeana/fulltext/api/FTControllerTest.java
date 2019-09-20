@@ -105,7 +105,7 @@ public class FTControllerTest {
 
         given(ftService.fetchAnnoPage(any(), any(), any())).willReturn(anp_1);
         given(ftService.generateAnnoPageV2(anp_1)).willReturn(anpv2_1);
-        given(ftService.generateAnnoPageV3(anp_1)).willReturn(anpv3_1);
+        given(ftService.generateAnnoPageV3(anp_1, false)).willReturn(anpv3_1);
         given(ftService.fetchAPAnnotation(any(), any(), any())).willReturn(anp_1);
         given(ftService.generateAnnotationV2(any(), eq("an1"))).willReturn(annv2_1);
         given(ftService.generateAnnotationV2(any(), eq("an2"))).willReturn(annv2_2);
