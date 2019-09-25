@@ -86,23 +86,19 @@ public class EDM2IIIFMapping {
         return ann;
     }
 
-    static AnnotationPageV3 getAnnotationPageV3(AnnoPage annoPage, boolean derefFullText){
+    static AnnotationPageV3 getAnnotationPageV3(AnnoPage annoPage, boolean derefResource){
         AnnotationPageV3 annPage = new AnnotationPageV3(getAnnoPageIdUrl(annoPage));
-        annPage.setItems(getAnnotationV3Array(annoPage, derefFullText));
+        annPage.setItems(getAnnotationV3Array(annoPage, derefResource));
         return annPage;
     }
 
-    private static AnnotationV3[] getAnnotationV3Array(AnnoPage annoPage, boolean derefFullText){
+    private static AnnotationV3[] getAnnotationV3Array(AnnoPage annoPage, boolean derefResource){
         ArrayList<AnnotationV3> annoArrayList = new ArrayList<>();
         for (Annotation ftAnno : annoPage.getAns()){
             // make sure page annotations are listed first.
             if (ftAnno.isTopLevel()) {
-                if(derefFullText){
-                    annoArrayList.add(0, getAnnotationV3(annoPage, ftAnno, false, true));
-                }
-                else {
-                    annoArrayList.add(0, getAnnotationV3(annoPage, ftAnno, false, false));
-                }
+                annoArrayList.add(0, getAnnotationV3(annoPage, ftAnno, false, derefResource));
+
             } else {
                 annoArrayList.add(getAnnotationV3(annoPage, ftAnno, false, false));
             }
@@ -110,7 +106,7 @@ public class EDM2IIIFMapping {
         return annoArrayList.toArray(new AnnotationV3[0]);
     }
 
-    private static AnnotationV3 getAnnotationV3(AnnoPage annoPage, Annotation annotation, boolean includeContext, boolean derefFullText){
+    private static AnnotationV3 getAnnotationV3(AnnoPage annoPage, Annotation annotation, boolean includeContext, boolean derefResource){
         String       body = getResourceIdUrl(annoPage, annotation);
         AnnotationV3 ann  = new AnnotationV3(getAnnotationIdUrl(annoPage, annotation));
         AnnotationBodyV3 anb;
@@ -126,10 +122,10 @@ public class EDM2IIIFMapping {
             anb.setLanguage(annotation.getLang());
         } else {
             anb = new AnnotationBodyV3(body);
-            //dereference fultext
-            if(derefFullText) {
+            // dereference Resource
+            if (derefResource) {
                 FullTextResource fullTextResource= fetchFullTextResource(annoPage);
-                if(fullTextResource!=null) {
+                if (fullTextResource != null) {
                     anb.setType(fullTextResource.getType());
                     anb.setLanguage(fullTextResource.getLanguage());
                     anb.setValue(fullTextResource.getValue());

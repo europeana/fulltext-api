@@ -45,13 +45,14 @@ import static eu.europeana.fulltext.api.service.CacheUtils.generateSimpleETag;
 @RequestMapping("/presentation")
 public class FTController {
 
-    private static final Logger LOG                     = LogManager.getLogger(FTController.class);
-    private static final String ACCEPT                  = "Accept";
-    private static final String ACCEPT_JSON             = "Accept=" + MEDIA_TYPE_JSON;
-    private static final String ACCEPT_JSONLD           = "Accept=" + MEDIA_TYPE_JSONLD;
-    private static final String ACCEPT_VERSION_INVALID  = "Unknown profile or format version";
-    private static final String CONTENT_TYPE            = "Content-Type";
-    private static final Pattern acceptProfilePattern   = Pattern.compile("profile=\"(.*?)\"");
+    private static final Logger  LOG                      = LogManager.getLogger(FTController.class);
+    private static final String  ACCEPT                 = "Accept";
+    private static final String  ACCEPT_JSON            = "Accept=" + MEDIA_TYPE_JSON;
+    private static final String  ACCEPT_JSONLD          = "Accept=" + MEDIA_TYPE_JSONLD;
+    private static final String  ACCEPT_VERSION_INVALID = "Unknown profile or format version";
+    private static final String  CONTENT_TYPE           = "Content-Type";
+    private static final Pattern ACCEPT_PROFILE_PATTERN = Pattern.compile("profile=\"(.*?)\"");
+    private static final String  PROFILE_TEXT           = "text";
 
     private FTService fts;
 
@@ -59,7 +60,7 @@ public class FTController {
      * This will set json-ld as the default type if there is no accept header specified or if it's *
      */
     @EnableWebMvc
-    public class WebConfig implements WebMvcConfigurer {
+    public static class WebConfig implements WebMvcConfigurer {
         @Override
         public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
             configurer.defaultContentType(MediaType.valueOf(MEDIA_TYPE_JSONLD));
@@ -106,9 +107,8 @@ public class FTController {
                                             String profile,
                                             HttpServletRequest request,
                                             boolean isJson) throws SerializationException {
-        LOG.debug("Retrieve Annopage: " + datasetId + "/" + recordId + "/" + pageId);
+        LOG.debug(String.format("Retrieve Annopage: %s/%s/%s", datasetId, recordId, pageId));
         String requestVersion = getRequestVersion(request, versionParam);
-        boolean derefFullText = derefFullTextRequired(profile);
         if (ACCEPT_VERSION_INVALID.equals(requestVersion)){
             return new ResponseEntity<>(ACCEPT_VERSION_INVALID, HttpStatus.NOT_ACCEPTABLE);
         }
@@ -130,7 +130,7 @@ public class FTController {
             headers = CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
             addContentTypeToResponseHeader(headers, requestVersion, isJson);
             if ("3".equalsIgnoreCase(requestVersion)) {
-                annotationPage = fts.generateAnnoPageV3(annoPage, derefFullText);
+                annotationPage = fts.generateAnnoPageV3(annoPage, StringUtils.equalsAnyIgnoreCase(profile, PROFILE_TEXT));
             } else {
                 annotationPage = fts.generateAnnoPageV2(annoPage);
             }
@@ -196,7 +196,7 @@ public class FTController {
                                              String versionParam,
                                              HttpServletRequest request,
                                              boolean isJson) throws SerializationException {
-        LOG.debug("Retrieve Annotation: " + datasetId + "/" + recordId + "/" + annoID);
+        LOG.debug(String.format("Retrieve Annotation: %s/%s/%s", datasetId, recordId, annoID));
         String requestVersion = getRequestVersion(request, versionParam);
 
         if (ACCEPT_VERSION_INVALID.equals(requestVersion)){
@@ -268,7 +268,7 @@ public class FTController {
                                             String recordId,
                                             String resId,
                                             HttpServletRequest request, boolean isJson) throws SerializationException {
-        LOG.debug("Retrieve Resource: " + datasetId + "/" + recordId + "/" + resId);
+        LOG.debug(String.format("Retrieve Resource: %s/%s/%s", datasetId, recordId, resId));
         HttpHeaders headers;
         FullTextResource resource;
         try {
@@ -328,7 +328,7 @@ public class FTController {
         String result = null;
         String accept = request.getHeader(ACCEPT);
         if (StringUtils.isNotEmpty(accept)) {
-            Matcher m = acceptProfilePattern.matcher(accept);
+            Matcher m = ACCEPT_PROFILE_PATTERN.matcher(accept);
             if (m.find()) { // found a Profile parameter in the Accept header
                 String profiles = m.group(1);
                 if (profiles.toLowerCase(Locale.getDefault()).contains(MEDIA_TYPE_IIIF_V3)) {
@@ -349,7 +349,6 @@ public class FTController {
             } else {
                 result = ACCEPT_VERSION_INVALID;
             }
-
         }
         return result;
     }
@@ -361,12 +360,5 @@ public class FTController {
     public ResponseEntity<String> showVersion() throws SerializationException {
         String response = "The version of this API is: " + fts.getSettings().getAppVersion();
         return new ResponseEntity<>(fts.serialise(response), HttpStatus.I_AM_A_TEAPOT);
-    }
-
-    private static boolean derefFullTextRequired(String profile) {
-        if(profile!=null && profile.equals(PROFILE_TEXT)){
-            return true;
-        }
-        return false;
     }
 }
