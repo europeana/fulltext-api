@@ -1,6 +1,5 @@
 package eu.europeana.fulltext.api.service;
 
-import eu.europeana.fulltext.api.web.FTController;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.DateUtils;
 import org.apache.logging.log4j.LogManager;
@@ -10,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -49,7 +47,7 @@ public class CacheUtils {
      * @param modified   modified ZonedDateTime contained within MongoDB document
      * @param version    concatenated: requested IIIF version [2|3] + version of this API as defined in the pom.xml
      * @param weakETag   if True, then the eTag will start with W/
-     * @return
+     * @return eTag      generated eTag (String)
      */
     public static String generateETag(String alldata, ZonedDateTime modified, String version, boolean weakETag) {
         String data = alldata + zonedDateTimeToString(modified) + version;
@@ -65,7 +63,7 @@ public class CacheUtils {
      * @param data      concatenated: datasetID + localID + resID + language (2-letter code) of the text resource
      *                  plus version of this API as defined in the pom.xml
      * @param weakETag  if True, then the eTag will start with W/
-     * @return
+     * @return eTag     generated eTag (String)
      */
     public static String generateSimpleETag(String data, boolean weakETag) {
         String eTag = "\"" + getSHA256Hash(data) + "\"";
@@ -77,8 +75,8 @@ public class CacheUtils {
 
     /**
      * Formats the given date according to the RFC 1123 pattern (e.g. Thu, 4 Oct 2018 10:34:20 GMT)
-     * @param zonedDateTime
-     * @return
+     * @param zonedDateTime input ZonedDateTime to convert to RFC 1123 pattern
+     * @return String containing RFC 1123 formatted ZonedDateTime
      */
     public static String zonedDateTimeToString(ZonedDateTime zonedDateTime) {
         return zonedDateTime.format(DateTimeFormatter.RFC_1123_DATE_TIME);
@@ -86,8 +84,8 @@ public class CacheUtils {
 
     /**
      * Transforms a java.util.Date object to a ZonedDateTime object
-     * @param  date
-     * @return ZonedDateTime
+     * @param  date input java.util.Date object to be converted to ZonedDateTime format for time zone UTC
+     * @return ZonedDateTime converted from input Date object
      */
     public static ZonedDateTime dateToZonedUTC(Date date){
         return date.toInstant().atOffset(ZoneOffset.UTC).toZonedDateTime().withNano(0);
@@ -222,7 +220,7 @@ public class CacheUtils {
      * @return SHA256Hash   String
      */
     private static String getSHA256Hash(String data){
-        MessageDigest digest = null;
+        MessageDigest digest;
         try {
             digest = MessageDigest.getInstance("SHA-256");
             byte[] encodedhash = digest.digest(data.getBytes(StandardCharsets.UTF_8));
@@ -246,7 +244,7 @@ public class CacheUtils {
     }
     /**
      * Parses the given string into a ZonedDateTime object
-     * @param dateString
+     * @param dateString String to be converted to ZonedDateTime object
      * @return ZonedDateTime
      */
     private static ZonedDateTime stringToZonedUTC(String dateString) {
@@ -256,7 +254,7 @@ public class CacheUtils {
         // Note that Apache DateUtils can parse all 3 date format patterns allowed by RFC 2616
         Date date = DateUtils.parseDate(dateString);
         if (date == null) {
-            LOG.error("Error parsing request header Date string: " + dateString);
+            LOG.error(String.format("Error parsing request header Date string: %s", dateString));
             return null;
         }
         return dateToZonedUTC(date);

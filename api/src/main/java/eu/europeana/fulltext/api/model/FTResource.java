@@ -3,15 +3,13 @@ package eu.europeana.fulltext.api.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
-import java.io.Serializable;
-
 import static eu.europeana.fulltext.api.config.FTDefinitions.*;
 
 /**
  * Created by luthien on 14/06/2018.
  */
 @JsonPropertyOrder({"context", "id"})
-public class FullTextResource extends JsonLdIdType implements Serializable {
+public class FTResource extends JsonLdIdType {
 
     private static final long serialVersionUID = -2460385486748326124L;
 
@@ -21,11 +19,11 @@ public class FullTextResource extends JsonLdIdType implements Serializable {
     private String value;
 
 
-    private FullTextResource(String id) {
+    private FTResource(String id) {
         super(id, EDM_FULLTEXTRESOURCE_TYPE);
     }
 
-    public FullTextResource(String id, String language, String value) {
+    public FTResource(String id, String language, String value) {
         this(id);
         this.language = language;
         this.value = value;
