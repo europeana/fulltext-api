@@ -1,12 +1,12 @@
 package eu.europeana.fulltext.api.service;
 
 import eu.europeana.fulltext.api.config.FTSettings;
+import eu.europeana.fulltext.api.model.FTResource;
 import eu.europeana.fulltext.api.service.exception.ResourceDoesNotExistException;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Annotation;
 import eu.europeana.fulltext.entity.Resource;
 import eu.europeana.fulltext.entity.Target;
-import eu.europeana.fulltext.api.model.FullTextResource;
 import eu.europeana.fulltext.api.model.v2.*;
 import eu.europeana.fulltext.api.model.v3.AnnotationPageV3;
 import eu.europeana.fulltext.api.model.v3.AnnotationV3;
@@ -43,7 +43,7 @@ public class EDM2IIIFMapping {
     @Autowired
     private EDM2IIIFMapping(FTSettings fts, FTService ftService) {
         EDM2IIIFMapping.fts = fts;
-        EDM2IIIFMapping.ftService=ftService;
+        EDM2IIIFMapping.ftService = ftService;
     }
 
     static AnnotationPageV2 getAnnotationPageV2(AnnoPage annoPage){
@@ -124,11 +124,11 @@ public class EDM2IIIFMapping {
             anb = new AnnotationBodyV3(body);
             // dereference Resource
             if (derefResource) {
-                FullTextResource fullTextResource= fetchFullTextResource(annoPage);
-                if (fullTextResource != null) {
-                    anb.setType(fullTextResource.getType());
-                    anb.setLanguage(fullTextResource.getLanguage());
-                    anb.setValue(fullTextResource.getValue());
+                FTResource ftResource = fetchFTResource(annoPage);
+                if (ftResource != null) {
+                    anb.setType(ftResource.getType());
+                    anb.setLanguage(ftResource.getLanguage());
+                    anb.setValue(ftResource.getValue());
                 }
             }
         }
@@ -180,21 +180,23 @@ public class EDM2IIIFMapping {
         }
     }
 
-    static FullTextResource getFullTextResource(Resource resource){
-        return new FullTextResource(fts.getResourceBaseUrl() +
-                                    resource.getDsId() + "/" +
-                                    resource.getLcId() + "/" +
-                                    resource.getId(),
-                                    resource.getLang(),
-                                    resource.getValue());
+    static FTResource getFTResource(Resource resource){
+        return new FTResource(fts.getResourceBaseUrl() +
+                              resource.getDsId() + "/" +
+                              resource.getLcId() + "/" +
+                              resource.getId(),
+                              resource.getLang(),
+                              resource.getValue());
     }
 
-    private static FullTextResource fetchFullTextResource(AnnoPage annoPage) {
-        FullTextResource resource;
+    private static FTResource fetchFTResource(AnnoPage annoPage) {
+        FTResource resource;
         try {
-            resource=ftService.fetchFullTextResource(annoPage.getDsId(), annoPage.getLcId(), annoPage.getRes().getId());
+            resource = ftService.fetchFTResource(annoPage.getDsId(),
+                                                 annoPage.getLcId(),
+                                                 annoPage.getRes().getId());
         }catch(ResourceDoesNotExistException e) {
-             resource=null;
+             resource = null;
         }
         return resource;
     }

@@ -1,7 +1,7 @@
 package eu.europeana.fulltext.api.web;
 
 import eu.europeana.fulltext.api.model.AnnotationWrapper;
-import eu.europeana.fulltext.api.model.FullTextResource;
+import eu.europeana.fulltext.api.model.FTResource;
 import eu.europeana.fulltext.api.model.JsonErrorResponse;
 import eu.europeana.fulltext.api.service.CacheUtils;
 import eu.europeana.fulltext.api.service.FTService;
@@ -36,16 +36,16 @@ import static eu.europeana.fulltext.api.service.CacheUtils.generateSimpleETag;
  * @author Lúthien
  * Created on 27-02-2018
  * Note that the eTag for the Fulltext response is created from a concatenation of:
- * - datasetId + recordId + pageId / AnnoId;
- * - modified date (toString()) of the fetched document (not for the Fulltext resource)
- * - the requested IIIF version (2 or 3) (not for the Fulltext resource); and the
+ * - datasetId + localId + pageId / AnnoId;
+ * - modified date (toString()) of the fetched document (not for the resource)
+ * - the requested IIIF version (2 or 3) (not for the resource); and the
  * - Fulltext API version as defined in the pom.xml
  */
 @RestController
 @RequestMapping("/presentation")
 public class FTController {
 
-    private static final Logger  LOG                      = LogManager.getLogger(FTController.class);
+    private static final Logger  LOG                    = LogManager.getLogger(FTController.class);
     private static final String  ACCEPT                 = "Accept";
     private static final String  ACCEPT_JSON            = "Accept=" + MEDIA_TYPE_JSON;
     private static final String  ACCEPT_JSONLD          = "Accept=" + MEDIA_TYPE_JSONLD;
@@ -74,40 +74,52 @@ public class FTController {
 
     /**
      * Handles fetching a page (resource) with all its annotations
+     * @param datasetId    identifier of the AnnoPage's dataset
+     * @param localId      identifier of the AnnoPage's record
+     * @param pageId       identifier of the AnnoPage
+     * @param versionParam requested IIIF output format (2|3)
+     * @param profile      when value = 'text', resources are dereferenced
+     * @throws SerializationException when serialising to Json fails
      * @return response in json format
      */
-    @GetMapping(value = "/{datasetId}/{recordId}/annopage/{pageId}", headers = ACCEPT_JSON)
+    @GetMapping(value = "/{datasetId}/{localId}/annopage/{pageId}", headers = ACCEPT_JSON)
     public ResponseEntity<String> annoPageJson(@PathVariable String datasetId,
-                                               @PathVariable String recordId,
+                                               @PathVariable String localId,
                                                @PathVariable String pageId,
                                                @RequestParam(value = "format", required = false) String versionParam,
                                                @RequestParam(value = "profile", required = false) String profile,
                                                HttpServletRequest request) throws SerializationException {
-        return annoPage(datasetId, recordId, pageId, versionParam, profile, request, true);
+        return annoPage(datasetId, localId, pageId, versionParam, profile, request, true);
     }
 
     /**
      * Handles fetching a page (resource) with all its annotations
+     * @param datasetId    identifier of the AnnoPage's dataset
+     * @param localId      identifier of the AnnoPage's record
+     * @param pageId       identifier of the AnnoPage
+     * @param versionParam requested IIIF output format (2|3)
+     * @param profile      when value = 'text', resources are dereferenced
+     * @throws SerializationException when serialising to JsonLd fails
      * @return response in json-ld format
      */
-    @GetMapping(value = "/{datasetId}/{recordId}/annopage/{pageId}", headers = ACCEPT_JSONLD)
+    @GetMapping(value = "/{datasetId}/{localId}/annopage/{pageId}", headers = ACCEPT_JSONLD)
     public ResponseEntity<String> annoPageJsonLd(@PathVariable String datasetId,
-                                                 @PathVariable String recordId,
+                                                 @PathVariable String localId,
                                                  @PathVariable String pageId,
                                                  @RequestParam(value = "format", required = false) String versionParam,
                                                  @RequestParam(value = "profile", required = false) String profile,
                                                  HttpServletRequest request) throws SerializationException {
-        return annoPage(datasetId, recordId, pageId, versionParam, profile, request, false);
+        return annoPage(datasetId, localId, pageId, versionParam, profile, request, false);
     }
 
     private ResponseEntity<String> annoPage(String datasetId,
-                                            String recordId,
+                                            String localId,
                                             String pageId,
                                             String versionParam,
                                             String profile,
                                             HttpServletRequest request,
                                             boolean isJson) throws SerializationException {
-        LOG.debug(String.format("Retrieve Annopage: %s/%s/%s", datasetId, recordId, pageId));
+        LOG.debug("Retrieve Annopage: {}/{}/{}", datasetId, localId, pageId);
         String requestVersion = getRequestVersion(request, versionParam);
         if (ACCEPT_VERSION_INVALID.equals(requestVersion)){
             return new ResponseEntity<>(ACCEPT_VERSION_INVALID, HttpStatus.NOT_ACCEPTABLE);
@@ -116,9 +128,9 @@ public class FTController {
         AnnotationWrapper annotationPage;
         HttpHeaders headers;
         try {
-            AnnoPage                annoPage = fts.fetchAnnoPage(datasetId, recordId, pageId);
+            AnnoPage                annoPage = fts.fetchAnnoPage(datasetId, localId, pageId);
             ZonedDateTime           modified = CacheUtils.dateToZonedUTC(annoPage.getModified());
-            String                  eTag     = generateETag(datasetId + recordId + pageId,
+            String                  eTag     = generateETag(datasetId + localId + pageId,
                                                             modified,
                                                             requestVersion + fts.getSettings().getAppVersion(),
                                                             true);
@@ -136,7 +148,7 @@ public class FTController {
             }
 
         } catch (AnnoPageDoesNotExistException e) {
-            LOG.debug(e.getMessage());
+            LOG.debug(e);
             return new ResponseEntity<>(fts.serialise(new JsonErrorResponse(e.getMessage())),
                                         HttpStatus.NOT_FOUND);
         }
@@ -150,14 +162,17 @@ public class FTController {
 
     /**
      * HTTP Head endpoint to check for existence of an AnnoPage
+     * @param datasetId identifier of the AnnoPage's dataset
+     * @param localId  identifier of the AnnoPage's record
+     * @param pageId    identifier of the AnnoPage
      * @return ResponseEntity
      */
-    @RequestMapping(value    = {"/{datasetId}/{recordId}/annopage/{pageId}"},
+    @RequestMapping(value    = {"/{datasetId}/{localId}/annopage/{pageId}"},
                     method   = RequestMethod.HEAD)
     public ResponseEntity annoPageHeadExists(@PathVariable String datasetId,
-                                             @PathVariable String recordId,
+                                             @PathVariable String localId,
                                              @PathVariable String pageId) {
-        if (fts.doesAnnoPageExist(datasetId, recordId, pageId)){
+        if (fts.doesAnnoPageExist(datasetId, localId, pageId)){
             return new ResponseEntity(HttpStatus.OK);
         } else {
             return new ResponseEntity(HttpStatus.NOT_FOUND);
@@ -166,37 +181,47 @@ public class FTController {
 
     /**
      * Handles fetching a single annotation
+     * @param datasetId    identifier of the dataset that contains the AnnoPage with this Annotation
+     * @param localId      identifier of the record that contains the AnnoPage with this Annotation
+     * @param annoID       identifier of the Annotation
+     * @param versionParam requested IIIF output format (2|3)
+     * @throws SerializationException when serialising to Json fails
      * @return response in json format
      */
-    @GetMapping(value = "/{datasetId}/{recordId}/anno/{annoID}", headers = ACCEPT_JSON)
+    @GetMapping(value = "/{datasetId}/{localId}/anno/{annoID}", headers = ACCEPT_JSON)
     public ResponseEntity<String> annotationJson(@PathVariable String datasetId,
-                                                 @PathVariable String recordId,
+                                                 @PathVariable String localId,
                                                  @PathVariable String annoID,
                                                  @RequestParam(value = "format", required = false) String versionParam,
                                                  HttpServletRequest request) throws SerializationException {
-        return annotation(datasetId, recordId, annoID, versionParam, request, true);
+        return annotation(datasetId, localId, annoID, versionParam, request, true);
     }
 
     /**
      * Handles fetching a single annotation
+     * @param datasetId    identifier of the dataset that contains the AnnoPage with this Annotation
+     * @param localId      identifier of the record that contains the AnnoPage with this Annotation
+     * @param annoID       identifier of the Annotation
+     * @param versionParam requested IIIF output format (2|3)
+     * @throws SerializationException when serialising to JsonLd fails
      * @return response in json-ld format
      */
-    @GetMapping(value = "/{datasetId}/{recordId}/anno/{annoID}", headers = ACCEPT_JSONLD)
+    @GetMapping(value = "/{datasetId}/{localId}/anno/{annoID}", headers = ACCEPT_JSONLD)
     public ResponseEntity<String> annotationJsonLd(@PathVariable String datasetId,
-                                                   @PathVariable String recordId,
+                                                   @PathVariable String localId,
                                                    @PathVariable String annoID,
                                                    @RequestParam(value = "format", required = false) String versionParam,
                                                    HttpServletRequest request) throws SerializationException {
-        return annotation(datasetId, recordId, annoID, versionParam, request, false);
+        return annotation(datasetId, localId, annoID, versionParam, request, false);
     }
 
-    public ResponseEntity<String> annotation(String datasetId,
-                                             String recordId,
+    private ResponseEntity<String> annotation(String datasetId,
+                                             String localId,
                                              String annoID,
                                              String versionParam,
                                              HttpServletRequest request,
                                              boolean isJson) throws SerializationException {
-        LOG.debug(String.format("Retrieve Annotation: %s/%s/%s", datasetId, recordId, annoID));
+        LOG.debug("Retrieve Annotation: {}/{}/{}", datasetId, localId, annoID);
         String requestVersion = getRequestVersion(request, versionParam);
 
         if (ACCEPT_VERSION_INVALID.equals(requestVersion)){
@@ -206,9 +231,9 @@ public class FTController {
         HttpHeaders headers;
         AnnotationWrapper annotation;
         try {
-            AnnoPage                annoPage = fts.fetchAPAnnotation(datasetId, recordId, annoID);
+            AnnoPage                annoPage = fts.fetchAPAnnotation(datasetId, localId, annoID);
             ZonedDateTime           modified = CacheUtils.dateToZonedUTC(annoPage.getModified());
-            String                  eTag     = generateETag(datasetId + recordId + annoID,
+            String                  eTag     = generateETag(datasetId + localId + annoID,
                                                             modified,
                                                             requestVersion + fts.getSettings().getAppVersion(),
                                                             true);
@@ -226,7 +251,7 @@ public class FTController {
                 annotation = fts.generateAnnotationV2(annoPage, annoID);
             }
         } catch (AnnoPageDoesNotExistException e) {
-            LOG.debug(e.getMessage());
+            LOG.debug(e);
             return new ResponseEntity<>(fts.serialise(new JsonErrorResponse(e.getMessage())),
                                         HttpStatus.NOT_FOUND);
         }
@@ -239,42 +264,50 @@ public class FTController {
     }
 
     /**
-     * Handles fetching a Fulltext Resource.
+     * Handles fetching a Resource in JSON-LD format
+     * @param datasetId identifier of the dataset that contains the Annopage that refers to the Resource
+     * @param localId   identifier of the record that contains the Annopage that refers to the Resource
+     * @param resId     identifier of the Resource
+     * @throws SerializationException when serialising to JsonLd fails
      * @return response in json-ld format
      */
-    @GetMapping(value = "/{datasetId}/{recordId}/{resId}", headers = ACCEPT_JSONLD,
+    @GetMapping(value = "/{datasetId}/{localId}/{resId}", headers = ACCEPT_JSONLD,
                 produces = MEDIA_TYPE_JSONLD + ";" + UTF_8)
     public ResponseEntity<String> resourceJsonLd(@PathVariable String datasetId,
-                                                 @PathVariable String recordId,
+                                                 @PathVariable String localId,
                                                  @PathVariable String resId,
                                                  HttpServletRequest request) throws SerializationException {
-        return resource(datasetId, recordId, resId, request, false);
+        return resource(datasetId, localId, resId, request, false);
     }
 
     /**
-     * Handles fetching a Fulltext Resource
+     * Handles fetching a Resource in JSON format
+     * @param datasetId identifier of the dataset that contains the Annopage that refers to the Resource
+     * @param localId   identifier of the record that contains the Annopage that refers to the Resource
+     * @param resId     identifier of the Resource
+     * @throws SerializationException when serialising to Json fails
      * @return response in json format
      */
-    @GetMapping(value = "/{datasetId}/{recordId}/{resId}", headers = ACCEPT_JSON,
+    @GetMapping(value = "/{datasetId}/{localId}/{resId}", headers = ACCEPT_JSON,
                 produces = MEDIA_TYPE_JSON + ";" + UTF_8)
     public ResponseEntity<String> resourceJson(@PathVariable String datasetId,
-                                               @PathVariable String recordId,
+                                               @PathVariable String localId,
                                                @PathVariable String resId,
                                                HttpServletRequest request) throws SerializationException {
-        return resource(datasetId, recordId, resId, request, true);
+        return resource(datasetId, localId, resId, request, true);
     }
 
     private ResponseEntity<String> resource(String datasetId,
-                                            String recordId,
+                                            String localId,
                                             String resId,
                                             HttpServletRequest request, boolean isJson) throws SerializationException {
-        LOG.debug(String.format("Retrieve Resource: %s/%s/%s", datasetId, recordId, resId));
+        LOG.debug("Retrieve Resource: {}/{}/{}", datasetId, localId, resId);
         HttpHeaders headers;
-        FullTextResource resource;
+        FTResource  resource;
         try {
-            resource                = fts.fetchFullTextResource(datasetId, recordId, resId);
+            resource                = fts.fetchFTResource(datasetId, localId, resId);
             ZonedDateTime modified  = CacheUtils.januarificator();
-            String eTag             = generateSimpleETag(datasetId + recordId + resId +
+            String eTag             = generateSimpleETag(datasetId + localId + resId +
                                                          resource.getLanguage() +
                                                          resource.getValue() +
                                                          fts.getSettings().getAppVersion(),
@@ -288,7 +321,7 @@ public class FTController {
             headers.add(CONTENT_TYPE, isJson ? MEDIA_TYPE_JSON : MEDIA_TYPE_JSONLD);
 
         } catch (ResourceDoesNotExistException e) {
-            LOG.debug(e.getMessage());
+            LOG.debug(e);
             return new ResponseEntity<>(fts.serialise(new JsonErrorResponse(e.getMessage())),
                                         HttpStatus.NOT_FOUND);
         }
@@ -355,6 +388,8 @@ public class FTController {
 
     /**
      * For testing retrieving the version from the pom file
+     * @throws SerializationException when serialising to a String fails
+     * @return String representing the API version
      */
     @GetMapping(value = "/showversion")
     public ResponseEntity<String> showVersion() throws SerializationException {

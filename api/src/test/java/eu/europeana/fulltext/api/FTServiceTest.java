@@ -1,7 +1,7 @@
 package eu.europeana.fulltext.api;
 
 import eu.europeana.fulltext.api.config.FTSettings;
-import eu.europeana.fulltext.api.model.FullTextResource;
+import eu.europeana.fulltext.api.model.FTResource;
 import eu.europeana.fulltext.api.model.v2.AnnotationPageV2;
 import eu.europeana.fulltext.api.model.v2.AnnotationV2;
 import eu.europeana.fulltext.api.model.v3.AnnotationPageV3;
@@ -134,11 +134,11 @@ public class FTServiceTest {
     @Test
     public void testGetResource() throws ResourceDoesNotExistException {
         buildFTResources();
-        FullTextResource ftr = ftService.fetchFullTextResource(
+        FTResource ftr = ftService.fetchFTResource(
                 "ds1", "lc1", "res1");
         assertReflectionEquals(ftres_1, ftr);
 
-        ftr = ftService.fetchFullTextResource(
+        ftr = ftService.fetchFTResource(
                 "ds1", "lc1", "res2");
         assertReflectionEquals(ftres_2, ftr);
     }

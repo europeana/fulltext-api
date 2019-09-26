@@ -1,6 +1,6 @@
 package eu.europeana.fulltext.api;
 
-import eu.europeana.fulltext.api.model.FullTextResource;
+import eu.europeana.fulltext.api.model.FTResource;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Annotation;
 import eu.europeana.fulltext.entity.Resource;
@@ -12,7 +12,6 @@ import eu.europeana.fulltext.api.model.v2.AnnotationV2;
 import eu.europeana.fulltext.api.model.v3.AnnotationBodyV3;
 import eu.europeana.fulltext.api.model.v3.AnnotationPageV3;
 import eu.europeana.fulltext.api.model.v3.AnnotationV3;
-import eu.europeana.fulltext.api.service.CacheUtils;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -20,7 +19,6 @@ import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Date;
 
-import static eu.europeana.fulltext.api.FTControllerTest.*;
 import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_EDM_JSONLD;
 import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_IIIF_V2;
 import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_IIIF_V3;
@@ -61,8 +59,8 @@ class TestUtils {
     static AnnotationV3     annv3_3;
     static AnnotationV3[]   ansv3_1;
     static AnnotationPageV3 anpv3_1;
-    static FullTextResource ftres_1;
-    static FullTextResource ftres_2;
+    static FTResource       ftres_1;
+    static FTResource       ftres_2;
 
     static Resource   res_1;
     static Resource   res_2;
@@ -235,8 +233,8 @@ class TestUtils {
         return ann;
     }
 
-    private static FullTextResource createFTResource(String resId, String language, String value){
-        return new FullTextResource(getResourceIdBaseUrl(resId), language, value);
+    private static FTResource createFTResource(String resId, String language, String value){
+        return new FTResource(getResourceIdBaseUrl(resId), language, value);
     }
 
     private static String getResourceIdUrl(String from, String to, String resId){
