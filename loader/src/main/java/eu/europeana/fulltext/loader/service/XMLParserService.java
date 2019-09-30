@@ -90,14 +90,13 @@ public class XMLParserService {
 
     // parser configuration
     static {
-        inputFactory.setProperty(XMLInputFactory.IS_REPLACING_ENTITY_REFERENCES, true);
+        inputFactory.setProperty(XMLInputFactory.IS_REPLACING_ENTITY_REFERENCES, Boolean.TRUE);
         // We need to raise the maximum number of entities expansions in 1 file because some xml files will go over the
         // default limit of 100.000
         inputFactory.setProperty(WstxInputProperties.P_MAX_ENTITY_COUNT, 1_000_000);
         // deal with vulnerability: XML parsing vulnerable to XXE (XMLStreamReader (found by SonarQube)
-        inputFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
-        // the other measure proposed was to disable the DTD, but that breaks the loader:
-        // inputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+        inputFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, Boolean.FALSE);
+        // the other measure proposed was to disable the DTD, but that breaks the loader
     }
 
     private LoaderSettings settings;
