@@ -1,4 +1,5 @@
 package eu.europeana.fulltext.repository;
+
 import eu.europeana.fulltext.entity.AnnoPage;
 import dev.morphia.AdvancedDatastore;
 import dev.morphia.query.Query;
@@ -23,7 +24,7 @@ public class AnnoPageRepository {
        return datastore.createQuery(AnnoPage.class).count();
     }
 
-/**
+    /**
      * Check if an AnnoPage exists that contains an Annotation that matches the given parameters
      * using DBCollection.count(). In ticket EA-1464 this method was tested as the best performing.
      * @param datasetId ID of the dataset
@@ -45,21 +46,12 @@ public class AnnoPageRepository {
      * @param annoId    ID of the annotation
      * @return true if yes, otherwise false
      */
-//    @ExistsQuery("{'dsId':'?0', 'lcId':'?1', 'ans.anId':'?2'}")
     public boolean existsWithAnnoId(String datasetId, String localId, String annoId) {
         return datastore.createQuery(AnnoPage.class)
                         .field("dsId").equal(datasetId)
                         .field("lcId").equal(localId)
                         .field("ans.anId").equal(annoId).count() >= 1;
     }
-//    public boolean existsWithAnnoId(String datasetId, String localId, String annoId) {
-//        Query<AnnoPage> query = datastore.createQuery(AnnoPage.class);
-//        query.and(
-//                query.criteria("dsId").equal(datasetId),
-//                query.criteria("lcId").equal(localId),
-//                query.criteria("ans.anId").equal(annoId));
-//        return (null != query.first());
-//    }
 
     /**
      * Find and return an AnnoPage that matches the given parameters
@@ -81,7 +73,7 @@ public class AnnoPageRepository {
      * @param localId   ID of the parent of the Annopage object
      * @param annoId    ID of the annotation
      * @return AnnoPage
- */
+     */
     public AnnoPage findByDatasetLocalAnnoId(String datasetId, String localId, String annoId) {
         return datastore.createQuery(AnnoPage.class)
                         .field("dsId").equal(datasetId)

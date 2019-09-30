@@ -11,6 +11,8 @@ public class AnnotationBodyV3 extends JsonLdIdType implements Serializable{
     private static final long serialVersionUID = 481686784002335472L;
     private String source;
     private String language;
+    private String type;
+    private String value;
 
     public AnnotationBodyV3(String id) {
         super(id);
@@ -35,4 +37,13 @@ public class AnnotationBodyV3 extends JsonLdIdType implements Serializable{
     public void setLanguage(String language) {
         this.language = language;
     }
+
+    @Override
+    public String getType() { return this.type; }
+
+    public void setType(String type) { this.type = type; }
+
+    public String getValue() { return this.value; }
+
+    public void setValue(String value) { this.value = value; }
 }

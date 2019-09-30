@@ -105,7 +105,7 @@ public class FTControllerTest {
 
         given(ftService.fetchAnnoPage(any(), any(), any())).willReturn(anp_1);
         given(ftService.generateAnnoPageV2(anp_1)).willReturn(anpv2_1);
-        given(ftService.generateAnnoPageV3(anp_1)).willReturn(anpv3_1);
+        given(ftService.generateAnnoPageV3(anp_1, false)).willReturn(anpv3_1);
         given(ftService.fetchAPAnnotation(any(), any(), any())).willReturn(anp_1);
         given(ftService.generateAnnotationV2(any(), eq("an1"))).willReturn(annv2_1);
         given(ftService.generateAnnotationV2(any(), eq("an2"))).willReturn(annv2_2);
@@ -114,8 +114,8 @@ public class FTControllerTest {
         given(ftService.generateAnnotationV3(any(), eq("an2"))).willReturn(annv3_2);
         given(ftService.generateAnnotationV3(any(), eq("an3"))).willReturn(annv3_3);
 
-        given(ftService.fetchFullTextResource(any(), any(), eq("res1"))).willReturn(ftres_1);
-        given(ftService.fetchFullTextResource(any(), any(), eq("res2"))).willReturn(ftres_2);
+        given(ftService.fetchFTResource(any(), any(), eq("res1"))).willReturn(ftres_1);
+        given(ftService.fetchFTResource(any(), any(), eq("res2"))).willReturn(ftres_2);
 
         given(ftService.serialise(anpv2_1)).willReturn(JSONLD_ANP_V2_OUTPUT);
         given(ftService.serialise(annv2_1)).willReturn(JSONLD_ANN_V2_1_OUTPUT);

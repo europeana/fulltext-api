@@ -51,11 +51,11 @@ public class ResourceRepository {
                         .field("_id").equal(resId).first();
     }
 
-/**
+    /**
      * Deletes all resources associated with a particular dataset
      * @param datasetId ID of the associated dataset
      * @return the number of deleted resources
- */
+     */
     public int deleteDataset(String datasetId) {
         return datastore.delete(datastore.createQuery(Resource.class).field("dsId").equal(datasetId)).getN();
     }
