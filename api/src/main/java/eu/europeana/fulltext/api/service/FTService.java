@@ -182,9 +182,9 @@ public class FTService {
      * @param annoPage AnnoPage input object
      * @return AnnotationPageV2
      */
-    public AnnotationPageV2 generateAnnoPageV2(AnnoPage annoPage){
+    public AnnotationPageV2 generateAnnoPageV2(AnnoPage annoPage, boolean derefResource){
         long start = System.currentTimeMillis();
-        AnnotationPageV2 result = EDM2IIIFMapping.getAnnotationPageV2(annoPage);
+        AnnotationPageV2 result = EDM2IIIFMapping.getAnnotationPageV2(annoPage, derefResource);
         if (LOG.isDebugEnabled()) {
             LOG.debug(GENERATED_IN, System.currentTimeMillis() - start);
         }

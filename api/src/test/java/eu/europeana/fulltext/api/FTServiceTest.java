@@ -83,7 +83,7 @@ public class FTServiceTest {
     @Test
     public void testGetAnnotationPageV2() throws AnnoPageDoesNotExistException {
         prepareAnnotationPageV2();
-        AnnotationPageV2 ap = ftService.generateAnnoPageV2(ftService.fetchAnnoPage("ds1", "lc1", "pg1"));
+        AnnotationPageV2 ap = ftService.generateAnnoPageV2(ftService.fetchAnnoPage("ds1", "lc1", "pg1"),false);
         assertReflectionEquals(anpv2_1, ap);
     }
 
