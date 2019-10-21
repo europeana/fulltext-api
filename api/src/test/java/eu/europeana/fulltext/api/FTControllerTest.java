@@ -104,7 +104,7 @@ public class FTControllerTest {
     public void setup() throws AnnoPageDoesNotExistException, SerializationException, ResourceDoesNotExistException {
 
         given(ftService.fetchAnnoPage(any(), any(), any())).willReturn(anp_1);
-        given(ftService.generateAnnoPageV2(anp_1,any())).willReturn(anpv2_1);
+        given(ftService.generateAnnoPageV2(anp_1, false)).willReturn(anpv2_1);
         given(ftService.generateAnnoPageV3(anp_1, false)).willReturn(anpv3_1);
         given(ftService.fetchAPAnnotation(any(), any(), any())).willReturn(anp_1);
         given(ftService.generateAnnotationV2(any(), eq("an1"))).willReturn(annv2_1);
