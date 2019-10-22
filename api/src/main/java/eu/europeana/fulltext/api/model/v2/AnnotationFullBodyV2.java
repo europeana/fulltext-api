@@ -12,26 +12,7 @@ public class AnnotationFullBodyV2 extends AnnotationBodyV2{
 
     private static final long serialVersionUID = 3894020068338298481L;
 
-    private String full;
-    private String language;
-
     public AnnotationFullBodyV2(String id) {
         super(id);
-    }
-
-    public String getFull() {
-        return this.full;
-    }
-
-    public void setFull(String full) {
-        this.full = full;
-    }
-
-    public String getLanguage() {
-        return this.language;
-    }
-
-    public void setLanguage(String language) {
-        this.language = language;
     }
 }
