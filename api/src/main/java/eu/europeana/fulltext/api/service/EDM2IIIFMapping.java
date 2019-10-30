@@ -46,26 +46,26 @@ public class EDM2IIIFMapping {
         EDM2IIIFMapping.ftService = ftService;
     }
 
-    static AnnotationPageV2 getAnnotationPageV2(AnnoPage annoPage){
+    static AnnotationPageV2 getAnnotationPageV2(AnnoPage annoPage, boolean derefResource){
         AnnotationPageV2 annPage = new AnnotationPageV2(getAnnoPageIdUrl(annoPage));
-        annPage.setResources(getAnnotationV2Array(annoPage));
+        annPage.setResources(getAnnotationV2Array(annoPage, derefResource));
         return annPage;
     }
 
-    private static AnnotationV2[] getAnnotationV2Array(AnnoPage annoPage){
+    private static AnnotationV2[] getAnnotationV2Array(AnnoPage annoPage, boolean derefResource){
         ArrayList<AnnotationV2> annoArrayList = new ArrayList<>();
         for (Annotation ftAnno : annoPage.getAns()){
             // make sure page annotations are listed first.
             if (ftAnno.isTopLevel()) {
-                annoArrayList.add(0, getAnnotationV2(annoPage, ftAnno, false));
+                annoArrayList.add(0, getAnnotationV2(annoPage, ftAnno, false, derefResource ));
             } else {
-                annoArrayList.add(getAnnotationV2(annoPage, ftAnno, false));
+                annoArrayList.add(getAnnotationV2(annoPage, ftAnno, false, false));
             }
         }
         return annoArrayList.toArray(new AnnotationV2[0]);
     }
 
-    private static AnnotationV2 getAnnotationV2(AnnoPage annoPage, Annotation annotation, boolean includeContext){
+    private static AnnotationV2 getAnnotationV2(AnnoPage annoPage, Annotation annotation, boolean includeContext, boolean derefResource){
         String       resourceIdUrl  = getResourceIdUrl(annoPage, annotation);
         AnnotationV2 ann            = new AnnotationV2(getAnnotationIdUrl(annoPage, annotation));
         if (includeContext){
@@ -74,15 +74,26 @@ public class EDM2IIIFMapping {
         ann.setMotivation(StringUtils.isNotBlank(annotation.getMotiv()) ? annotation.getMotiv() : V2_MOTIVATION);
         ann.setDcType(expandDCType(annotation.getDcType()));
         ann.setOn(getFTTargetArray(annoPage, annotation));
+        AnnotationBodyV2 anb;
+
         if (StringUtils.isNotBlank(annotation.getLang())){
-            AnnotationFullBodyV2 anb = new AnnotationFullBodyV2(resourceIdUrl);
+            anb = new AnnotationFullBodyV2(resourceIdUrl);
             anb.setFull(getResourceIdBaseUrl(annoPage));
             anb.setLanguage(annotation.getLang());
-            ann.setResource(anb);
         } else {
-            AnnotationBodyV2 anb = new AnnotationBodyV2(resourceIdUrl);
-            ann.setResource(anb);
+            anb = new AnnotationBodyV2(resourceIdUrl);
+            // dereference Resource: because dereferenced annotations ONLY occur in top-level annotations
+            // *AND* top-level annotations in practice never have a language set, this should be OK
+            if (derefResource) {
+                FTResource ftResource = fetchFTResource(annoPage);
+                if (ftResource != null) {
+                    anb.setType(ftResource.getType());
+                    anb.setLanguage(ftResource.getLanguage());
+                    anb.setValue(ftResource.getValue());
+                }
+            }
         }
+        ann.setResource(anb);
         return ann;
     }
 
@@ -147,7 +158,7 @@ public class EDM2IIIFMapping {
     static AnnotationV2 getSingleAnnotationV2(AnnoPage annoPage, String annoId){
         Optional<Annotation> maybe = annoPage.getAns().stream().filter(o -> o.getAnId().equals(annoId)).findFirst();
         // NOTE this shouldn't fail because in that case the annoPage would not have been found in the first place
-        return maybe.map(annotation1 -> getAnnotationV2(annoPage, annotation1, true)).orElse(null);
+        return maybe.map(annotation1 -> getAnnotationV2(annoPage, annotation1, true,false)).orElse(null);
     }
 
     private static String[] getFTTargetArray(AnnoPage annoPage, Annotation annotation){
