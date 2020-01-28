@@ -15,18 +15,20 @@ public class Resource {
     private String lcId;  // IIIF_API_BASE_URL/      /{lcId}/annopage/
     private String lang;
     private String value;
+    private String edmRights;
 
     public Resource() {
     }
 
-    public Resource(String id, String lang, String value) {
+    public Resource(String id, String lang, String value, String edmRights) {
         this.id = id;
         this.lang = lang;
         this.value = value;
+        this.edmRights = edmRights;
     }
 
-    public Resource(String id, String lang, String value, String dsId, String lcId) {
-        this(id, lang, value);
+    public Resource(String id, String lang, String value, String edmRights, String dsId, String lcId) {
+        this(id, lang, value, edmRights);
         this.dsId = dsId;
         this.lcId = lcId;
     }
@@ -71,4 +73,7 @@ public class Resource {
         this.lcId = lcId;
     }
 
+    public String getEdmRights() { return edmRights; }
+
+    public void setEdmRights(String edmRights) { this.edmRights = edmRights; }
 }
