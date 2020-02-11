@@ -32,7 +32,7 @@
 				"motivation" : { "enum": [ "sc:painting"   ]                 },
 				"dcType"     : { "enum": [ "Page", "Block", "Line", "Word" , "Media", "Caption"] },
 				"resource"   : { "$ref": "#/definitions/body"                },
-				"on"         : { "$ref": "#/definitions/targets"             },
+				"on"         : { "$ref": "#/definitions/targets"             }
 
 		    },
             "required": [ "@id", "@type", "motivation", "dcType", "resource", "on" ],

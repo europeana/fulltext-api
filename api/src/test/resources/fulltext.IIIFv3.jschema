@@ -32,7 +32,7 @@
 				"motivation" : { "enum": [ "transcribing"   ]                },
 				"dcType"     : { "enum": [ "Page", "Block", "Line", "Word" , "Media" , "Caption" ] },
 				"body"       : { "$ref": "#/definitions/body"                },
-				"target"     : { "$ref": "#/definitions/targets"             },
+				"target"     : { "$ref": "#/definitions/targets"             }
 
 		    },
             "required": [ "id", "type", "motivation", "dcType", "body", "target" ],
