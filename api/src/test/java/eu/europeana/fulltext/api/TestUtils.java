@@ -85,8 +85,8 @@ class TestUtils {
         prepareAnnotationPages();
 
         // build example AnnoPage bean with all containing entities, to mock the Repository with
-        res_1 = new Resource("res1", "de", EDMRIGHTS,  KUCKEBACKENWOLLTE, DS_ID, LCL_ID);
-        res_2 = new Resource("res2", "de", EDMRIGHTS, WUERDEJANICHTAUFGEHEN, DS_ID, LCL_ID);
+        res_1 = new Resource("res1", "de",  KUCKEBACKENWOLLTE, EDMRIGHTS, DS_ID, LCL_ID);
+        res_2 = new Resource("res2", "de", WUERDEJANICHTAUFGEHEN, EDMRIGHTS, DS_ID, LCL_ID);
         tgt_1 = new Target(60,100,30,14);
         tgt_2 = new Target(95,102,53,15);
         tgt_3 = new Target(60,96,404,19);
@@ -174,8 +174,8 @@ class TestUtils {
     }
 
     static void buildFTResources(){
-        ftres_1 = createFTResource("res1", "de", EDMRIGHTS,  KUCKEBACKENWOLLTE);
-        ftres_2 = createFTResource("res2", "de", EDMRIGHTS,  WUERDEJANICHTAUFGEHEN);
+        ftres_1 = createFTResource("res1", "de", KUCKEBACKENWOLLTE, EDMRIGHTS);
+        ftres_2 = createFTResource("res2", "de" , WUERDEJANICHTAUFGEHEN, EDMRIGHTS);
         ftres_2.setContext(MEDIA_TYPE_EDM_JSONLD);
     }
 
