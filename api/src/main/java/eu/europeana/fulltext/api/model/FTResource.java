@@ -8,7 +8,7 @@ import static eu.europeana.fulltext.api.config.FTDefinitions.*;
 /**
  * Created by luthien on 14/06/2018.
  */
-@JsonPropertyOrder({"context", "id"})
+@JsonPropertyOrder({"context", "id", "type" , "edmRights", "language", "value"})
 public class FTResource extends JsonLdIdType {
 
     private static final long serialVersionUID = -2460385486748326124L;
