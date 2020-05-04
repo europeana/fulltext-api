@@ -90,6 +90,7 @@ public class EDM2IIIFMapping {
                     anb.setType(ftResource.getType());
                     anb.setLanguage(ftResource.getLanguage());
                     anb.setValue(ftResource.getValue());
+                    anb.setEdmRights(ftResource.getEdmRights());
                 }
             }
         }
@@ -133,13 +134,15 @@ public class EDM2IIIFMapping {
             anb.setLanguage(annotation.getLang());
         } else {
             anb = new AnnotationBodyV3(body);
-            // dereference Resource
-            if (derefResource) {
-                FTResource ftResource = fetchFTResource(annoPage);
-                if (ftResource != null) {
+            // dereference Resource: because dereferenced annotations ONLY occur in top-level annotations
+            // *AND* top-level annotations in practice never have a language set, this should be OK
+              if (derefResource) {
+                  FTResource ftResource = fetchFTResource(annoPage);
+                  if (ftResource != null) {
                     anb.setType(ftResource.getType());
                     anb.setLanguage(ftResource.getLanguage());
                     anb.setValue(ftResource.getValue());
+                    anb.setEdmRights(ftResource.getEdmRights());
                 }
             }
         }
@@ -197,7 +200,8 @@ public class EDM2IIIFMapping {
                               resource.getLcId() + "/" +
                               resource.getId(),
                               resource.getLang(),
-                              resource.getValue());
+                              resource.getValue(),
+                              resource.getEdmRights());
     }
 
     private static FTResource fetchFTResource(AnnoPage annoPage) {

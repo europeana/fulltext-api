@@ -8,7 +8,7 @@ import static eu.europeana.fulltext.api.config.FTDefinitions.*;
 /**
  * Created by luthien on 14/06/2018.
  */
-@JsonPropertyOrder({"context", "id"})
+@JsonPropertyOrder({"context", "id", "type" , "edmRights", "language", "value"})
 public class FTResource extends JsonLdIdType {
 
     private static final long serialVersionUID = -2460385486748326124L;
@@ -17,16 +17,18 @@ public class FTResource extends JsonLdIdType {
     private String context = MEDIA_TYPE_EDM_JSONLD;
     private String language;
     private String value;
+    private String edmRights;
 
 
     private FTResource(String id) {
         super(id, EDM_FULLTEXTRESOURCE_TYPE);
     }
 
-    public FTResource(String id, String language, String value) {
+    public FTResource(String id, String language, String value, String edmRights) {
         this(id);
         this.language = language;
         this.value = value;
+        this.edmRights = edmRights;
     }
 
     public String getLanguage() {
@@ -41,8 +43,11 @@ public class FTResource extends JsonLdIdType {
         return context;
     }
 
+    public String getEdmRights() { return edmRights; }
+
     public void setContext(String context) {
         this.context = context;
     }
+
 }
 

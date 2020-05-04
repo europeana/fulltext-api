@@ -35,6 +35,8 @@ class TestUtils {
 
     static final String KUCKEBACKENWOLLTE       = "Es war einmal eine Frau, die diese sogenannte 'Kucken' unbedingt backen wollte";
     static final String WUERDEJANICHTAUFGEHEN   = "Aber das Teig würde ja gar nicht aufgehen! Himmeldonnerwetter!";
+    static final String EDMRIGHTS               = "http://test/edmRights";
+
 
 
     private static final String DS_ID   = "ds1";
@@ -83,8 +85,8 @@ class TestUtils {
         prepareAnnotationPages();
 
         // build example AnnoPage bean with all containing entities, to mock the Repository with
-        res_1 = new Resource("res1", "de", KUCKEBACKENWOLLTE, DS_ID, LCL_ID);
-        res_2 = new Resource("res2", "de", WUERDEJANICHTAUFGEHEN, DS_ID, LCL_ID);
+        res_1 = new Resource("res1", "de",  KUCKEBACKENWOLLTE, EDMRIGHTS, DS_ID, LCL_ID);
+        res_2 = new Resource("res2", "de", WUERDEJANICHTAUFGEHEN, EDMRIGHTS, DS_ID, LCL_ID);
         tgt_1 = new Target(60,100,30,14);
         tgt_2 = new Target(95,102,53,15);
         tgt_3 = new Target(60,96,404,19);
@@ -172,8 +174,8 @@ class TestUtils {
     }
 
     static void buildFTResources(){
-        ftres_1 = createFTResource("res1", "de", KUCKEBACKENWOLLTE);
-        ftres_2 = createFTResource("res2", "de", WUERDEJANICHTAUFGEHEN);
+        ftres_1 = createFTResource("res1", "de", KUCKEBACKENWOLLTE, EDMRIGHTS);
+        ftres_2 = createFTResource("res2", "de" , WUERDEJANICHTAUFGEHEN, EDMRIGHTS);
         ftres_2.setContext(MEDIA_TYPE_EDM_JSONLD);
     }
 
@@ -233,8 +235,8 @@ class TestUtils {
         return ann;
     }
 
-    private static FTResource createFTResource(String resId, String language, String value){
-        return new FTResource(getResourceIdBaseUrl(resId), language, value);
+    private static FTResource createFTResource(String resId, String language, String value, String edmRights){
+        return new FTResource(getResourceIdBaseUrl(resId), language, value, edmRights);
     }
 
     private static String getResourceIdUrl(String from, String to, String resId){

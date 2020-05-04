@@ -21,20 +21,17 @@ public class Resource {
     public Resource() {
     }
 
-    public Resource(String id, String lang, String value, String dsId, String lcId) {
-        this.id     = id;
-        this.lang   = lang;
-        this.value  = value;
-        this.dsId   = dsId;
-        this.lcId   = lcId;
+    public Resource(String id, String lang, String value, String edmRights) {
+        this.id = id;
+        this.lang = lang;
+        this.value = value;
+        this.edmRights = edmRights;
     }
 
-    public Resource(String id, String lang, String value, String dsId, String lcId) {
-        this.id     = id;
-        this.lang   = lang;
-        this.value  = value;
-        this.dsId   = dsId;
-        this.lcId   = lcId;
+    public Resource(String id, String lang, String value, String edmRights, String dsId, String lcId) {
+        this(id, lang, value, edmRights);
+        this.dsId = dsId;
+        this.lcId = lcId;
     }
 
     public String getId() {
@@ -77,4 +74,7 @@ public class Resource {
         this.lcId = lcId;
     }
 
+    public String getEdmRights() { return edmRights; }
+
+    public void setEdmRights(String edmRights) { this.edmRights = edmRights; }
 }
