@@ -15,20 +15,26 @@ public class Resource {
     private String lcId;  // IIIF_API_BASE_URL/      /{lcId}/annopage/
     private String lang;
     private String value;
+    private String source;
+    private String edmRights;
 
     public Resource() {
     }
 
-    public Resource(String id, String lang, String value) {
-        this.id = id;
-        this.lang = lang;
-        this.value = value;
+    public Resource(String id, String lang, String value, String dsId, String lcId) {
+        this.id     = id;
+        this.lang   = lang;
+        this.value  = value;
+        this.dsId   = dsId;
+        this.lcId   = lcId;
     }
 
     public Resource(String id, String lang, String value, String dsId, String lcId) {
-        this(id, lang, value);
-        this.dsId = dsId;
-        this.lcId = lcId;
+        this.id     = id;
+        this.lang   = lang;
+        this.value  = value;
+        this.dsId   = dsId;
+        this.lcId   = lcId;
     }
 
     public String getId() {
