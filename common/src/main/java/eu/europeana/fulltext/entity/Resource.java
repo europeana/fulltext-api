@@ -15,23 +15,29 @@ public class Resource {
     private String lcId;  // IIIF_API_BASE_URL/      /{lcId}/annopage/
     private String lang;
     private String value;
+
     private String source;
-    private String edmRights;
+    private String rights;
 
     public Resource() {
     }
 
-    public Resource(String id, String lang, String value, String edmRights) {
-        this.id = id;
-        this.lang = lang;
-        this.value = value;
-        this.edmRights = edmRights;
+    public Resource(String id, String lang, String value, String rights) {
+        this.id     = id;
+        this.lang   = lang;
+        this.value  = value;
+        this.rights = rights;
     }
 
-    public Resource(String id, String lang, String value, String edmRights, String dsId, String lcId) {
-        this(id, lang, value, edmRights);
+    public Resource(String id, String lang, String value, String rights, String dsId, String lcId) {
+        this(id, lang, value, rights);
         this.dsId = dsId;
         this.lcId = lcId;
+    }
+
+    public Resource(String id, String dsId, String lcId, String lang, String value, String source, String rights) {
+        this(id, lang, value, rights, dsId, lcId);
+        this.source = source;
     }
 
     public String getId() {
@@ -74,7 +80,15 @@ public class Resource {
         this.lcId = lcId;
     }
 
-    public String getEdmRights() { return edmRights; }
+    public String getSource() {
+        return source;
+    }
 
-    public void setEdmRights(String edmRights) { this.edmRights = edmRights; }
+    public void setSource(String source) {
+        this.source = source;
+    }
+
+    public String getRights() { return rights; }
+
+    public void setRights(String rights) { this.rights = rights; }
 }
