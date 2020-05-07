@@ -35,7 +35,7 @@ public class Resource {
         this.lcId = lcId;
     }
 
-    public Resource(String id, String dsId, String lcId, String lang, String value, String source, String rights) {
+    public Resource(String id, String lang, String value, String rights, String dsId, String lcId, String source) {
         this(id, lang, value, rights, dsId, lcId);
         this.source = source;
     }
