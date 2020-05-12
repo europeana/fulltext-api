@@ -68,6 +68,4 @@ public class FTResource extends JsonLdIdType {
     }
 
     public String getRights() { return rights; }
-
 }
-
