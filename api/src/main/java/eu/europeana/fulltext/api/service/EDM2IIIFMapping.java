@@ -2,16 +2,21 @@ package eu.europeana.fulltext.api.service;
 
 import eu.europeana.fulltext.api.config.FTSettings;
 import eu.europeana.fulltext.api.model.FTResource;
+import eu.europeana.fulltext.api.model.v2.AnnotationBodyV2;
+import eu.europeana.fulltext.api.model.v2.AnnotationFullBodyV2;
+import eu.europeana.fulltext.api.model.v2.AnnotationPageV2;
+import eu.europeana.fulltext.api.model.v2.AnnotationV2;
+import eu.europeana.fulltext.api.model.v3.AnnotationBodyV3;
+import eu.europeana.fulltext.api.model.v3.AnnotationPageV3;
+import eu.europeana.fulltext.api.model.v3.AnnotationV3;
 import eu.europeana.fulltext.api.service.exception.ResourceDoesNotExistException;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Annotation;
 import eu.europeana.fulltext.entity.Resource;
 import eu.europeana.fulltext.entity.Target;
-import eu.europeana.fulltext.api.model.v2.*;
-import eu.europeana.fulltext.api.model.v3.AnnotationPageV3;
-import eu.europeana.fulltext.api.model.v3.AnnotationV3;
-import eu.europeana.fulltext.api.model.v3.AnnotationBodyV3;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -32,13 +37,15 @@ import static eu.europeana.fulltext.util.NormalPlayTime.msToHHmmss;
  * Created by luthien on 18/06/2018.
  */
 @Component
-public class EDM2IIIFMapping {
+public final class EDM2IIIFMapping {
 
     private static FTSettings fts;
     private static FTService  ftService;
 
     private static final String V2_MOTIVATION = "sc:painting";
     private static final String V3_MOTIVATION = "transcribing";
+
+    private static final Logger LOG           = LogManager.getLogger(EDM2IIIFMapping.class);
 
     @Autowired
     private EDM2IIIFMapping(FTSettings fts, FTService ftService) {
@@ -90,7 +97,8 @@ public class EDM2IIIFMapping {
                     anb.setType(ftResource.getType());
                     anb.setLanguage(ftResource.getLanguage());
                     anb.setValue(ftResource.getValue());
-                    anb.setEdmRights(ftResource.getEdmRights());
+                    anb.setSource(ftResource.getSource());
+                    anb.setRights(ftResource.getRights());
                 }
             }
         }
@@ -142,7 +150,8 @@ public class EDM2IIIFMapping {
                     anb.setType(ftResource.getType());
                     anb.setLanguage(ftResource.getLanguage());
                     anb.setValue(ftResource.getValue());
-                    anb.setEdmRights(ftResource.getEdmRights());
+                    anb.setSource(ftResource.getSource());
+                    anb.setRights(ftResource.getRights());
                 }
             }
         }
@@ -201,17 +210,17 @@ public class EDM2IIIFMapping {
                               resource.getId(),
                               resource.getLang(),
                               resource.getValue(),
-                              resource.getEdmRights());
+                              resource.getSource(),
+                              resource.getRights());
     }
 
     private static FTResource fetchFTResource(AnnoPage annoPage) {
         FTResource resource;
         try {
-            resource = ftService.fetchFTResource(annoPage.getDsId(),
-                                                 annoPage.getLcId(),
-                                                 annoPage.getRes().getId());
-        }catch(ResourceDoesNotExistException e) {
-             resource = null;
+            resource = ftService.fetchFTResource(annoPage.getDsId(), annoPage.getLcId(), annoPage.getRes().getId());
+        } catch (ResourceDoesNotExistException e) {
+            LOG.info(e.getMessage());
+            resource = null;
         }
         return resource;
     }
@@ -227,8 +236,9 @@ public class EDM2IIIFMapping {
         return s.toString();
     }
 
-    private static String getResourceIdBaseUrl(AnnoPage annoPage){
-        return fts.getResourceBaseUrl() + annoPage.getDsId() + "/" + annoPage.getLcId() + "/" + annoPage.getRes().getId();
+    private static String getResourceIdBaseUrl(AnnoPage annoPage) {
+        return fts.getResourceBaseUrl() + annoPage.getDsId() + "/" + annoPage.getLcId() + "/" +
+               annoPage.getRes().getId();
     }
 
     private static String getAnnoPageIdUrl(AnnoPage annoPage){
@@ -236,8 +246,9 @@ public class EDM2IIIFMapping {
                annoPage.getLcId() + fts.getAnnoPageDirectory() + annoPage.getPgId();
     }
 
-    private static String getAnnotationIdUrl(AnnoPage annoPage, Annotation annotation){
-        return fts.getAnnotationBaseUrl() + annoPage.getDsId() + "/" + annoPage.getLcId() + fts.getAnnotationDirectory() + annotation.getAnId();
+    private static String getAnnotationIdUrl(AnnoPage annoPage, Annotation annotation) {
+        return fts.getAnnotationBaseUrl() + annoPage.getDsId() + "/" + annoPage.getLcId() +
+               fts.getAnnotationDirectory() + annotation.getAnId();
     }
 
     private static String expandDCType(char dcTypeCode){
