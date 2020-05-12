@@ -9,7 +9,7 @@ import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_EDM_JSON
 /**
  * Created by luthien on 14/06/2018.
  */
-@JsonPropertyOrder({"context", "id", "type", "rights", "language", "value"})
+@JsonPropertyOrder({"context", "id", "type", "rights", "source", "language", "value"})
 public class FTResource extends JsonLdIdType {
 
     private static final long serialVersionUID = -2460385486748326124L;
@@ -19,6 +19,8 @@ public class FTResource extends JsonLdIdType {
     private String language;
     private String value;
     private String source;
+
+    @JsonProperty("edmRights")
     private String rights;
 
 
