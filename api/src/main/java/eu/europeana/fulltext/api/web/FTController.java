@@ -144,7 +144,7 @@ public class FTController {
             if ("3".equalsIgnoreCase(requestVersion)) {
                 annotationPage = fts.generateAnnoPageV3(annoPage, StringUtils.equalsAnyIgnoreCase(profile, PROFILE_TEXT));
             } else {
-                annotationPage = fts.generateAnnoPageV2(annoPage);
+                annotationPage = fts.generateAnnoPageV2(annoPage, StringUtils.equalsAnyIgnoreCase(profile, PROFILE_TEXT));
             }
 
         } catch (AnnoPageDoesNotExistException e) {
