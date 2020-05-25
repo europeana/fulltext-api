@@ -171,11 +171,23 @@ public class FTController {
                     method   = RequestMethod.HEAD)
     public ResponseEntity annoPageHeadExists(@PathVariable String datasetId,
                                              @PathVariable String localId,
-                                             @PathVariable String pageId) {
+                                             @PathVariable String pageId,
+                                             @RequestParam(value = "format", required = false) String versionParam,
+                                             HttpServletRequest request) {
+        String requestVersion = getRequestVersion(request, versionParam);
+        if (ACCEPT_VERSION_INVALID.equals(requestVersion)){
+            return new ResponseEntity(ACCEPT_VERSION_INVALID, HttpStatus.NOT_ACCEPTABLE);
+        }
+        HttpHeaders headers = new HttpHeaders();
+        boolean isJson = true; //by default json
+        if(StringUtils.equals(request.getHeader(ACCEPT), MEDIA_TYPE_JSONLD)) {
+            isJson = false;
+        }
+        addContentTypeToResponseHeader(headers, requestVersion, isJson);
         if (fts.doesAnnoPageExist(datasetId, localId, pageId)){
-            return new ResponseEntity(HttpStatus.OK);
+            return new ResponseEntity(headers, HttpStatus.OK);
         } else {
-            return new ResponseEntity(HttpStatus.NOT_FOUND);
+            return new ResponseEntity(headers, HttpStatus.NOT_FOUND);
         }
     }
 
@@ -318,7 +330,7 @@ public class FTController {
             }
 
             headers = CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
-            headers.add(CONTENT_TYPE, isJson ? MEDIA_TYPE_JSON : MEDIA_TYPE_JSONLD);
+            headers.add(CONTENT_TYPE, isJson ? MEDIA_TYPE_JSON + ";" + UTF_8 : MEDIA_TYPE_JSONLD + ";"+ UTF_8);
 
         } catch (ResourceDoesNotExistException e) {
             LOG.debug(e);
