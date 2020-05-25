@@ -330,7 +330,7 @@ public class FTController {
             }
 
             headers = CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
-            headers.add(CONTENT_TYPE, isJson ? MEDIA_TYPE_JSON + ";" + UTF_8 : MEDIA_TYPE_JSONLD + ";"+ UTF_8);
+            headers.add(CONTENT_TYPE, (isJson ? MEDIA_TYPE_JSON : MEDIA_TYPE_JSONLD) + ";" + UTF_8);
 
         } catch (ResourceDoesNotExistException e) {
             LOG.debug(e);
