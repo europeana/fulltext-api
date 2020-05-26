@@ -23,6 +23,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -74,13 +76,14 @@ public class FTController {
 
     /**
      * Handles fetching a page (resource) with all its annotations
+     *
      * @param datasetId    identifier of the AnnoPage's dataset
      * @param localId      identifier of the AnnoPage's record
      * @param pageId       identifier of the AnnoPage
      * @param versionParam requested IIIF output format (2|3)
      * @param profile      when value = 'text', resources are dereferenced
-     * @throws SerializationException when serialising to Json fails
      * @return response in json format
+     * @throws SerializationException when serialising to Json fails
      */
     @GetMapping(value = "/{datasetId}/{localId}/annopage/{pageId}", headers = ACCEPT_JSON)
     public ResponseEntity<String> annoPageJson(@PathVariable String datasetId,
@@ -88,19 +91,21 @@ public class FTController {
                                                @PathVariable String pageId,
                                                @RequestParam(value = "format", required = false) String versionParam,
                                                @RequestParam(value = "profile", required = false) String profile,
+                                               @RequestParam(value = "textGranularity", required = false) String textGranularity,
                                                HttpServletRequest request) throws SerializationException {
-        return annoPage(datasetId, localId, pageId, versionParam, profile, request, true);
+        return annoPage(datasetId, localId, pageId, versionParam, profile, textGranularity, request, true);
     }
 
     /**
      * Handles fetching a page (resource) with all its annotations
+     *
      * @param datasetId    identifier of the AnnoPage's dataset
      * @param localId      identifier of the AnnoPage's record
      * @param pageId       identifier of the AnnoPage
      * @param versionParam requested IIIF output format (2|3)
      * @param profile      when value = 'text', resources are dereferenced
-     * @throws SerializationException when serialising to JsonLd fails
      * @return response in json-ld format
+     * @throws SerializationException when serialising to JsonLd fails
      */
     @GetMapping(value = "/{datasetId}/{localId}/annopage/{pageId}", headers = ACCEPT_JSONLD)
     public ResponseEntity<String> annoPageJsonLd(@PathVariable String datasetId,
@@ -108,8 +113,9 @@ public class FTController {
                                                  @PathVariable String pageId,
                                                  @RequestParam(value = "format", required = false) String versionParam,
                                                  @RequestParam(value = "profile", required = false) String profile,
+                                                 @RequestParam(value = "textGranularity", required = false) String textGranularity,
                                                  HttpServletRequest request) throws SerializationException {
-        return annoPage(datasetId, localId, pageId, versionParam, profile, request, false);
+        return annoPage(datasetId, localId, pageId, versionParam, profile, textGranularity, request, false);
     }
 
     private ResponseEntity<String> annoPage(String datasetId,
@@ -117,6 +123,7 @@ public class FTController {
                                             String pageId,
                                             String versionParam,
                                             String profile,
+                                            String textGranularity,
                                             HttpServletRequest request,
                                             boolean isJson) throws SerializationException {
         LOG.debug("Retrieve Annopage: {}/{}/{}", datasetId, localId, pageId);
@@ -141,10 +148,11 @@ public class FTController {
 
             headers = CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
             addContentTypeToResponseHeader(headers, requestVersion, isJson);
+            List<String> textGranValues = getTextGranularityValues(textGranularity);
             if ("3".equalsIgnoreCase(requestVersion)) {
-                annotationPage = fts.generateAnnoPageV3(annoPage, StringUtils.equalsAnyIgnoreCase(profile, PROFILE_TEXT));
+                annotationPage = fts.generateAnnoPageV3(annoPage, StringUtils.equalsAnyIgnoreCase(profile, PROFILE_TEXT), textGranValues);
             } else {
-                annotationPage = fts.generateAnnoPageV2(annoPage, StringUtils.equalsAnyIgnoreCase(profile, PROFILE_TEXT));
+                annotationPage = fts.generateAnnoPageV2(annoPage, StringUtils.equalsAnyIgnoreCase(profile, PROFILE_TEXT), textGranValues);
             }
 
         } catch (AnnoPageDoesNotExistException e) {
@@ -162,6 +170,7 @@ public class FTController {
 
     /**
      * HTTP Head endpoint to check for existence of an AnnoPage
+     *
      * @param datasetId identifier of the AnnoPage's dataset
      * @param localId  identifier of the AnnoPage's record
      * @param pageId    identifier of the AnnoPage
@@ -181,12 +190,13 @@ public class FTController {
 
     /**
      * Handles fetching a single annotation
+     *
      * @param datasetId    identifier of the dataset that contains the AnnoPage with this Annotation
      * @param localId      identifier of the record that contains the AnnoPage with this Annotation
      * @param annoID       identifier of the Annotation
      * @param versionParam requested IIIF output format (2|3)
-     * @throws SerializationException when serialising to Json fails
      * @return response in json format
+     * @throws SerializationException when serialising to Json fails
      */
     @GetMapping(value = "/{datasetId}/{localId}/anno/{annoID}", headers = ACCEPT_JSON)
     public ResponseEntity<String> annotationJson(@PathVariable String datasetId,
@@ -199,12 +209,13 @@ public class FTController {
 
     /**
      * Handles fetching a single annotation
+     *
      * @param datasetId    identifier of the dataset that contains the AnnoPage with this Annotation
      * @param localId      identifier of the record that contains the AnnoPage with this Annotation
      * @param annoID       identifier of the Annotation
      * @param versionParam requested IIIF output format (2|3)
-     * @throws SerializationException when serialising to JsonLd fails
      * @return response in json-ld format
+     * @throws SerializationException when serialising to JsonLd fails
      */
     @GetMapping(value = "/{datasetId}/{localId}/anno/{annoID}", headers = ACCEPT_JSONLD)
     public ResponseEntity<String> annotationJsonLd(@PathVariable String datasetId,
@@ -265,11 +276,12 @@ public class FTController {
 
     /**
      * Handles fetching a Resource in JSON-LD format
+     *
      * @param datasetId identifier of the dataset that contains the Annopage that refers to the Resource
      * @param localId   identifier of the record that contains the Annopage that refers to the Resource
      * @param resId     identifier of the Resource
-     * @throws SerializationException when serialising to JsonLd fails
      * @return response in json-ld format
+     * @throws SerializationException when serialising to JsonLd fails
      */
     @GetMapping(value = "/{datasetId}/{localId}/{resId}", headers = ACCEPT_JSONLD,
                 produces = MEDIA_TYPE_JSONLD + ";" + UTF_8)
@@ -282,11 +294,12 @@ public class FTController {
 
     /**
      * Handles fetching a Resource in JSON format
+     *
      * @param datasetId identifier of the dataset that contains the Annopage that refers to the Resource
      * @param localId   identifier of the record that contains the Annopage that refers to the Resource
      * @param resId     identifier of the Resource
-     * @throws SerializationException when serialising to Json fails
      * @return response in json format
+     * @throws SerializationException when serialising to Json fails
      */
     @GetMapping(value = "/{datasetId}/{localId}/{resId}", headers = ACCEPT_JSON,
                 produces = MEDIA_TYPE_JSON + ";" + UTF_8)
@@ -355,6 +368,7 @@ public class FTController {
     /**
      * Retrieve the requested version from the accept header, or if not present from the format parameter. If nothing
      * is specified then 2 is returned as default
+     *
      * @return either version 2, 3 or ACCEPT_INVALID
      */
     private String getRequestVersion(HttpServletRequest request, String format) {
@@ -388,12 +402,30 @@ public class FTController {
 
     /**
      * For testing retrieving the version from the pom file
-     * @throws SerializationException when serialising to a String fails
+     *
      * @return String representing the API version
+     * @throws SerializationException when serialising to a String fails
      */
     @GetMapping(value = "/showversion")
     public ResponseEntity<String> showVersion() throws SerializationException {
         String response = "The version of this API is: " + fts.getSettings().getAppVersion();
         return new ResponseEntity<>(fts.serialise(response), HttpStatus.I_AM_A_TEAPOT);
+    }
+
+    private static List<String> getTextGranularityValues(String textGranularity) {
+        List<String> list = new ArrayList<>();
+        if (StringUtils.isNotEmpty(textGranularity)) {
+            if (textGranularity.contains("+") || textGranularity.contains(",") || textGranularity.contains(" ")) {
+                String[] values = textGranularity.split("[+, ]");
+                for (String s : values) {
+                    if (!s.equals("")) {
+                        list.add(s.trim());
+                    }
+                }
+            } else {
+                list.add(textGranularity);
+            }
+        }
+        return list;
     }
 }
