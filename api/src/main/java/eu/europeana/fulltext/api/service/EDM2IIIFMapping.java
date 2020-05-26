@@ -62,16 +62,15 @@ public final class EDM2IIIFMapping {
 
     private static AnnotationV2[] getAnnotationV2Array(AnnoPage annoPage, boolean derefResource, List<String> textGranValues){
         ArrayList<AnnotationV2> annoArrayList = new ArrayList<>();
-        boolean filterRequired = filterOfTextGranRequired(textGranValues);
         for (Annotation ftAnno : annoPage.getAns()){
-            if (filterRequired) {
-                 String dcType = expandDCType(ftAnno.getDcType());
-                if (checkIfDCTypeMatches(dcType, textGranValues)){
-                    addAnnotationV2(annoPage, ftAnno, derefResource, annoArrayList);
-                }
+            if (textGranValues.isEmpty()) {
+                addAnnotationV2(annoPage, ftAnno, derefResource, annoArrayList);
             }
             else {
-                addAnnotationV2(annoPage, ftAnno, derefResource, annoArrayList);
+                 String dcType = expandDCType(ftAnno.getDcType());
+                 if (checkIfDCTypeMatches(dcType, textGranValues)){
+                    addAnnotationV2(annoPage, ftAnno, derefResource, annoArrayList);
+                }
             }
         }
         return annoArrayList.toArray(new AnnotationV2[0]);
@@ -128,16 +127,15 @@ public final class EDM2IIIFMapping {
 
     private static AnnotationV3[] getAnnotationV3Array(AnnoPage annoPage, boolean derefResource, List<String> textGranValues){
         ArrayList<AnnotationV3> annoArrayList = new ArrayList<>();
-        boolean filterRequired = filterOfTextGranRequired(textGranValues);
         for (Annotation ftAnno : annoPage.getAns()){
-            if (filterRequired) {
-                String dcType = expandDCType(ftAnno.getDcType());
-                 if (checkIfDCTypeMatches(dcType, textGranValues)){
-                    addAnnotationV3(annoPage, ftAnno, derefResource, annoArrayList);
-                }
+            if (textGranValues.isEmpty()) {
+                addAnnotationV3(annoPage, ftAnno, derefResource, annoArrayList);
             }
             else {
-                addAnnotationV3(annoPage, ftAnno, derefResource, annoArrayList);
+                String dcType = expandDCType(ftAnno.getDcType());
+                if (checkIfDCTypeMatches(dcType, textGranValues)){
+                    addAnnotationV3(annoPage, ftAnno, derefResource, annoArrayList);
+                }
             }
         }
         return annoArrayList.toArray(new AnnotationV3[0]);
@@ -304,19 +302,6 @@ public final class EDM2IIIFMapping {
                 break;
         }
         return dcType;
-    }
-
-    private static boolean filterOfTextGranRequired(List<String> textGranValues) {
-        int validValues=0;
-        if (! textGranValues.isEmpty()) {
-            for (String text : textGranValues) {
-                if (StringUtils.equals(text, "page") || StringUtils.equals(text, "block") || StringUtils.equals(text, "word") || StringUtils.equals(text, "line") ||
-                        StringUtils.equals(text, "media") || StringUtils.equals(text, "caption")) {
-                    validValues++;
-                }
-            }
-        }
-        return (validValues > 0) ;
     }
 
     private static boolean checkIfDCTypeMatches(String dcType, List<String> textGranValues) {

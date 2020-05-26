@@ -55,6 +55,15 @@ public class FTController {
     private static final String  CONTENT_TYPE           = "Content-Type";
     private static final Pattern ACCEPT_PROFILE_PATTERN = Pattern.compile("profile=\"(.*?)\"");
     private static final String  PROFILE_TEXT           = "text";
+    private static final String  TYPE_PAGE              = "page";
+    private static final String  TYPE_BLOCK             = "block";
+    private static final String  TYPE_LINE              = "line";
+    private static final String  TYPE_WORD              = "word";
+    private static final String  TYPE_MEDIA             = "media";
+    private static final String  TYPE_CAPTION           = "caption";
+
+
+
 
     private FTService fts;
 
@@ -426,6 +435,19 @@ public class FTController {
                 list.add(textGranularity);
             }
         }
-        return list;
+        return filterGranularityValues(list);
+    }
+
+    private static List<String> filterGranularityValues( List<String> list) {
+        List<String> textGranValues = new ArrayList<>();
+        if ( ! list.isEmpty()) {
+            for (String text : list) {
+                if (StringUtils.equals(text, TYPE_PAGE) || StringUtils.equals(text, TYPE_BLOCK) || StringUtils.equals(text, TYPE_WORD) ||
+                        StringUtils.equals(text, TYPE_LINE) || StringUtils.equals(text, TYPE_MEDIA) || StringUtils.equals(text, TYPE_CAPTION)) {
+                    textGranValues.add(text.trim());
+                }
+            }
+        }
+        return textGranValues;
     }
 }
