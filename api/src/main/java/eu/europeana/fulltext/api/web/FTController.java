@@ -421,6 +421,13 @@ public class FTController {
         return new ResponseEntity<>(fts.serialise(response), HttpStatus.I_AM_A_TEAPOT);
     }
 
+    /**
+     * filter the textGranularity parameter values.
+     * valid values: page, line, block, word, caption, media
+     * return empty list if none is present.
+     *
+     * @return list with valid values.
+     */
     private static List<String> getTextGranularityValues(String textGranularity) {
         List<String> list = new ArrayList<>();
         if (StringUtils.isNotEmpty(textGranularity)) {
@@ -438,7 +445,7 @@ public class FTController {
         return filterGranularityValues(list);
     }
 
-    private static List<String> filterGranularityValues( List<String> list) {
+    private static List<String> filterGranularityValues(List<String> list) {
         List<String> textGranValues = new ArrayList<>();
         if ( ! list.isEmpty()) {
             for (String text : list) {
