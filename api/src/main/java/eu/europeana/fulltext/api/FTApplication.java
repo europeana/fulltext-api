@@ -1,19 +1,27 @@
 package eu.europeana.fulltext.api;
 
 import eu.europeana.fulltext.api.web.SocksProxyConfigInjector;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Main application and configuration.
@@ -23,9 +31,14 @@ import java.io.IOException;
  */
 @SpringBootApplication(scanBasePackages = {"eu.europeana.fulltext.api", "eu.europeana.fulltext.repository"})
 @PropertySource(value = "classpath:build.properties")
+@PropertySource("classpath:fulltext.properties")
+@PropertySource(value = "classpath:fulltext.user.properties", ignoreResourceNotFound = true)
 public class FTApplication extends SpringBootServletInitializer {
 
     public static final int THOUSAND = 1000;
+
+    @Value("${security.config.ipRanges}")
+    private String ipRanges;
 
     /**
      * Setup CORS for all requests
@@ -101,6 +114,28 @@ public class FTApplication extends SpringBootServletInitializer {
         @Override
         public void addCorsMappings(CorsRegistry registry) {
             registry.addMapping("/**").allowedOrigins("*").maxAge(THOUSAND);
+        }
+    }
+
+    @EnableWebSecurity
+    @Configuration
+    class SecurityConfig extends WebSecurityConfigurerAdapter {
+
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+            if(StringUtils.isNotEmpty(ipRanges)) {
+                http.authorizeRequests()
+                        .antMatchers("/**").access(createHasIpRangeExpression());
+            }
+        }
+
+        /**
+         * creates the string for authorizing request for the provided ipRanges
+         */
+        private String createHasIpRangeExpression() {
+            List<String> validIps = Arrays.asList(ipRanges.split("\\s*,\\s*"));
+            return validIps.stream()
+                    .collect(Collectors.joining("') or hasIpAddress('", "hasIpAddress('", "')"));
         }
     }
 
