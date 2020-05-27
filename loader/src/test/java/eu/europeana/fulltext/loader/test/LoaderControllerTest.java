@@ -18,6 +18,8 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -43,6 +45,9 @@ public class LoaderControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private WebApplicationContext webApplicationContext;
+
     @MockBean
     private LoadArchiveService loadArchiveService;
     @MockBean
@@ -50,6 +55,9 @@ public class LoaderControllerTest {
 
     @Before
     public void setup() throws LoaderException {
+        // Setting it manually to bypass Spring Security IP address filter
+        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+
         given(loadArchiveService.importZipBatch(any(), any())).willReturn(ZIP_PROCESSED_OK);
         given(loadArchiveService.importZipBatch( eq("notExists.zip"), any())).willThrow(new ArchiveNotFoundException("Not found"));
         given(loadArchiveService.importZipBatch( eq("readError.zip"), any())).willThrow(new ArchiveReadException("Read error"));

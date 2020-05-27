@@ -16,6 +16,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 import static eu.europeana.fulltext.api.TestUtils.*;
 import static eu.europeana.fulltext.api.config.FTDefinitions.*;
@@ -93,6 +95,9 @@ public class FTControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private WebApplicationContext webApplicationContext;
+
     @MockBean
     private FTService  ftService;
     @MockBean
@@ -102,6 +107,9 @@ public class FTControllerTest {
 
     @Before
     public void setup() throws AnnoPageDoesNotExistException, SerializationException, ResourceDoesNotExistException {
+
+        // Setting it manually to bypass Spring Security IP address filter
+        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 
         given(ftService.fetchAnnoPage(any(), any(), any())).willReturn(anp_1);
         given(ftService.generateAnnoPageV2(anp_1, false)).willReturn(anpv2_1);
