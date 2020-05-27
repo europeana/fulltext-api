@@ -431,11 +431,11 @@ public class FTController {
     private List<String> getTextGranularityValues(String textGranularity) {
         List<String> list = new ArrayList<>();
         if (StringUtils.isNotEmpty(textGranularity)) {
-            if(StringUtils.contains(textGranularity, "+") || StringUtils.contains(textGranularity, ",")  ||
+            if (StringUtils.contains(textGranularity, "+") || StringUtils.contains(textGranularity, ",")  ||
                     StringUtils.contains(textGranularity, " ")) {
-                String[] values = textGranularity.split("[+, ]");
+                String [] values = textGranularity.split("[+, ]");
                 for (String s : values) {
-                    if (!s.equals("")) {
+                    if (! s.equals("")) {
                         list.add(s.trim());
                     }
                 }
@@ -448,7 +448,7 @@ public class FTController {
 
     private List<String> filterGranularityValues(List<String> list) {
         List<String> textGranValues = new ArrayList<>();
-        if ( ! list.isEmpty()) {
+        if (! list.isEmpty()) {
             for (String text : list) {
                 if (StringUtils.equals(text, TYPE_PAGE) || StringUtils.equals(text, TYPE_BLOCK) || StringUtils.equals(text, TYPE_WORD) ||
                         StringUtils.equals(text, TYPE_LINE) || StringUtils.equals(text, TYPE_MEDIA) || StringUtils.equals(text, TYPE_CAPTION)) {

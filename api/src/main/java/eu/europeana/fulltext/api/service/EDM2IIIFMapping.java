@@ -305,13 +305,11 @@ public final class EDM2IIIFMapping {
     }
 
     private static boolean checkIfDCTypeMatches(String dcType, List<String> textGranValues) {
-        if(! textGranValues.isEmpty()) {
             for (String text : textGranValues) {
                     if (StringUtils.equalsIgnoreCase(dcType,text)) {
                         return true;
                     }
                 }
-        }
         return false;
     }
 }
