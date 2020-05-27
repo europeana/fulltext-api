@@ -125,7 +125,7 @@ public class FTApplication extends SpringBootServletInitializer {
         protected void configure(HttpSecurity http) throws Exception {
             if(StringUtils.isNotEmpty(ipRanges)) {
                 http.authorizeRequests()
-                        .antMatchers("/**").access(createHasIpRangeExpression());
+                        .antMatchers("/presentation/**").access(createHasIpRangeExpression());
             }
         }
 
