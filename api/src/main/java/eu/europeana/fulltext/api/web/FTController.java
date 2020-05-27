@@ -428,7 +428,7 @@ public class FTController {
      *
      * @return list with valid values.
      */
-    private static List<String> getTextGranularityValues(String textGranularity) {
+    private List<String> getTextGranularityValues(String textGranularity) {
         List<String> list = new ArrayList<>();
         if (StringUtils.isNotEmpty(textGranularity)) {
             if (textGranularity.contains("+") || textGranularity.contains(",") || textGranularity.contains(" ")) {
@@ -445,7 +445,7 @@ public class FTController {
         return filterGranularityValues(list);
     }
 
-    private static List<String> filterGranularityValues(List<String> list) {
+    private List<String> filterGranularityValues(List<String> list) {
         List<String> textGranValues = new ArrayList<>();
         if ( ! list.isEmpty()) {
             for (String text : list) {
