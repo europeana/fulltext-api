@@ -7,7 +7,7 @@
     <version>0.7-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>Common functionality (Mongo and Entity definitions)</name>
+    <name>Europeana Newspapers Fulltext Model </name>
     <description>Mongodb connectivity and document mapping for Fulltext API and Loader</description>
 
     <parent>
