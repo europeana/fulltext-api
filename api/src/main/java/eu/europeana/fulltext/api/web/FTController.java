@@ -168,6 +168,7 @@ public class FTController {
      * @return ResponseEntity
      */
     @RequestMapping(value    = {"/{datasetId}/{localId}/annopage/{pageId}"},
+                    headers = {ACCEPT_JSONLD, ACCEPT_JSON},
                     method   = RequestMethod.HEAD)
     public ResponseEntity annoPageHeadExists(@PathVariable String datasetId,
                                              @PathVariable String localId,
