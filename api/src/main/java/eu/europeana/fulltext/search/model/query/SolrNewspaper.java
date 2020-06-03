@@ -11,7 +11,7 @@ import org.springframework.data.solr.core.mapping.SolrDocument;
  * Created on 28 May 2020
  */
 // TODO load core name from config!!
-@SolrDocument(solrCoreName = "newspapers2")
+@SolrDocument(solrCoreName = "newspapers")
 public class SolrNewspaper {
 
     @Field("europeana_id")
