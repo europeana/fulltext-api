@@ -13,7 +13,7 @@
     <groupId>eu.europeana.fulltext</groupId>
     <artifactId>api</artifactId>
     <version>0.7-SNAPSHOT</version>
-    <packaging>jar</packaging>
+    <packaging>war</packaging>
 
     <name>Europeana Newspapers Fulltext API</name>
     <description>Europeana Newspapers Fulltext API (Spring Boot application)</description>
@@ -88,6 +88,12 @@
             <version>${mongodb.version}</version>
         </dependency>
 
+        <!-- for search -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-solr</artifactId>
+        </dependency>
+
         <!-- for serializing -->
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
@@ -147,6 +153,28 @@
         <!--</dependency>-->
     </dependencies>
 
-
-
+    <build>
+        <!--this removes the version number from the deployed archive-->
+        <finalName>fulltext</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-war-plugin</artifactId>
+                <configuration>
+                    <attachClasses>true</attachClasses>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
