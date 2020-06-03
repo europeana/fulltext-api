@@ -7,12 +7,14 @@ import java.io.Serializable;
 
 import static eu.europeana.fulltext.api.config.FTDefinitions.V3_ANNOTATION_TYPE;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import eu.europeana.fulltext.api.model.AnnotationWrapper;
 import eu.europeana.fulltext.api.model.JsonLdIdType;
 
 /**
  * Created by luthien target 14/06/2018.
  */
+@JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
 @JsonPropertyOrder({"context", "id", "type", "motivation", "dcType", "body", "target"})
 public class AnnotationV3 extends JsonLdIdType implements Serializable, AnnotationWrapper {
 

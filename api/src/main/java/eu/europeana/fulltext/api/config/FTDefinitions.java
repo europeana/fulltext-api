@@ -1,5 +1,7 @@
 package eu.europeana.fulltext.api.config;
 
+import java.util.Map;
+
 /**
  * Created by luthien on 14/06/2018.
  */
@@ -63,5 +65,21 @@ public class FTDefinitions {
                                                            + PROFILE_IS
                                                            + MEDIA_TYPE_IIIF_V3
                                                            + "\";" + UTF_8;
+
+    public static final char ANNO_TYPE_PAGE     = 'P';
+    public static final char ANNO_TYPE_MEDIA    = 'M';
+    public static final char ANNO_TYPE_BLOCK    = 'B';
+    public static final char ANNO_TYPE_LINE     = 'L';
+    public static final char ANNO_TYPE_WORD     = 'W';
+    public static final char ANNO_TYPE_CAPTION  = 'C';
+
+    public static final Map<Character, String> ANNO_TYPE = Map.ofEntries(
+         Map.entry(ANNO_TYPE_PAGE, "Page"),
+         Map.entry(ANNO_TYPE_MEDIA, "Media"),
+         Map.entry(ANNO_TYPE_BLOCK, "Block"),
+         Map.entry(ANNO_TYPE_LINE, "Line"),
+         Map.entry(ANNO_TYPE_WORD, "Word"),
+         Map.entry(ANNO_TYPE_CAPTION, "Caption")
+    );
 
 }

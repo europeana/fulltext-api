@@ -21,7 +21,7 @@ import java.io.IOException;
  * @author Lúthien
  * Created on 27-02-2018
  */
-@SpringBootApplication(scanBasePackages = {"eu.europeana.fulltext.api", "eu.europeana.fulltext.repository"})
+@SpringBootApplication(scanBasePackages = {"eu.europeana.fulltext.api", "eu.europeana.fulltext.search", "eu.europeana.fulltext.repository"})
 @PropertySource(value = "classpath:build.properties")
 public class FTApplication extends SpringBootServletInitializer {
 

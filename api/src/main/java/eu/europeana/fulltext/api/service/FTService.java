@@ -23,6 +23,8 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -73,15 +75,32 @@ public class FTService {
      * @throws AnnoPageDoesNotExistException when the Annopage cannot be found
      * @return AnnoPage
      */
-    public AnnoPage fetchAnnoPage(String datasetId, String localId, String pageId)
-            throws AnnoPageDoesNotExistException {
-        if (doesAnnoPageExist(datasetId, localId, pageId)){
-            return annoPageRepository.findByDatasetLocalPageId(datasetId, localId, pageId);
-        } else {
+    public AnnoPage fetchAnnoPage(String datasetId, String localId, String pageId) throws AnnoPageDoesNotExistException {
+        AnnoPage result = annoPageRepository.findByDatasetLocalPageId(datasetId, localId, pageId);
+        if (result == null) {
             throw new AnnoPageDoesNotExistException(String.format(
                     "No AnnoPage with datasetId: %s, localId: %s and pageId: %s could be found",
                     datasetId, localId, pageId));
         }
+        return result;
+    }
+
+    /**
+     * Retrieve all annopages for a particular issue
+     * @param datasetId
+     * @param localId
+     * @return List of AnnoPages
+     */
+    public List<AnnoPage> fetchAnnoPages(String datasetId, String localId) {
+        List<AnnoPage> result = new ArrayList<>();
+        int i = 1;
+        AnnoPage page = annoPageRepository.findByDatasetLocalPageId(datasetId, localId, String.valueOf(i));
+        while (page != null) {
+            result.add(page);
+            i++;
+            page = annoPageRepository.findByDatasetLocalPageId(datasetId, localId, String.valueOf(i));
+        }
+        return result;
     }
 
     /**
@@ -94,13 +113,13 @@ public class FTService {
      */
     public AnnoPage fetchAPAnnotation(String datasetId, String localId, String annoId)
             throws AnnoPageDoesNotExistException {
-        if (doesAnnotationExist(datasetId, localId, annoId)){
-            return annoPageRepository.findByDatasetLocalAnnoId(datasetId, localId, annoId);
-        } else {
+        AnnoPage result = annoPageRepository.findByDatasetLocalAnnoId(datasetId, localId, annoId);
+        if (result == null) {
             throw new AnnoPageDoesNotExistException(String.format(
                     "No AnnoPage with datasetId: %s and localId: %s could be found that contains an Annotation with annotationId: %s",
                     datasetId, localId, annoId));
         }
+        return result;
     }
 
 
@@ -114,14 +133,13 @@ public class FTService {
      */
     public FTResource fetchFTResource(String datasetId, String localId, String resId)
             throws ResourceDoesNotExistException {
-        if (doesFTResourceExist(datasetId, localId, resId)){
-            return generateFTResource(
-                    resourceRepository.findByDatasetLocalResId(datasetId, localId, resId));
-        } else {
+        FTResource result = generateFTResource(resourceRepository.findByDatasetLocalResId(datasetId, localId, resId));
+        if (result == null) {
             throw new ResourceDoesNotExistException(String.format(
                     "No Fulltext Resource with resourceId: %s was found that is associated with datasetId: %s and localId: %s",
                     resId, datasetId, localId));
         }
+        return result;
     }
 
 

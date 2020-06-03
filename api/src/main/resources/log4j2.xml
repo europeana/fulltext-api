@@ -17,5 +17,7 @@
         <Root level="INFO">
             <AppenderRef ref="Console"/>
         </Root>
+        <logger name="eu.europeana.fulltext.search" level="DEBUG"/>
+        <logger name="org.springframework.data.solr.core.SolrTemplate" level="DEBUG"/>
     </Loggers>
 </Configuration>

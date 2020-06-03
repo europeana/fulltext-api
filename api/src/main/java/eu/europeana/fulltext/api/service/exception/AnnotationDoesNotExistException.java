@@ -14,7 +14,7 @@ public class AnnotationDoesNotExistException extends FTException {
     private static final long serialVersionUID = 2048581559311721229L;
 
     public AnnotationDoesNotExistException(String id) {
-        super(id, ErrorCode.ID_DOES_NOT_EXIST);
+        super("Annotation with id " + id + " does not exist");
     }
 
     @Override

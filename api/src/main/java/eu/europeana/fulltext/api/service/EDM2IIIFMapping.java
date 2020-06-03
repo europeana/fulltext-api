@@ -126,7 +126,7 @@ public final class EDM2IIIFMapping {
         return annoArrayList.toArray(new AnnotationV3[0]);
     }
 
-    private static AnnotationV3 getAnnotationV3(AnnoPage annoPage, Annotation annotation, boolean includeContext, boolean derefResource){
+    public static AnnotationV3 getAnnotationV3(AnnoPage annoPage, Annotation annotation, boolean includeContext, boolean derefResource){
         String       body = getResourceIdUrl(annoPage, annotation);
         AnnotationV3 ann  = new AnnotationV3(getAnnotationIdUrl(annoPage, annotation));
         AnnotationBodyV3 anb;
@@ -252,29 +252,10 @@ public final class EDM2IIIFMapping {
     }
 
     private static String expandDCType(char dcTypeCode){
-        String dcType;
-        switch (Character.toUpperCase(dcTypeCode)) {
-            case 'P':
-                dcType = "Page";
-                break;
-            case 'M':
-                dcType = "Media";
-                break;
-            case 'B':
-                dcType = "Block";
-                break;
-            case 'L':
-                dcType = "Line";
-                break;
-            case 'W':
-                dcType = "Word";
-                break;
-            case 'C':
-                dcType = "Caption";
-                break;
-            default:
-                dcType = "undefined";
-                break;
+        String dcType = ANNO_TYPE.get(dcTypeCode);
+        if (dcType == null) {
+            LOG.warn("Unknown dcType code '{}'", dcTypeCode);
+            return "undefined";
         }
         return dcType;
     }

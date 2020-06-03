@@ -3,11 +3,13 @@ package eu.europeana.fulltext.api.model.v3;
 import java.io.Serializable;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import eu.europeana.fulltext.api.model.JsonLdIdType;
 
 /**
  * Created by luthien on 14/06/2018.
  */
+@JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
 @JsonPropertyOrder({"id", "type", "rights", "source", "language", "value"})
 public class AnnotationBodyV3 extends JsonLdIdType implements Serializable{
 
