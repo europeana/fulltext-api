@@ -283,39 +283,39 @@ public class FTControllerTest {
         this.mockMvc.perform(head("/presentation/vrolijk/versierde/annopage/annopagetaart"))
                     .andDo(print())
                     .andExpect(status().isOk())
-                    .andExpect(header().string(HEADER_CONTENTTYPE, MEDIA_TYPE_JSON + ";profile=\"" + MEDIA_TYPE_IIIF_V2 + "\"" + ";" + UTF_8));
+                    .andExpect(header().string(HEADER_CONTENTTYPE, MEDIA_TYPE_JSONLD + ";profile=\"" + MEDIA_TYPE_IIIF_V2 + "\"" + ";" + UTF_8));
 
         this.mockMvc.perform(head("/presentation/tergend/zanikende/annopage/zuurpruimen"))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(header().string(HEADER_CONTENTTYPE, MEDIA_TYPE_JSON + ";profile=\"" + MEDIA_TYPE_IIIF_V2 + "\"" + ";" + UTF_8));
+                .andExpect(header().string(HEADER_CONTENTTYPE, MEDIA_TYPE_JSONLD + ";profile=\"" + MEDIA_TYPE_IIIF_V2 + "\"" + ";" + UTF_8));
 
         // with format parameter. Default accept header json
         this.mockMvc.perform(head("/presentation/vrolijk/versierde/annopage/annopagetaart")
                 .param("format", "2"))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(header().string(HEADER_CONTENTTYPE, MEDIA_TYPE_JSON + ";profile=\"" + MEDIA_TYPE_IIIF_V2 + "\"" + ";" + UTF_8));
+                .andExpect(header().string(HEADER_CONTENTTYPE, MEDIA_TYPE_JSONLD + ";profile=\"" + MEDIA_TYPE_IIIF_V2 + "\"" + ";" + UTF_8));
 
         this.mockMvc.perform(head("/presentation/vrolijk/versierde/annopage/annopagetaart")
                 .param("format", "3"))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(header().string(HEADER_CONTENTTYPE, MEDIA_TYPE_JSON + ";profile=\"" + MEDIA_TYPE_IIIF_V3 + "\"" + ";" + UTF_8));
+                .andExpect(header().string(HEADER_CONTENTTYPE, MEDIA_TYPE_JSONLD + ";profile=\"" + MEDIA_TYPE_IIIF_V3 + "\"" + ";" + UTF_8));
 
 
         this.mockMvc.perform(head("/presentation/tergend/zanikende/annopage/zuurpruimen")
                 .param("format", "2"))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(header().string(HEADER_CONTENTTYPE, MEDIA_TYPE_JSON + ";profile=\"" + MEDIA_TYPE_IIIF_V2 + "\"" + ";" + UTF_8));
+                .andExpect(header().string(HEADER_CONTENTTYPE, MEDIA_TYPE_JSONLD + ";profile=\"" + MEDIA_TYPE_IIIF_V2 + "\"" + ";" + UTF_8));
 
 
         this.mockMvc.perform(head("/presentation/tergend/zanikende/annopage/zuurpruimen")
                 .param("format", "3"))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(header().string(HEADER_CONTENTTYPE, MEDIA_TYPE_JSON + ";profile=\"" + MEDIA_TYPE_IIIF_V3 + "\"" + ";" + UTF_8));
+                .andExpect(header().string(HEADER_CONTENTTYPE, MEDIA_TYPE_JSONLD + ";profile=\"" + MEDIA_TYPE_IIIF_V3 + "\"" + ";" + UTF_8));
 
         //with format parameter and accept header jsonld
         this.mockMvc.perform(head("/presentation/vrolijk/versierde/annopage/annopagetaart")
@@ -331,7 +331,23 @@ public class FTControllerTest {
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(header().string(HEADER_CONTENTTYPE, MEDIA_TYPE_JSONLD + ";profile=\"" + MEDIA_TYPE_IIIF_V3 + "\"" + ";" + UTF_8));
+
+        //with format parameter and accept header json
+        this.mockMvc.perform(head("/presentation/vrolijk/versierde/annopage/annopagetaart")
+                .param("format", "2")
+                .header("Accept", "application/json"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(header().string(HEADER_CONTENTTYPE, MEDIA_TYPE_JSON+ ";profile=\"" + MEDIA_TYPE_IIIF_V2 + "\"" + ";" + UTF_8));
+
+        this.mockMvc.perform(head("/presentation/tergend/zanikende/annopage/zuurpruimen")
+                .param("format", "3")
+                .header("Accept", "application/json"))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(header().string(HEADER_CONTENTTYPE, MEDIA_TYPE_JSON + ";profile=\"" + MEDIA_TYPE_IIIF_V3 + "\"" + ";" + UTF_8));
     }
+
 
     /**
      * test for the If-None-Match header handling for AnnoPage
