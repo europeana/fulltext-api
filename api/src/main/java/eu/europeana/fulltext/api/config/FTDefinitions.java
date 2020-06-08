@@ -3,18 +3,24 @@ package eu.europeana.fulltext.api.config;
 /**
  * Created by luthien on 14/06/2018.
  */
-public class FTDefinitions {
+public final class FTDefinitions {
 
-    private FTDefinitions(){}
+    public static final  String MEDIA_TYPE_JSONLD         = "application/ld+json";
+    public static final  String MEDIA_TYPE_JSON           = "application/json";
+    public static final  String V3_ANNO_PAGE_TYPE         = "AnnotationPage";
+    public static final  String V3_ANNOTATION_TYPE        = "Annotation";
+    public static final  String V3_ANNO_BODY_TYPE         = "SpecificResource";
+    public static final  String EDM_FULLTEXTRESOURCE_TYPE = "FullTextResource";
+    public static final  String UTF_8                     = "charset=UTF-8";
+    public static final  String TYPE_PAGE                 = "page";
+    public static final  String TYPE_BLOCK                = "block";
+    public static final  String TYPE_LINE                 = "line";
+    public static final  String TYPE_WORD                 = "word";
+    public static final  String TYPE_MEDIA                = "media";
+    public static final  String TYPE_CAPTION              = "caption";
+    public static final  String TYPE_UNDEFINED            = "undefined";
+    private static final String PROFILE_IS                = ";profile=\"";
 
-    public  static final String MEDIA_TYPE_JSONLD          = "application/ld+json";
-    public  static final String MEDIA_TYPE_JSON            = "application/json";
-    public  static final String V3_ANNO_PAGE_TYPE          = "AnnotationPage";
-    public  static final String V3_ANNOTATION_TYPE         = "Annotation";
-    public  static final String V3_ANNO_BODY_TYPE          = "SpecificResource";
-    public  static final String EDM_FULLTEXTRESOURCE_TYPE  = "FullTextResource";
-    public  static final String UTF_8                      = "charset=UTF-8";
-    private static final String PROFILE_IS                 = ";profile=\"";
 
     /**
      * Media type for IIIF version 2
@@ -64,4 +70,5 @@ public class FTDefinitions {
                                                            + MEDIA_TYPE_IIIF_V3
                                                            + "\";" + UTF_8;
 
+    private FTDefinitions(){}
 }

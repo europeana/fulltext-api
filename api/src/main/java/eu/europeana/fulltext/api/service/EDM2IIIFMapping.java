@@ -280,25 +280,25 @@ public final class EDM2IIIFMapping {
         String dcType;
         switch (Character.toUpperCase(dcTypeCode)) {
             case 'P':
-                dcType = "Page";
+                dcType = TYPE_PAGE;
                 break;
             case 'M':
-                dcType = "Media";
+                dcType = TYPE_MEDIA;
                 break;
             case 'B':
-                dcType = "Block";
+                dcType = TYPE_BLOCK;
                 break;
             case 'L':
-                dcType = "Line";
+                dcType = TYPE_LINE;
                 break;
             case 'W':
-                dcType = "Word";
+                dcType = TYPE_WORD;
                 break;
             case 'C':
-                dcType = "Caption";
+                dcType = TYPE_CAPTION;
                 break;
             default:
-                dcType = "undefined";
+                dcType = TYPE_UNDEFINED;
                 break;
         }
         return dcType;
