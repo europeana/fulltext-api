@@ -19,11 +19,17 @@ import java.util.List;
 @JsonPropertyOrder({"id", "type", "items","hits"})
 public class SearchResult implements Serializable {
 
+    private static final long serialVersionUID = -5643549600050178321L;
+
     private static final String TYPE = "Annotationpage";
 
     private String id;
     private List<AnnotationV3> items = new ArrayList<>();
     private List<Hit> hits = new ArrayList<>();
+
+    public SearchResult(String searchId) {
+        this.id = searchId;
+    }
 
     public String getType() {
         return SearchResult.TYPE;
@@ -41,10 +47,6 @@ public class SearchResult implements Serializable {
         return hits;
     }
 
-    public SearchResult(String searchId) {
-        this.id = searchId;
-    }
-
     /**
      * Add an Annotation that matches to a hit
      * @param annoPage, the annotation page where the hit was found
@@ -54,6 +56,7 @@ public class SearchResult implements Serializable {
     public void addAnnotationHit(AnnoPage annoPage, Annotation annotation, Hit hit) {
         AnnotationV3 annoV3 = EDM2IIIFMapping.getAnnotationV3(annoPage, annotation, false, false);
         hit.addAnnotationId(annoV3.getId());
+        // TODO check if we already have this hit from another annotation?
         hits.add(hit);
         items.add(annoV3);
     }

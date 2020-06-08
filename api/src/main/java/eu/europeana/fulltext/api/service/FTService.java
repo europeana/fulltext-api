@@ -89,7 +89,7 @@ public class FTService {
      * Retrieve all annopages for a particular issue
      * @param datasetId
      * @param localId
-     * @return List of AnnoPages
+     * @return List of AnnoPages, empty list if there are none
      */
     public List<AnnoPage> fetchAnnoPages(String datasetId, String localId) {
         List<AnnoPage> result = new ArrayList<>();
@@ -133,13 +133,13 @@ public class FTService {
      */
     public FTResource fetchFTResource(String datasetId, String localId, String resId)
             throws ResourceDoesNotExistException {
-        FTResource result = generateFTResource(resourceRepository.findByDatasetLocalResId(datasetId, localId, resId));
-        if (result == null) {
+        Resource resource = resourceRepository.findByDatasetLocalResId(datasetId, localId, resId);
+        if (resource == null) {
             throw new ResourceDoesNotExistException(String.format(
                     "No Fulltext Resource with resourceId: %s was found that is associated with datasetId: %s and localId: %s",
                     resId, datasetId, localId));
         }
-        return result;
+        return generateFTResource(resource);
     }
 
 
@@ -155,29 +155,6 @@ public class FTService {
     public boolean doesAnnoPageExist(String datasetId, String localId, String pageId){
         return annoPageRepository.existsByPageId(datasetId, localId, pageId);
     }
-
-    /**
-     * Check if a particular annotation with the provided ids exists or not
-     * @param datasetId Identifier of the dataset
-     * @param localId   Identifier of the item
-     * @param annoId    Identifier of the annotation
-     * @return true if it exists, otherwise false
-     */
-    private boolean doesAnnotationExist(String datasetId, String localId, String annoId){
-        return annoPageRepository.existsWithAnnoId(datasetId, localId, annoId);
-    }
-
-    /**
-     * Check if a particular resource with the provided ids exists or not
-     * @param datasetId Identifier of the dataset
-     * @param localId   Identifier of the item
-     * @param resId     Identifier of the fulltext resource
-     * @return true if it exists, otherwise false
-     */
-    private boolean doesFTResourceExist(String datasetId, String localId, String resId){
-        return resourceRepository.existsByLimitOne(datasetId, localId, resId);
-    }
-
 
     // = = [ generate JSON objects ] = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
     /**

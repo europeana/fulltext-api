@@ -16,6 +16,8 @@ import java.util.List;
 @JsonPropertyOrder({"type", "annotations", "selectors"})
 public class Hit implements Serializable {
 
+    private static final long serialVersionUID = -3280544584499568202L;
+
     private static final String TYPE = "Hit";
 
     private Integer startIndex; // for processing purposes only

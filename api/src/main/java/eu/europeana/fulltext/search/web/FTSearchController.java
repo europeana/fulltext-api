@@ -42,7 +42,10 @@ public class FTSearchController {
      * @param pageSize
      * @param page
      * @param lang
-     * @return
+     * @param snippet, this is a value for debugging and experimentation; use value "Solr" to use the entire snippet
+     *                 found by Solr when searching in Mongo and output that as HitSelector, use value "Mongo" to use
+     *                 only the stemmed exact hit from Solr when searching in Mongo and use Mongo for HitSelector
+     *                 generation. Both options will output debug information
      * @throws FTException
      */
     @GetMapping(value = "/{datasetId}/{localId}/search", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -53,13 +56,12 @@ public class FTSearchController {
                                     @RequestParam (required = false, defaultValue = "0") int page,
                                     @RequestParam (required = false, defaultValue = "12") int pageSize,
                                     @RequestParam (required = false) String lang,
+                                    @RequestParam (required = false, defaultValue = "") String snippet,
                                     HttpServletRequest request) throws FTException {
         String qry = validateQuery(query, q);
         String searchId = request.getRequestURI() + "?" + request.getQueryString();
 
-        SearchResult result = searchService.searchIssue(searchId, new EuropeanaId(datasetId, localId), qry);
-        // TODO how to handle no results (404s)
-        return result;
+        return searchService.searchIssue(searchId, new EuropeanaId(datasetId, localId), qry, snippet);
     }
 
     @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -74,9 +76,7 @@ public class FTSearchController {
         String qry = validateQuery(query, q);
         String searchId = request.getRequestURI() + "?" + request.getQueryString();
 
-        SearchResult result =  searchService.searchCollection(searchId, qry, page, pageSize);
-        // TODO how to handle no results (404s)
-        return result;
+        return searchService.searchCollection(searchId, qry, page, pageSize);
     }
 
 
@@ -92,4 +92,5 @@ public class FTSearchController {
         }
         return q;
     }
+
 }

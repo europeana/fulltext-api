@@ -1,7 +1,8 @@
 package eu.europeana.fulltext.search.model.response;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import eu.europeana.fulltext.search.model.FTSearchDefinitions;
+
+import java.io.Serializable;
 
 /**
  * Contains the prefix, exact, and suffix fields retrieved from Solr, used for serializing search response
@@ -10,7 +11,9 @@ import eu.europeana.fulltext.search.model.FTSearchDefinitions;
  * Created on 2 June 2020
  */
 @JsonPropertyOrder({"type", "prefix", "exact", "postfix"})
-public class HitSelector {
+public class HitSelector implements Serializable {
+
+    private static final long serialVersionUID = -2157026156195054409L;
 
     private static final String TYPE = "TextQuoteSelector";
 

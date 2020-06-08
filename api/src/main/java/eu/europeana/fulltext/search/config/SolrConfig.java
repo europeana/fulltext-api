@@ -10,6 +10,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.solr.core.SolrTemplate;
 import org.springframework.data.solr.repository.config.EnableSolrRepositories;
 
+import java.util.Locale;
+
 /**
  * Configure connection to Solr and the Solr repository
  *
@@ -26,6 +28,8 @@ public class SolrConfig {
     private String solrHost;
     @Value("${spring.data.solr.core}")
     private String solrCore;
+    @Value("${spring.data.solr.hl.maxAnalyzedChars}")
+    private Integer hlMaxAnalyzeChars;
 
     // TODO set timeouts!?
 
@@ -35,10 +39,9 @@ public class SolrConfig {
      */
     @Bean
     public SolrClient solrClient() {
-        if (zookeeperHost.isBlank() || zookeeperHost.toUpperCase().contains("REMOVED")) {
+        if (zookeeperHost.isBlank() || zookeeperHost.toUpperCase(Locale.GERMAN).contains("REMOVED")) {
             LogManager.getLogger(SolrConfig.class).info("No zookeeper configured, trying to connect to standalone server");
-            SolrClient client = new HttpSolrClient.Builder(solrHost).build();
-            return client;
+            return new HttpSolrClient.Builder(solrHost).build();
         }
         CloudSolrClient client = new CloudSolrClient.Builder().withZkHost(zookeeperHost).build();
         client.setDefaultCollection(solrCore);

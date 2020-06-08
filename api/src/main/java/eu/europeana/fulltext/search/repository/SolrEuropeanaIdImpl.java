@@ -31,7 +31,7 @@ public class SolrEuropeanaIdImpl implements SolrEuropeanaId {
     private SolrTemplate solrTemplate;
 
     @Value("${spring.data.solr.core}")
-    String solrCore;
+    private String solrCore;
 
     @PostConstruct
     private void init() {
