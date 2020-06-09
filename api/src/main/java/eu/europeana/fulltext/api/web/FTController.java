@@ -129,6 +129,7 @@ public class FTController {
                                             HttpServletRequest request,
                                             boolean isJson) throws SerializationException {
         LOG.debug("Retrieve Annopage: {}/{}/{}", datasetId, localId, pageId);
+        List<String> textGranValues;
         String requestVersion = getRequestVersion(request, versionParam);
         if (ACCEPT_VERSION_INVALID.equals(requestVersion)){
             return new ResponseEntity<>(ACCEPT_VERSION_INVALID, HttpStatus.NOT_ACCEPTABLE);
@@ -151,7 +152,12 @@ public class FTController {
             headers = CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
             addContentTypeToResponseHeader(headers, requestVersion, isJson);
 
-            List<String> textGranValues = getTextGranularityValues(textGranularity.toLowerCase(Locale.GERMANY));
+            if (StringUtils.isNotBlank(textGranularity)){
+                textGranValues = getTextGranularityValues(textGranularity.toLowerCase(Locale.GERMANY));
+            } else {
+                textGranValues = new ArrayList<>();
+            }
+
             if ("3".equalsIgnoreCase(requestVersion)) {
                 annotationPage = fts.generateAnnoPageV3(annoPage, StringUtils.equalsAnyIgnoreCase(profile, PROFILE_TEXT), textGranValues);
             } else {
@@ -423,9 +429,6 @@ public class FTController {
      * @return list with valid values.
      */
     private List<String> getTextGranularityValues(String textGranularity) {
-        if (StringUtils.isBlank(textGranularity)){
-            return new ArrayList<>();
-        }
         List<String> preList = new ArrayList<>(Arrays.asList(textGranularity.split("\\+|\\s|,")));
         List<String> finalList = new ArrayList<>();
         for (String value : preList){
@@ -434,34 +437,5 @@ public class FTController {
             }
         }
         return finalList;
-
-//        List<String> list = new ArrayList<>();
-//        if (StringUtils.isNotEmpty(textGranularity)) {
-//            if (StringUtils.contains(textGranularity, "+") || StringUtils.contains(textGranularity, ",")  ||
-//                    StringUtils.contains(textGranularity, " ")) {
-//                String [] values = textGranularity.split("[+, ]");
-//                for (String s : values) {
-//                    if (! s.equals("")) {
-//                        list.add(s.trim());
-//                    }
-//                }
-//            } else {
-//                list.add(textGranularity);
-//            }
-//        }
-//        return filterGranularityValues(list);
     }
-
-//    private List<String> filterGranularityValues(List<String> list) {
-//        List<String> textGranValues = new ArrayList<>();
-//        if (! list.isEmpty()) {
-//            for (String text : list) {
-//                if (StringUtils.equals(text, TYPE_PAGE) || StringUtils.equals(text, TYPE_BLOCK) || StringUtils.equals(text, TYPE_WORD) ||
-//                        StringUtils.equals(text, TYPE_LINE) || StringUtils.equals(text, TYPE_MEDIA) || StringUtils.equals(text, TYPE_CAPTION)) {
-//                    textGranValues.add(text);
-//                }
-//            }
-//        }
-//        return textGranValues;
-//    }
 }
