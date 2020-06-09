@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static eu.europeana.fulltext.api.config.FTDefinitions.*;
@@ -53,23 +54,35 @@ public final class EDM2IIIFMapping {
         EDM2IIIFMapping.ftService = ftService;
     }
 
-    static AnnotationPageV2 getAnnotationPageV2(AnnoPage annoPage, boolean derefResource){
+    static AnnotationPageV2 getAnnotationPageV2(AnnoPage annoPage, boolean derefResource, List<String> textGranValues){
         AnnotationPageV2 annPage = new AnnotationPageV2(getAnnoPageIdUrl(annoPage));
-        annPage.setResources(getAnnotationV2Array(annoPage, derefResource));
+        annPage.setResources(getAnnotationV2Array(annoPage, derefResource, textGranValues));
         return annPage;
     }
 
-    private static AnnotationV2[] getAnnotationV2Array(AnnoPage annoPage, boolean derefResource){
+    private static AnnotationV2[] getAnnotationV2Array(AnnoPage annoPage, boolean derefResource, List<String> textGranValues){
         ArrayList<AnnotationV2> annoArrayList = new ArrayList<>();
         for (Annotation ftAnno : annoPage.getAns()){
-            // make sure page annotations are listed first.
-            if (ftAnno.isTopLevel()) {
-                annoArrayList.add(0, getAnnotationV2(annoPage, ftAnno, false, derefResource ));
-            } else {
-                annoArrayList.add(getAnnotationV2(annoPage, ftAnno, false, false));
+            if (textGranValues.isEmpty()) {
+                addAnnotationV2(annoPage, ftAnno, derefResource, annoArrayList);
+            }
+            else {
+                 String dcType = expandDCType(ftAnno.getDcType());
+                 if (checkIfDCTypeMatches(dcType, textGranValues)){
+                    addAnnotationV2(annoPage, ftAnno, derefResource, annoArrayList);
+                }
             }
         }
         return annoArrayList.toArray(new AnnotationV2[0]);
+    }
+
+    private static void addAnnotationV2(AnnoPage annoPage, Annotation ftAnno, boolean derefResource, ArrayList<AnnotationV2> annoArrayList) {
+        // make sure page annotations are listed first.
+        if (ftAnno.isTopLevel()) {
+            annoArrayList.add(0, getAnnotationV2(annoPage, ftAnno, false, derefResource ));
+        } else {
+            annoArrayList.add(getAnnotationV2(annoPage, ftAnno, false, false));
+        }
     }
 
     private static AnnotationV2 getAnnotationV2(AnnoPage annoPage, Annotation annotation, boolean includeContext, boolean derefResource){
@@ -106,24 +119,36 @@ public final class EDM2IIIFMapping {
         return ann;
     }
 
-    static AnnotationPageV3 getAnnotationPageV3(AnnoPage annoPage, boolean derefResource){
+    static AnnotationPageV3 getAnnotationPageV3(AnnoPage annoPage, boolean derefResource, List<String> textGranValues){
         AnnotationPageV3 annPage = new AnnotationPageV3(getAnnoPageIdUrl(annoPage));
-        annPage.setItems(getAnnotationV3Array(annoPage, derefResource));
+        annPage.setItems(getAnnotationV3Array(annoPage, derefResource, textGranValues));
         return annPage;
     }
 
-    private static AnnotationV3[] getAnnotationV3Array(AnnoPage annoPage, boolean derefResource){
+    private static AnnotationV3[] getAnnotationV3Array(AnnoPage annoPage, boolean derefResource, List<String> textGranValues){
         ArrayList<AnnotationV3> annoArrayList = new ArrayList<>();
         for (Annotation ftAnno : annoPage.getAns()){
-            // make sure page annotations are listed first.
-            if (ftAnno.isTopLevel()) {
-                annoArrayList.add(0, getAnnotationV3(annoPage, ftAnno, false, derefResource));
-
-            } else {
-                annoArrayList.add(getAnnotationV3(annoPage, ftAnno, false, false));
+            if (textGranValues.isEmpty()) {
+                addAnnotationV3(annoPage, ftAnno, derefResource, annoArrayList);
+            }
+            else {
+                String dcType = expandDCType(ftAnno.getDcType());
+                if (checkIfDCTypeMatches(dcType, textGranValues)){
+                    addAnnotationV3(annoPage, ftAnno, derefResource, annoArrayList);
+                }
             }
         }
         return annoArrayList.toArray(new AnnotationV3[0]);
+    }
+
+    private static void addAnnotationV3(AnnoPage annoPage, Annotation ftAnno, boolean derefResource, ArrayList<AnnotationV3> annoArrayList) {
+        // make sure page annotations are listed first.
+        if (ftAnno.isTopLevel()) {
+            annoArrayList.add(0, getAnnotationV3(annoPage, ftAnno, false, derefResource));
+
+        } else {
+            annoArrayList.add(getAnnotationV3(annoPage, ftAnno, false, false));
+        }
     }
 
     private static AnnotationV3 getAnnotationV3(AnnoPage annoPage, Annotation annotation, boolean includeContext, boolean derefResource){
@@ -255,27 +280,36 @@ public final class EDM2IIIFMapping {
         String dcType;
         switch (Character.toUpperCase(dcTypeCode)) {
             case 'P':
-                dcType = "Page";
+                dcType = TYPE_PAGE;
                 break;
             case 'M':
-                dcType = "Media";
+                dcType = TYPE_MEDIA;
                 break;
             case 'B':
-                dcType = "Block";
+                dcType = TYPE_BLOCK;
                 break;
             case 'L':
-                dcType = "Line";
+                dcType = TYPE_LINE;
                 break;
             case 'W':
-                dcType = "Word";
+                dcType = TYPE_WORD;
                 break;
             case 'C':
-                dcType = "Caption";
+                dcType = TYPE_CAPTION;
                 break;
             default:
-                dcType = "undefined";
+                dcType = TYPE_UNDEFINED;
                 break;
         }
         return dcType;
+    }
+
+    private static boolean checkIfDCTypeMatches(String dcType, List<String> textGranValues) {
+            for (String text : textGranValues) {
+                    if (StringUtils.equalsIgnoreCase(dcType,text)) {
+                        return true;
+                    }
+                }
+        return false;
     }
 }
