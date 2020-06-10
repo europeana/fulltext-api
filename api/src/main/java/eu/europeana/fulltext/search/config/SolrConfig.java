@@ -28,7 +28,7 @@ public class SolrConfig {
     private String solrHost;
     @Value("${spring.data.solr.core}")
     private String solrCore;
-    @Value("${spring.data.solr.hl.maxAnalyzedChars}")
+    @Value("${spring.data.solr.hl.maxAnalyzedChars:}")
     private Integer hlMaxAnalyzeChars;
 
     // TODO set timeouts!?

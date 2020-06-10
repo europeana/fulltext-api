@@ -42,10 +42,7 @@ public class FTSearchController {
      * @param pageSize
      * @param page
      * @param lang
-     * @param snippet, this is a value for debugging and experimentation; use value "Solr" to use the entire snippet
-     *                 found by Solr when searching in Mongo and output that as HitSelector, use value "Mongo" to use
-     *                 only the stemmed exact hit from Solr when searching in Mongo and use Mongo for HitSelector
-     *                 generation. Both options will output debug information
+     * @param debug if specified then include debug information in the response
      * @throws FTException
      */
     @GetMapping(value = "/{datasetId}/{localId}/search", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -56,12 +53,11 @@ public class FTSearchController {
                                     @RequestParam (required = false, defaultValue = "0") int page,
                                     @RequestParam (required = false, defaultValue = "12") int pageSize,
                                     @RequestParam (required = false) String lang,
-                                    @RequestParam (required = false, defaultValue = "") String snippet,
+                                    @RequestParam (required = false) String debug,
                                     HttpServletRequest request) throws FTException {
         String qry = validateQuery(query, q);
         String searchId = request.getRequestURI() + "?" + request.getQueryString();
-
-        return searchService.searchIssue(searchId, new EuropeanaId(datasetId, localId), qry, snippet);
+        return searchService.searchIssue(searchId, new EuropeanaId(datasetId, localId), qry, (debug != null));
     }
 
     @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -75,7 +71,6 @@ public class FTSearchController {
                                       HttpServletRequest request) throws FTException {
         String qry = validateQuery(query, q);
         String searchId = request.getRequestURI() + "?" + request.getQueryString();
-
         return searchService.searchCollection(searchId, qry, page, pageSize);
     }
 

@@ -8,22 +8,20 @@ import eu.europeana.fulltext.search.exception.RecordDoesNotExistException;
 import eu.europeana.fulltext.search.model.FTSearchDefinitions;
 import eu.europeana.fulltext.search.model.query.EuropeanaId;
 import eu.europeana.fulltext.search.model.query.SolrNewspaper;
+import eu.europeana.fulltext.search.model.response.Debug;
 import eu.europeana.fulltext.search.model.response.Hit;
 import eu.europeana.fulltext.search.model.response.HitSelector;
 import eu.europeana.fulltext.search.model.response.SearchResult;
 import eu.europeana.fulltext.search.repository.SolrNewspaperRepo;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.solr.core.query.result.HighlightEntry;
 import org.springframework.data.solr.core.query.result.HighlightPage;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static eu.europeana.fulltext.api.config.FTDefinitions.ANNO_TYPE_WORD;
 
@@ -56,14 +54,16 @@ public class FTSearchService {
      * @param searchId string that is set as id of the search (endpoint, path and query parameters)
      * @param europeanaId europeana id of the issue to search
      * @param query the string to search
+     * @param debug if true we include debug information
      * @throws FTException when there is a problem processing the request (e.g. issue doesn't exist)
      * @return SearchResult object (can be empty if no hits were found)
      */
-    public SearchResult searchIssue(String searchId, EuropeanaId europeanaId, String query, String snippet) throws FTException {
+    public SearchResult searchIssue(String searchId, EuropeanaId europeanaId, String query, boolean debug) throws FTException {
         // TODO Figure out why it only works when I specify a PageRequest
+        long start = System.currentTimeMillis();
         HighlightPage<SolrNewspaper> solrResult = solrRepo.findByEuropeanaId(europeanaId, query, new PageRequest(0,1));
 
-        SearchResult result = new SearchResult(searchId);
+        SearchResult result = new SearchResult(searchId, debug);
         if (solrResult.isEmpty()) {
             LOG.debug("Solr return empty result");
             // check if there are 0 hits because the record doesn't exist
@@ -72,72 +72,30 @@ public class FTSearchService {
             }
         } else {
             LOG.debug("Solr returned {} document", solrResult.getSize());
-
-            // we have 2 ways of generation Hits and finding corresponding Annotations
-            // 1. Use (entire) Solr snippet
-            if ("solr".equalsIgnoreCase(snippet)) {
-                matchSnippetFromSolr(result, solrResult, europeanaId);
-            } else {
-                // 2. Use only Solr exact string to find occurances in Mongo and use Mongo to generate snippet
-                matchExactInMongo(result, solrResult, europeanaId);
-            }
+            findHitsInIssue(result, solrResult, europeanaId, result.getDebug());
         }
+        LOG.debug("Search done in {} ms. Found {} annotations", (System.currentTimeMillis() - start), result.getItems().size());
         return result;
     }
 
     /**
-     * We use the entire snippet returned by Solr as the basis and try to find those in Mongo.
+     * We use all the strings found by Solr as keywords to do a search in a record/newspaper issue to find the correct
+     * annopages and annotations.
      */
-    private SearchResult matchSnippetFromSolr(SearchResult result, HighlightPage<SolrNewspaper> solrResult,
-                                              EuropeanaId europeanaId) {
-        // Since we use the solr snippet as the basis, we can already create a list of hit selectors
-        // We use those hitSelectors to find the same occurance in mongo
-        List<HitSelector> hitsToFind = createHitSelectorsFromSolr(solrResult);
+    private SearchResult findHitsInIssue(SearchResult result, HighlightPage<SolrNewspaper> solrResult,
+                                         EuropeanaId europeanaId, Debug debug) {
+        Collection<HitSelector> hitsToFind = getHitsFromSolrSnippets(solrResult, debug);
 
         // TODO tmp hack to get things working: for now we have to search through all annopages to get the right fulltext
         long start = System.currentTimeMillis();
         List<AnnoPage> pages = fulltextRepo.fetchAnnoPages(europeanaId.getDatasetId(), europeanaId.getLocalId());
         LOG.debug("Found {} annopages in {} ms", pages.size(), System.currentTimeMillis() - start);
-        for (AnnoPage page : pages) {
-            // check each page if we can find our hitSelector there
-            List<HitSelector> hitsFound = new ArrayList<>();
-            for (HitSelector hitToFind : hitsToFind) {
-                Hit hitFound = findFullSnippetFromSolr(hitToFind, page);
-                if (hitFound != null) {
-                    findAnnotation(result, hitFound, page);
-                    hitsFound.add(hitToFind);
-                }
-            }
-            // when the hitSelector is found, we remove it from our list of hitSelectors we want to find.
-            hitsToFind.removeAll(hitsFound);
-            if (hitsToFind.isEmpty()) {
-                break;
-            }
-        }
-        if (!hitsToFind.isEmpty()) {
-            LOG.warn("Failed to find {} Solr snippets {}", hitsToFind.size(), hitsToFind);
-        }
-        return result;
-    }
 
-    /**
-     * We use all exact strings found by Solr as keywords to do a search in fulltext. We ignore the rest of the Solr snippet
-     * and generate our own snippet based on data from Mongo
-     */
-    private SearchResult matchExactInMongo(SearchResult result, HighlightPage<SolrNewspaper> solrResult,
-                                           EuropeanaId europeanaId) {
-        // Create a list of all different keywords found in Solr.
-        Set<String> hitsToFind = createKeywordListForMongo(solrResult);
-
-        // TODO tmp hack to get things working: for now we have to search through all annopages to get the right fulltext
-        long start = System.currentTimeMillis();
-        List<AnnoPage> pages = fulltextRepo.fetchAnnoPages(europeanaId.getDatasetId(), europeanaId.getLocalId());
-        LOG.debug("Found {} annopages in {} ms", pages.size(), System.currentTimeMillis() - start);
         for (AnnoPage page : pages) {
             // check each page if we can find our keywords
             LOG.trace("Searching through page {}, fulltext = {}", page.getPgId(), page.getRes().getId());
-            for (String hitToFind : hitsToFind) {
-                List<Hit> hitsFound = findExactStringInMongo(hitToFind, page);
+            for (HitSelector hitToFind : hitsToFind) {
+                List<Hit> hitsFound = findHitInFullText(hitToFind, page);
                 for (Hit hit : hitsFound) {
                     findAnnotation(result, hit, page);
                 }
@@ -147,97 +105,128 @@ public class FTSearchService {
     }
 
     /**
-     * Create HitSelectors based on full Solr snippet
+     * Use the Solr snippets to create a set of unique hits. We use those to search in Mongo fulltexts ourselves,
+     * to find the correct annopage(s) and annotations
      */
-    private List<HitSelector> createHitSelectorsFromSolr(HighlightPage<SolrNewspaper> solrResult) {
-        List<HitSelector> result = new ArrayList<>();
+    private Collection<HitSelector> getHitsFromSolrSnippets(HighlightPage<SolrNewspaper> solrResult, Debug debug) {
+        // we use a hashmap where the string is the hit in String representation, so we can quickly see if we already
+        // a similar hit or not
+        Map<String, HitSelector> hits = new HashMap<>();
         for (HighlightEntry<SolrNewspaper> content : solrResult.getHighlighted()) {
             LOG.debug("Record = {}", content.getEntity().europeanaId);
+
             for (HighlightEntry.Highlight highlight : content.getHighlights()) {
-                for (String snipplet : highlight.getSnipplets()) {
-                    HitSelector hitSelector = createHitSelectorFromSolr(snipplet);
-                    LOG.debug("  Keyword = '{}', Solr snippet = {}", hitSelector.getExact(), snipplet);
-                    result.add(hitSelector);
+                for (String snippet : highlight.getSnipplets()) {
+                    addHitsFromSolrSnippet(hits, snippet, debug);
                 }
             }
         }
-        return result;
+        LOG.debug("Found {} distinct keywords: {} ", hits.keySet().size(), hits.keySet());
+        return hits.values();
     }
 
     /**
-     * Get the word(s) found by Solr which are surrounded by HIT_START_TAG and HIT_END_TAG
+     * Extracts the keyword(s) from the solr snippet. Note that we 'misuse' the HitSelector object to also get 1
+     * leading and 1 trailing character. We do this so we can search using word delimiters
      */
-    private HitSelector createHitSelectorFromSolr(String snipplet) {
-        String prefix = StringUtils.substringBefore(snipplet, FTSearchDefinitions.HIT_TAG_START);
-        String exact = StringUtils.substringBefore(StringUtils.substringAfter(snipplet, FTSearchDefinitions.HIT_TAG_START), FTSearchDefinitions.HIT_TAG_END);
-        String suffix = StringUtils.substringAfter(snipplet, FTSearchDefinitions.HIT_TAG_END);
-        // TODO check if suffix contains another hit (support multiple keywords?)
-        return new HitSelector(prefix, exact, suffix);
-    }
+    // TODO write unit test
+    protected Map<String, HitSelector> addHitsFromSolrSnippet(Map<String, HitSelector> hitsFound, String snippet, Debug debug) {
+        LOG.debug("  Processing snippet {}", snippet);
+        if (debug != null) {
+            debug.addSolrSnippet(snippet);
+        }
 
-    /**
-     * Create HitSelectors based on full Solr snippet so we can use those to search in Mongo fulltexts
-     */
-    private Set<String> createKeywordListForMongo(HighlightPage<SolrNewspaper> solrResult) {
-        Set<String> result = new HashSet<>();
-        for (HighlightEntry<SolrNewspaper> content : solrResult.getHighlighted()) {
-            LOG.debug("Record = {}", content.getEntity().europeanaId);
-            for (HighlightEntry.Highlight highlight : content.getHighlights()) {
-                for (String snipplet : highlight.getSnipplets()) {
-                    String exact = StringUtils.substringBefore(
-                            StringUtils.substringAfter(snipplet, FTSearchDefinitions.HIT_TAG_START), FTSearchDefinitions.HIT_TAG_END);
-                    LOG.debug("  Keyword = '{}', Solr snippet = {}", exact, snipplet);
-                    result.add(exact);
+        int start = snippet.indexOf(FTSearchDefinitions.HIT_TAG_START);
+        while (start != -1) {
+            int end = snippet.indexOf(FTSearchDefinitions.HIT_TAG_END, start);
+            String exact = snippet.substring(start + FTSearchDefinitions.HIT_TAG_START.length(), end);
+            // append character in front (if available)
+            Character prefix = null;
+            if (start > 0) {
+                prefix = snippet.charAt(start - 1);
+            }
+            // append character after (if available)
+            Character suffix = null;
+            end = end + FTSearchDefinitions.HIT_TAG_END.length();
+            if (end < snippet.length()) {
+                suffix = snippet.charAt(end);
+            }
+            HitSelector newHit = new HitSelector((prefix == null ? null : prefix.toString()), exact,
+                                              (suffix == null ? null : suffix.toString()));
+
+            if (hitsFound.containsKey(newHit.toString())) {
+                LOG.debug("    Existing keyword = '{}'", newHit);
+            } else {
+                LOG.debug("    New keyword = '{}'", newHit);
+                hitsFound.put(newHit.toString(), newHit);
+                if (debug != null) {
+                    debug.addKeywords(newHit);
                 }
             }
+
+            start = snippet.indexOf(FTSearchDefinitions.HIT_TAG_START, end);
         }
-        return result;
+        return hitsFound;
     }
 
     /**
-     * We check if we can find a Solr hit (using entire snippet) in a particular AnnoPage / Resource.
-     * If found we calculate the start and end index in the text and create a Hit object
-     * @return Hit object if there is a match, otherwise null;
+     * We check if we can find one or more of the keywords/hits in the resource (fulltext) of a particular AnnoPage
+     * If so we calculate the start and end index in the text and add it to the result list
+     * @return a list of hits (can be empty if there are no matches)
      */
-    private Hit findFullSnippetFromSolr(HitSelector hitToFind, AnnoPage annoPage) {
-        LOG.trace("Searching on page {} for Solr snippet {}:", annoPage, hitToFind);
-        int startIndex = annoPage.getRes().getValue().indexOf(hitToFind.toString());
-        if (startIndex >= 0) {
-            // we found the correct AnnoPage! set startIndex and endIndex according to 'exact' string
-            startIndex = startIndex + hitToFind.getPrefix().length();
-            int endIndex = startIndex + hitToFind.getExact().length();
-            LOG.debug("Found Solr snippet {} in fulltext {}, hit start = {}, end = {}",
-                    hitToFind, annoPage.getRes().getId(), startIndex, endIndex);
-            return new Hit(startIndex, endIndex, hitToFind);
-        }
-        return null;
-    }
-
-    /**
-     * We check if we can find one or more of the hits (exact string) in a particular AnnoPage / Resource.
-     * If so we calculate the start and end index in the text and add it to result list
-     * @return a list of hits (can be empty if there are not matches)
-     */
-    private List<Hit> findExactStringInMongo(String hitToFind, AnnoPage annoPage) {
-        LOG.trace("Searching on page {} for Solr exact string {}", annoPage, hitToFind);
+    private List<Hit> findHitInFullText(HitSelector hitToFind, AnnoPage annoPage) {
+        LOG.trace("Searching on page {} for Solr exact string '{}'", annoPage, hitToFind);
         List<Hit> result = new ArrayList<>();
 
-        // TODO OPEN QUESTION; I was searching for Amsterdam and Solr only found that keyword. So I went through all
-        //  the pages and found 'Amsterdamsche'. In this case this case it's a nice extra catch, but what if we search
-        //  for word 'ama' for example, we could end up returning words such as 'amadeus', 'pyama', 'llama', etc.
-        // ALSO what about case-sensitivity?
-
         String resourceTxt = annoPage.getRes().getValue();
-        int startIndex = resourceTxt.indexOf(hitToFind);
+        int startIndex = getHitStartInFulltext(hitToFind, 0, resourceTxt);
         while (startIndex >= 0) {
-            int endIndex = startIndex + hitToFind.length();
-            LOG.debug("Found exact string {} on page {}, fulltext {}, hit start = {}, end = {}",
+            startIndex = startIndex + hitToFind.getPrefix().length();
+            int endIndex = startIndex + hitToFind.getExact().length();
+            LOG.debug("Found hit '{}' on page {}, fulltext {}, word start = {}, end = {}",
                     hitToFind, annoPage.getPgId(), annoPage.getRes().getId(), startIndex, endIndex);
-            result.add(new Hit(startIndex, endIndex, generateSnippetFromMongo(hitToFind, resourceTxt, startIndex, endIndex)));
+            result.add(new Hit(startIndex, endIndex, generateSnippetFromFullText(hitToFind, resourceTxt, startIndex, endIndex)));
 
-            startIndex = resourceTxt.indexOf(hitToFind, startIndex + 1);
+            startIndex = getHitStartInFulltext(hitToFind, startIndex + 1, resourceTxt);
         }
         return result;
+    }
+
+    private int getHitStartInFulltext(HitSelector hitToFind, int startIndex, String fulltext) {
+        if (StringUtils.isEmpty(hitToFind.getPrefix())) {
+            // hit could be at start of fulltext
+            if (fulltext.startsWith(hitToFind.getExact() + hitToFind.getSuffix())) {
+                return 0;
+            }
+            // or at start of a sentence (after a newline)
+            int startSentence = fulltext.indexOf("\n" + hitToFind.toString(), startIndex);
+            if (startSentence > 0) {
+                return startSentence + 1;
+            }
+            // or at start of a sentence part (after a space)
+            startSentence = fulltext.indexOf(" " + hitToFind.toString(), startIndex);
+            if (startSentence > 0) {
+                return startSentence + 1;
+            }
+            return -1;
+        }
+        if (StringUtils.isEmpty(hitToFind.getSuffix())) {
+            // hit could be at end of fulltext
+            if (fulltext.endsWith(hitToFind.getPrefix() + hitToFind.getExact())) {
+                return 0;
+            }
+            // or end of sentence (before a newline)
+            int endSentence = fulltext.indexOf(hitToFind.toString() + "\n", startIndex);
+            if (endSentence > 0) {
+                return endSentence;
+            }
+            // or end of sentence part (before a space)
+            endSentence = fulltext.indexOf(hitToFind.toString() + " ", startIndex);
+            if (endSentence > 0) {
+                return endSentence;
+            }
+        }
+        return fulltext.indexOf(hitToFind.toString(), startIndex);
     }
 
     /**
@@ -245,7 +234,8 @@ public class FTSearchService {
      * The strategy is to find the closest dot (start and end of sentence). If we can't find that we search for the
      * closest newline as fallback solution.
      */
-    protected HitSelector generateSnippetFromMongo(String hitToFind, String fullText, int startIndex, int endIndex) {
+    protected HitSelector generateSnippetFromFullText(HitSelector hitToFind, String fullText, int startIndex, int endIndex) {
+
         int startSentence;
         int endPreviousSentence = fullText.lastIndexOf('.', startIndex);
         if (endPreviousSentence == -1) {
@@ -278,7 +268,10 @@ public class FTSearchService {
         }
         String suffix = fullText.substring(endIndex, endSentence);
 
-        return new HitSelector(prefix, hitToFind, suffix);
+        // TODO create new hit based on word-level annotation
+        // but for demo purposes we temporarily generate our own 'sentence' hit
+
+        return new HitSelector(prefix, hitToFind.getExact(), suffix);
     }
 
     /**
@@ -286,6 +279,7 @@ public class FTSearchService {
      */
     private void findAnnotation(SearchResult result, Hit hit, AnnoPage annoPage) {
         boolean annotationFound = false;
+        LOG.trace("Searching annotations for hit {},{}", hit.getStartIndex(), hit.getEndIndex());
         for (Annotation anno : annoPage.getAns()) {
             if (anno.getDcType() == ANNOTATION_HIT_MATCH_LEVEL &&
                     overlap(hit.getStartIndex(), hit.getEndIndex(), anno.getFrom(), anno.getTo())) {
@@ -325,12 +319,6 @@ public class FTSearchService {
     private boolean overlap(int s1, int e1, int s2, int e2) {
         return (s1 <= e2 && e1 >= s2);
     }
-
-
-
-
-
-
 
 
     public SearchResult searchCollection(String searchId, String query, int page, int pageSize) {
