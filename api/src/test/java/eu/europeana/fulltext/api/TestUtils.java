@@ -19,9 +19,7 @@ import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Date;
 
-import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_EDM_JSONLD;
-import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_IIIF_V2;
-import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_IIIF_V3;
+import static eu.europeana.fulltext.api.config.FTDefinitions.*;
 
 /**
  * Created by luthien on 26/09/2018.
@@ -35,9 +33,9 @@ class TestUtils {
 
     static final String KUCKEBACKENWOLLTE       = "Es war einmal eine Frau, die diese sogenannte 'Kucken' unbedingt backen wollte";
     static final String WUERDEJANICHTAUFGEHEN   = "Aber das Teig würde ja gar nicht aufgehen! Himmeldonnerwetter!";
-    static final String EDMRIGHTS   = "http://test/edmRights";
-
-
+    static final String EDMRIGHTS               = "http://test/edmRights";
+    static final String SOURCE_1                = "http://test/item/1/source";
+    static final String SOURCE_2                = "http://test/item/2/source";
 
     private static final String DS_ID   = "ds1";
     private static final String LCL_ID  = "lc1";
@@ -85,8 +83,8 @@ class TestUtils {
         prepareAnnotationPages();
 
         // build example AnnoPage bean with all containing entities, to mock the Repository with
-        res_1 = new Resource("res1", "de",  KUCKEBACKENWOLLTE, EDMRIGHTS, DS_ID, LCL_ID);
-        res_2 = new Resource("res2", "de", WUERDEJANICHTAUFGEHEN, EDMRIGHTS, DS_ID, LCL_ID);
+        res_1 = new Resource("res1", "de",  KUCKEBACKENWOLLTE, EDMRIGHTS, DS_ID, LCL_ID, SOURCE_1);
+        res_2 = new Resource("res2", "de", WUERDEJANICHTAUFGEHEN, EDMRIGHTS, DS_ID, LCL_ID, SOURCE_2);
         tgt_1 = new Target(60,100,30,14);
         tgt_2 = new Target(95,102,53,15);
         tgt_3 = new Target(60,96,404,19);
@@ -144,14 +142,14 @@ class TestUtils {
     private static void buildAnnotationsV2(boolean includeContext){
         annv2_1 = createAnnotationV2("an1", anbv2_1,
                                      new String[]{getTargetIdUrl("pg1", "60","100","30","14")},
-                                     "Word", includeContext);
+                                     TYPE_WORD, includeContext);
         annv2_2 = createAnnotationV2("an2", anbv2_2,
                                      new String[]{getTargetIdUrl("pg1", "95","102","53","15")},
-                                     "Word", includeContext);
+                                     TYPE_WORD, includeContext);
         annv2_3 = createAnnotationV2("an3", anbv2_3,
                                      new String[]{getTargetIdUrl("pg1", "60","96","404","19"),
                                              getTargetIdUrl("pg1", "59","138","133","25")},
-                                     "Line", includeContext);
+                                     TYPE_LINE, includeContext);
     }
 
     private static void buildAnnotationBodiesV3(){
@@ -163,19 +161,19 @@ class TestUtils {
     private static void buildAnnotationsV3(boolean includeContext){
         annv3_1 = createAnnotationV3("an1", anbv3_1,
                                      new String[]{getTargetIdUrl("pg1", "60","100","30","14")},
-                                     "Word", includeContext);
+                                     TYPE_WORD, includeContext);
         annv3_2 = createAnnotationV3("an2", anbv3_2,
                                      new String[]{getTargetIdUrl("pg1", "95","102","53","15")},
-                                     "Word", includeContext);
+                                     TYPE_WORD, includeContext);
         annv3_3 = createAnnotationV3("an3", anbv3_3,
                                      new String[]{getTargetIdUrl("pg1", "60","96","404","19"),
                                              getTargetIdUrl("pg1", "59","138","133","25")},
-                                     "Line", includeContext);
+                                     TYPE_LINE, includeContext);
     }
 
     static void buildFTResources(){
-        ftres_1 = createFTResource("res1", "de", KUCKEBACKENWOLLTE, EDMRIGHTS);
-        ftres_2 = createFTResource("res2", "de" , WUERDEJANICHTAUFGEHEN, EDMRIGHTS);
+        ftres_1 = createFTResource("res1", "de", KUCKEBACKENWOLLTE, SOURCE_1, EDMRIGHTS);
+        ftres_2 = createFTResource("res2", "de" , WUERDEJANICHTAUFGEHEN, SOURCE_2, EDMRIGHTS);
         ftres_2.setContext(MEDIA_TYPE_EDM_JSONLD);
     }
 
@@ -235,8 +233,8 @@ class TestUtils {
         return ann;
     }
 
-    private static FTResource createFTResource(String resId, String language, String value, String edmRights){
-        return new FTResource(getResourceIdBaseUrl(resId), language, value, edmRights);
+    private static FTResource createFTResource(String resId, String language, String value, String source, String edmRights){
+        return new FTResource(getResourceIdBaseUrl(resId), language, value, source, edmRights);
     }
 
     private static String getResourceIdUrl(String from, String to, String resId){

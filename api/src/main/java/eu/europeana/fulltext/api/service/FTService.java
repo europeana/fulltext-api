@@ -23,6 +23,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  *
@@ -168,9 +169,9 @@ public class FTService {
      * @param derefResource boolean indicating whether to dereference the Resource object on the top level Annotation
      * @return AnnotationPageV3
      */
-     public AnnotationPageV3 generateAnnoPageV3(AnnoPage annoPage, boolean derefResource){
+     public AnnotationPageV3 generateAnnoPageV3(AnnoPage annoPage, boolean derefResource, List<String> textGranValues){
         long start = System.currentTimeMillis();
-        AnnotationPageV3 result = EDM2IIIFMapping.getAnnotationPageV3(annoPage, derefResource);
+        AnnotationPageV3 result = EDM2IIIFMapping.getAnnotationPageV3(annoPage, derefResource, textGranValues);
         if (LOG.isDebugEnabled()) {
             LOG.debug(GENERATED_IN, System.currentTimeMillis() - start);
         }
@@ -182,9 +183,9 @@ public class FTService {
      * @param annoPage AnnoPage input object
      * @return AnnotationPageV2
      */
-    public AnnotationPageV2 generateAnnoPageV2(AnnoPage annoPage, boolean derefResource){
+    public AnnotationPageV2 generateAnnoPageV2(AnnoPage annoPage, boolean derefResource, List<String> textGranValues){
         long start = System.currentTimeMillis();
-        AnnotationPageV2 result = EDM2IIIFMapping.getAnnotationPageV2(annoPage, derefResource);
+        AnnotationPageV2 result = EDM2IIIFMapping.getAnnotationPageV2(annoPage, derefResource, textGranValues);
         if (LOG.isDebugEnabled()) {
             LOG.debug(GENERATED_IN, System.currentTimeMillis() - start);
         }

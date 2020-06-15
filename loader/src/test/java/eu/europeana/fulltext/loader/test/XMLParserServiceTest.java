@@ -136,6 +136,26 @@ public class XMLParserServiceTest {
     }
 
     /**
+     * Test if the rights are retrieved properly from an example xml file
+     */
+    @Test
+    public void testResourceRights() {
+        assertEquals("http://creativecommons.org/licenses/by-nc-sa/4.0/", annoPage1.getRes().getRights());
+        assertEquals("http://creativecommons.org/licenses/by-nc-sa/4.0/", annoPage2.getRes().getRights());
+    }
+
+    /**
+     * Test if the source is retrieved properly from an example xml file
+     */
+    @Test
+    public void testResourceSource() {
+        assertEquals("http://data.europeana.eu/annotation/9200396/BibliographicResource_3000118435009",
+                     annoPage1.getRes().getSource());
+        assertEquals("http://data.europeana.eu/annotation/9200357/BibliographicResource_3000095247417",
+                     annoPage2.getRes().getSource());
+    }
+
+    /**
      * Test if we have the correct number of annotations and if they (the first) is filled properly
      */
     @Test

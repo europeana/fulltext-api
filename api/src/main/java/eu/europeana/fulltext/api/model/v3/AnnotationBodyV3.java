@@ -8,7 +8,7 @@ import eu.europeana.fulltext.api.model.JsonLdIdType;
 /**
  * Created by luthien on 14/06/2018.
  */
-@JsonPropertyOrder({"id", "type", "edmRights", "source", "language", "value"})
+@JsonPropertyOrder({"id", "type", "rights", "source", "language", "value"})
 public class AnnotationBodyV3 extends JsonLdIdType implements Serializable{
 
     private static final long serialVersionUID = 481686784002335472L;
@@ -16,7 +16,7 @@ public class AnnotationBodyV3 extends JsonLdIdType implements Serializable{
     private String language;
     private String type;
     private String value;
-    private String edmRights;
+    private String rights;
 
     public AnnotationBodyV3(String id) {
         super(id);
@@ -51,7 +51,7 @@ public class AnnotationBodyV3 extends JsonLdIdType implements Serializable{
 
     public void setValue(String value) { this.value = value; }
 
-    public String getEdmRights() { return edmRights; }
+    public String getRights() { return rights; }
 
-    public void setEdmRights(String edmRights) { this.edmRights = edmRights; }
+    public void setRights(String rights) { this.rights = rights; }
 }

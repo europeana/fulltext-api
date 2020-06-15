@@ -6,7 +6,7 @@ import java.io.Serializable;
 /**
  * Created by luthien on 14/06/2018.
  */
-@JsonPropertyOrder({"id", "type", "edmRights", "source", "language", "value"})
+@JsonPropertyOrder({"id", "type", "rights", "source", "language", "value"})
 public class AnnotationBodyV2 extends JsonLdId implements Serializable{
 
     private static final long serialVersionUID = -814446825873060414L;
@@ -15,7 +15,8 @@ public class AnnotationBodyV2 extends JsonLdId implements Serializable{
     private String language;
     private String type;
     private String value;
-    private String edmRights;
+    private String source;
+    private String rights;
 
     public AnnotationBodyV2(String id) {
         super(id);
@@ -46,7 +47,15 @@ public class AnnotationBodyV2 extends JsonLdId implements Serializable{
 
     public void setValue(String value) { this.value = value; }
 
-    public String getEdmRights() { return edmRights; }
+    public String getSource() {
+        return source;
+    }
 
-    public void setEdmRights(String edmRights) { this.edmRights = edmRights; }
+    public void setSource(String source) {
+        this.source = source;
+    }
+
+    public String getRights() { return rights; }
+
+    public void setRights(String rights) { this.rights = rights; }
 }
