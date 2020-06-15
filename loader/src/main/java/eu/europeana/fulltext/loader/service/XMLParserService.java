@@ -68,7 +68,6 @@ public class XMLParserService {
     private static final String ANNOTATION_ID = "ID";
 
     private static final String ANNOTATION_TYPE = "type";
-    private static final char   ANNOTATION_TYPE_PAGE = 'P';
 
     private static final String ANNOTATION_MOTIVATION = "motivatedBy";
     private static final String ANNOTATION_MOTIVATION_TEXT = "resource";
@@ -376,12 +375,12 @@ public class XMLParserService {
         }
 
         if (att == null || StringUtils.isEmpty(att.getValue())) {
-            LogFile.OUT.warn(file + THISANNO + anno.getAnId() + " has no specific resource text defined");
+            LogFile.OUT.warn("{}{}{} has no specific resource text defined", file, THISANNO, anno.getAnId());
         } else if (!anno.isTopLevel()){
             String[] urlAndCoordinates = att.getValue().split(ANNOTATION_HASBODY_RESOURCE_CHARPOS);
             if (urlAndCoordinates.length == 1) {
-                LogFile.OUT.warn(file + THISANNO + anno.getAnId() + " has no " +
-                        ANNOTATION_HASBODY_RESOURCE_CHARPOS + " defined in resource text " + att.getValue());
+                LogFile.OUT.warn("{}{}{} has no {} defined in resource text {}",
+                                 file, THISANNO, anno.getAnId(), ANNOTATION_HASBODY_RESOURCE_CHARPOS, att.getValue());
             } else {
                 String[] fromTo = urlAndCoordinates[1].split(",");
                 parseFromToInteger(fromTo[0], FromTo.FROM, anno, file);
@@ -393,7 +392,7 @@ public class XMLParserService {
     private enum FromTo { FROM, TO }
     private void parseFromToInteger(String value, FromTo fromTo, Annotation anno, String file) {
         if (StringUtils.isEmpty(value)) {
-            LogFile.OUT.warn(file + THISANNO + anno.getAnId() + " has empty resource text " + fromTo + " value");
+            LogFile.OUT.warn("{}{}{} has empty resource text {} value", file, THISANNO, anno.getAnId(), fromTo);
         } else {
             try {
                 if (FromTo.FROM.equals(fromTo)) {
