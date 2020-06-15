@@ -134,7 +134,6 @@ public class FTController {
         if (ACCEPT_VERSION_INVALID.equals(requestVersion)){
             return new ResponseEntity<>(ACCEPT_VERSION_INVALID, HttpStatus.NOT_ACCEPTABLE);
         }
-
         AnnotationWrapper annotationPage;
         HttpHeaders headers;
         try {
@@ -186,14 +185,45 @@ public class FTController {
      * @return ResponseEntity
      */
     @RequestMapping(value    = {"/{datasetId}/{localId}/annopage/{pageId}"},
-                    method   = RequestMethod.HEAD)
-    public ResponseEntity annoPageHeadExists(@PathVariable String datasetId,
+                    method   = RequestMethod.HEAD,
+                    headers  =  ACCEPT_JSON)
+    public ResponseEntity annoPageHeadExistsJson(@PathVariable String datasetId,
                                              @PathVariable String localId,
-                                             @PathVariable String pageId) {
+                                             @PathVariable String pageId,
+                                             @RequestParam(value = "format", required = false) String versionParam,
+                                             HttpServletRequest request) {
+       return getAnnoPageHead(request, versionParam, datasetId, localId, pageId, true);
+    }
+
+    /**
+     * HTTP Head endpoint to check for existence of an AnnoPage
+     * @param datasetId identifier of the AnnoPage's dataset
+     * @param localId  identifier of the AnnoPage's record
+     * @param pageId    identifier of the AnnoPage
+     * @return ResponseEntity
+     */
+    @RequestMapping(value    = {"/{datasetId}/{localId}/annopage/{pageId}"},
+            method   = RequestMethod.HEAD,
+            headers  = ACCEPT_JSONLD)
+    public ResponseEntity annoPageHeadExistsJsonld(@PathVariable String datasetId,
+                                                 @PathVariable String localId,
+                                                 @PathVariable String pageId,
+                                                 @RequestParam(value = "format", required = false) String versionParam,
+                                                 HttpServletRequest request) {
+        return getAnnoPageHead(request, versionParam, datasetId, localId, pageId, false);
+    }
+
+    private ResponseEntity getAnnoPageHead(HttpServletRequest request, String versionParam, String datasetId, String localId, String pageId, boolean isJson) {
+        String requestVersion = getRequestVersion(request, versionParam);
+        if (ACCEPT_VERSION_INVALID.equals(requestVersion)){
+            return new ResponseEntity(ACCEPT_VERSION_INVALID, HttpStatus.NOT_ACCEPTABLE);
+        }
+        HttpHeaders headers = new HttpHeaders();
+        addContentTypeToResponseHeader(headers, requestVersion, isJson);
         if (fts.doesAnnoPageExist(datasetId, localId, pageId)){
-            return new ResponseEntity(HttpStatus.OK);
+            return new ResponseEntity(headers, HttpStatus.OK);
         } else {
-            return new ResponseEntity(HttpStatus.NOT_FOUND);
+            return new ResponseEntity(headers, HttpStatus.NOT_FOUND);
         }
     }
 
@@ -243,7 +273,6 @@ public class FTController {
                                              boolean isJson) throws SerializationException {
         LOG.debug("Retrieve Annotation: {}/{}/{}", datasetId, localId, annoID);
         String requestVersion = getRequestVersion(request, versionParam);
-
         if (ACCEPT_VERSION_INVALID.equals(requestVersion)){
             return new ResponseEntity<>(ACCEPT_VERSION_INVALID, HttpStatus.NOT_ACCEPTABLE);
         }
