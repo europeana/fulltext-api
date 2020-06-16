@@ -13,14 +13,19 @@ import org.springframework.data.solr.repository.config.EnableSolrRepositories;
 import java.util.Locale;
 
 /**
- * Configure connection to Solr and the Solr repository
+ * Search configuration, including connection to Solr and the Solr repository
  *
  * @author Patrick Ehlert
  * Created on 28 May 2020
  */
 @Configuration
 @EnableSolrRepositories(basePackages={"eu.europeana.fulltext.search.repository"})
-public class SolrConfig {
+public class SearchConfig {
+
+    public static final Integer MAXIMUM_HITS = 100;
+
+    public static final String HIT_TAG_START = "<em>";
+    public static final String HIT_TAG_END = "</em>";
 
     @Value("${spring.data.solr.zk-host}")
     private String zookeeperHost;
@@ -40,7 +45,7 @@ public class SolrConfig {
     @Bean
     public SolrClient solrClient() {
         if (zookeeperHost.isBlank() || zookeeperHost.toUpperCase(Locale.GERMAN).contains("REMOVED")) {
-            LogManager.getLogger(SolrConfig.class).info("No zookeeper configured, trying to connect to standalone server");
+            LogManager.getLogger(SearchConfig.class).info("No zookeeper configured, trying to connect to standalone server");
             return new HttpSolrClient.Builder(solrHost).build();
         }
         CloudSolrClient client = new CloudSolrClient.Builder().withZkHost(zookeeperHost).build();

@@ -5,16 +5,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
- * Exception throw when the search request is invalid (e.g. no query or q parameter)
+ * Exception throw when we detect an invalid request parameter, e.g.
+ * <li>no query or q parameter</li>
+ * <li>pagSize parameter is bigger than maximum</li>
  *
  * @author Patrick Ehlert
  * Created on 28 May 2020
  */
 @ResponseStatus(HttpStatus.BAD_REQUEST)
-public class InvalidQueryException extends FTException {
+public class InvalidParameterException extends FTException {
 
-    public InvalidQueryException(String query) {
-        super("Invalid search query:" + query);
+    public InvalidParameterException(String error) {
+        super("Invalid parameter:" + error);
     }
 
 }

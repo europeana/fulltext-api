@@ -78,9 +78,7 @@ public class FTService {
     public AnnoPage fetchAnnoPage(String datasetId, String localId, String pageId) throws AnnoPageDoesNotExistException {
         AnnoPage result = annoPageRepository.findByDatasetLocalPageId(datasetId, localId, pageId);
         if (result == null) {
-            throw new AnnoPageDoesNotExistException(String.format(
-                    "No AnnoPage with datasetId: %s, localId: %s and pageId: %s could be found",
-                    datasetId, localId, pageId));
+            throw new AnnoPageDoesNotExistException(String.format("/%s/%s/annopage/%s", datasetId, localId, pageId));
         }
         return result;
     }
@@ -115,9 +113,7 @@ public class FTService {
             throws AnnoPageDoesNotExistException {
         AnnoPage result = annoPageRepository.findByDatasetLocalAnnoId(datasetId, localId, annoId);
         if (result == null) {
-            throw new AnnoPageDoesNotExistException(String.format(
-                    "No AnnoPage with datasetId: %s and localId: %s could be found that contains an Annotation with annotationId: %s",
-                    datasetId, localId, annoId));
+            throw new AnnoPageDoesNotExistException(String.format("/%s/%s/anno/%s", datasetId, localId, annoId));
         }
         return result;
     }
@@ -135,9 +131,7 @@ public class FTService {
             throws ResourceDoesNotExistException {
         Resource resource = resourceRepository.findByDatasetLocalResId(datasetId, localId, resId);
         if (resource == null) {
-            throw new ResourceDoesNotExistException(String.format(
-                    "No Fulltext Resource with resourceId: %s was found that is associated with datasetId: %s and localId: %s",
-                    resId, datasetId, localId));
+            throw new ResourceDoesNotExistException(String.format("/%s/%s/%s", datasetId, localId, resId));
         }
         return generateFTResource(resource);
     }

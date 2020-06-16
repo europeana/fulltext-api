@@ -1,7 +1,8 @@
 package eu.europeana.fulltext.search.web;
 
 import eu.europeana.fulltext.api.service.exception.FTException;
-import eu.europeana.fulltext.search.exception.InvalidQueryException;
+import eu.europeana.fulltext.search.config.SearchConfig;
+import eu.europeana.fulltext.search.exception.InvalidParameterException;
 import eu.europeana.fulltext.search.model.query.EuropeanaId;
 import eu.europeana.fulltext.search.model.response.SearchResult;
 import eu.europeana.fulltext.search.service.FTSearchService;
@@ -39,11 +40,11 @@ public class FTSearchController {
      * @param query search query
      * @param q alternative search query (will override query if specified both
      * @param qf
-     * @param pageSize
+     * @param pageSize maximum number of hits
      * @param page
      * @param lang
      * @param debug if specified then include debug information in the response
-     * @throws FTException
+     * @throws FTException when there is an error processing the request
      */
     @GetMapping(value = "/{datasetId}/{localId}/search", produces = MediaType.APPLICATION_JSON_VALUE)
     public SearchResult searchIssue(@PathVariable String datasetId, @PathVariable String localId,
@@ -55,9 +56,15 @@ public class FTSearchController {
                                     @RequestParam (required = false) String lang,
                                     @RequestParam (required = false) String debug,
                                     HttpServletRequest request) throws FTException {
+        // validate input
         String qry = validateQuery(query, q);
+        if (pageSize < 1 || pageSize > SearchConfig.MAXIMUM_HITS) {
+            throw new InvalidParameterException("Page size should be between 1 and " + SearchConfig.MAXIMUM_HITS);
+        }
+
+        // start processing
         String searchId = request.getRequestURI() + "?" + request.getQueryString();
-        return searchService.searchIssue(searchId, new EuropeanaId(datasetId, localId), qry, (debug != null));
+        return searchService.searchIssue(searchId, new EuropeanaId(datasetId, localId), qry, pageSize, (debug != null));
     }
 
     @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -69,7 +76,10 @@ public class FTSearchController {
                                       @RequestParam (required = false, defaultValue = "12") int pageSize,
                                       @RequestParam (required = false) String lang,
                                       HttpServletRequest request) throws FTException {
+        // validate input
         String qry = validateQuery(query, q);
+
+        // do query
         String searchId = request.getRequestURI() + "?" + request.getQueryString();
         return searchService.searchCollection(searchId, qry, page, pageSize);
     }
@@ -77,7 +87,7 @@ public class FTSearchController {
 
     private String validateQuery(String query, String q) throws FTException {
         if (StringUtils.isEmpty(query) && StringUtils.isEmpty(q)) {
-            throw new InvalidQueryException("No or empty query parameter");
+            throw new InvalidParameterException("No or empty query parameter");
         }
         if (!StringUtils.isEmpty(query)) {
             if (!StringUtils.isEmpty(q)) {
