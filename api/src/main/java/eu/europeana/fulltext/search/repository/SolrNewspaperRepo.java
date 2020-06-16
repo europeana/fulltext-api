@@ -1,12 +1,6 @@
 package eu.europeana.fulltext.search.repository;
 
-import eu.europeana.fulltext.search.config.SearchConfig;
-import eu.europeana.fulltext.search.model.query.EuropeanaId;
 import eu.europeana.fulltext.search.model.query.SolrNewspaper;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.solr.core.query.result.HighlightPage;
-import org.springframework.data.solr.repository.Highlight;
-import org.springframework.data.solr.repository.Query;
 import org.springframework.data.solr.repository.SolrCrudRepository;
 import org.springframework.stereotype.Repository;
 
@@ -17,31 +11,7 @@ import org.springframework.stereotype.Repository;
  * Created on 28 May 2020
  */
 @Repository
-public interface SolrNewspaperRepo extends SolrCrudRepository<SolrNewspaper, String>, SolrEuropeanaId {
+public interface SolrNewspaperRepo extends SolrCrudRepository<SolrNewspaper, String>, SolrIssueQuery {
 
-    // TODO find a way to set hl.maxAnalyzedChards and timeAllowed
-
-    /**
-     * Search the entire collection for fulltexts containing the word(s) specified in the query
-     * @param query
-     * @param page
-     * @return HighlightPage containing documents with europeanaIds and hits
-     */
-    @Query(fields = {"europeana_id", "LANGUAGE" }) // no need to retrieve any other fields
-    @Highlight(snipplets = 3, fields = {"europeana_id", "fulltext*"},
-               prefix = SearchConfig.HIT_TAG_START, postfix = SearchConfig.HIT_TAG_END)
-    HighlightPage<SolrNewspaper> findByFulltextIn(String query, Pageable page);
-
-    /**
-     * Retrieve one particular issue (CHO) and highlight its fulltext for one or more word(s) specified in the query
-     * @param id
-     * @param fullTextQuery
-     * @param page
-     */
-    // TODO find a better way to set number of snipplets according to pageSize?
-    @Query(fields = {"europeana_id", "LANGUAGE" }) // no need to retrieve any other fields
-    @Highlight(query = "?1", snipplets = SearchConfig.MAXIMUM_HITS, fields = {"europeana_id", "fulltext*"},
-               prefix = SearchConfig.HIT_TAG_START, postfix = SearchConfig.HIT_TAG_END)
-    HighlightPage<SolrNewspaper> findByEuropeanaId(EuropeanaId id, String fullTextQuery, Pageable page);
-
+   // no methods defined, we use the ones in SolrEuropeanaQuery(Impl)
 }

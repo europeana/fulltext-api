@@ -67,22 +67,22 @@ public class FTSearchController {
         return searchService.searchIssue(searchId, new EuropeanaId(datasetId, localId), qry, pageSize, (debug != null));
     }
 
-    @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
-    public SearchResult searchEntireCollection(
-                                      @RequestParam (required = false) String query,
-                                      @RequestParam (required = false) String q,
-                                      @RequestParam (required = false) String[] qf,
-                                      @RequestParam (required = false, defaultValue = "0") int page,
-                                      @RequestParam (required = false, defaultValue = "12") int pageSize,
-                                      @RequestParam (required = false) String lang,
-                                      HttpServletRequest request) throws FTException {
-        // validate input
-        String qry = validateQuery(query, q);
-
-        // do query
-        String searchId = request.getRequestURI() + "?" + request.getQueryString();
-        return searchService.searchCollection(searchId, qry, page, pageSize);
-    }
+//    @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
+//    public SearchResult searchEntireCollection(
+//                                      @RequestParam (required = false) String query,
+//                                      @RequestParam (required = false) String q,
+//                                      @RequestParam (required = false) String[] qf,
+//                                      @RequestParam (required = false, defaultValue = "0") int page,
+//                                      @RequestParam (required = false, defaultValue = "12") int pageSize,
+//                                      @RequestParam (required = false) String lang,
+//                                      HttpServletRequest request) throws FTException {
+//        // validate input
+//        String qry = validateQuery(query, q);
+//
+//        // do query
+//        String searchId = request.getRequestURI() + "?" + request.getQueryString();
+//        return searchService.searchCollection(searchId, qry, page, pageSize);
+//    }
 
 
     private String validateQuery(String query, String q) throws FTException {

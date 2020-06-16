@@ -61,9 +61,8 @@ public class FTSearchService {
      */
     public SearchResult searchIssue(String searchId, EuropeanaId europeanaId, String query, int pageSize, boolean debug)
             throws FTException {
-        // TODO Figure out why it only works when I specify a PageRequest
         long start = System.currentTimeMillis();
-        HighlightPage<SolrNewspaper> solrResult = solrRepo.findByEuropeanaId(europeanaId, query, new PageRequest(0,1));
+        HighlightPage<SolrNewspaper> solrResult = solrRepo.findByEuropeanaIdAndQuery(europeanaId, query, pageSize);
 
         SearchResult result = new SearchResult(searchId, debug);
         if (solrResult.isEmpty()) {
@@ -348,16 +347,16 @@ public class FTSearchService {
     }
 
 
-    public SearchResult searchCollection(String searchId, String query, int page, int pageSize) {
-        HighlightPage<SolrNewspaper> result = solrRepo.findByFulltextIn(query, new PageRequest(page, pageSize));
-        LOG.error("result = {}", result);
-
-        for (HighlightEntry<SolrNewspaper> record : result.getHighlighted()) {
-            LOG.error("  Found record {}, with language {} and fulltext {}", record.getEntity().europeanaId,
-                    record.getEntity().language, record.getEntity().fulltext);
-        }
-
-        return null;
-    }
+//    public SearchResult searchCollection(String searchId, String query, int page, int pageSize) {
+//        HighlightPage<SolrNewspaper> result = solrRepo.findByFulltextIn(query, new PageRequest(page, pageSize));
+//        LOG.error("result = {}", result);
+//
+//        for (HighlightEntry<SolrNewspaper> record : result.getHighlighted()) {
+//            LOG.error("  Found record {}, with language {} and fulltext {}", record.getEntity().europeanaId,
+//                    record.getEntity().language, record.getEntity().fulltext);
+//        }
+//
+//        return null;
+//    }
 
 }
