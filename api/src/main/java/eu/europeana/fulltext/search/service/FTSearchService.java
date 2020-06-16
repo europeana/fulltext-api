@@ -321,14 +321,12 @@ public class FTSearchService {
                 }
                 // sometimes a trailing character like a dot or comma directly after the keyword is regarded as
                 // another annotation (word). So we filter those out.
-//                    if (anno.getTo() - anno.getFrom() > 1) {
-                result.addAnnotationHit(annoPage, anno, hit);
-                annotationFound = true;
-                // TODO think about whether we want to break when we find our first hit, or continue searching?
-
-//                    } else {
-//                        LOG.debug("Ignoring this overlap because it's too short");
-//                    }
+                if (anno.getTo() - anno.getFrom() > 1) {
+                    result.addAnnotationHit(annoPage, anno, hit);
+                    annotationFound = true;
+                } else {
+                    LOG.debug("Ignoring annotation {} overlap because it's only 1 character long", anno.getAnId());
+                }
             }
         }
         if (!annotationFound) {
