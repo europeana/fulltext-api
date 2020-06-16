@@ -22,7 +22,7 @@ import java.util.Locale;
 @EnableSolrRepositories(basePackages={"eu.europeana.fulltext.search.repository"})
 public class SearchConfig {
 
-    public static final Integer MAXIMUM_HITS = 100;
+    public static final int MAXIMUM_HITS = 100;
 
     public static final String HIT_TAG_START = "<em>";
     public static final String HIT_TAG_END = "</em>";
