@@ -461,7 +461,7 @@ public class FTController {
         List<String> preList = new ArrayList<>(Arrays.asList(textGranularity.split("\\+|\\s|,")));
         List<String> finalList = new ArrayList<>();
         for (String value : preList){
-            if (StringUtils.containsAny(value, TYPE_PAGE, TYPE_BLOCK, TYPE_LINE, TYPE_WORD, TYPE_MEDIA, TYPE_CAPTION)){
+            if (StringUtils.containsAny(value, TEXTGRAN_PAGE, TEXTGRAN_BLOCK, TEXTGRAN_LINE, TEXTGRAN_WORD, TEXTGRAN_MEDIA, TEXTGRAN_CAPTION)){
                 finalList.add(value);
             }
         }

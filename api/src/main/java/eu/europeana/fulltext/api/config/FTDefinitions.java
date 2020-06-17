@@ -12,15 +12,21 @@ public final class FTDefinitions {
     public static final  String V3_ANNO_BODY_TYPE         = "SpecificResource";
     public static final  String EDM_FULLTEXTRESOURCE_TYPE = "FullTextResource";
     public static final  String UTF_8                     = "charset=UTF-8";
-    public static final  String TYPE_PAGE                 = "page";
-    public static final  String TYPE_BLOCK                = "block";
-    public static final  String TYPE_LINE                 = "line";
-    public static final  String TYPE_WORD                 = "word";
-    public static final  String TYPE_MEDIA                = "media";
-    public static final  String TYPE_CAPTION              = "caption";
+    public static final  String TYPE_PAGE                 = "Page";
+    public static final  String TYPE_BLOCK                = "Block";
+    public static final  String TYPE_LINE                 = "Line";
+    public static final  String TYPE_WORD                 = "Word";
+    public static final  String TYPE_MEDIA                = "Media";
+    public static final  String TYPE_CAPTION              = "Caption";
     public static final  String TYPE_UNDEFINED            = "undefined";
     private static final String PROFILE_IS                = ";profile=\"";
-
+    // Text Granularity constants
+    public static final  String TEXTGRAN_PAGE             = "page";
+    public static final  String TEXTGRAN_BLOCK            = "block";
+    public static final  String TEXTGRAN_LINE             = "line";
+    public static final  String TEXTGRAN_WORD             = "word";
+    public static final  String TEXTGRAN_MEDIA            = "media";
+    public static final  String TEXTGRAN_CAPTION          = "caption";
 
     /**
      * Media type for IIIF version 2
