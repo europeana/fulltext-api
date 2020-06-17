@@ -1,6 +1,7 @@
 package eu.europeana.fulltext.search.model.response;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import eu.europeana.fulltext.search.model.query.SolrHit;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -20,21 +21,25 @@ public class Debug implements Serializable {
     private static final long serialVersionUID = 3800855960101156128L;
 
     private List<String> solrSnippets = new ArrayList<>();
-    private Set<HitSelector> keywords = new HashSet<>();
+    private Set<SolrHit> keywords = new HashSet<>();
 
     public void addSolrSnippet(String solrSnippet) {
         this.solrSnippets.add(solrSnippet);
     }
 
-    public void addKeywords(HitSelector hit) {
+    public void addKeyword(SolrHit hit) {
         this.keywords.add(hit);
+    }
+
+    public void removeKeyword(SolrHit hit) {
+        this.keywords.remove(hit);
     }
 
     public List<String> getSolrSnippets() {
         return solrSnippets;
     }
 
-    public Set<HitSelector> getKeywords() {
+    public Set<SolrHit> getKeywords() {
         return keywords;
     }
 }

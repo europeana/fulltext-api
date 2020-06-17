@@ -69,8 +69,9 @@ public class SearchResult implements Serializable {
     public void addAnnotationHit(AnnoPage annoPage, Annotation annotation, Hit hit) {
         AnnotationV3 annoV3 = EDM2IIIFMapping.getAnnotationV3(annoPage, annotation, false, false);
         hit.addAnnotationId(annoV3.getId());
-        // TODO check if we already have this hit from another annotation?
-        hits.add(hit);
+        if (!hits.contains(hit)) {
+            hits.add(hit);
+        }
         items.add(annoV3);
     }
 }

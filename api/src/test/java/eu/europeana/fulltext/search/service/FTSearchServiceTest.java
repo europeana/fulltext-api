@@ -7,6 +7,7 @@ import eu.europeana.fulltext.api.service.FTService;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Annotation;
 import eu.europeana.fulltext.entity.Resource;
+import eu.europeana.fulltext.search.model.query.SolrHit;
 import eu.europeana.fulltext.search.model.response.Hit;
 import eu.europeana.fulltext.search.model.response.HitSelector;
 import eu.europeana.fulltext.search.model.response.SearchResult;
@@ -46,35 +47,35 @@ public class FTSearchServiceTest {
 
     // from page3 (start of page)
     private static final String SNIPPET_START_PAGE = "<em>Aus der</em> 49. Verlustliste.";
-    private static final HitSelector HIT_START_PAGE = new HitSelector(null, "Aus der", " "); // 1 hit
+    private static final SolrHit HIT_START_PAGE = new SolrHit(null, "Aus der", ' ', -1, -1); // 1 hit
     private static final String ANNO_START_PAGE_ID = "AnnoStartPage";
     private static final Annotation ANNO_START_PAGE = new Annotation(ANNO_START_PAGE_ID, FTDefinitions.ANNO_TYPE_WORD, 0, 7);
 
     // from page3 (end of page)
     private static final String SNIPPET_END_PAGE = "am 29. Oktober in der Philharmonie ein <em>zweites Konzert</em>";
-    private static final HitSelector HIT_END_PAGE = new HitSelector(" ", "zweites Konzert", null); // 1 hits
+    private static final SolrHit HIT_END_PAGE = new SolrHit(' ', "zweites Konzert", null, -1, -1); // 1 hits
     private static final String ANNO_END_PAGE_ID = "AnnoEndPage";
     private static final Annotation ANNO_END_PAGE = new Annotation(ANNO_END_PAGE_ID, FTDefinitions.ANNO_TYPE_WORD, 22970, 22985);
 
-    // from page1 (middle of page)
-    private static final String SNIPPET_2_DISTINCT_HITS = "Truck und Verlag: Rudolf Moffe in <em>Berlin</em>.\n<em>Berliner</em> Jageblalt 43.\\\"z.»rg.";
-    private static final HitSelector HIT1_DISTINCT_HITS = new HitSelector(" ", "Berlin", ".");
-    private static final HitSelector HIT2_DISTINCT_HITS = new HitSelector("\n", "Berliner", " ");
+    // modified example from page1
+    private static final String SNIPPET_2_DISTINCT_HITS = "Truck und Verlag: <em>Berlin</em>.      \n<em>Berliner</em> Jageblalt 43.\\\"z.»rg.";
+    private static final SolrHit HIT1_DISTINCT_HITS = new SolrHit(' ',"Berlin", '.', -1, -1);
+    private static final SolrHit HIT2_DISTINCT_HITS = new SolrHit('\n', "Berliner", ' ', -1, -1);
 
     // from page3 (middle of page)
     private static final String SNIPPET_2_SAME_HITS = "Paul E h r e n f e l d (<em>Berlin</em>) tot. Pion. Fritz Hage n (<em>Berlin</em>) tot.";
-    private static final HitSelector HIT_2_SAME_HITS = new HitSelector("(", "Berlin", ")"); // 65 hits
+    private static final SolrHit HIT_2_SAME_HITS = new SolrHit('(', "Berlin", ')', -1, -1); // 65 hits
 
     // from page3 (middle of page, before snippet is a space)
-    private static final HitSelector HIT_NO_PREFIX_SPACE = new HitSelector("", "Erich", " "); // 2 hits
+    private static final SolrHit HIT_NO_PREFIX_SPACE = new SolrHit(null, "Erich", ' ', -1, -1); // 2 hits
 
     // from page 3 (middle of page, before snippet is a newline
-    private static final HitSelector HIT_NO_PREFIX_NEWLINE = new HitSelector (null,"Kommandowechsel", " "); // 1 hit
+    private static final SolrHit HIT_NO_PREFIX_NEWLINE = new SolrHit (null,"Kommandowechsel", ' ', -1, -1); // 1 hit
     private static final String ANNO_NO_PREFIX_NEWLINE_ID = "AnnoNoPrefix";
     private static final Annotation ANNO_NO_PREFIX_NEWLINE = new Annotation(ANNO_NO_PREFIX_NEWLINE_ID, FTDefinitions.ANNO_TYPE_WORD, 10764, 10779);
 
     // from page3 (middle of page, after snippet is a space)
-    private static final HitSelector HIT_NO_SUFFIX_SPACE = new HitSelector (" ","Kirkwall", ""); // 1 hit
+    private static final SolrHit HIT_NO_SUFFIX_SPACE = new SolrHit (' ',"Kirkwall", null, -1, -1); // 1 hit
     private static final String ANNO1_NO_SUFFIX_SPACE_ID = "AnnoNoSuffix1";
     private static final Annotation ANNO1_NO_SUFFIX_SPACE = new Annotation(ANNO1_NO_SUFFIX_SPACE_ID, FTDefinitions.ANNO_TYPE_WORD, 12270, 12280);
     private static final String ANNO2_NO_SUFFIX_SPACE_ID = "AnnoNoSuffix2";
@@ -82,8 +83,8 @@ public class FTSearchServiceTest {
 
 
     // from page 3 (middle of page, after snippet is a newline)
-    private static final HitSelector HIT_NO_SUFFIX_NEWLINE = new HitSelector(" ", "Raincourt", ""); // 1 hit
-    private static final HitSelector HIT_NO_PREFIX_SUFFIX = new HitSelector("", "Raincourt", ""); // 1 hit
+    private static final SolrHit HIT_NO_SUFFIX_NEWLINE = new SolrHit(' ', "Raincourt", null, -1, -1); // 1 hit
+    private static final SolrHit HIT_NO_PREFIX_SUFFIX = new SolrHit("", "Raincourt", "", -1, -1); // 1 hit
 
     @Autowired
     private FTSearchService searchService;
@@ -125,37 +126,43 @@ public class FTSearchServiceTest {
      * Test if extracting hits from a Solr Snippet works fine
      */
     @Test
-    public void testAddHitsFromSolrSnippet() {
-        Map<String, HitSelector> hits = new HashMap<>();
+    public void testGetHitsFromSolrSnippet() {
+        List<SolrHit> hits = new ArrayList<>();
         searchService.getHitsFromSolrSnippet(hits, SNIPPET_START_PAGE, null);
-        assertEquals(1, hits.keySet().size());
-        HitSelector hit1 = hits.get( HIT_START_PAGE.toString());
-        testHitSelector(hit1, HIT_START_PAGE);
+        assertEquals(1, hits.size());
+        SolrHit hit1 = hits.get(0);
+        assertEquals(HIT_START_PAGE, hit1);
 
         searchService.getHitsFromSolrSnippet(hits, SNIPPET_END_PAGE, null);
-        assertEquals(2, hits.keySet().size());
-        HitSelector hit2 = hits.get(HIT_END_PAGE.toString());
-        testHitSelector(hit2, HIT_END_PAGE);
+        assertEquals(2, hits.size());
+        SolrHit hit2 = hits.get(1);
+        assertEquals(HIT_END_PAGE, hit2);
 
         searchService.getHitsFromSolrSnippet(hits, SNIPPET_2_DISTINCT_HITS, null);
-        assertEquals(4, hits.keySet().size());
-        HitSelector hit3 = hits.get(HIT1_DISTINCT_HITS.toString());
-        testHitSelector(hit3, HIT1_DISTINCT_HITS);
-        HitSelector hit4 = hits.get(HIT2_DISTINCT_HITS.toString());
-        testHitSelector(hit4, HIT2_DISTINCT_HITS);
+        assertEquals(4, hits.size());
+        SolrHit hit3 = hits.get(hits.indexOf(HIT1_DISTINCT_HITS));
+        assertEquals(HIT1_DISTINCT_HITS, hit3);
+        SolrHit hit4 = hits.get(hits.indexOf(HIT2_DISTINCT_HITS));
+        assertEquals(HIT2_DISTINCT_HITS, hit4);
 
         searchService.getHitsFromSolrSnippet(hits, SNIPPET_2_SAME_HITS, null);
-        assertEquals(5, hits.keySet().size());
-        HitSelector hit5 = hits.get(HIT_2_SAME_HITS.toString());
-        testHitSelector(hit5, HIT_2_SAME_HITS);
+        assertEquals(5, hits.size());
+        SolrHit hit5 = hits.get(hits.indexOf(HIT_2_SAME_HITS));
+        assertEquals(HIT_2_SAME_HITS, hit5);
     }
 
-    private void testHitSelector(HitSelector hit, HitSelector expectedHit) {
-        assertNotNull(hit);
-        assertNotNull(expectedHit);
-        assertEquals(hit.toString(), expectedHit.getPrefix(), hit.getPrefix());
-        assertEquals(expectedHit.getExact(), hit.getExact());
-        assertEquals(expectedHit.getSuffix(), hit.getSuffix());
+    /**
+     * Test if merging 2 hits works fine.
+     */
+    @Test
+    public void testMergeHits() {
+        String snippet = "Na ELSENEUR, Kaptein <em>Daniel</em> <em>Ehlert</em>, van Koningsbergen";
+        SolrHit expectedSolrHit = new SolrHit(" ", "Daniel Ehlert", ",", -1, -1);
+
+        List<SolrHit> hits = new ArrayList<>();
+        searchService.getHitsFromSolrSnippet(hits, snippet, null);
+        assertEquals(1, hits.size());
+        assertEquals(expectedSolrHit, hits.get(0));
     }
 
      /**
@@ -197,7 +204,7 @@ public class FTSearchServiceTest {
     @Test
     public void testFindNoHit() {
         // although the test fulltext does contain a word with an x, there is no ' x '
-        List<Hit> hits = searchService.findHitInFullText(new HitSelector(null, "x", null), annoPage, 10);
+        List<Hit> hits = searchService.findHitInFullText(new SolrHit("", "x", "", -1, -1), annoPage, 10);
         assertEquals(0, hits.size());
     }
 
@@ -210,21 +217,21 @@ public class FTSearchServiceTest {
         AnnoPage annoPage = new AnnoPage("x", "y", "1", null,
                 new Resource(null, null, text, null));
 
-        HitSelector hitToFind = new HitSelector(null, "This", " ");
+        SolrHit hitToFind = new SolrHit(null, "This", ' ', -1, -1);
         List<Hit> hits = searchService.findHitInFullText(hitToFind, annoPage, 5);
         assertEquals(1, hits.size());
         Hit hitFound = hits.get(0);
         assertEquals(Integer.valueOf(0), hitFound.getStartIndex());
         assertEquals(Integer.valueOf(4), hitFound.getEndIndex());
 
-        hitToFind = new HitSelector(" ", "another", " ");
+        hitToFind = new SolrHit(' ', "another", ' ', -1, -1);
         hits = searchService.findHitInFullText(hitToFind, annoPage, 5);
         assertEquals(1, hits.size());
         hitFound = hits.get(0);
         assertEquals(Integer.valueOf(8), hitFound.getStartIndex());
         assertEquals(Integer.valueOf(15), hitFound.getEndIndex());
 
-        hitToFind = new HitSelector(" ", "test", null);
+        hitToFind = new SolrHit(' ', "test", null, -1, -1);
         hits = searchService.findHitInFullText(hitToFind, annoPage, 5);
         assertEquals(2, hits.size());
         hitFound = hits.get(0);
@@ -295,7 +302,7 @@ public class FTSearchServiceTest {
         assertEquals(1, hit2.size());
         SearchResult result2 = new SearchResult("test", true);
         searchService.findAnnotation(result2, hit2.get(0), annoPage);
-        assertEquals(Integer.valueOf(2), Integer.valueOf(result2.getHits().size()));
+        assertEquals(Integer.valueOf(1), Integer.valueOf(result2.getHits().size()));
         assertEquals(Integer.valueOf(2), Integer.valueOf(result2.getItems().size()));
         assertTrue(result2.getItems().get(0).getId().endsWith(ANNO1_NO_SUFFIX_SPACE_ID));
         assertTrue(result2.getItems().get(1).getId().endsWith(ANNO2_NO_SUFFIX_SPACE_ID));

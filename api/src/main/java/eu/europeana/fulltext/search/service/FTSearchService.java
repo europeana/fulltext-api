@@ -7,6 +7,7 @@ import eu.europeana.fulltext.entity.Annotation;
 import eu.europeana.fulltext.search.config.SearchConfig;
 import eu.europeana.fulltext.search.exception.RecordDoesNotExistException;
 import eu.europeana.fulltext.search.model.query.EuropeanaId;
+import eu.europeana.fulltext.search.model.query.SolrHit;
 import eu.europeana.fulltext.search.model.query.SolrNewspaper;
 import eu.europeana.fulltext.search.model.response.Debug;
 import eu.europeana.fulltext.search.model.response.Hit;
@@ -15,13 +16,15 @@ import eu.europeana.fulltext.search.model.response.SearchResult;
 import eu.europeana.fulltext.search.repository.SolrNewspaperRepo;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.solr.core.query.result.HighlightEntry;
 import org.springframework.data.solr.core.query.result.HighlightPage;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 import static eu.europeana.fulltext.api.config.FTDefinitions.ANNO_TYPE_WORD;
 
@@ -85,7 +88,7 @@ public class FTSearchService {
      */
     private SearchResult findHitsInIssue(SearchResult result, HighlightPage<SolrNewspaper> solrResult,
                                          EuropeanaId europeanaId, int pageSize, Debug debug) {
-        Collection<HitSelector> hitsToFind = getHitsFromSolrSnippets(solrResult, debug);
+        Collection<SolrHit> hitsToFind = getHitsFromSolrSnippets(solrResult, debug);
 
         // TODO tmp hack to get things working: for now we have to search through all annopages to get the right fulltext
         long start = System.currentTimeMillis();
@@ -95,7 +98,7 @@ public class FTSearchService {
         for (AnnoPage annoPage : pages) {
             // check each page if we can find our keywords
             LOG.trace("Searching through page {}, fulltext = {}", annoPage.getPgId(), annoPage.getRes().getId());
-            for (HitSelector hitToFind : hitsToFind) {
+            for (SolrHit hitToFind : hitsToFind) {
                 // check if we need to find more hits
                 int maxHits = pageSize - result.getHits().size();
                 if (maxHits <= 0) {
@@ -115,10 +118,10 @@ public class FTSearchService {
      * Use the Solr snippets to create a set of unique hits. We use those to search in Mongo fulltexts ourselves,
      * to find the correct annopage(s) and annotations
      */
-    private Collection<HitSelector> getHitsFromSolrSnippets(HighlightPage<SolrNewspaper> solrResult, Debug debug) {
+    private Collection<SolrHit> getHitsFromSolrSnippets(HighlightPage<SolrNewspaper> solrResult, Debug debug) {
         // we use a hashmap where the string is the hit in String representation, so we can quickly see if we already
         // have the same hit or not
-        Map<String, HitSelector> hits = new HashMap<>();
+        List<SolrHit> hits = new ArrayList<>();
         for (HighlightEntry<SolrNewspaper> content : solrResult.getHighlighted()) {
             LOG.debug("Record = {}", content.getEntity().europeanaId);
 
@@ -128,53 +131,80 @@ public class FTSearchService {
                 }
             }
         }
-        LOG.debug("Found {} distinct keywords: {} ", hits.keySet().size(), hits.keySet());
-        return hits.values();
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Found {} distinct keywords: {} ", hits.size(), Arrays.toString(hits.toArray()));
+        }
+        return hits;
     }
 
     /**
-     * Extracts all keyword(s) from a single solr snippet. Note that we 'misuse' the HitSelector object to also get 1
-     * leading and 1 trailing character. We retrieve those extra characters so we can search using word delimiters.
-     * @param hitsFound map to which newly found hits will be added
+     * Extracts all keyword(s) from a single solr snippet and stores that in SolrHit objects. We also retrieve 1
+     * leading and 1 trailing character. We use those extra characters as word delimiters when searching in fulltext.
+     * @param hitsFound list to which newly found hits will be added
      * @param snippet the snippet to search
      * @param debug object where debug information can be stored (optional)
      */
-    void getHitsFromSolrSnippet(Map<String, HitSelector> hitsFound, String snippet, Debug debug) {
+    void getHitsFromSolrSnippet(List<SolrHit> hitsFound, String snippet, Debug debug) {
         LOG.debug("  Processing snippet {}", snippet);
         if (debug != null) {
             debug.addSolrSnippet(snippet);
         }
 
-        int start = snippet.indexOf(SearchConfig.HIT_TAG_START);
-        while (start != -1) {
-            int end = snippet.indexOf(SearchConfig.HIT_TAG_END, start);
-            String exact = snippet.substring(start + SearchConfig.HIT_TAG_START.length(), end);
-            // append character in front (if available)
+        SolrHit previousHit = null;
+        int startHlTag = snippet.indexOf(SearchConfig.HIT_TAG_START);
+        while (startHlTag != -1) {
+            int endKeyword = snippet.indexOf(SearchConfig.HIT_TAG_END, startHlTag);
+            String exact = snippet.substring(startHlTag + SearchConfig.HIT_TAG_START.length(), endKeyword);
+            // get character in front (if available)
             Character prefix = null;
-            if (start > 0) {
-                prefix = snippet.charAt(start - 1);
+            if (startHlTag > 0) {
+                prefix = snippet.charAt(startHlTag - 1);
             }
-            // append character after (if available)
+            // get character after (if available)
             Character suffix = null;
-            end = end + SearchConfig.HIT_TAG_END.length();
-            if (end < snippet.length()) {
-                suffix = snippet.charAt(end);
+            int endHlTag = endKeyword + SearchConfig.HIT_TAG_END.length();
+            if (endHlTag < snippet.length()) {
+                suffix = snippet.charAt(endHlTag);
             }
-            HitSelector newHit = new HitSelector((prefix == null ? null : prefix.toString()), exact,
-                                              (suffix == null ? null : suffix.toString()));
+            SolrHit newHit = mergeIfNearby(hitsFound, snippet, previousHit,
+                    new SolrHit(prefix, exact, suffix, startHlTag, endHlTag), debug);
 
-            if (hitsFound.containsKey(newHit.toString())) {
+            if (hitsFound.contains(newHit)) {
                 LOG.debug("    Existing keyword = '{}'", newHit);
             } else {
                 LOG.debug("    New keyword = '{}'", newHit);
-                hitsFound.put(newHit.toString(), newHit);
+                hitsFound.add(newHit);
                 if (debug != null) {
-                    debug.addKeywords(newHit);
+                    debug.addKeyword(newHit);
                 }
             }
 
-            start = snippet.indexOf(SearchConfig.HIT_TAG_START, end);
+            // prepare for next iteration
+            previousHit = newHit;
+            startHlTag = snippet.indexOf(SearchConfig.HIT_TAG_START, endKeyword);
         }
+    }
+
+    /**
+     * Check if we can merge with a near-by previous found hit in the same snippet
+     */
+    SolrHit mergeIfNearby(List<SolrHit> hitsFound, String snippet, SolrHit previousHit, SolrHit newHit, Debug debug) {
+        if (previousHit != null && (newHit.getHlStartPos() - previousHit.getHlEndPos() <= SearchConfig.HIT_MERGE_MAX_DISTANCE)) {
+            String mergedExact = previousHit.getExact() +
+                    snippet.substring(previousHit.getHlEndPos(), newHit.getHlStartPos()) +
+                    newHit.getExact();
+
+            SolrHit mergedHit = new SolrHit(previousHit.getPrefix(), mergedExact, newHit.getSuffix(),
+                    previousHit.getHlStartPos(), newHit.getHlEndPos());
+            LOG.debug("    Merging keywords '{}' and '{}' into '{}'", previousHit, newHit, mergedHit);
+
+            hitsFound.remove(previousHit);
+            if (debug != null) {
+                debug.removeKeyword(previousHit);
+            }
+            return mergedHit;
+        }
+        return newHit;
     }
 
     /**
@@ -187,7 +217,7 @@ public class FTSearchService {
      * @param maxHits  maximum number of hits
      * @return a list of hits, can be empty if there are no matches
      */
-    List<Hit> findHitInFullText(HitSelector hitToFind, AnnoPage annoPage, int maxHits) {
+    List<Hit> findHitInFullText(SolrHit hitToFind, AnnoPage annoPage, int maxHits) {
         LOG.trace("Searching on page {} for Solr exact string '{}'", annoPage, hitToFind);
         List<Hit> result = new ArrayList<>();
 
@@ -196,9 +226,11 @@ public class FTSearchService {
         int startIndex = getHitStartInFulltext(hitToFind, -1, resourceTxt);
         while (startIndex >= 0 && result.size() < maxHits) {
             int endIndex = startIndex + hitToFind.getExact().length();
-            LOG.debug("Found hit '{}' on page {}, fulltext {}, word start = {}, end = {} -> '{}'",
-                    hitToFind, annoPage.getPgId(), annoPage.getRes().getId(), startIndex, endIndex,
-                    annoPage.getRes().getValue().substring(startIndex, endIndex));
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Found hit '{}' on page {}, fulltext {}, word start = {}, end = {} -> '{}'",
+                        hitToFind, annoPage.getPgId(), annoPage.getRes().getId(), startIndex, endIndex,
+                        annoPage.getRes().getValue().substring(startIndex, endIndex));
+            }
             result.add(new Hit(startIndex, endIndex, generateSnippetFromFullText(hitToFind, resourceTxt, startIndex, endIndex)));
 
             startIndex = startIndex + hitToFind.getExact().length();
@@ -214,42 +246,15 @@ public class FTSearchService {
      *  the snippet is not the page start. So far I haven't seen Solr sending no snippet suffix, but for safety we assume
      *  this can happen
      */
-    private int getHitStartInFulltext(HitSelector hitToFind, int startIndex, String fulltext) {
+    private int getHitStartInFulltext(SolrHit hitToFind, int startIndex, String fulltext) {
         if (StringUtils.isEmpty(hitToFind.getPrefix())) {
-            // hit could be at start of fulltext
-            if (startIndex <= 0 && fulltext.startsWith(hitToFind.getExact() + hitToFind.getSuffix())) {
-                return 0;
-            }
-            // or at start of a sentence (after a newline)
-            int result = fulltext.indexOf('\n' + hitToFind.toString(), startIndex);
-            if (result != -1) {
-                return result + 1; // add one because of prefix
-            }
-            // or at start of a sentence part (after a space)
-            result = fulltext.indexOf(" " + hitToFind.toString(), startIndex);
-            if (result != -1) {
-                return result + 1; // add one because of prefix
-            }
-            return -1;
+            return getHitNoPrefix(hitToFind, startIndex, fulltext);
         }
+
         if (StringUtils.isEmpty(hitToFind.getSuffix())) {
-            // hit could be end of sentence (before a newline)
-            int result = fulltext.indexOf(hitToFind.toString() + '\n', startIndex);
-            if (result != -1) {
-                return result + hitToFind.getPrefix().length();
-            }
-            // or end of sentence part (before a space)
-            result = fulltext.indexOf(hitToFind.toString() + " ", startIndex);
-            if (result != -1 ) {
-                return result + hitToFind.getPrefix().length();
-            }
-            // or at the end of a fulltext
-            if (startIndex <= fulltext.length() - hitToFind.toString().length()
-                    && fulltext.endsWith(hitToFind.getPrefix() + hitToFind.getExact())) {
-                return fulltext.length() - hitToFind.getExact().length();
-            }
-            return -1;
+            return getHitNoSuffix(hitToFind, startIndex, fulltext);
         }
+
         int result = fulltext.indexOf(hitToFind.toString(), startIndex);
         if (result != -1) {
             return result + hitToFind.getPrefix().length();
@@ -257,13 +262,50 @@ public class FTSearchService {
         return -1;
     }
 
+    private int getHitNoPrefix(SolrHit hitToFind, int startIndex, String fulltext) {
+        // hit could be at start of fulltext
+        if (startIndex <= 0 && fulltext.startsWith(hitToFind.getExact() + hitToFind.getSuffix())) {
+            return 0;
+        }
+        // or at start of a sentence (after a newline)
+        int result = fulltext.indexOf('\n' + hitToFind.toString(), startIndex);
+        if (result != -1) {
+            return result + 1; // add 1 because of newline prefix
+        }
+        // or at start of a sentence part (after a space)
+        result = fulltext.indexOf(" " + hitToFind.toString(), startIndex);
+        if (result != -1) {
+            return result + 1; // add 1 because of space prefix
+        }
+        return -1;
+    }
+
+    private int getHitNoSuffix(SolrHit hitToFind, int startIndex, String fulltext) {
+        // hit could be end of sentence (before a newline)
+        int result = fulltext.indexOf(hitToFind.toString() + '\n', startIndex);
+        if (result != -1) {
+            return result + hitToFind.getPrefix().length();
+        }
+        // or end of sentence part (before a space)
+        result = fulltext.indexOf(hitToFind.toString() + " ", startIndex);
+        if (result != -1 ) {
+            return result + hitToFind.getPrefix().length();
+        }
+        // or at the end of a fulltext
+        if (startIndex <= fulltext.length() - hitToFind.toString().length()
+                && fulltext.endsWith(hitToFind.getPrefix() + hitToFind.getExact())) {
+            return fulltext.length() - hitToFind.getExact().length();
+        }
+        return -1;
+    }
+
+
     /**
      * We have found our hit, now we need to generate a snippet based on the Mongo fulltext
      * The strategy is to find the closest dot (start and end of sentence). If we can't find that we search for the
      * closest newline as fallback solution.
      */
-    protected HitSelector generateSnippetFromFullText(HitSelector hitToFind, String fullText, int startIndex, int endIndex) {
-
+    protected HitSelector generateSnippetFromFullText(SolrHit hitToFind, String fullText, int startIndex, int endIndex) {
         int startSentence;
         int endPreviousSentence = fullText.lastIndexOf('.', startIndex);
         if (endPreviousSentence == -1) {

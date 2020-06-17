@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.solr.core.SolrTemplate;
 import org.springframework.data.solr.repository.config.EnableSolrRepositories;
 
-import java.util.Locale;
+import java.util.*;
 
 /**
  * Search configuration, including connection to Solr and the Solr repository
@@ -27,8 +27,11 @@ public class SearchConfig {
     public static final String HIT_TAG_START = "<em>";
     public static final String HIT_TAG_END = "</em>";
 
+    // try to merge two hits that are away a maximum of this much characters
+    public static final int HIT_MERGE_MAX_DISTANCE = 3;
+
     @Value("${spring.data.solr.zk-host}")
-    private String zookeeperHost;
+    private String zookeeperHosts;
     @Value("${spring.data.solr.host}")
     private String solrHost;
     @Value("${spring.data.solr.core}")
@@ -44,11 +47,12 @@ public class SearchConfig {
      */
     @Bean
     public SolrClient solrClient() {
-        if (zookeeperHost.isBlank() || zookeeperHost.toUpperCase(Locale.GERMAN).contains("REMOVED")) {
+        if (zookeeperHosts.isBlank() || zookeeperHosts.toUpperCase(Locale.GERMAN).contains("REMOVED")) {
             LogManager.getLogger(SearchConfig.class).info("No zookeeper configured, trying to connect to standalone server");
             return new HttpSolrClient.Builder(solrHost).build();
         }
-        CloudSolrClient client = new CloudSolrClient.Builder().withZkHost(zookeeperHost).build();
+        List<String> zkHosts = Arrays.asList(zookeeperHosts.split(","));
+        CloudSolrClient client = new CloudSolrClient.Builder(zkHosts, Optional.empty()).build();
         client.setDefaultCollection(solrCore);
         return client;
     }
