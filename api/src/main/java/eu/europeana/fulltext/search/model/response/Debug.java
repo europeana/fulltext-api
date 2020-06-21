@@ -5,9 +5,7 @@ import eu.europeana.fulltext.search.model.query.SolrHit;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * This class is used to include debugging information in the response (if this is requested, not included by default)
@@ -21,7 +19,7 @@ public class Debug implements Serializable {
     private static final long serialVersionUID = 3800855960101156128L;
 
     private List<String> solrSnippets = new ArrayList<>();
-    private Set<SolrHit> keywords = new HashSet<>();
+    private List<SolrHit> keywords = new ArrayList<>();
 
     public void addSolrSnippet(String solrSnippet) {
         this.solrSnippets.add(solrSnippet);
@@ -39,7 +37,7 @@ public class Debug implements Serializable {
         return solrSnippets;
     }
 
-    public Set<SolrHit> getKeywords() {
+    public List<SolrHit> getKeywords() {
         return keywords;
     }
 }

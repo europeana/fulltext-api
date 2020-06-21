@@ -28,7 +28,7 @@ public class DataSourceConfig {
         if (StringUtils.isEmpty(database)) {
             database = uri.getDatabase();
         }
-        LogManager.getLogger(eu.europeana.fulltext.api.config.DataSourceConfig.class).
+        LogManager.getLogger(DataSourceConfig.class).
                 info("Connecting to {} Mongo database on hosts {}...", database, uri.getHosts());
         return (AdvancedDatastore) new Morphia().createDatastore(mongoClient, database);
     }

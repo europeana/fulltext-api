@@ -2,6 +2,7 @@ package eu.europeana.fulltext.search.model.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import eu.europeana.fulltext.entity.Annotation;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -31,6 +32,12 @@ public class Hit implements Serializable {
         this.selectors.add(selector);
     }
 
+    public Hit(Integer startIndex, Integer endIndex, String exact) {
+        this.startIndex = startIndex;
+        this.endIndex = endIndex;
+        this.selectors.add(new HitSelector("", exact, ""));
+    }
+
     public String getType() {
         return Hit.TYPE;
     }
@@ -53,8 +60,22 @@ public class Hit implements Serializable {
         return this.selectors;
     }
 
-    public void addAnnotationId(String annotationId) {
-        this.annotations.add(annotationId);
+    /**
+     * This adds a new annotation to the hit and also sets the prefix and suffix. Note that the first added
+     * annotation determines the prefix, and the last added annotation the suffix
+     * @param annotation
+     * @param fulltext
+     */
+    public void addAnnotation(Annotation annotation, String fulltext) {
+        if (this.getAnnotations().size() == 0) {
+            if (annotation.getFrom() < this.startIndex) {
+                this.selectors.get(0).setPrefix(fulltext.substring(annotation.getFrom(), this.startIndex));
+            }
+        }
+        if (this.endIndex < annotation.getTo()) {
+            this.selectors.get(0).setSuffix(fulltext.substring(this.endIndex, annotation.getTo()));
+        }
+        this.annotations.add(annotation.getAnId());
     }
 
 }

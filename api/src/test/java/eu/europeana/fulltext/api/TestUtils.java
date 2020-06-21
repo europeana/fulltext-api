@@ -1,5 +1,6 @@
 package eu.europeana.fulltext.api;
 
+import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.api.model.FTResource;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Annotation;
@@ -91,9 +92,9 @@ class TestUtils {
         tgt_2 = new Target(95,102,53,15);
         tgt_3 = new Target(60,96,404,19);
         tgt_4 = new Target(59,138,133,25);
-        ann_1 = new Annotation("an1", 'W', 0, 7, Arrays.asList(tgt_1));
-        ann_2 = new Annotation("an2", 'W', 9, 18, Arrays.asList(tgt_2), "en");
-        ann_3 = new Annotation("an3", 'L', 0, 214, Arrays.asList(tgt_3, tgt_4));
+        ann_1 = new Annotation("an1", AnnotationType.WORD.getAbbreviation(), 0, 7, Arrays.asList(tgt_1));
+        ann_2 = new Annotation("an2", AnnotationType.WORD.getAbbreviation(), 9, 18, Arrays.asList(tgt_2), "en");
+        ann_3 = new Annotation("an3", AnnotationType.LINE.getAbbreviation(), 0, 214, Arrays.asList(tgt_3, tgt_4));
         anp_1 = new AnnoPage(DS_ID, LCL_ID, "pg1", "tg1", res_1);
         anp_1.setAns(Arrays.asList(new Annotation[] {ann_1, ann_2, ann_3}));
         anp_1.setTgtId(getTargetIdBaseUrl("pg1"));

@@ -2,7 +2,6 @@ package eu.europeana.fulltext.search.model.query;
 
 import org.apache.solr.client.solrj.beans.Field;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.solr.core.mapping.SolrDocument;
 
 /**
  * Document used for retrieving data from Solr
@@ -12,14 +11,18 @@ import org.springframework.data.solr.core.mapping.SolrDocument;
  */
 public class SolrNewspaper {
 
-    @Field("europeana_id")
+    public static final String FIELD_EUROPEANA_ID = "europeana_id";
+    public static final String FIELD_FULLTEXT = "fulltext*";
+    public static final String FIELD_LANGUAGE = "LANGUAGE";
+
+    @Field(FIELD_EUROPEANA_ID)
     @Id
     public String europeanaId;
 
-    @Field("LANGUAGE")
+    @Field(FIELD_LANGUAGE)
     public String language;
 
-   @Field("fulltext*")
+   @Field(FIELD_FULLTEXT)
     public String[] fulltext;
 
 }

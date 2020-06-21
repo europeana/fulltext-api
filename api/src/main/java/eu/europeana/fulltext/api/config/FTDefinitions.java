@@ -5,9 +5,7 @@ import java.util.Map;
 /**
  * Created by luthien on 14/06/2018.
  */
-public class FTDefinitions {
-
-    private FTDefinitions(){}
+public final class FTDefinitions {
 
     public  static final String MEDIA_TYPE_JSONLD          = "application/ld+json";
     public  static final String MEDIA_TYPE_JSON            = "application/json";
@@ -66,20 +64,8 @@ public class FTDefinitions {
                                                            + MEDIA_TYPE_IIIF_V3
                                                            + "\";" + UTF_8;
 
-    public static final char ANNO_TYPE_PAGE     = 'P';
-    public static final char ANNO_TYPE_MEDIA    = 'M';
-    public static final char ANNO_TYPE_BLOCK    = 'B';
-    public static final char ANNO_TYPE_LINE     = 'L';
-    public static final char ANNO_TYPE_WORD     = 'W';
-    public static final char ANNO_TYPE_CAPTION  = 'C';
-
-    public static final Map<Character, String> ANNO_TYPE = Map.ofEntries(
-         Map.entry(ANNO_TYPE_PAGE, "Page"),
-         Map.entry(ANNO_TYPE_MEDIA, "Media"),
-         Map.entry(ANNO_TYPE_BLOCK, "Block"),
-         Map.entry(ANNO_TYPE_LINE, "Line"),
-         Map.entry(ANNO_TYPE_WORD, "Word"),
-         Map.entry(ANNO_TYPE_CAPTION, "Caption")
-    );
+    private FTDefinitions(){
+        // empty constructor to prevent initialization
+    }
 
 }

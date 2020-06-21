@@ -57,13 +57,13 @@ public class SolrIssueQueryImpl implements SolrIssueQuery {
     public HighlightPage<SolrNewspaper> findByEuropeanaIdAndQuery(EuropeanaId europeanaId, String query, int maxSnippets) {
         HighlightOptions hlOptions = new HighlightOptions()
                 .setQuery(new SimpleQuery(query))
-                .addField("europeana_id", "fulltext*")
+                .addField(SolrNewspaper.FIELD_EUROPEANA_ID, SolrNewspaper.FIELD_FULLTEXT)
                 .setNrSnipplets(maxSnippets)
                 .setSimplePrefix(SearchConfig.HIT_TAG_START)
                 .setSimplePostfix(SearchConfig.HIT_TAG_END);
 
-        HighlightQuery q = new SimpleHighlightQuery(new Criteria("europeana_id").is(europeanaId));
-        q.addProjectionOnField(new SimpleField("europeana_id")); // fl=europeana_id
+        HighlightQuery q = new SimpleHighlightQuery(new Criteria(SolrNewspaper.FIELD_EUROPEANA_ID).is(europeanaId));
+        q.addProjectionOnField(new SimpleField(SolrNewspaper.FIELD_EUROPEANA_ID)); // fl=europeana_id
         q.setHighlightOptions(hlOptions);
         q.setRows(1);
         q.setTimeAllowed(30_000);

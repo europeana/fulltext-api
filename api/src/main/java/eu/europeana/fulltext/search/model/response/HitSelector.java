@@ -56,12 +56,20 @@ public class HitSelector implements Serializable {
         return prefix;
     }
 
+    public void setPrefix(String prefix) {
+        this.prefix = prefix;
+    }
+
     public String getExact() {
         return exact;
     }
 
     public String getSuffix() {
         return suffix;
+    }
+
+    public void setSuffix(String suffix) {
+        this.suffix = suffix;
     }
 
     /**

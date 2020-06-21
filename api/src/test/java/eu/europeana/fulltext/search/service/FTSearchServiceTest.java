@@ -1,7 +1,7 @@
 package eu.europeana.fulltext.search.service;
 
-import eu.europeana.fulltext.api.config.FTDefinitions;
 import eu.europeana.fulltext.api.config.FTSettings;
+import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.api.service.EDM2IIIFMapping;
 import eu.europeana.fulltext.api.service.FTService;
 import eu.europeana.fulltext.entity.AnnoPage;
@@ -27,9 +27,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -49,13 +47,15 @@ public class FTSearchServiceTest {
     private static final String SNIPPET_START_PAGE = "<em>Aus der</em> 49. Verlustliste.";
     private static final SolrHit HIT_START_PAGE = new SolrHit(null, "Aus der", ' ', -1, -1); // 1 hit
     private static final String ANNO_START_PAGE_ID = "AnnoStartPage";
-    private static final Annotation ANNO_START_PAGE = new Annotation(ANNO_START_PAGE_ID, FTDefinitions.ANNO_TYPE_WORD, 0, 7);
+    private static final Annotation ANNO_START_PAGE = new Annotation(ANNO_START_PAGE_ID, AnnotationType.WORD.getAbbreviation(),
+            0, 7);
 
     // from page3 (end of page)
     private static final String SNIPPET_END_PAGE = "am 29. Oktober in der Philharmonie ein <em>zweites Konzert</em>";
     private static final SolrHit HIT_END_PAGE = new SolrHit(' ', "zweites Konzert", null, -1, -1); // 1 hits
     private static final String ANNO_END_PAGE_ID = "AnnoEndPage";
-    private static final Annotation ANNO_END_PAGE = new Annotation(ANNO_END_PAGE_ID, FTDefinitions.ANNO_TYPE_WORD, 22970, 22985);
+    private static final Annotation ANNO_END_PAGE = new Annotation(ANNO_END_PAGE_ID,  AnnotationType.WORD.getAbbreviation(),
+            22970, 22985);
 
     // modified example from page1
     private static final String SNIPPET_2_DISTINCT_HITS = "Truck und Verlag: <em>Berlin</em>.      \n<em>Berliner</em> Jageblalt 43.\\\"z.»rg.";
@@ -72,14 +72,17 @@ public class FTSearchServiceTest {
     // from page 3 (middle of page, before snippet is a newline
     private static final SolrHit HIT_NO_PREFIX_NEWLINE = new SolrHit (null,"Kommandowechsel", ' ', -1, -1); // 1 hit
     private static final String ANNO_NO_PREFIX_NEWLINE_ID = "AnnoNoPrefix";
-    private static final Annotation ANNO_NO_PREFIX_NEWLINE = new Annotation(ANNO_NO_PREFIX_NEWLINE_ID, FTDefinitions.ANNO_TYPE_WORD, 10764, 10779);
+    private static final Annotation ANNO_NO_PREFIX_NEWLINE = new Annotation(ANNO_NO_PREFIX_NEWLINE_ID,  AnnotationType.WORD.getAbbreviation(),
+            10764, 10779);
 
     // from page3 (middle of page, after snippet is a space)
     private static final SolrHit HIT_NO_SUFFIX_SPACE = new SolrHit (' ',"Kirkwall", null, -1, -1); // 1 hit
     private static final String ANNO1_NO_SUFFIX_SPACE_ID = "AnnoNoSuffix1";
-    private static final Annotation ANNO1_NO_SUFFIX_SPACE = new Annotation(ANNO1_NO_SUFFIX_SPACE_ID, FTDefinitions.ANNO_TYPE_WORD, 12270, 12280);
+    private static final Annotation ANNO1_NO_SUFFIX_SPACE = new Annotation(ANNO1_NO_SUFFIX_SPACE_ID,  AnnotationType.WORD.getAbbreviation(),
+            12270, 12280);
     private static final String ANNO2_NO_SUFFIX_SPACE_ID = "AnnoNoSuffix2";
-    private static final Annotation ANNO2_NO_SUFFIX_SPACE = new Annotation(ANNO2_NO_SUFFIX_SPACE_ID, FTDefinitions.ANNO_TYPE_WORD, 12272, 12278);
+    private static final Annotation ANNO2_NO_SUFFIX_SPACE = new Annotation(ANNO2_NO_SUFFIX_SPACE_ID,  AnnotationType.WORD.getAbbreviation(),
+            12272, 12278);
 
 
     // from page 3 (middle of page, after snippet is a newline)
@@ -255,7 +258,7 @@ public class FTSearchServiceTest {
 
         // find annotation
         SearchResult result = new SearchResult("test", true);
-        searchService.findAnnotation(result, startPageHit, annoPage);
+        searchService.findAnnotation(result, startPageHit, annoPage, AnnotationType.WORD);
         assertEquals(Integer.valueOf(1), Integer.valueOf(result.getHits().size()));
         assertEquals(Integer.valueOf(1), Integer.valueOf(result.getItems().size()));
         assertTrue(result.getItems().get(0).getId().endsWith(ANNO_START_PAGE_ID));
@@ -275,7 +278,7 @@ public class FTSearchServiceTest {
 
         // find annotation
         SearchResult result = new SearchResult("test", true);
-        searchService.findAnnotation(result, endPageHit, annoPage);
+        searchService.findAnnotation(result, endPageHit, annoPage, AnnotationType.WORD);
         assertEquals(Integer.valueOf(1), Integer.valueOf(result.getHits().size()));
         assertEquals(Integer.valueOf(1), Integer.valueOf(result.getItems().size()));
         assertTrue(result.getItems().get(0).getId().endsWith(ANNO_END_PAGE_ID));
@@ -290,7 +293,7 @@ public class FTSearchServiceTest {
         List<Hit> hit1 = searchService.findHitInFullText(HIT_NO_PREFIX_NEWLINE, annoPage, 10);
         assertEquals(1, hit1.size());
         SearchResult result1 = new SearchResult("test", true);
-        searchService.findAnnotation(result1, hit1.get(0), annoPage);
+        searchService.findAnnotation(result1, hit1.get(0), annoPage, AnnotationType.WORD);
         assertEquals(Integer.valueOf(1), Integer.valueOf(result1.getHits().size()));
         assertEquals(Integer.valueOf(1), Integer.valueOf(result1.getItems().size()));
         assertTrue(result1.getItems().get(0).getId().endsWith(ANNO_NO_PREFIX_NEWLINE_ID));
@@ -301,7 +304,7 @@ public class FTSearchServiceTest {
         List<Hit> hit2 = searchService.findHitInFullText(HIT_NO_SUFFIX_SPACE, annoPage, 10);
         assertEquals(1, hit2.size());
         SearchResult result2 = new SearchResult("test", true);
-        searchService.findAnnotation(result2, hit2.get(0), annoPage);
+        searchService.findAnnotation(result2, hit2.get(0), annoPage, AnnotationType.WORD);
         assertEquals(Integer.valueOf(1), Integer.valueOf(result2.getHits().size()));
         assertEquals(Integer.valueOf(2), Integer.valueOf(result2.getItems().size()));
         assertTrue(result2.getItems().get(0).getId().endsWith(ANNO1_NO_SUFFIX_SPACE_ID));
@@ -315,7 +318,7 @@ public class FTSearchServiceTest {
     public void testFindNoAnnotations() {
         Hit noHit = new Hit(100, 101, new HitSelector(null, "x", null));
         SearchResult result = new SearchResult("test", true);
-        searchService.findAnnotation(result, noHit, annoPage);
+        searchService.findAnnotation(result, noHit, annoPage, AnnotationType.WORD);
         assertTrue(result.getItems().isEmpty());
         assertTrue(result.getHits().isEmpty());
     }

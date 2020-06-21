@@ -68,7 +68,6 @@ public class SearchResult implements Serializable {
      */
     public void addAnnotationHit(AnnoPage annoPage, Annotation annotation, Hit hit) {
         AnnotationV3 annoV3 = EDM2IIIFMapping.getAnnotationV3(annoPage, annotation, false, false);
-        hit.addAnnotationId(annoV3.getId());
         if (!hits.contains(hit)) {
             hits.add(hit);
         }

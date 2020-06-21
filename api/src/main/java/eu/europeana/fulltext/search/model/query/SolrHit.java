@@ -1,12 +1,15 @@
 package eu.europeana.fulltext.search.model.query;
 
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
  * Class used to temporarily store highlighted words retrieved from Solr snippets
  */
-public class SolrHit {
+public class SolrHit implements Serializable {
+
+    private static final long serialVersionUID = -2586948963638483178L;
 
     @NotNull
     private String prefix;

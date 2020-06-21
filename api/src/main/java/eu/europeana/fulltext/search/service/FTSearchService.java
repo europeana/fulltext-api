@@ -1,5 +1,6 @@
 package eu.europeana.fulltext.search.service;
 
+import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.api.service.FTService;
 import eu.europeana.fulltext.api.service.exception.FTException;
 import eu.europeana.fulltext.entity.AnnoPage;
@@ -26,8 +27,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import static eu.europeana.fulltext.api.config.FTDefinitions.ANNO_TYPE_WORD;
-
 // TODO really make loading this optional, currently Spring-Boot will auto-connect to Solr for the actuator
 
 /**
@@ -41,8 +40,6 @@ import static eu.europeana.fulltext.api.config.FTDefinitions.ANNO_TYPE_WORD;
 public class FTSearchService {
 
     private static final Logger LOG  = LogManager.getLogger(FTSearchService.class);
-
-    private static final char ANNOTATION_HIT_MATCH_LEVEL = ANNO_TYPE_WORD; // only check word-level annotations to find matches
 
     private SolrNewspaperRepo solrRepo;
     private FTService fulltextRepo;
@@ -58,12 +55,13 @@ public class FTSearchService {
      * @param europeanaId europeana id of the issue to search
      * @param query the string to search
      * @param pageSize maximum number of hits
+     * @param annotationType requested types of annotations
      * @param debug if true we include debug information
      * @throws FTException when there is a problem processing the request (e.g. issue doesn't exist)
      * @return SearchResult object (can be empty if no hits were found)
      */
-    public SearchResult searchIssue(String searchId, EuropeanaId europeanaId, String query, int pageSize, boolean debug)
-            throws FTException {
+    public SearchResult searchIssue(String searchId, EuropeanaId europeanaId, String query, int pageSize, AnnotationType annotationType,
+                                    boolean debug) throws FTException {
         long start = System.currentTimeMillis();
         HighlightPage<SolrNewspaper> solrResult = solrRepo.findByEuropeanaIdAndQuery(europeanaId, query, pageSize);
 
@@ -76,7 +74,7 @@ public class FTSearchService {
             }
         } else {
             LOG.debug("Solr returned {} document", solrResult.getSize());
-            findHitsInIssue(result, solrResult, europeanaId, pageSize, result.getDebug());
+            findHitsInIssue(result, solrResult, europeanaId, pageSize, annotationType, result.getDebug());
         }
         LOG.debug("Search done in {} ms. Found {} annotations", (System.currentTimeMillis() - start), result.getItems().size());
         return result;
@@ -87,7 +85,7 @@ public class FTSearchService {
      * annopages and annotations.
      */
     private SearchResult findHitsInIssue(SearchResult result, HighlightPage<SolrNewspaper> solrResult,
-                                         EuropeanaId europeanaId, int pageSize, Debug debug) {
+                                         EuropeanaId europeanaId, int pageSize, AnnotationType annoType, Debug debug) {
         Collection<SolrHit> hitsToFind = getHitsFromSolrSnippets(solrResult, debug);
 
         // TODO tmp hack to get things working: for now we have to search through all annopages to get the right fulltext
@@ -107,7 +105,7 @@ public class FTSearchService {
                 // find more hits
                 List<Hit> hitsFound = findHitInFullText(hitToFind, annoPage, maxHits);
                 for (Hit hit : hitsFound) {
-                    findAnnotation(result, hit, annoPage);
+                    findAnnotation(result, hit, annoPage, annoType);
                 }
             }
         }
@@ -223,19 +221,22 @@ public class FTSearchService {
 
         String resourceTxt = annoPage.getRes().getValue();
 
-        int startIndex = getHitStartInFulltext(hitToFind, -1, resourceTxt);
-        while (startIndex >= 0 && result.size() < maxHits) {
+        int startIndex = -1;
+        while ((startIndex = getHitStartInFulltext(hitToFind, startIndex, resourceTxt)) >= 0) {
             int endIndex = startIndex + hitToFind.getExact().length();
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Found hit '{}' on page {}, fulltext {}, word start = {}, end = {} -> '{}'",
                         hitToFind, annoPage.getPgId(), annoPage.getRes().getId(), startIndex, endIndex,
                         annoPage.getRes().getValue().substring(startIndex, endIndex));
             }
-            result.add(new Hit(startIndex, endIndex, generateSnippetFromFullText(hitToFind, resourceTxt, startIndex, endIndex)));
+            result.add(new Hit(startIndex, endIndex, hitToFind.getExact()));
+            if (result.size() >= maxHits) {
+                LOG.trace("Stopping search because we have {} results", result.size());
+                break;
+            }
 
             startIndex = startIndex + hitToFind.getExact().length();
             LOG.trace("Continue search at index {}", startIndex);
-            startIndex = getHitStartInFulltext(hitToFind, startIndex, resourceTxt);
         }
         return result;
     }
@@ -299,59 +300,14 @@ public class FTSearchService {
         return -1;
     }
 
-
-    /**
-     * We have found our hit, now we need to generate a snippet based on the Mongo fulltext
-     * The strategy is to find the closest dot (start and end of sentence). If we can't find that we search for the
-     * closest newline as fallback solution.
-     */
-    protected HitSelector generateSnippetFromFullText(SolrHit hitToFind, String fullText, int startIndex, int endIndex) {
-        int startSentence;
-        int endPreviousSentence = fullText.lastIndexOf('.', startIndex);
-        if (endPreviousSentence == -1) {
-            // not dot found, search for newline as fallback
-            endPreviousSentence = fullText.lastIndexOf('\n', startIndex);
-            if (endPreviousSentence == -1) {
-                startSentence = 0; // no dot or newline found.
-            } else {
-                startSentence = endPreviousSentence + 1;
-            }
-        } else {
-            startSentence = endPreviousSentence + 1;
-        }
-        // find first non-space character (trim leading spaces)
-        while (fullText.charAt(startSentence) == ' ') {
-            startSentence++;
-        }
-
-        String prefix = fullText.substring(startSentence, startIndex);
-
-        int endSentence = fullText.indexOf('.', endIndex);
-        if (endSentence == -1) {
-            // not dot found, search for newline as fallback
-            endSentence = fullText.indexOf('\n', endIndex);
-            if (endSentence == -1) {
-                endSentence = fullText.length(); // no dot or newline found.
-            }
-        } else {
-            endSentence++; // include the dot
-        }
-        String suffix = fullText.substring(endIndex, endSentence);
-
-        // TODO create new hit based on word-level annotation
-        // but for demo purposes we temporarily generate our own 'sentence' hit
-
-        return new HitSelector(prefix, hitToFind.getExact(), suffix);
-    }
-
     /**
      * Given a hit, we go over all Annotations to see which one(s) match. When we found one we add it to the search result
      */
-    void findAnnotation(SearchResult result, Hit hit, AnnoPage annoPage) {
+    void findAnnotation(SearchResult result, Hit hit, AnnoPage annoPage, AnnotationType annoType) {
         boolean annotationFound = false;
         LOG.trace("Searching annotations for hit {},{}", hit.getStartIndex(), hit.getEndIndex());
         for (Annotation anno : annoPage.getAns()) {
-            if (anno.getDcType() == ANNOTATION_HIT_MATCH_LEVEL &&
+            if (anno.getDcType() == annoType.getAbbreviation() &&
                     overlap(hit.getStartIndex(), hit.getEndIndex(), anno.getFrom(), anno.getTo())) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Found overlap between hit {},{} '{}' and annotation {},{} '{}'",
@@ -363,10 +319,13 @@ public class FTSearchService {
                 // sometimes a trailing character like a dot or comma directly after the keyword is regarded as
                 // another annotation (word). So we filter those out.
                 if (anno.getTo() - anno.getFrom() > 1) {
+                    hit.addAnnotation(anno, annoPage.getRes().getValue());
                     result.addAnnotationHit(annoPage, anno, hit);
                     annotationFound = true;
+                    // TODO test if we can stop searching for Block, and Line level annotations? Or can a hit be
+                    // spread out of multiple pages, blocks, lines?
                 } else {
-                    LOG.debug("Ignoring annotation {} overlap because it's only 1 character long", anno.getAnId());
+                    LOG.debug("Ignoring overlap with annotation {} because it's only 1 character long", anno.getAnId());
                 }
             }
         }
@@ -378,6 +337,9 @@ public class FTSearchService {
     /**
      * Checks if there is an overlap between 2 start and end indexes.
      * Implementation based on https://stackoverflow.com/a/36035369
+     *
+     * Note that we can't use this for page-level annotations at the moment because those don't have a to and from
+     * coordinate
      * @param s1 start index1
      * @param e1 end index1
      * @param s2 start index2
@@ -387,18 +349,5 @@ public class FTSearchService {
     private boolean overlap(int s1, int e1, int s2, int e2) {
         return (s1 <= e2 && e1 >= s2);
     }
-
-
-//    public SearchResult searchCollection(String searchId, String query, int page, int pageSize) {
-//        HighlightPage<SolrNewspaper> result = solrRepo.findByFulltextIn(query, new PageRequest(page, pageSize));
-//        LOG.error("result = {}", result);
-//
-//        for (HighlightEntry<SolrNewspaper> record : result.getHighlighted()) {
-//            LOG.error("  Found record {}, with language {} and fulltext {}", record.getEntity().europeanaId,
-//                    record.getEntity().language, record.getEntity().fulltext);
-//        }
-//
-//        return null;
-//    }
 
 }

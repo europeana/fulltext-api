@@ -24,7 +24,7 @@ import java.util.Objects;
  * If-Modified-Since, If-None-Match and If-Match request caching
  * @author Patrick Ehlert
  */
-public class CacheUtils {
+public final class CacheUtils {
 
     private static final Logger  LOG             = LogManager.getLogger(CacheUtils.class);
     private static final String  IFNONEMATCH     = "If-None-Match";
@@ -254,7 +254,7 @@ public class CacheUtils {
         // Note that Apache DateUtils can parse all 3 date format patterns allowed by RFC 2616
         Date date = DateUtils.parseDate(dateString);
         if (date == null) {
-            LOG.error(String.format("Error parsing request header Date string: %s", dateString));
+            LOG.error("Error parsing request header Date string: {}", dateString);
             return null;
         }
         return dateToZonedUTC(date);

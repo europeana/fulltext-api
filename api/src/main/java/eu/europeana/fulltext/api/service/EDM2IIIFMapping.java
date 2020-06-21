@@ -1,6 +1,7 @@
 package eu.europeana.fulltext.api.service;
 
 import eu.europeana.fulltext.api.config.FTSettings;
+import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.api.model.FTResource;
 import eu.europeana.fulltext.api.model.v2.AnnotationBodyV2;
 import eu.europeana.fulltext.api.model.v2.AnnotationFullBodyV2;
@@ -252,11 +253,11 @@ public final class EDM2IIIFMapping {
     }
 
     private static String expandDCType(char dcTypeCode){
-        String dcType = ANNO_TYPE.get(dcTypeCode);
+        AnnotationType dcType = AnnotationType.fromAbbreviation(dcTypeCode);
         if (dcType == null) {
             LOG.warn("Unknown dcType code '{}'", dcTypeCode);
             return "undefined";
         }
-        return dcType;
+        return dcType.getName();
     }
 }
