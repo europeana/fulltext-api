@@ -22,11 +22,15 @@ import javax.annotation.PostConstruct;
  */
 public class SolrIssueQueryImpl implements SolrIssueQuery {
 
+    private static final String HL_MAXANALYZEDCHARS_PARAM = "hl.maxAnalyzedChars";
+
     @Autowired
     private SolrTemplate solrTemplate;
 
     @Value("${spring.data.solr.core}")
     private String solrCore;
+    @Value("${spring.data.solr.hl.maxAnalyzedChars}")
+    private Integer maxAnalyzedChars;
 
     /**
      * This is to fix the problem that Solr considers slashes to be special characters. Since an EuropeanaId follows the
@@ -51,8 +55,6 @@ public class SolrIssueQueryImpl implements SolrIssueQuery {
         solrTemplate.registerQueryParser(Query.class, defaultQueryParser);
     }
 
-    // TODO find a way to set hl.maxAnalyzedChars
-
     @Override
     public HighlightPage<SolrNewspaper> findByEuropeanaIdAndQuery(EuropeanaId europeanaId, String query, int maxSnippets) {
         HighlightOptions hlOptions = new HighlightOptions()
@@ -61,6 +63,9 @@ public class SolrIssueQueryImpl implements SolrIssueQuery {
                 .setNrSnipplets(maxSnippets)
                 .setSimplePrefix(SearchConfig.HIT_TAG_START)
                 .setSimplePostfix(SearchConfig.HIT_TAG_END);
+        if (maxAnalyzedChars != null) {
+            hlOptions.addHighlightParameter(HL_MAXANALYZEDCHARS_PARAM, maxAnalyzedChars);
+        }
 
         HighlightQuery q = new SimpleHighlightQuery(new Criteria(SolrNewspaper.FIELD_EUROPEANA_ID).is(europeanaId));
         q.addProjectionOnField(new SimpleField(SolrNewspaper.FIELD_EUROPEANA_ID)); // fl=europeana_id

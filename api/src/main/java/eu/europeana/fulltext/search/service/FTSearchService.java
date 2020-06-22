@@ -94,15 +94,15 @@ public class FTSearchService {
         LOG.debug("Retrieved {} annopages in {} ms", pages.size(), System.currentTimeMillis() - start);
 
         for (AnnoPage annoPage : pages) {
-            // check each page if we can find our keywords
+            // check each fulltext if we can find our keywords (solrhits)
             LOG.trace("Searching through page {}, fulltext = {}", annoPage.getPgId(), annoPage.getRes().getId());
             for (SolrHit hitToFind : hitsToFind) {
-                // check if we need to find more hits
+                // check how many hits we still need until we have the maximum
                 int maxHits = pageSize - result.getHits().size();
                 if (maxHits <= 0) {
                     return result;
                 }
-                // find more hits
+                // find more hits and corresponding annotations
                 List<Hit> hitsFound = findHitInFullText(hitToFind, annoPage, maxHits);
                 for (Hit hit : hitsFound) {
                     findAnnotation(result, hit, annoPage, annoType);
@@ -301,7 +301,8 @@ public class FTSearchService {
     }
 
     /**
-     * Given a hit, we go over all Annotations to see which one(s) match. When we found one we add it to the search result
+     * Given a hit, we go over all Annotations to see which one(s) match. When we found one we use it to generate the
+     * hit prefix and suffix and we add the annotation to the search result
      */
     void findAnnotation(SearchResult result, Hit hit, AnnoPage annoPage, AnnotationType annoType) {
         boolean annotationFound = false;

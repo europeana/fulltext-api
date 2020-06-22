@@ -67,13 +67,14 @@ public class Hit implements Serializable {
      * @param fulltext
      */
     public void addAnnotation(Annotation annotation, String fulltext) {
-        if (this.getAnnotations().size() == 0) {
-            if (annotation.getFrom() < this.startIndex) {
-                this.selectors.get(0).setPrefix(fulltext.substring(annotation.getFrom(), this.startIndex));
-            }
+        HitSelector hs = this.selectors.get(0); // should be only 1 hitSelector per hit
+        if (this.getAnnotations().isEmpty() && (annotation.getFrom() < this.startIndex)) {
+            hs.setPrefix(fulltext.substring(annotation.getFrom(), this.startIndex));
         }
         if (this.endIndex < annotation.getTo()) {
-            this.selectors.get(0).setSuffix(fulltext.substring(this.endIndex, annotation.getTo()));
+            hs.setSuffix(fulltext.substring(this.endIndex, annotation.getTo()));
+        } else {
+            hs.setSuffix("");
         }
         this.annotations.add(annotation.getAnId());
     }
