@@ -1,13 +1,15 @@
 # Full Text API
 ### Europeana Newspapers Fulltext API 
 
-This project consists of 4 modules:
+This project consists of 3 modules:
 
 1. A loader module to read and parse Europeana Newspaper xml files that are the result of the newspaper OCR process. The
 resulting objects are stored in a Mongo database 
-2. An API that reads this data from the Mongo database and makes it available via IIIF presentation requests (JSON-LD)
-3. A common module that contains the data model ((Fulltext Resources, AnnoPages and Annotations) for both the loader and API
-4. The search module which is an extension to the API for supporting Fulltext search in a particular issue (Europeana CHO).
+2. An API that 
+   - reads data from the Mongo database and makes it available via IIIF presentation requests (JSON-LD)
+   - allows one to search the fulltext of a particular newspaper issue (record) and return corresponding annotations.
+3. A common module that contains the data model (Fulltext Resources, AnnoPages, Annotations, AnnotationType) for both the
+ loader and API
 
 ### Implementation details ###
 
@@ -15,7 +17,7 @@ This Fulltext API implements the functionality described in §3.3 & 3.4 of the E
 
 ### REQUIREMENTS ###
 - Java 11 and a Mongo database
-- Optionally also a Solr search engine (for search module))
+- Optionally also a Solr search engine (for search)
 
 ### FUNCTIONALITY
 

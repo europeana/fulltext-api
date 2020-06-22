@@ -27,9 +27,9 @@ public class SolrIssueQueryImpl implements SolrIssueQuery {
     @Autowired
     private SolrTemplate solrTemplate;
 
-    @Value("${spring.data.solr.core}")
+    @Value("${spring.data.solr.core:}")
     private String solrCore;
-    @Value("${spring.data.solr.hl.maxAnalyzedChars}")
+    @Value("${spring.data.solr.hl.maxAnalyzedChars:}")
     private Integer maxAnalyzedChars;
 
     /**

@@ -30,11 +30,11 @@ public class SearchConfig {
     // try to merge two hits that are away a maximum of this much characters
     public static final int HIT_MERGE_MAX_DISTANCE = 3;
 
-    @Value("${spring.data.solr.zk-host}")
+    @Value("${spring.data.solr.zk-host:}")
     private String zookeeperHosts;
-    @Value("${spring.data.solr.host}")
+    @Value("${spring.data.solr.host:}")
     private String solrHost;
-    @Value("${spring.data.solr.core}")
+    @Value("${spring.data.solr.core:}")
     private String solrCore;
     @Value("${spring.data.solr.hl.maxAnalyzedChars:}")
     private Integer hlMaxAnalyzeChars;

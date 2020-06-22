@@ -12,11 +12,11 @@ import eu.europeana.fulltext.search.model.query.SolrHit;
 import eu.europeana.fulltext.search.model.query.SolrNewspaper;
 import eu.europeana.fulltext.search.model.response.Debug;
 import eu.europeana.fulltext.search.model.response.Hit;
-import eu.europeana.fulltext.search.model.response.HitSelector;
 import eu.europeana.fulltext.search.model.response.SearchResult;
 import eu.europeana.fulltext.search.repository.SolrNewspaperRepo;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.solr.core.query.result.HighlightEntry;
 import org.springframework.data.solr.core.query.result.HighlightPage;
 import org.springframework.stereotype.Service;
@@ -27,15 +27,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-// TODO really make loading this optional, currently Spring-Boot will auto-connect to Solr for the actuator
-
 /**
  * Service for querying solr, retrieving fulltext data and sending back results
  *
  * @author Patrick Ehlert
  * Created on 28 May 2020
  */
-//@Lazy
+@Lazy
 @Service
 public class FTSearchService {
 
