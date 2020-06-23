@@ -1,5 +1,8 @@
 package eu.europeana.fulltext.api.config;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by luthien on 14/06/2018.
  */
@@ -20,13 +23,9 @@ public final class FTDefinitions {
     public static final  String TYPE_CAPTION              = "Caption";
     public static final  String TYPE_UNDEFINED            = "undefined";
     private static final String PROFILE_IS                = ";profile=\"";
-    // Text Granularity constants
-    public static final  String TEXTGRAN_PAGE             = "page";
-    public static final  String TEXTGRAN_BLOCK            = "block";
-    public static final  String TEXTGRAN_LINE             = "line";
-    public static final  String TEXTGRAN_WORD             = "word";
-    public static final  String TEXTGRAN_MEDIA            = "media";
-    public static final  String TEXTGRAN_CAPTION          = "caption";
+
+    public static List<String> GRANULARITY_VALUES = new ArrayList<>(
+            List.of(TYPE_PAGE, TYPE_BLOCK, TYPE_LINE, TYPE_WORD, TYPE_MEDIA, TYPE_CAPTION));
 
     /**
      * Media type for IIIF version 2
