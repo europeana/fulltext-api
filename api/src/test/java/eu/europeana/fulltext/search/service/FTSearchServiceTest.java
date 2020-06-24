@@ -47,7 +47,7 @@ public class FTSearchServiceTest {
     private static final String SNIPPET_START_PAGE = "<em>Aus der</em> 49. Verlustliste.";
     private static final SolrHit HIT_START_PAGE = new SolrHit(null, "Aus der", ' ', -1, -1); // 1 hit
     private static final String ANNO_START_PAGE_ID = "AnnoStartPage";
-    private static final Annotation ANNO_START_PAGE = new Annotation(ANNO_START_PAGE_ID, AnnotationType.WORD.getAbbreviation(),
+    private static final Annotation ANNO_START_PAGE = new Annotation(ANNO_START_PAGE_ID, AnnotationType.LINE.getAbbreviation(),
             0, 7);
 
     // from page3 (end of page)
@@ -56,11 +56,6 @@ public class FTSearchServiceTest {
     private static final String ANNO_END_PAGE_ID = "AnnoEndPage";
     private static final Annotation ANNO_END_PAGE = new Annotation(ANNO_END_PAGE_ID,  AnnotationType.WORD.getAbbreviation(),
             22970, 22985);
-
-    // modified example from page1
-    private static final String SNIPPET_2_DISTINCT_HITS = "Truck und Verlag: <em>Berlin</em>.      \n<em>Berliner</em> Jageblalt 43.\\\"z.»rg.";
-    private static final SolrHit HIT1_DISTINCT_HITS = new SolrHit(' ',"Berlin", '.', -1, -1);
-    private static final SolrHit HIT2_DISTINCT_HITS = new SolrHit('\n', "Berliner", ' ', -1, -1);
 
     // from page3 (middle of page)
     private static final String SNIPPET_2_SAME_HITS = "Paul E h r e n f e l d (<em>Berlin</em>) tot. Pion. Fritz Hage n (<em>Berlin</em>) tot.";
@@ -71,23 +66,26 @@ public class FTSearchServiceTest {
 
     // from page 3 (middle of page, before snippet is a newline
     private static final SolrHit HIT_NO_PREFIX_NEWLINE = new SolrHit (null,"Kommandowechsel", ' ', -1, -1); // 1 hit
-    private static final String ANNO_NO_PREFIX_NEWLINE_ID = "AnnoNoPrefix";
-    private static final Annotation ANNO_NO_PREFIX_NEWLINE = new Annotation(ANNO_NO_PREFIX_NEWLINE_ID,  AnnotationType.WORD.getAbbreviation(),
+    private static final String ANNO_NO_PREFIX_NEWLINE_WORD_ID = "AnnoNoPrefixWord";
+    private static final String ANNO_NO_PREFIX_NEWLINE_BLOCK_ID = "AnnoNoPrefixBlock";
+    private static final Annotation ANNO_NO_PREFIX_NEWLINE_WORD = new Annotation(ANNO_NO_PREFIX_NEWLINE_WORD_ID,  AnnotationType.WORD.getAbbreviation(),
             10764, 10779);
+    private static final Annotation ANNO_NO_PREFIX_NEWLINE_BLOCK = new Annotation(ANNO_NO_PREFIX_NEWLINE_BLOCK_ID,  AnnotationType.BLOCK.getAbbreviation(),
+            10700, 10800);
 
     // from page3 (middle of page, after snippet is a space)
     private static final SolrHit HIT_NO_SUFFIX_SPACE = new SolrHit (' ',"Kirkwall", null, -1, -1); // 1 hit
     private static final String ANNO1_NO_SUFFIX_SPACE_ID = "AnnoNoSuffix1";
-    private static final Annotation ANNO1_NO_SUFFIX_SPACE = new Annotation(ANNO1_NO_SUFFIX_SPACE_ID,  AnnotationType.WORD.getAbbreviation(),
+    private static final Annotation ANNO1_NO_SUFFIX_SPACE = new Annotation(ANNO1_NO_SUFFIX_SPACE_ID,  AnnotationType.LINE.getAbbreviation(),
             12270, 12280);
     private static final String ANNO2_NO_SUFFIX_SPACE_ID = "AnnoNoSuffix2";
-    private static final Annotation ANNO2_NO_SUFFIX_SPACE = new Annotation(ANNO2_NO_SUFFIX_SPACE_ID,  AnnotationType.WORD.getAbbreviation(),
+    private static final Annotation ANNO2_NO_SUFFIX_SPACE = new Annotation(ANNO2_NO_SUFFIX_SPACE_ID,  AnnotationType.LINE.getAbbreviation(),
             12272, 12278);
-
 
     // from page 3 (middle of page, after snippet is a newline)
     private static final SolrHit HIT_NO_SUFFIX_NEWLINE = new SolrHit(' ', "Raincourt", null, -1, -1); // 1 hit
     private static final SolrHit HIT_NO_PREFIX_SUFFIX = new SolrHit("", "Raincourt", "", -1, -1); // 1 hit
+
 
     @Autowired
     private FTSearchService searchService;
@@ -118,7 +116,8 @@ public class FTSearchServiceTest {
                 add(ANNO_START_PAGE);
                 add(ANNO1_NO_SUFFIX_SPACE);
                 add(ANNO2_NO_SUFFIX_SPACE);
-                add(ANNO_NO_PREFIX_NEWLINE);
+                add(ANNO_NO_PREFIX_NEWLINE_WORD);
+                add(ANNO_NO_PREFIX_NEWLINE_BLOCK);
                 add(ANNO_END_PAGE);
             }
         };
@@ -126,28 +125,35 @@ public class FTSearchServiceTest {
     }
 
     /**
-     * Test if extracting hits from a Solr Snippet works fine
+     * Test if extracting hits/keywords from a Solr Snippet works fine
      */
     @Test
-    public void testGetHitsFromSolrSnippet() {
+    public void testGetSolrHitsFromSnippet() {
+        // find a keyword at the start of a page
         List<SolrHit> hits = new ArrayList<>();
         searchService.getHitsFromSolrSnippet(hits, SNIPPET_START_PAGE, null);
         assertEquals(1, hits.size());
         SolrHit hit1 = hits.get(0);
         assertEquals(HIT_START_PAGE, hit1);
 
+        // find a keyword at the end of a page
         searchService.getHitsFromSolrSnippet(hits, SNIPPET_END_PAGE, null);
         assertEquals(2, hits.size());
         SolrHit hit2 = hits.get(1);
         assertEquals(HIT_END_PAGE, hit2);
 
-        searchService.getHitsFromSolrSnippet(hits, SNIPPET_2_DISTINCT_HITS, null);
+        // find 2 different keywords in 1 snippet
+        String twoDistinctHits = "Truck und Verlag: <em>Berlin</em>.      \n<em>Berliner</em> Jageblalt 43.\\\"z.»rg.";
+        SolrHit expectedHit1 = new SolrHit(' ',"Berlin", '.', -1, -1);
+        SolrHit expectedHit2 = new SolrHit('\n', "Berliner", ' ', -1, -1);
+        searchService.getHitsFromSolrSnippet(hits, twoDistinctHits, null);
         assertEquals(4, hits.size());
-        SolrHit hit3 = hits.get(hits.indexOf(HIT1_DISTINCT_HITS));
-        assertEquals(HIT1_DISTINCT_HITS, hit3);
-        SolrHit hit4 = hits.get(hits.indexOf(HIT2_DISTINCT_HITS));
-        assertEquals(HIT2_DISTINCT_HITS, hit4);
+        SolrHit hit3 = hits.get(hits.indexOf(expectedHit1));
+        assertEquals(expectedHit1, hit3);
+        SolrHit hit4 = hits.get(hits.indexOf(expectedHit2));
+        assertEquals(expectedHit2, hit4);
 
+        // find 2 exactly the same keywords (so should count as 1)
         searchService.getHitsFromSolrSnippet(hits, SNIPPET_2_SAME_HITS, null);
         assertEquals(5, hits.size());
         SolrHit hit5 = hits.get(hits.indexOf(HIT_2_SAME_HITS));
@@ -155,10 +161,10 @@ public class FTSearchServiceTest {
     }
 
     /**
-     * Test if merging 2 hits works fine.
+     * Test if merging 2 solr hits found next to each other works fine.
      */
     @Test
-    public void testMergeHits() {
+    public void testMergeSolrHitsFromSnippet() {
         String snippet = "Na ELSENEUR, Kaptein <em>Daniel</em> <em>Ehlert</em>, van Koningsbergen";
         SolrHit expectedSolrHit = new SolrHit(" ", "Daniel Ehlert", ",", -1, -1);
 
@@ -169,10 +175,10 @@ public class FTSearchServiceTest {
     }
 
      /**
-      * Test if searching for a particular hit in a fulltext works fine.
+      * Test if searching for a particular solrhit in a fulltext works fine.
      */
     @Test
-    public void testFindHitFullText() {
+    public void testFindSolrHitInFullText() {
         List<Hit> hits1a = searchService.findHitInFullText(HIT_2_SAME_HITS, annoPage, 100);
         assertEquals(65, hits1a.size());
 
@@ -202,20 +208,20 @@ public class FTSearchServiceTest {
     }
 
     /**
-     * Test if we handle not finding a hit properly
+     * Test if we handle not finding a solrhit properly
      */
     @Test
-    public void testFindNoHit() {
+    public void testFindNoSolrHit() {
         // although the test fulltext does contain a word with an x, there is no ' x '
         List<Hit> hits = searchService.findHitInFullText(new SolrHit("", "x", "", -1, -1), annoPage, 10);
         assertEquals(0, hits.size());
     }
 
     /**
-     * Test if we set the proper start and end coordinates
+     * Test if we set the proper start and end coordinates when we find a solrhit and create a hit object
      */
     @Test
-    public void testFindHitFulltextCoordinates() {
+    public void testFindSolrHitInFulltextCoordinates() {
         String text = "This is another test test";
         AnnoPage annoPage = new AnnoPage("x", "y", "1", null,
                 new Resource(null, null, text, null));
@@ -246,42 +252,28 @@ public class FTSearchServiceTest {
     }
 
     /**
-     * Test if we can find a hit that is at the start of a fulltext and if we can find the corresponding Annotation
+     * Test if we can find a solrhit that is at the start of a fulltext
      */
     @Test
-    public void testFindHitFulltextStart()  {
+    public void testFindSolrHitInFulltextStart()  {
         List<Hit> hits = searchService.findHitInFullText(HIT_START_PAGE, annoPage, 10);
         assertEquals(1, hits.size());
         Hit startPageHit = hits.get(0);
         assertEquals(Integer.valueOf(0), startPageHit.getStartIndex());
         assertEquals(Integer.valueOf(HIT_START_PAGE.getExact().length()), startPageHit.getEndIndex());
-
-        // find annotation
-        SearchResult result = new SearchResult("test", true);
-        searchService.findAnnotation(result, startPageHit, annoPage, AnnotationType.WORD);
-        assertEquals(Integer.valueOf(1), Integer.valueOf(result.getHits().size()));
-        assertEquals(Integer.valueOf(1), Integer.valueOf(result.getItems().size()));
-        assertTrue(result.getItems().get(0).getId().endsWith(ANNO_START_PAGE_ID));
     }
 
     /**
-     * Test if we can find a hit that is at the end of a fulltext and if we can find the corresponding Annotation
+     * Test if we can find a hit that is at the end of a fulltext
      */
     @Test
-    public void testFindHitFulltextEnd()  {
+    public void testFindSolrHitInFulltextEnd()  {
         List<Hit> hits = searchService.findHitInFullText(HIT_END_PAGE, annoPage, 10);
         assertEquals(1, hits.size());
         Hit endPageHit = hits.get(0);
         int ftLength = annoPage.getRes().getValue().length();
         assertEquals(Integer.valueOf(ftLength - HIT_END_PAGE.getExact().length()), endPageHit.getStartIndex());
         assertEquals(Integer.valueOf(ftLength), endPageHit.getEndIndex());
-
-        // find annotation
-        SearchResult result = new SearchResult("test", true);
-        searchService.findAnnotation(result, endPageHit, annoPage, AnnotationType.WORD);
-        assertEquals(Integer.valueOf(1), Integer.valueOf(result.getHits().size()));
-        assertEquals(Integer.valueOf(1), Integer.valueOf(result.getItems().size()));
-        assertTrue(result.getItems().get(0).getId().endsWith(ANNO_END_PAGE_ID));
     }
 
     /**
@@ -292,23 +284,32 @@ public class FTSearchServiceTest {
         // find annotation with a perfect match (same start and end coordinate)
         List<Hit> hit1 = searchService.findHitInFullText(HIT_NO_PREFIX_NEWLINE, annoPage, 10);
         assertEquals(1, hit1.size());
+
         SearchResult result1 = new SearchResult("test", true);
-        searchService.findAnnotation(result1, hit1.get(0), annoPage, AnnotationType.WORD);
+        searchService.findAnnotation(result1, hit1.get(0), annoPage, AnnotationType.BLOCK);
         assertEquals(Integer.valueOf(1), Integer.valueOf(result1.getHits().size()));
         assertEquals(Integer.valueOf(1), Integer.valueOf(result1.getItems().size()));
-        assertTrue(result1.getItems().get(0).getId().endsWith(ANNO_NO_PREFIX_NEWLINE_ID));
+        assertTrue(result1.getItems().get(0).getId().endsWith(ANNO_NO_PREFIX_NEWLINE_BLOCK_ID));
+
+        // if we retry again for word-level annotations we should still find 1 annotation, but there should be no hit
+        // in the result because we don't output those for word-level annotations
+        SearchResult result2 = new SearchResult("test", true);
+        searchService.findAnnotation(result2, hit1.get(0), annoPage, AnnotationType.WORD);
+        assertTrue(result2.getHits().isEmpty());
+        assertEquals(Integer.valueOf(1), Integer.valueOf(result2.getItems().size()));
+        assertTrue(result2.getItems().get(0).getId().endsWith(ANNO_NO_PREFIX_NEWLINE_WORD_ID));
 
         // find 2 overlapping annotations; one where the start coordinate is -1 and end coordinate +1 and another
         // where the start coordinate is +1 and the end coordinate -1.
         // This should not happen in practice of course.
         List<Hit> hit2 = searchService.findHitInFullText(HIT_NO_SUFFIX_SPACE, annoPage, 10);
         assertEquals(1, hit2.size());
-        SearchResult result2 = new SearchResult("test", true);
-        searchService.findAnnotation(result2, hit2.get(0), annoPage, AnnotationType.WORD);
-        assertEquals(Integer.valueOf(1), Integer.valueOf(result2.getHits().size()));
-        assertEquals(Integer.valueOf(2), Integer.valueOf(result2.getItems().size()));
-        assertTrue(result2.getItems().get(0).getId().endsWith(ANNO1_NO_SUFFIX_SPACE_ID));
-        assertTrue(result2.getItems().get(1).getId().endsWith(ANNO2_NO_SUFFIX_SPACE_ID));
+        SearchResult result3 = new SearchResult("test", true);
+        searchService.findAnnotation(result3, hit2.get(0), annoPage, AnnotationType.LINE);
+        assertEquals(Integer.valueOf(1), Integer.valueOf(result3.getHits().size())); // should have only 1 hit
+        assertEquals(Integer.valueOf(2), Integer.valueOf(result3.getItems().size()));
+        assertTrue(result3.getItems().get(0).getId().endsWith(ANNO1_NO_SUFFIX_SPACE_ID));
+        assertTrue(result3.getItems().get(1).getId().endsWith(ANNO2_NO_SUFFIX_SPACE_ID));
     }
 
     /**
@@ -318,7 +319,7 @@ public class FTSearchServiceTest {
     public void testFindNoAnnotations() {
         Hit noHit = new Hit(100, 101, new HitSelector(null, "x", null));
         SearchResult result = new SearchResult("test", true);
-        searchService.findAnnotation(result, noHit, annoPage, AnnotationType.WORD);
+        searchService.findAnnotation(result, noHit, annoPage, AnnotationType.LINE);
         assertTrue(result.getItems().isEmpty());
         assertTrue(result.getHits().isEmpty());
     }

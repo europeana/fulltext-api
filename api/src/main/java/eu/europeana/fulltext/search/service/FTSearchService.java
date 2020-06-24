@@ -184,7 +184,7 @@ public class FTSearchService {
     /**
      * Check if we can merge with a near-by previous found hit in the same snippet
      */
-    SolrHit mergeIfNearby(List<SolrHit> hitsFound, String snippet, SolrHit previousHit, SolrHit newHit, Debug debug) {
+    private SolrHit mergeIfNearby(List<SolrHit> hitsFound, String snippet, SolrHit previousHit, SolrHit newHit, Debug debug) {
         if (previousHit != null && (newHit.getHlStartPos() - previousHit.getHlEndPos() <= SearchConfig.HIT_MERGE_MAX_DISTANCE)) {
             String mergedExact = previousHit.getExact() +
                     snippet.substring(previousHit.getHlEndPos(), newHit.getHlStartPos()) +
@@ -315,11 +315,16 @@ public class FTSearchService {
                             anno.getFrom(), anno.getTo(),
                             annoPage.getRes().getValue().substring(anno.getFrom(), anno.getTo()));
                 }
-                // sometimes a trailing character like a dot or comma directly after the keyword is regarded as
+                // Sometimes a trailing character like a dot or comma directly after the keyword is regarded as
                 // another annotation (word). So we filter those out.
                 if (anno.getTo() - anno.getFrom() > 1) {
-                    hit.addAnnotation(anno, annoPage.getRes().getValue());
-                    result.addAnnotationHit(annoPage, anno, hit);
+                    // we don't output hit information for word-level annotations
+                    if (AnnotationType.WORD.equals(annoType)) {
+                        result.addAnnotationHit(annoPage, anno, null);
+                    } else {
+                        hit.addAnnotation(anno, annoPage.getRes().getValue());
+                        result.addAnnotationHit(annoPage, anno, hit);
+                    }
                     annotationFound = true;
                     // TODO test if we can stop searching for Block, and Line level annotations? Or can a hit be
                     // spread out of multiple pages, blocks, lines?

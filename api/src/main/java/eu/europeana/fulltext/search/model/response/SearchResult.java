@@ -56,6 +56,9 @@ public class SearchResult implements Serializable {
         return items;
     }
 
+    /**
+     * @return List of found hits (only available for Block and Line level annotations)
+     */
     public List<Hit> getHits() {
         return hits;
     }
@@ -68,7 +71,7 @@ public class SearchResult implements Serializable {
      */
     public void addAnnotationHit(AnnoPage annoPage, Annotation annotation, Hit hit) {
         AnnotationV3 annoV3 = EDM2IIIFMapping.getAnnotationV3(annoPage, annotation, false, false);
-        if (!hits.contains(hit)) {
+        if (hit != null && !hits.contains(hit)) {
             hits.add(hit);
         }
         items.add(annoV3);
