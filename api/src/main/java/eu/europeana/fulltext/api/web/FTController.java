@@ -322,7 +322,7 @@ public class FTController {
      * @throws SerializationException when serialising to JsonLd fails
      */
     @GetMapping(value = "/{datasetId}/{localId}/{resId}", headers = ACCEPT_JSONLD,
-                produces = MEDIA_TYPE_JSONLD + ";" + UTF_8)
+                produces = MEDIA_TYPE_JSONLD + ';' + UTF_8)
     public ResponseEntity<String> resourceJsonLd(@PathVariable String datasetId,
                                                  @PathVariable String localId,
                                                  @PathVariable String resId,
@@ -340,7 +340,7 @@ public class FTController {
      * @throws SerializationException when serialising to Json fails
      */
     @GetMapping(value = "/{datasetId}/{localId}/{resId}", headers = ACCEPT_JSON,
-                produces = MEDIA_TYPE_JSON + ";" + UTF_8)
+                produces = MEDIA_TYPE_JSON + ';' + UTF_8)
     public ResponseEntity<String> resourceJson(@PathVariable String datasetId,
                                                @PathVariable String localId,
                                                @PathVariable String resId,
@@ -461,7 +461,7 @@ public class FTController {
         List<String> preList = new ArrayList<>(Arrays.asList(textGranularity.split("\\+|\\s|,")));
         List<String> finalList = new ArrayList<>();
         for (String value : preList){
-            if (StringUtils.containsAny(value, TYPE_PAGE, TYPE_BLOCK, TYPE_LINE, TYPE_WORD, TYPE_MEDIA, TYPE_CAPTION)){
+            if (GRANULARITY_VALUES.stream().anyMatch(x -> x.equalsIgnoreCase(value))){
                 finalList.add(value);
             }
         }
