@@ -252,6 +252,17 @@ public final class EDM2IIIFMapping {
                fts.getAnnotationDirectory() + annotation.getAnId();
     }
 
+    public static String getAnnotationIdUrl(String europeanaId, Annotation annotation) {
+        StringBuilder s = new StringBuilder(fts.getAnnotationBaseUrl());
+        if (europeanaId.startsWith("/")) {
+            s = s.deleteCharAt(s.length() - 1);
+        }
+        s.append(europeanaId)
+                .append(fts.getAnnotationDirectory())
+                .append(annotation.getAnId());
+        return s.toString();
+    }
+
     private static String expandDCType(char dcTypeCode){
         AnnotationType dcType = AnnotationType.fromAbbreviation(dcTypeCode);
         if (dcType == null) {

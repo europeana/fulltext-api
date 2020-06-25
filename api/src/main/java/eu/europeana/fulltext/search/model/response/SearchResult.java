@@ -64,16 +64,17 @@ public class SearchResult implements Serializable {
     }
 
     /**
-     * Add an Annotation that matches to a hit
+     * Add an Annotation and optionally a Hit to the search result
      * @param annoPage, the annotation page where the hit was found
      * @param annotation the annotation that matches/overlaps with the hit
-     * @param hit the found hit
+     * @param hit the found hit (can be null for word-level annotation search)
      */
     public void addAnnotationHit(AnnoPage annoPage, Annotation annotation, Hit hit) {
         AnnotationV3 annoV3 = EDM2IIIFMapping.getAnnotationV3(annoPage, annotation, false, false);
-        if (hit != null && !hits.contains(hit)) {
+        items.add(annoV3);
+
+        if (hit != null) {
             hits.add(hit);
         }
-        items.add(annoV3);
     }
 }

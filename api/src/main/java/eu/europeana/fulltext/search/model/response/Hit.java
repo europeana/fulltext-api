@@ -2,7 +2,10 @@ package eu.europeana.fulltext.search.model.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import eu.europeana.fulltext.api.service.EDM2IIIFMapping;
+import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Annotation;
+import eu.europeana.fulltext.search.model.query.EuropeanaId;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -63,20 +66,25 @@ public class Hit implements Serializable {
     /**
      * This adds a new annotation to the hit and also sets the prefix and suffix. Note that the first added
      * annotation determines the prefix, and the last added annotation the suffix
-     * @param annotation
-     * @param fulltext
+     * @param annoPage the annotation page where the hit was found
+     * @param annotation the annotation that was found
      */
-    public void addAnnotation(Annotation annotation, String fulltext) {
+    public void addAnnotation(AnnoPage annoPage, Annotation annotation) {
+        String fulltext = annoPage.getRes().getValue();
         HitSelector hs = this.selectors.get(0); // should be only 1 hitSelector per hit
+
         if (this.getAnnotations().isEmpty() && (annotation.getFrom() < this.startIndex)) {
             hs.setPrefix(fulltext.substring(annotation.getFrom(), this.startIndex));
         }
+
         if (this.endIndex < annotation.getTo()) {
             hs.setSuffix(fulltext.substring(this.endIndex, annotation.getTo()));
         } else {
             hs.setSuffix("");
         }
-        this.annotations.add(annotation.getAnId());
+
+        EuropeanaId id = new EuropeanaId(annoPage.getDsId(), annoPage.getLcId());
+        this.annotations.add(EDM2IIIFMapping.getAnnotationIdUrl(id.toString(), annotation));
     }
 
 }

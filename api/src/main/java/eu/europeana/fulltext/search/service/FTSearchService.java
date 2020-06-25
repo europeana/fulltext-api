@@ -299,11 +299,11 @@ public class FTSearchService {
     }
 
     /**
-     * Given a hit, we go over all Annotations to see which one(s) match. When we found one we use it to generate the
-     * hit prefix and suffix and we add the annotation to the search result
+     * Given a hit, we go over all Annotations of an AnnoPage to see which one(s) match. When we found one we use it to
+     * generate the hit prefix and suffix and we add the annotation to the search result
      */
     void findAnnotation(SearchResult result, Hit hit, AnnoPage annoPage, AnnotationType annoType) {
-        boolean annotationFound = false;
+        boolean annotationHitAdded = false;
         LOG.trace("Searching annotations for hit {},{}", hit.getStartIndex(), hit.getEndIndex());
         for (Annotation anno : annoPage.getAns()) {
             if (anno.getDcType() == annoType.getAbbreviation() &&
@@ -318,23 +318,27 @@ public class FTSearchService {
                 // Sometimes a trailing character like a dot or comma directly after the keyword is regarded as
                 // another annotation (word). So we filter those out.
                 if (anno.getTo() - anno.getFrom() > 1) {
-                    // we don't output hit information for word-level annotations
                     if (AnnotationType.WORD.equals(annoType)) {
+                        // don't output hit information for word-level annotations
+                        result.addAnnotationHit(annoPage, anno, null);
+                    } else if (annotationHitAdded) {
+                        // make sure we add a hit only once to the search result, even if it has multiple annotations
+                        hit.addAnnotation(annoPage, anno);
                         result.addAnnotationHit(annoPage, anno, null);
                     } else {
-                        hit.addAnnotation(anno, annoPage.getRes().getValue());
+                        // first annotation for this hit, added both to result
+                        hit.addAnnotation(annoPage, anno);
                         result.addAnnotationHit(annoPage, anno, hit);
                     }
-                    annotationFound = true;
-                    // TODO test if we can stop searching for Block, and Line level annotations? Or can a hit be
-                    // spread out of multiple pages, blocks, lines?
+                    annotationHitAdded = true;
                 } else {
                     LOG.debug("Ignoring overlap with annotation {} because it's only 1 character long", anno.getAnId());
                 }
             }
         }
-        if (!annotationFound) {
-            LOG.warn("Could not find any annotation for hit {} on page {}{}", hit, annoPage.getDsId(), annoPage.getLcId(), annoPage.getPgId());
+        if (!annotationHitAdded) {
+            LOG.warn("Could not find any annotation for hit {} on /{}/{}/annopage/{}",
+                    hit, annoPage.getDsId(), annoPage.getLcId(), annoPage.getPgId());
         }
     }
 
