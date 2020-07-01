@@ -41,15 +41,15 @@ public class FTApplication extends SpringBootServletInitializer {
         return new WebConfig();
     }
 
-//    @Bean
-//    public ServletRegistrationBean dispatcherRegistration() {
-//        return new ServletRegistrationBean(dispatcherServlet());
-//    }
-//
-//    @Bean(name = DispatcherServletAutoConfiguration.DEFAULT_DISPATCHER_SERVLET_BEAN_NAME)
-//    public DispatcherServlet dispatcherServlet() {
-//        return new LoggableDispatcherServlet();
-//    }
+    @Bean
+    public ServletRegistrationBean dispatcherRegistration() {
+        return new ServletRegistrationBean(dispatcherServlet());
+    }
+
+    @Bean(name = DispatcherServletAutoConfiguration.DEFAULT_DISPATCHER_SERVLET_BEAN_NAME)
+    public DispatcherServlet dispatcherServlet() {
+        return new LoggableDispatcherServlet();
+    }
 
 
     /**
