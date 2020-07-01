@@ -1,13 +1,17 @@
 package eu.europeana.fulltext.api;
 
+import eu.europeana.fulltext.api.web.LoggableDispatcherServlet;
 import eu.europeana.fulltext.api.web.SocksProxyConfigInjector;
 import org.apache.logging.log4j.LogManager;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.web.servlet.DispatcherServletAutoConfiguration;
+import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -36,6 +40,17 @@ public class FTApplication extends SpringBootServletInitializer {
     public WebMvcConfigurer corsConfigurer() {
         return new WebConfig();
     }
+
+//    @Bean
+//    public ServletRegistrationBean dispatcherRegistration() {
+//        return new ServletRegistrationBean(dispatcherServlet());
+//    }
+//
+//    @Bean(name = DispatcherServletAutoConfiguration.DEFAULT_DISPATCHER_SERVLET_BEAN_NAME)
+//    public DispatcherServlet dispatcherServlet() {
+//        return new LoggableDispatcherServlet();
+//    }
+
 
     /**
      * This method is called when starting as a Spring-Boot application (run this class from the IDE)
