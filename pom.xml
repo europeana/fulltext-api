@@ -9,20 +9,19 @@
 	</parent>
 
 	<artifactId>fulltext</artifactId>
-	<version>0.7-SNAPSHOT</version>
+	<version>0.8-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>Europeana Newspapers Fulltext API &amp; Loader</name>
 	<description>Europeana Newspapers Fulltext API &amp; Loader (Spring Boot applications)</description>
 
 	<properties>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
-		<java.version>1.8</java.version>
+		<java.version>11</java.version>
+		<maven.compiler.source>${java.version}</maven.compiler.source>
+		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<spring-boot.version>2.1.7.RELEASE</spring-boot.version>
-		<spring-cloud-sleuth.version>2.2.3.RELEASE</spring-cloud-sleuth.version>
 		<jackson.version>2.9.9</jackson.version>
 		<io-informatics.version>0.1.1</io-informatics.version>
 		<morphia.version>1.5.3</morphia.version>
@@ -58,10 +57,11 @@
             </dependency>
 
 			<!-- we should check if this dependency needs to be updated now and then-->
+			<!-- well, probably not ... and good riddance ;) -->
 <!--            <dependency>-->
 <!--                <groupId>org.springframework.cloud</groupId>-->
 <!--                <artifactId>spring-cloud-dependencies</artifactId>-->
-<!--				<version>Hoxton.SR6</version>-->
+<!--                <version>Finchley.RC2</version>-->
 <!--                <type>pom</type>-->
 <!--                <scope>import</scope>-->
 <!--            </dependency>-->
