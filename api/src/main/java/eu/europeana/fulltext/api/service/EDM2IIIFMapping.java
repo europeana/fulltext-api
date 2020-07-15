@@ -220,7 +220,7 @@ public final class EDM2IIIFMapping {
         try {
             resource = ftService.fetchFTResource(annoPage.getDsId(), annoPage.getLcId(), annoPage.getRes().getId());
         } catch (ResourceDoesNotExistException e) {
-            LOG.info(e.getMessage());
+            LOG.info("Error retrieving fulltext resource for annoPage {}", annoPage, e);
             resource = null;
         }
         return resource;
@@ -255,7 +255,7 @@ public final class EDM2IIIFMapping {
     public static String getAnnotationIdUrl(String europeanaId, Annotation annotation) {
         StringBuilder s = new StringBuilder(fts.getAnnotationBaseUrl());
         if (europeanaId.startsWith("/")) {
-            s = s.deleteCharAt(s.length() - 1);
+            s.deleteCharAt(s.length() - 1);
         }
         s.append(europeanaId)
                 .append(fts.getAnnotationDirectory())

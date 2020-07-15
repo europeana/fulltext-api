@@ -84,7 +84,7 @@ public class FTService {
     }
 
     /**
-     * Retrieve all annopages for a particular issue
+     * Retrieve all annopages for a particular issue.
      * @param datasetId
      * @param localId
      * @return List of AnnoPages, empty list if there are none
@@ -97,6 +97,12 @@ public class FTService {
             result.add(page);
             i++;
             page = annoPageRepository.findByDatasetLocalPageId(datasetId, localId, String.valueOf(i));
+            // Temporary workaround to prevent stopping earlier if we there's an empty (non-existing) page
+            // Instead we now stop if we find 2 non-existing pages in a row
+            if (page == null) {
+                i++;
+                page = annoPageRepository.findByDatasetLocalPageId(datasetId, localId, String.valueOf(i));
+            }
         }
         return result;
     }
