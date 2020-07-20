@@ -306,7 +306,7 @@ public class FTSearchService {
         boolean annotationHitAdded = false;
         LOG.trace("Searching annotations for hit {},{}", hit.getStartIndex(), hit.getEndIndex());
         for (Annotation anno : annoPage.getAns()) {
-            if (anno.getDcType() == annoType.getAbbreviation() &&
+            if (anno.getDcType() == annoType.getAbbreviation() && anno.getFrom() != null && anno.getTo() != null &&
                     overlap(hit.getStartIndex(), hit.getEndIndex(), anno.getFrom(), anno.getTo())) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Found overlap between hit {},{} '{}' and annotation {},{} '{}'",
