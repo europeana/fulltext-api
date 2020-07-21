@@ -63,7 +63,12 @@ public enum AnnotationType {
         if (value.length() == 1) {
             return AnnotationType.fromAbbreviation(value.toUpperCase(Locale.GERMAN).charAt(0));
         }
-        return AnnotationType.valueOf(value.toUpperCase(Locale.GERMAN));
+        try {
+            return AnnotationType.valueOf(value.toUpperCase(Locale.GERMAN));
+        } catch (IllegalArgumentException e) {
+            // ignore, apparently user provided incorrect value
+            return null;
+        }
     }
 
 }
