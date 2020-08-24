@@ -10,7 +10,8 @@ import eu.europeana.fulltext.entity.Resource;
 import eu.europeana.fulltext.search.model.query.SolrHit;
 import eu.europeana.fulltext.search.model.response.Hit;
 import eu.europeana.fulltext.search.model.response.HitSelector;
-import eu.europeana.fulltext.search.model.response.SearchResult;
+import eu.europeana.fulltext.search.model.response.HitType;
+import eu.europeana.fulltext.search.model.response.v3.SearchResultV3;
 import eu.europeana.fulltext.search.repository.SolrNewspaperRepo;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
@@ -43,6 +44,7 @@ import static org.junit.Assert.*;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class FTSearchServiceTest {
 
+    private static final HitType defaultHitType = HitType.V3;
     // from page3 (start of page)
     private static final String SNIPPET_START_PAGE = "<em>Aus der</em> 49. Verlustliste.";
     private static final SolrHit HIT_START_PAGE = new SolrHit(null, "Aus der", ' ', -1, -1); // 1 hit
@@ -174,36 +176,36 @@ public class FTSearchServiceTest {
         assertEquals(expectedSolrHit, hits.get(0));
     }
 
-     /**
-      * Test if searching for a particular solrhit in a fulltext works fine.
+    /**
+     * Test if searching for a particular solrhit in a fulltext works fine.
      */
     @Test
     public void testFindSolrHitInFullText() {
-        List<Hit> hits1a = searchService.findHitInFullText(HIT_2_SAME_HITS, annoPage, 100);
+        List<Hit> hits1a = searchService.findHitInFullText(HIT_2_SAME_HITS, annoPage, 100, defaultHitType);
         assertEquals(65, hits1a.size());
 
         // test maxHits parameter
-        List<Hit> hits1b = searchService.findHitInFullText(HIT_2_SAME_HITS, annoPage, 5);
+        List<Hit> hits1b = searchService.findHitInFullText(HIT_2_SAME_HITS, annoPage, 5, defaultHitType);
         assertEquals(5, hits1b.size());
 
         // no prefix, before is a space
-        List<Hit> hits2 = searchService.findHitInFullText(HIT_NO_PREFIX_SPACE, annoPage, 10);
+        List<Hit> hits2 = searchService.findHitInFullText(HIT_NO_PREFIX_SPACE, annoPage, 10, defaultHitType);
         assertEquals(2, hits2.size());
 
         // no prefix, before is a newline
-        List<Hit> hits3 = searchService.findHitInFullText(HIT_NO_PREFIX_NEWLINE, annoPage, 10);
+        List<Hit> hits3 = searchService.findHitInFullText(HIT_NO_PREFIX_NEWLINE, annoPage, 10, defaultHitType);
         assertEquals(1, hits3.size());
 
         // no suffix, after is a space
-        List<Hit> hit4 = searchService.findHitInFullText(HIT_NO_SUFFIX_SPACE, annoPage, 10);
+        List<Hit> hit4 = searchService.findHitInFullText(HIT_NO_SUFFIX_SPACE, annoPage, 10, defaultHitType);
         assertEquals(1, hit4.size());
 
         // no suffix, after is a newline
-        List<Hit> hits5 = searchService.findHitInFullText(HIT_NO_SUFFIX_NEWLINE, annoPage, 10);
+        List<Hit> hits5 = searchService.findHitInFullText(HIT_NO_SUFFIX_NEWLINE, annoPage, 10, defaultHitType);
         assertEquals(1, hits5.size());
 
         // no prefix and suffix (not sure if Solr will ever return something like this, but to be sure)
-        List<Hit> hits6 = searchService.findHitInFullText(HIT_NO_PREFIX_SUFFIX, annoPage, 10);
+        List<Hit> hits6 = searchService.findHitInFullText(HIT_NO_PREFIX_SUFFIX, annoPage, 10, defaultHitType);
         assertEquals(1, hits5.size());
     }
 
@@ -213,7 +215,7 @@ public class FTSearchServiceTest {
     @Test
     public void testFindNoSolrHit() {
         // although the test fulltext does contain a word with an x, there is no ' x '
-        List<Hit> hits = searchService.findHitInFullText(new SolrHit("", "x", "", -1, -1), annoPage, 10);
+        List<Hit> hits = searchService.findHitInFullText(new SolrHit("", "x", "", -1, -1), annoPage, 10, defaultHitType);
         assertEquals(0, hits.size());
     }
 
@@ -227,21 +229,21 @@ public class FTSearchServiceTest {
                 new Resource(null, null, text, null));
 
         SolrHit hitToFind = new SolrHit(null, "This", ' ', -1, -1);
-        List<Hit> hits = searchService.findHitInFullText(hitToFind, annoPage, 5);
+        List<Hit> hits = searchService.findHitInFullText(hitToFind, annoPage, 5, defaultHitType);
         assertEquals(1, hits.size());
         Hit hitFound = hits.get(0);
         assertEquals(Integer.valueOf(0), hitFound.getStartIndex());
         assertEquals(Integer.valueOf(4), hitFound.getEndIndex());
 
         hitToFind = new SolrHit(' ', "another", ' ', -1, -1);
-        hits = searchService.findHitInFullText(hitToFind, annoPage, 5);
+        hits = searchService.findHitInFullText(hitToFind, annoPage, 5, defaultHitType);
         assertEquals(1, hits.size());
         hitFound = hits.get(0);
         assertEquals(Integer.valueOf(8), hitFound.getStartIndex());
         assertEquals(Integer.valueOf(15), hitFound.getEndIndex());
 
         hitToFind = new SolrHit(' ', "test", null, -1, -1);
-        hits = searchService.findHitInFullText(hitToFind, annoPage, 5);
+        hits = searchService.findHitInFullText(hitToFind, annoPage, 5, defaultHitType);
         assertEquals(2, hits.size());
         hitFound = hits.get(0);
         assertEquals(Integer.valueOf(16), hitFound.getStartIndex());
@@ -255,8 +257,8 @@ public class FTSearchServiceTest {
      * Test if we can find a solrhit that is at the start of a fulltext
      */
     @Test
-    public void testFindSolrHitInFulltextStart()  {
-        List<Hit> hits = searchService.findHitInFullText(HIT_START_PAGE, annoPage, 10);
+    public void testFindSolrHitInFulltextStart() {
+        List<Hit> hits = searchService.findHitInFullText(HIT_START_PAGE, annoPage, 10, defaultHitType);
         assertEquals(1, hits.size());
         Hit startPageHit = hits.get(0);
         assertEquals(Integer.valueOf(0), startPageHit.getStartIndex());
@@ -267,8 +269,8 @@ public class FTSearchServiceTest {
      * Test if we can find a hit that is at the end of a fulltext
      */
     @Test
-    public void testFindSolrHitInFulltextEnd()  {
-        List<Hit> hits = searchService.findHitInFullText(HIT_END_PAGE, annoPage, 10);
+    public void testFindSolrHitInFulltextEnd() {
+        List<Hit> hits = searchService.findHitInFullText(HIT_END_PAGE, annoPage, 10, defaultHitType);
         assertEquals(1, hits.size());
         Hit endPageHit = hits.get(0);
         int ftLength = annoPage.getRes().getValue().length();
@@ -282,10 +284,10 @@ public class FTSearchServiceTest {
     @Test
     public void testFindAnnotation() {
         // find annotation with a perfect match (same start and end coordinate)
-        List<Hit> hit1 = searchService.findHitInFullText(HIT_NO_PREFIX_NEWLINE, annoPage, 10);
+        List<Hit> hit1 = searchService.findHitInFullText(HIT_NO_PREFIX_NEWLINE, annoPage, 10, defaultHitType);
         assertEquals(1, hit1.size());
 
-        SearchResult result1 = new SearchResult("test", true);
+        SearchResultV3 result1 = new SearchResultV3("test", true);
         searchService.findAnnotation(result1, hit1.get(0), annoPage, AnnotationType.BLOCK);
         assertEquals(Integer.valueOf(1), Integer.valueOf(result1.getHits().size()));
         assertEquals(Integer.valueOf(1), Integer.valueOf(result1.getItems().size()));
@@ -293,7 +295,7 @@ public class FTSearchServiceTest {
 
         // if we retry again for word-level annotations we should still find 1 annotation, but there should be no hit
         // in the result because we don't output those for word-level annotations
-        SearchResult result2 = new SearchResult("test", true);
+        SearchResultV3 result2 = new SearchResultV3("test", true);
         searchService.findAnnotation(result2, hit1.get(0), annoPage, AnnotationType.WORD);
         assertTrue(result2.getHits().isEmpty());
         assertEquals(Integer.valueOf(1), Integer.valueOf(result2.getItems().size()));
@@ -302,9 +304,9 @@ public class FTSearchServiceTest {
         // find 2 overlapping annotations; one where the start coordinate is -1 and end coordinate +1 and another
         // where the start coordinate is +1 and the end coordinate -1.
         // This should not happen in practice of course.
-        List<Hit> hit2 = searchService.findHitInFullText(HIT_NO_SUFFIX_SPACE, annoPage, 10);
+        List<Hit> hit2 = searchService.findHitInFullText(HIT_NO_SUFFIX_SPACE, annoPage, 10, defaultHitType);
         assertEquals(1, hit2.size());
-        SearchResult result3 = new SearchResult("test", true);
+        SearchResultV3 result3 = new SearchResultV3("test", true);
         searchService.findAnnotation(result3, hit2.get(0), annoPage, AnnotationType.LINE);
         assertEquals(Integer.valueOf(1), Integer.valueOf(result3.getHits().size())); // should have only 1 hit
         assertEquals(Integer.valueOf(2), Integer.valueOf(result3.getItems().size()));
@@ -317,8 +319,8 @@ public class FTSearchServiceTest {
      */
     @Test
     public void testFindNoAnnotations() {
-        Hit noHit = new Hit(100, 101, new HitSelector(null, "x", null));
-        SearchResult result = new SearchResult("test", true);
+        Hit noHit = new Hit(100, 101, new HitSelector(null, "x", null), defaultHitType);
+        SearchResultV3 result = new SearchResultV3("test", true);
         searchService.findAnnotation(result, noHit, annoPage, AnnotationType.LINE);
         assertTrue(result.getItems().isEmpty());
         assertTrue(result.getHits().isEmpty());

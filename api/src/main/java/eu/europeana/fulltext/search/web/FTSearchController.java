@@ -1,6 +1,7 @@
 package eu.europeana.fulltext.search.web;
 
 import eu.europeana.fulltext.AnnotationType;
+import eu.europeana.fulltext.RequestUtils;
 import eu.europeana.fulltext.api.service.exception.FTException;
 import eu.europeana.fulltext.search.config.SearchConfig;
 import eu.europeana.fulltext.search.exception.InvalidParameterException;
@@ -11,7 +12,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.MediaType;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -57,6 +62,7 @@ public class FTSearchController {
                                     @RequestParam (required = false, defaultValue = "12") int pageSize,
                                     @RequestParam (required = false, defaultValue = "W") String textGranularity,
                                     @RequestParam (required = false) String lang,
+                                    @RequestParam(value = "format", required = false) String versionParam,
                                     @RequestParam (required = false) String debug,
                                     HttpServletRequest request) throws FTException {
         // validate input
@@ -65,10 +71,11 @@ public class FTSearchController {
             throw new InvalidParameterException("Page size should be between 1 and " + SearchConfig.MAXIMUM_HITS);
         }
         AnnotationType annoType = validateAnnoType(textGranularity);
+        String requestVersion = RequestUtils.getRequestVersion(request, versionParam);
 
         // start processing
         String searchId = request.getRequestURI() + "?" + request.getQueryString();
-        return searchService.searchIssue(searchId, new EuropeanaId(datasetId, localId), qry, pageSize, annoType, (debug != null));
+        return searchService.searchIssue(searchId, new EuropeanaId(datasetId, localId), qry, pageSize, annoType, (debug != null), requestVersion);
     }
 
 

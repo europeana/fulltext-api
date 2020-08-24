@@ -23,16 +23,15 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.ZonedDateTime;
-import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
+import static eu.europeana.fulltext.RequestUtils.*;
 import static eu.europeana.fulltext.api.config.FTDefinitions.*;
 import static eu.europeana.fulltext.api.service.CacheUtils.generateETag;
 import static eu.europeana.fulltext.api.service.CacheUtils.generateSimpleETag;
 
 /**
  * Rest controller that handles fulltext annotation page (annopage)- annotation- & resource requests
+ *
  * @author Lúthien
  * Created on 27-02-2018
  * Note that the eTag for the Fulltext response is created from a concatenation of:
@@ -45,14 +44,7 @@ import static eu.europeana.fulltext.api.service.CacheUtils.generateSimpleETag;
 @RequestMapping("/presentation")
 public class FTController {
 
-    private static final Logger  LOG                    = LogManager.getLogger(FTController.class);
-    private static final String  ACCEPT                 = "Accept";
-    private static final String  ACCEPT_JSON            = "Accept=" + MEDIA_TYPE_JSON;
-    private static final String  ACCEPT_JSONLD          = "Accept=" + MEDIA_TYPE_JSONLD;
-    private static final String  ACCEPT_VERSION_INVALID = "Unknown profile or format version";
-    private static final String  CONTENT_TYPE           = "Content-Type";
-    private static final Pattern ACCEPT_PROFILE_PATTERN = Pattern.compile("profile=\"(.*?)\"");
-    private static final String  PROFILE_TEXT           = "text";
+    private static final Logger LOG = LogManager.getLogger(FTController.class);
 
     private FTService fts;
 
@@ -150,14 +142,14 @@ public class FTController {
         } catch (AnnoPageDoesNotExistException e) {
             LOG.debug(e);
             return new ResponseEntity<>(fts.serialise(new JsonErrorResponse(e.getMessage())),
-                                        HttpStatus.NOT_FOUND);
+                    HttpStatus.NOT_FOUND);
         }
         if (isJson) {
             annotationPage.setContext(null);
         }
         return new ResponseEntity<>(fts.serialise(annotationPage),
-                                    headers,
-                                    HttpStatus.OK);
+                headers,
+                HttpStatus.OK);
     }
 
     /**
@@ -216,11 +208,11 @@ public class FTController {
     }
 
     private ResponseEntity<String> annotation(String datasetId,
-                                             String localId,
-                                             String annoID,
-                                             String versionParam,
-                                             HttpServletRequest request,
-                                             boolean isJson) throws SerializationException {
+                                              String localId,
+                                              String annoID,
+                                              String versionParam,
+                                              HttpServletRequest request,
+                                              boolean isJson) throws SerializationException {
         LOG.debug("Retrieve Annotation: {}/{}/{}", datasetId, localId, annoID);
         String requestVersion = getRequestVersion(request, versionParam);
 
@@ -259,8 +251,8 @@ public class FTController {
             annotation.setContext(null);
         }
         return new ResponseEntity<>(fts.serialise(annotation),
-                                    headers,
-                                    HttpStatus.OK);
+                headers,
+                HttpStatus.OK);
     }
 
     /**
@@ -311,7 +303,7 @@ public class FTController {
                                                          resource.getLanguage() +
                                                          resource.getValue() +
                                                          fts.getSettings().getAppVersion(),
-                                                         true);
+                    true);
             ResponseEntity<String> cached = CacheUtils.checkCached(request, modified, eTag);
             if (cached != null) {
                 return cached;
@@ -323,15 +315,15 @@ public class FTController {
         } catch (ResourceDoesNotExistException e) {
             LOG.debug(e);
             return new ResponseEntity<>(fts.serialise(new JsonErrorResponse(e.getMessage())),
-                                        HttpStatus.NOT_FOUND);
+                    HttpStatus.NOT_FOUND);
         }
 
         if (isJson) {
             resource.setContext(null);
         }
         return new ResponseEntity<>(fts.serialise(resource),
-                                    headers,
-                                    HttpStatus.OK);
+                headers,
+                HttpStatus.OK);
     }
 
     // --- utils ---
@@ -353,43 +345,10 @@ public class FTController {
     }
 
     /**
-     * Retrieve the requested version from the accept header, or if not present from the format parameter. If nothing
-     * is specified then 2 is returned as default
-     * @return either version 2, 3 or ACCEPT_INVALID
-     */
-    private String getRequestVersion(HttpServletRequest request, String format) {
-        String result = null;
-        String accept = request.getHeader(ACCEPT);
-        if (StringUtils.isNotEmpty(accept)) {
-            Matcher m = ACCEPT_PROFILE_PATTERN.matcher(accept);
-            if (m.find()) { // found a Profile parameter in the Accept header
-                String profiles = m.group(1);
-                if (profiles.toLowerCase(Locale.getDefault()).contains(MEDIA_TYPE_IIIF_V3)) {
-                    result = "3";
-                } else if (profiles.toLowerCase(Locale.getDefault()).contains(MEDIA_TYPE_IIIF_V2)) {
-                    result = "2";
-                } else {
-                    result = ACCEPT_VERSION_INVALID; // in case a Profile is found that matches neither version => HTTP 406
-                }
-            }
-        }
-        if (result == null) {
-            // Request header is empty, or does not contain a Profile parameter
-            if (StringUtils.isBlank(format)){
-                result = "2";    // if format not given, fall back to default "2"
-            } else if ("2".equals(format) || "3".equals(format)) {
-                result = format; // else use the format parameter
-            } else {
-                result = ACCEPT_VERSION_INVALID;
-            }
-        }
-        return result;
-    }
-
-    /**
      * For testing retrieving the version from the pom file
-     * @throws SerializationException when serialising to a String fails
+     *
      * @return String representing the API version
+     * @throws SerializationException when serialising to a String fails
      */
     @GetMapping(value = "/showversion")
     public ResponseEntity<String> showVersion() throws SerializationException {

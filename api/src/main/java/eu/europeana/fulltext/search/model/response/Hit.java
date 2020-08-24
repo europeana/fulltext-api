@@ -22,27 +22,28 @@ public class Hit implements Serializable {
 
     private static final long serialVersionUID = -3280544584499568202L;
 
-    private static final String TYPE = "Hit";
-
+    private HitType type;
     private Integer startIndex; // for processing purposes only
     private Integer endIndex; // for processing purposes only
     private List<String> annotations = new ArrayList<>();// even though this is a list, it will contain only 1 annotation id
     private List<HitSelector> selectors = new ArrayList<>(); // even though this is a list, it will contain only 1 hitselector
 
-    public Hit(Integer startIndex, Integer endIndex, HitSelector selector) {
+    public Hit(Integer startIndex, Integer endIndex, HitSelector selector, HitType type) {
         this.startIndex = startIndex;
         this.endIndex = endIndex;
+        this.type = type;
         this.selectors.add(selector);
     }
 
-    public Hit(Integer startIndex, Integer endIndex, String exact) {
+    public Hit(Integer startIndex, Integer endIndex, String exact, HitType type) {
         this.startIndex = startIndex;
         this.endIndex = endIndex;
+        this.type = type;
         this.selectors.add(new HitSelector("", exact, ""));
     }
 
     public String getType() {
-        return Hit.TYPE;
+        return type.value;
     }
 
     @JsonIgnore
