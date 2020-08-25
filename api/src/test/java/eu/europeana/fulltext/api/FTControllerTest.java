@@ -17,7 +17,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static eu.europeana.fulltext.api.TestUtils.*;
+import static eu.europeana.fulltext.TestUtils.*;
 import static eu.europeana.fulltext.api.config.FTDefinitions.*;
 import static org.hamcrest.CoreMatchers.*;
 import static org.mockito.ArgumentMatchers.any;

@@ -25,7 +25,7 @@ public class SearchResultV3 implements Serializable, SearchResult {
 
     private static final long serialVersionUID = -5643549600050178321L;
 
-    private static final String TYPE = "Annotationpage";
+    private static final String TYPE = "AnnotationPage";
 
     private String id;
     private Debug debug;

@@ -21,7 +21,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import static eu.europeana.fulltext.api.TestUtils.*;
+import static eu.europeana.fulltext.TestUtils.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.unitils.reflectionassert.ReflectionAssert.assertReflectionEquals;
