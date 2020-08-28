@@ -14,12 +14,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.ZonedDateTime;
@@ -47,18 +43,6 @@ public class FTController {
     private static final Logger LOG = LogManager.getLogger(FTController.class);
 
     private FTService fts;
-
-    /**
-     * This will set json-ld as the default type if there is no accept header specified or if it's *
-     */
-    @EnableWebMvc
-    public static class WebConfig implements WebMvcConfigurer {
-        @Override
-        public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
-            configurer.defaultContentType(MediaType.valueOf(MEDIA_TYPE_JSONLD));
-        }
-    }
-
 
     public  FTController(FTService ftService) {
         this.fts = ftService;

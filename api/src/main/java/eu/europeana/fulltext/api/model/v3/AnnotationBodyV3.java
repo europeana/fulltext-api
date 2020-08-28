@@ -9,7 +9,6 @@ import java.io.Serializable;
 /**
  * Created by luthien on 14/06/2018.
  */
-@JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"id", "type", "rights", "source", "language", "value"})
 public class AnnotationBodyV3 extends JsonLdIdType implements Serializable{
 

@@ -75,7 +75,7 @@ public class FTSearchService {
             }
         } else {
             LOG.debug("Solr returned {} document", solrResult.getSize());
-            findHitsInIssue(result, solrResult, europeanaId, pageSize, annotationType, result.getDebug(), fromRequest(requestVersion));
+            findHitsInIssue(result, solrResult, europeanaId, pageSize, annotationType, result.getDebug(), getHitTypeFromRequest(requestVersion));
         }
         LOG.debug("Search done in {} ms. Found {} annotations", (System.currentTimeMillis() - start), result.itemSize());
         return result;
@@ -370,7 +370,7 @@ public class FTSearchService {
      * @param requestVersion version of API request
      * @return HitType to be included in response
      */
-    private HitType fromRequest(String requestVersion) {
+    private HitType getHitTypeFromRequest(String requestVersion) {
         if (REQUEST_VERSION_3.equals(requestVersion)) {
             return HitType.V3;
         } else {

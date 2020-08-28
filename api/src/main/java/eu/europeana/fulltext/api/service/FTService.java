@@ -42,20 +42,16 @@ public class FTService {
     private AnnoPageRepository annoPageRepository;
     private FTSettings ftSettings;
 
-    // create a single objectMapper for efficiency purposes (see https://github.com/FasterXML/jackson-docs/wiki/Presentation:-Jackson-Performance)
-    private static ObjectMapper mapper = new ObjectMapper();
+    private ObjectMapper mapper;
 
     /*
      * Constructs an FTService object with autowired dependencies
      */
-    public FTService(ResourceRepository resourceRepository, AnnoPageRepository annoPageRepository, FTSettings ftSettings) {
+    public FTService(ResourceRepository resourceRepository, AnnoPageRepository annoPageRepository, FTSettings ftSettings, ObjectMapper mapper) {
         this.resourceRepository = resourceRepository;
         this.annoPageRepository = annoPageRepository;
         this.ftSettings = ftSettings;
-        // configure Jackson serialization
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
-        mapper.registerModule(new JsonldModule());
+        this.mapper = mapper;
     }
 
     /**

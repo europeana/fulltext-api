@@ -1,5 +1,6 @@
 package eu.europeana.fulltext.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.europeana.fulltext.api.config.FTSettings;
 import eu.europeana.fulltext.api.model.FTResource;
 import eu.europeana.fulltext.api.model.v2.AnnotationPageV2;
@@ -44,6 +45,8 @@ public class FTServiceTest {
     @MockBean
     private ResourceRepository resRepository;
 
+    @MockBean
+    private ObjectMapper mapper;
 
     @Before
     public void setup(){

@@ -22,6 +22,9 @@ public class Hit implements Serializable {
 
     private static final long serialVersionUID = -3280544584499568202L;
 
+    private static final String HIT_SELECTOR_TYPE_V3 = "TextQuoteSelector";
+    private static final String HIT_SELECTOR_TYPE_V2 = "oa:TextQuoteSelector";
+
     private HitType type;
     private Integer startIndex; // for processing purposes only
     private Integer endIndex; // for processing purposes only
@@ -35,11 +38,11 @@ public class Hit implements Serializable {
         this.selectors.add(selector);
     }
 
-    public Hit(Integer startIndex, Integer endIndex, String exact, HitType type) {
+    public Hit(Integer startIndex, Integer endIndex, String exact, HitType hitType) {
         this.startIndex = startIndex;
         this.endIndex = endIndex;
-        this.type = type;
-        this.selectors.add(new HitSelector("", exact, ""));
+        this.type = hitType;
+        this.selectors.add(createSelector(exact, hitType));
     }
 
     public String getType() {
@@ -67,7 +70,8 @@ public class Hit implements Serializable {
     /**
      * This adds a new annotation to the hit and also sets the prefix and suffix. Note that the first added
      * annotation determines the prefix, and the last added annotation the suffix
-     * @param annoPage the annotation page where the hit was found
+     *
+     * @param annoPage   the annotation page where the hit was found
      * @param annotation the annotation that was found
      */
     public void addAnnotation(AnnoPage annoPage, Annotation annotation) {
@@ -88,4 +92,11 @@ public class Hit implements Serializable {
         this.annotations.add(EDM2IIIFMapping.getAnnotationIdUrl(id.toString(), annotation));
     }
 
+
+    private HitSelector createSelector(String exact, HitType type) {
+        if (type == HitType.V3) {
+            return new HitSelector("", exact, "", HIT_SELECTOR_TYPE_V3);
+        }
+        return new HitSelector("", exact, "", HIT_SELECTOR_TYPE_V2);
+    }
 }

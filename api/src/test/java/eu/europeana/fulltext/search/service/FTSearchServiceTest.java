@@ -319,7 +319,7 @@ public class FTSearchServiceTest {
      */
     @Test
     public void testFindNoAnnotations() {
-        Hit noHit = new Hit(100, 101, new HitSelector(null, "x", null), defaultHitType);
+        Hit noHit = new Hit(100, 101, new HitSelector(null, "x", null, "TextQuoteSelector"), defaultHitType);
         SearchResultV3 result = new SearchResultV3("test", true);
         searchService.findAnnotation(result, noHit, annoPage, AnnotationType.LINE);
         assertTrue(result.getItems().isEmpty());

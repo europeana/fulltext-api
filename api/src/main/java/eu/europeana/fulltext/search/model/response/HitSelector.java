@@ -17,7 +17,7 @@ public class HitSelector implements Serializable {
 
     private static final long serialVersionUID = -2157026156195054409L;
 
-    private static final String TYPE = "TextQuoteSelector";
+    private final String type ;
 
     @NotNull
     private String prefix;
@@ -32,7 +32,7 @@ public class HitSelector implements Serializable {
      * @param exact cannot be null
      * @param suffix can be null, but this is stored as empty String
      */
-    public HitSelector(String prefix, String exact, String suffix) {
+    public HitSelector(String prefix, String exact, String suffix, String type) {
         if (prefix == null) {
             this.prefix = "";
         } else {
@@ -46,10 +46,12 @@ public class HitSelector implements Serializable {
         } else {
             this.suffix = suffix;
         }
+
+        this.type = type;
     }
 
     public String getType() {
-        return HitSelector.TYPE;
+        return type;
     }
 
     public String getPrefix() {

@@ -50,7 +50,6 @@ public class SearchResultV3 implements Serializable, SearchResult {
     /**
      * @return object containing information for debugging (only available if user requested debug parameter)
      */
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     public Debug getDebug() {
         return debug;
     }

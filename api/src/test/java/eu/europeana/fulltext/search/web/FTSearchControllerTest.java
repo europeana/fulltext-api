@@ -74,7 +74,7 @@ public class FTSearchControllerTest {
                 .andExpect(jsonPath("$.@id").value(TEST_SEARCH_ID))
                 .andExpect(jsonPath("$.@type").value("sc:AnnotationList"))
                 // 3 annotations in testResultV2
-                .andExpect(jsonPath("$.@resources.length()").value(3));
+                .andExpect(jsonPath("$.resources.length()").value(3));
     }
 
     @Test

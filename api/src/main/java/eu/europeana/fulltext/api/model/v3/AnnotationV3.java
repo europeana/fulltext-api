@@ -13,7 +13,6 @@ import static eu.europeana.fulltext.api.config.FTDefinitions.V3_ANNOTATION_TYPE;
 /**
  * Created by luthien target 14/06/2018.
  */
-@JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"context", "id", "type", "motivation", "dcType", "body", "target"})
 public class AnnotationV3 extends JsonLdIdType implements Serializable, AnnotationWrapper {
 
