@@ -18,36 +18,22 @@ import java.util.List;
  * Created on 2 June 2020
  */
 @JsonPropertyOrder({"type", "annotations", "selectors"})
-public class Hit implements Serializable {
+public abstract class Hit implements Serializable {
 
     private static final long serialVersionUID = -3280544584499568202L;
 
-    private static final String HIT_SELECTOR_TYPE_V3 = "TextQuoteSelector";
-    private static final String HIT_SELECTOR_TYPE_V2 = "oa:TextQuoteSelector";
-
-    private HitType type;
     private Integer startIndex; // for processing purposes only
     private Integer endIndex; // for processing purposes only
     private List<String> annotations = new ArrayList<>();// even though this is a list, it will contain only 1 annotation id
     private List<HitSelector> selectors = new ArrayList<>(); // even though this is a list, it will contain only 1 hitselector
-
-    public Hit(Integer startIndex, Integer endIndex, HitSelector selector, HitType type) {
+    
+    public Hit(Integer startIndex, Integer endIndex, String exact) {
         this.startIndex = startIndex;
         this.endIndex = endIndex;
-        this.type = type;
-        this.selectors.add(selector);
+        this.selectors.add(createSelector(exact));
     }
 
-    public Hit(Integer startIndex, Integer endIndex, String exact, HitType hitType) {
-        this.startIndex = startIndex;
-        this.endIndex = endIndex;
-        this.type = hitType;
-        this.selectors.add(createSelector(exact, hitType));
-    }
-
-    public String getType() {
-        return type.value;
-    }
+    abstract public String getType();
 
     @JsonIgnore
     public Integer getStartIndex() {
@@ -92,11 +78,5 @@ public class Hit implements Serializable {
         this.annotations.add(EDM2IIIFMapping.getAnnotationIdUrl(id.toString(), annotation));
     }
 
-
-    private HitSelector createSelector(String exact, HitType type) {
-        if (type == HitType.V3) {
-            return new HitSelector("", exact, "", HIT_SELECTOR_TYPE_V3);
-        }
-        return new HitSelector("", exact, "", HIT_SELECTOR_TYPE_V2);
-    }
+    protected abstract HitSelector createSelector(String exact);
 }

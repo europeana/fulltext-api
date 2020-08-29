@@ -13,11 +13,9 @@ import java.io.Serializable;
  * Created on 2 June 2020
  */
 @JsonPropertyOrder({"type", "prefix", "exact", "postfix"})
-public class HitSelector implements Serializable {
+public abstract class HitSelector implements Serializable {
 
     private static final long serialVersionUID = -2157026156195054409L;
-
-    private final String type ;
 
     @NotNull
     private String prefix;
@@ -32,7 +30,7 @@ public class HitSelector implements Serializable {
      * @param exact cannot be null
      * @param suffix can be null, but this is stored as empty String
      */
-    public HitSelector(String prefix, String exact, String suffix, String type) {
+    public HitSelector(String prefix, String exact, String suffix) {
         if (prefix == null) {
             this.prefix = "";
         } else {
@@ -46,13 +44,9 @@ public class HitSelector implements Serializable {
         } else {
             this.suffix = suffix;
         }
-
-        this.type = type;
     }
 
-    public String getType() {
-        return type;
-    }
+    abstract public String getType();
 
     public String getPrefix() {
         return prefix;
@@ -80,5 +74,4 @@ public class HitSelector implements Serializable {
     public String toString() {
         return getPrefix() + getExact() + getSuffix();
     }
-
 }

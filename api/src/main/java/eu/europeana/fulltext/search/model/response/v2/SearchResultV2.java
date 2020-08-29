@@ -1,6 +1,5 @@
 package eu.europeana.fulltext.search.model.response.v2;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import eu.europeana.fulltext.api.model.v2.AnnotationV2;
