@@ -25,8 +25,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import static eu.europeana.fulltext.RequestUtils.REQUEST_VERSION_3;
-
 /**
  * Service for querying solr, retrieving fulltext data and sending back results
  *
@@ -75,7 +73,7 @@ public class FTSearchService {
             }
         } else {
             LOG.debug("Solr returned {} document", solrResult.getSize());
-            findHitsInIssue(result, solrResult, europeanaId, pageSize, annotationType, result.getDebug(), fromRequest(requestVersion));
+            findHitsInIssue(result, solrResult, europeanaId, pageSize, annotationType, result.getDebug(), requestVersion);
         }
         LOG.debug("Search done in {} ms. Found {} annotations", (System.currentTimeMillis() - start), result.itemSize());
         return result;
@@ -86,7 +84,7 @@ public class FTSearchService {
      * annopages and annotations.
      */
     private SearchResult findHitsInIssue(SearchResult result, HighlightPage<SolrNewspaper> solrResult,
-                                         EuropeanaId europeanaId, int pageSize, AnnotationType annoType, Debug debug, HitType hitType) {
+                                         EuropeanaId europeanaId, int pageSize, AnnotationType annoType, Debug debug, String version) {
         Collection<SolrHit> hitsToFind = getHitsFromSolrSnippets(solrResult, debug);
 
         // TODO tmp hack to get things working: for now we have to search through all annopages to get the right fulltext
@@ -104,7 +102,7 @@ public class FTSearchService {
                     return result;
                 }
                 // find more hits and corresponding annotations
-                List<Hit> hitsFound = findHitInFullText(hitToFind, annoPage, maxHits, hitType);
+                List<Hit> hitsFound = findHitInFullText(hitToFind, annoPage, maxHits, version);
                 for (Hit hit : hitsFound) {
                     findAnnotation(result, hit, annoPage, annoType);
                 }
@@ -215,10 +213,10 @@ public class FTSearchService {
      *                  want to find
      * @param annoPage  the annoPage containing the fulltext we want to search through
      * @param maxHits   maximum number of hits
-     * @param hitType   type of hit object
+     * @param version   version of search result to return
      * @return a list of hits, can be empty if there are no matches
      */
-    List<Hit> findHitInFullText(SolrHit hitToFind, AnnoPage annoPage, int maxHits, HitType hitType) {
+    List<Hit> findHitInFullText(SolrHit hitToFind, AnnoPage annoPage, int maxHits, String version) {
         LOG.trace("Searching on page {} for Solr exact string '{}'", annoPage, hitToFind);
         List<Hit> result = new ArrayList<>();
 
@@ -232,7 +230,7 @@ public class FTSearchService {
                         hitToFind, annoPage.getPgId(), annoPage.getRes().getId(), startIndex, endIndex,
                         annoPage.getRes().getValue().substring(startIndex, endIndex));
             }
-            result.add(new Hit(startIndex, endIndex, hitToFind.getExact(), hitType));
+            result.add(HitFactory.createHit(startIndex, endIndex, hitToFind.getExact(), version));
             if (result.size() >= maxHits) {
                 LOG.trace("Stopping search because we have {} results", result.size());
                 break;
@@ -361,20 +359,5 @@ public class FTSearchService {
      */
     private boolean overlap(int s1, int e1, int s2, int e2) {
         return (s1 <= e2 && e1 >= s2);
-    }
-
-
-    /**
-     * Creates a HitType instance, based on the request version
-     *
-     * @param requestVersion version of API request
-     * @return HitType to be included in response
-     */
-    private HitType fromRequest(String requestVersion) {
-        if (REQUEST_VERSION_3.equals(requestVersion)) {
-            return HitType.V3;
-        } else {
-            return HitType.V2;
-        }
     }
 }

@@ -13,7 +13,6 @@ import static eu.europeana.fulltext.api.config.FTDefinitions.*;
 /**
  * Created by luthien on 14/06/2018.
  */
-@JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"context", "id", "type"})
 public class AnnotationPageV3 extends JsonLdIdType implements Serializable, AnnotationWrapper {
 

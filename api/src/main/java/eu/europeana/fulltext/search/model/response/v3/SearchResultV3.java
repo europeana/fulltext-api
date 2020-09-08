@@ -1,6 +1,5 @@
 package eu.europeana.fulltext.search.model.response.v3;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import eu.europeana.fulltext.api.model.v3.AnnotationV3;
 import eu.europeana.fulltext.api.service.EDM2IIIFMapping;
@@ -14,12 +13,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Root object for serializing search response
- *
- * @author Patrick Ehlert
- * Created on 2 June 2020
- */
 @JsonPropertyOrder({"id", "type", "debug", "items", "hits"})
 public class SearchResultV3 implements Serializable, SearchResult {
 
@@ -50,7 +43,6 @@ public class SearchResultV3 implements Serializable, SearchResult {
     /**
      * @return object containing information for debugging (only available if user requested debug parameter)
      */
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     public Debug getDebug() {
         return debug;
     }

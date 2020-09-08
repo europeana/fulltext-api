@@ -1,6 +1,5 @@
 package eu.europeana.fulltext.search.model.response.v2;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import eu.europeana.fulltext.api.model.v2.AnnotationV2;
@@ -15,7 +14,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-@JsonPropertyOrder({"@id", "@type", "debug", "resources", "hits"})
+@JsonPropertyOrder({"id", "type", "debug", "resources", "hits"})
 public class SearchResultV2 implements Serializable, SearchResult {
 
     private static final long serialVersionUID = 5755904077393708504L;
@@ -48,7 +47,6 @@ public class SearchResultV2 implements Serializable, SearchResult {
     }
 
     @Override
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     public Debug getDebug() {
         return debug;
     }
@@ -58,7 +56,7 @@ public class SearchResultV2 implements Serializable, SearchResult {
         return items.size();
     }
 
-    @JsonProperty("@resources")
+    @JsonProperty("resources")
     public List<AnnotationV2> getItems(){
         return items;
     }
