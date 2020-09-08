@@ -10,9 +10,7 @@ import eu.europeana.fulltext.search.exception.RecordDoesNotExistException;
 import eu.europeana.fulltext.search.model.query.EuropeanaId;
 import eu.europeana.fulltext.search.model.query.SolrHit;
 import eu.europeana.fulltext.search.model.query.SolrNewspaper;
-import eu.europeana.fulltext.search.model.response.Debug;
-import eu.europeana.fulltext.search.model.response.Hit;
-import eu.europeana.fulltext.search.model.response.SearchResult;
+import eu.europeana.fulltext.search.model.response.*;
 import eu.europeana.fulltext.search.repository.SolrNewspaperRepo;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -49,21 +47,24 @@ public class FTSearchService {
 
     /**
      * Searches fulltext for one particular newspaper issue (CHO)
-     * @param searchId string that is set as id of the search (endpoint, path and query parameters)
-     * @param europeanaId europeana id of the issue to search
-     * @param query the string to search
-     * @param pageSize maximum number of hits
+     *
+     * @param searchId       string that is set as id of the search (endpoint, path and query parameters)
+     * @param europeanaId    europeana id of the issue to search
+     * @param query          the string to search
+     * @param pageSize       maximum number of hits
      * @param annotationType requested types of annotations
-     * @param debug if true we include debug information
-     * @throws FTException when there is a problem processing the request (e.g. issue doesn't exist)
+     * @param debug          if true we include debug information
+     * @param requestVersion API version for request. If empty, version 2 is used by default
      * @return SearchResult object (can be empty if no hits were found)
+     * @throws FTException when there is a problem processing the request (e.g. issue doesn't exist)
      */
     public SearchResult searchIssue(String searchId, EuropeanaId europeanaId, String query, int pageSize, AnnotationType annotationType,
-                                    boolean debug) throws FTException {
+                                    boolean debug, String requestVersion) throws FTException {
         long start = System.currentTimeMillis();
         HighlightPage<SolrNewspaper> solrResult = solrRepo.findByEuropeanaIdAndQuery(europeanaId, query, pageSize);
 
-        SearchResult result = new SearchResult(searchId, debug);
+        SearchResult result = SearchResultFactory.createSearchResult(searchId, debug, requestVersion);
+
         if (solrResult.isEmpty()) {
             LOG.debug("Solr return empty result");
             // check if there are 0 hits because the record doesn't exist
@@ -72,9 +73,9 @@ public class FTSearchService {
             }
         } else {
             LOG.debug("Solr returned {} document", solrResult.getSize());
-            findHitsInIssue(result, solrResult, europeanaId, pageSize, annotationType, result.getDebug());
+            findHitsInIssue(result, solrResult, europeanaId, pageSize, annotationType, result.getDebug(), requestVersion);
         }
-        LOG.debug("Search done in {} ms. Found {} annotations", (System.currentTimeMillis() - start), result.getItems().size());
+        LOG.debug("Search done in {} ms. Found {} annotations", (System.currentTimeMillis() - start), result.itemSize());
         return result;
     }
 
@@ -83,7 +84,7 @@ public class FTSearchService {
      * annopages and annotations.
      */
     private SearchResult findHitsInIssue(SearchResult result, HighlightPage<SolrNewspaper> solrResult,
-                                         EuropeanaId europeanaId, int pageSize, AnnotationType annoType, Debug debug) {
+                                         EuropeanaId europeanaId, int pageSize, AnnotationType annoType, Debug debug, String version) {
         Collection<SolrHit> hitsToFind = getHitsFromSolrSnippets(solrResult, debug);
 
         // TODO tmp hack to get things working: for now we have to search through all annopages to get the right fulltext
@@ -101,7 +102,7 @@ public class FTSearchService {
                     return result;
                 }
                 // find more hits and corresponding annotations
-                List<Hit> hitsFound = findHitInFullText(hitToFind, annoPage, maxHits);
+                List<Hit> hitsFound = findHitInFullText(hitToFind, annoPage, maxHits, version);
                 for (Hit hit : hitsFound) {
                     findAnnotation(result, hit, annoPage, annoType);
                 }
@@ -207,13 +208,15 @@ public class FTSearchService {
      * We check if we can find one or more of the keywords/hits in the resource (fulltext) of a particular AnnoPage
      * If so we calculate the start and end index in the text and add it to the result list
      * Coordinates start with 0 and the end coordinate is inclusive (e.g. in "Hi there", the word Hi has coordinates 0,2)
+     *
      * @param hitToFind a HitSelector object that contains the exact string (plus 1 leading and trailing character) we
      *                  want to find
      * @param annoPage  the annoPage containing the fulltext we want to search through
-     * @param maxHits  maximum number of hits
+     * @param maxHits   maximum number of hits
+     * @param version   version of search result to return
      * @return a list of hits, can be empty if there are no matches
      */
-    List<Hit> findHitInFullText(SolrHit hitToFind, AnnoPage annoPage, int maxHits) {
+    List<Hit> findHitInFullText(SolrHit hitToFind, AnnoPage annoPage, int maxHits, String version) {
         LOG.trace("Searching on page {} for Solr exact string '{}'", annoPage, hitToFind);
         List<Hit> result = new ArrayList<>();
 
@@ -227,7 +230,7 @@ public class FTSearchService {
                         hitToFind, annoPage.getPgId(), annoPage.getRes().getId(), startIndex, endIndex,
                         annoPage.getRes().getValue().substring(startIndex, endIndex));
             }
-            result.add(new Hit(startIndex, endIndex, hitToFind.getExact()));
+            result.add(HitFactory.createHit(startIndex, endIndex, hitToFind.getExact(), version));
             if (result.size() >= maxHits) {
                 LOG.trace("Stopping search because we have {} results", result.size());
                 break;
@@ -357,5 +360,4 @@ public class FTSearchService {
     private boolean overlap(int s1, int e1, int s2, int e2) {
         return (s1 <= e2 && e1 >= s2);
     }
-
 }

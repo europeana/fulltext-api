@@ -73,7 +73,7 @@ public final class EDM2IIIFMapping {
         return annoArrayList.toArray(new AnnotationV2[0]);
     }
 
-    private static AnnotationV2 getAnnotationV2(AnnoPage annoPage, Annotation annotation, boolean includeContext, boolean derefResource){
+    public static AnnotationV2 getAnnotationV2(AnnoPage annoPage, Annotation annotation, boolean includeContext, boolean derefResource){
         String       resourceIdUrl  = getResourceIdUrl(annoPage, annotation);
         AnnotationV2 ann            = new AnnotationV2(getAnnotationIdUrl(annoPage, annotation));
         if (includeContext){

@@ -13,11 +13,9 @@ import java.io.Serializable;
  * Created on 2 June 2020
  */
 @JsonPropertyOrder({"type", "prefix", "exact", "postfix"})
-public class HitSelector implements Serializable {
+public abstract class HitSelector implements Serializable {
 
     private static final long serialVersionUID = -2157026156195054409L;
-
-    private static final String TYPE = "TextQuoteSelector";
 
     @NotNull
     private String prefix;
@@ -48,9 +46,7 @@ public class HitSelector implements Serializable {
         }
     }
 
-    public String getType() {
-        return HitSelector.TYPE;
-    }
+    abstract public String getType();
 
     public String getPrefix() {
         return prefix;
@@ -78,5 +74,4 @@ public class HitSelector implements Serializable {
     public String toString() {
         return getPrefix() + getExact() + getSuffix();
     }
-
 }

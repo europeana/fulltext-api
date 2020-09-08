@@ -18,32 +18,22 @@ import java.util.List;
  * Created on 2 June 2020
  */
 @JsonPropertyOrder({"type", "annotations", "selectors"})
-public class Hit implements Serializable {
+public abstract class Hit implements Serializable {
 
     private static final long serialVersionUID = -3280544584499568202L;
-
-    private static final String TYPE = "Hit";
 
     private Integer startIndex; // for processing purposes only
     private Integer endIndex; // for processing purposes only
     private List<String> annotations = new ArrayList<>();// even though this is a list, it will contain only 1 annotation id
     private List<HitSelector> selectors = new ArrayList<>(); // even though this is a list, it will contain only 1 hitselector
-
-    public Hit(Integer startIndex, Integer endIndex, HitSelector selector) {
-        this.startIndex = startIndex;
-        this.endIndex = endIndex;
-        this.selectors.add(selector);
-    }
-
+    
     public Hit(Integer startIndex, Integer endIndex, String exact) {
         this.startIndex = startIndex;
         this.endIndex = endIndex;
-        this.selectors.add(new HitSelector("", exact, ""));
+        this.selectors.add(createSelector(exact));
     }
 
-    public String getType() {
-        return Hit.TYPE;
-    }
+    abstract public String getType();
 
     @JsonIgnore
     public Integer getStartIndex() {
@@ -66,7 +56,8 @@ public class Hit implements Serializable {
     /**
      * This adds a new annotation to the hit and also sets the prefix and suffix. Note that the first added
      * annotation determines the prefix, and the last added annotation the suffix
-     * @param annoPage the annotation page where the hit was found
+     *
+     * @param annoPage   the annotation page where the hit was found
      * @param annotation the annotation that was found
      */
     public void addAnnotation(AnnoPage annoPage, Annotation annotation) {
@@ -87,4 +78,5 @@ public class Hit implements Serializable {
         this.annotations.add(EDM2IIIFMapping.getAnnotationIdUrl(id.toString(), annotation));
     }
 
+    protected abstract HitSelector createSelector(String exact);
 }

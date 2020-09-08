@@ -1,5 +1,6 @@
 package eu.europeana.fulltext.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.europeana.fulltext.api.config.FTSettings;
 import eu.europeana.fulltext.api.model.FTResource;
 import eu.europeana.fulltext.api.model.v2.AnnotationPageV2;
@@ -21,7 +22,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import static eu.europeana.fulltext.api.TestUtils.*;
+import static eu.europeana.fulltext.TestUtils.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.unitils.reflectionassert.ReflectionAssert.assertReflectionEquals;
@@ -44,6 +45,8 @@ public class FTServiceTest {
     @MockBean
     private ResourceRepository resRepository;
 
+    @MockBean
+    private ObjectMapper mapper;
 
     @Before
     public void setup(){

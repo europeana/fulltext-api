@@ -9,11 +9,16 @@ import eu.europeana.fulltext.search.model.response.SearchResult;
 import eu.europeana.fulltext.search.service.FTSearchService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+
+import static eu.europeana.fulltext.RequestUtils.ACCEPT_VERSION_INVALID;
+import static eu.europeana.fulltext.RequestUtils.getRequestVersion;
 
 /**
  * Rest controller that handles search requests
@@ -26,7 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 @RequestMapping("/presentation")
 public class FTSearchController {
 
-    private static final Logger LOG  = LogManager.getLogger(FTSearchController.class);
+    private static final Logger LOG = LogManager.getLogger(FTSearchController.class);
 
     private FTSearchService searchService;
 
@@ -36,29 +41,37 @@ public class FTSearchController {
 
     /**
      * Search the provided issue (CHO) for a particular string
-     * @param datasetId datasetId of the issue to search
-     * @param localId itemId of the issue to search
-     * @param query search query
-     * @param q alternative search query (will override query if specified both
+     *
+     * @param datasetId       datasetId of the issue to search
+     * @param localId         itemId of the issue to search
+     * @param query           search query
+     * @param q               alternative search query (will override query if specified both
      * @param qf
-     * @param pageSize maximum number of hits
+     * @param pageSize        maximum number of hits
      * @param textGranularity one-letter abbreviation or name of an Annotation type
      * @param page
      * @param lang
-     * @param debug if specified then include debug information in the response
+     * @param debug           if specified then include debug information in the response
      * @throws FTException when there is an error processing the request
      */
     @GetMapping(value = "/{datasetId}/{localId}/search", produces = MediaType.APPLICATION_JSON_VALUE)
-    public SearchResult searchIssue(@PathVariable String datasetId, @PathVariable String localId,
-                                    @RequestParam (required = false) String query,
-                                    @RequestParam (required = false) String q,
-                                    @RequestParam (required = false) String[] qf,
-                                    @RequestParam (required = false, defaultValue = "0") int page,
-                                    @RequestParam (required = false, defaultValue = "12") int pageSize,
-                                    @RequestParam (required = false, defaultValue = "W") String textGranularity,
-                                    @RequestParam (required = false) String lang,
-                                    @RequestParam (required = false) String debug,
+    public ResponseEntity<?> searchIssue(@PathVariable String datasetId, @PathVariable String localId,
+                                    @RequestParam(required = false) String query,
+                                    @RequestParam(required = false) String q,
+                                    @RequestParam(required = false) String[] qf,
+                                    @RequestParam(required = false, defaultValue = "0") int page,
+                                    @RequestParam(required = false, defaultValue = "12") int pageSize,
+                                    @RequestParam(required = false, defaultValue = "W") String textGranularity,
+                                    @RequestParam(required = false) String lang,
+                                    @RequestParam(value = "format", required = false) String versionParam,
+                                    @RequestParam(required = false) String debug,
                                     HttpServletRequest request) throws FTException {
+
+        String requestVersion = getRequestVersion(request, versionParam);
+        if (ACCEPT_VERSION_INVALID.equals(requestVersion)){
+            return new ResponseEntity<>(ACCEPT_VERSION_INVALID, HttpStatus.NOT_ACCEPTABLE);
+        }
+
         // validate input
         String qry = validateQuery(query, q);
         if (pageSize < 1 || pageSize > SearchConfig.MAXIMUM_HITS) {
@@ -68,7 +81,8 @@ public class FTSearchController {
 
         // start processing
         String searchId = request.getRequestURI() + "?" + request.getQueryString();
-        return searchService.searchIssue(searchId, new EuropeanaId(datasetId, localId), qry, pageSize, annoType, (debug != null));
+        SearchResult searchResult = searchService.searchIssue(searchId, new EuropeanaId(datasetId, localId), qry, pageSize, annoType, (debug != null), requestVersion);
+        return new ResponseEntity<>(searchResult, HttpStatus.OK);
     }
 
 
