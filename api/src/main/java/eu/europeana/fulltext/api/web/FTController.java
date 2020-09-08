@@ -136,8 +136,15 @@ public class FTController {
         }
         AnnotationWrapper annotationPage;
         HttpHeaders headers;
+
+        if (StringUtils.isNotBlank(textGranularity)){
+            textGranValues = getTextGranularityValues(textGranularity.toLowerCase(Locale.GERMANY));
+        } else {
+            textGranValues = new ArrayList<>();
+        }
+
         try {
-            AnnoPage                annoPage = fts.fetchAnnoPage(datasetId, localId, pageId);
+            AnnoPage                annoPage = fts.fetchAnnoPage(datasetId, localId, pageId, textGranValues);
             ZonedDateTime           modified = CacheUtils.dateToZonedUTC(annoPage.getModified());
             String                  eTag     = generateETag(datasetId + localId + pageId,
                                                             modified,
@@ -150,12 +157,6 @@ public class FTController {
 
             headers = CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
             addContentTypeToResponseHeader(headers, requestVersion, isJson);
-
-            if (StringUtils.isNotBlank(textGranularity)){
-                textGranValues = getTextGranularityValues(textGranularity.toLowerCase(Locale.GERMANY));
-            } else {
-                textGranValues = new ArrayList<>();
-            }
 
             if ("3".equalsIgnoreCase(requestVersion)) {
                 annotationPage = fts.generateAnnoPageV3(annoPage, StringUtils.equalsAnyIgnoreCase(profile, PROFILE_TEXT), textGranValues);
