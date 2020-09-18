@@ -1,7 +1,5 @@
 package eu.europeana.fulltext.api.web;
 
-import eu.europeana.api.commons.logs.Location;
-
 /**
  * Created by Srishti on 14 September 2020
  */
