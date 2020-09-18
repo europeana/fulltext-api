@@ -29,6 +29,12 @@
         </dependency>
 
         <dependency>
+            <groupId>eu.europeana.api.commons</groupId>
+            <artifactId>commons-logs</artifactId>
+            <version>${apiCommons.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
             <exclusions>
