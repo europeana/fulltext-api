@@ -71,13 +71,14 @@ public class FTService {
      * @param datasetId identifier of the AnnoPage's dataset
      * @param localId   identifier of the AnnoPage's record
      * @param pageId    identifier of the AnnoPage
+     * @param textGranValues dcType values to filter annotations with
      * @throws AnnoPageDoesNotExistException when the Annopage cannot be found
      * @return AnnoPage
      */
-    public AnnoPage fetchAnnoPage(String datasetId, String localId, String pageId)
+    public AnnoPage fetchAnnoPage(String datasetId, String localId, String pageId, List<String> textGranValues)
             throws AnnoPageDoesNotExistException {
         if (doesAnnoPageExist(datasetId, localId, pageId)){
-            return annoPageRepository.findByDatasetLocalPageId(datasetId, localId, pageId);
+            return annoPageRepository.findByDatasetLocalPageId(datasetId, localId, pageId, textGranValues);
         } else {
             throw new AnnoPageDoesNotExistException(String.format(
                     "No AnnoPage with datasetId: %s, localId: %s and pageId: %s could be found",

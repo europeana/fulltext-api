@@ -63,15 +63,7 @@ public final class EDM2IIIFMapping {
     private static AnnotationV2[] getAnnotationV2Array(AnnoPage annoPage, boolean derefResource, List<String> textGranValues){
         ArrayList<AnnotationV2> annoArrayList = new ArrayList<>();
         for (Annotation ftAnno : annoPage.getAns()){
-            if (textGranValues.isEmpty()) {
-                addAnnotationV2(annoPage, ftAnno, derefResource, annoArrayList);
-            }
-            else {
-                 String dcType = expandDCType(ftAnno.getDcType());
-                 if (checkIfDCTypeMatches(dcType, textGranValues)){
-                    addAnnotationV2(annoPage, ftAnno, derefResource, annoArrayList);
-                }
-            }
+            addAnnotationV2(annoPage, ftAnno, derefResource, annoArrayList);
         }
         return annoArrayList.toArray(new AnnotationV2[0]);
     }
@@ -128,15 +120,7 @@ public final class EDM2IIIFMapping {
     private static AnnotationV3[] getAnnotationV3Array(AnnoPage annoPage, boolean derefResource, List<String> textGranValues){
         ArrayList<AnnotationV3> annoArrayList = new ArrayList<>();
         for (Annotation ftAnno : annoPage.getAns()){
-            if (textGranValues.isEmpty()) {
-                addAnnotationV3(annoPage, ftAnno, derefResource, annoArrayList);
-            }
-            else {
-                String dcType = expandDCType(ftAnno.getDcType());
-                if (checkIfDCTypeMatches(dcType, textGranValues)){
-                    addAnnotationV3(annoPage, ftAnno, derefResource, annoArrayList);
-                }
-            }
+            addAnnotationV3(annoPage, ftAnno, derefResource, annoArrayList);
         }
         return annoArrayList.toArray(new AnnotationV3[0]);
     }
@@ -302,14 +286,5 @@ public final class EDM2IIIFMapping {
                 break;
         }
         return dcType;
-    }
-
-    private static boolean checkIfDCTypeMatches(String dcType, List<String> textGranValues) {
-            for (String text : textGranValues) {
-                    if (StringUtils.equalsIgnoreCase(dcType,text)) {
-                        return true;
-                    }
-                }
-        return false;
     }
 }
