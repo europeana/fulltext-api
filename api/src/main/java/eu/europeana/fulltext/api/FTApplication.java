@@ -1,6 +1,6 @@
 package eu.europeana.fulltext.api;
 
-import eu.europeana.fulltext.api.web.LoggableDispatcherServlet;
+import eu.europeana.api.commons.logs.LoggableDispatcherServlet;
 import eu.europeana.fulltext.api.web.SocksProxyConfigInjector;
 import org.apache.logging.log4j.LogManager;
 import org.springframework.boot.SpringApplication;
