@@ -12,6 +12,7 @@ import eu.europeana.fulltext.entity.AnnoPage;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -58,17 +59,6 @@ public class FTController {
     private static final String  PROFILE_TEXT           = "text";
 
     private FTService fts;
-
-    /**
-     * This will set json-ld as the default type if there is no accept header specified or if it's *
-     */
-    @EnableWebMvc
-    public static class WebConfig implements WebMvcConfigurer {
-        @Override
-        public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
-            configurer.defaultContentType(MediaType.valueOf(MEDIA_TYPE_JSONLD));
-        }
-    }
 
 
     public  FTController(FTService ftService) {
