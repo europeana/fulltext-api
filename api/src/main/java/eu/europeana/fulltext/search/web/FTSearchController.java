@@ -55,7 +55,7 @@ public class FTSearchController {
      * @throws FTException when there is an error processing the request
      */
     @GetMapping(value = "/{datasetId}/{localId}/search", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> searchIssue(@PathVariable String datasetId, @PathVariable String localId,
+    public ResponseEntity searchIssue(@PathVariable String datasetId, @PathVariable String localId,
                                     @RequestParam(required = false) String query,
                                     @RequestParam(required = false) String q,
                                     @RequestParam(required = false) String[] qf,
@@ -81,10 +81,10 @@ public class FTSearchController {
 
         // start processing
         String searchId = request.getRequestURI() + "?" + request.getQueryString();
-        SearchResult searchResult = searchService.searchIssue(searchId, new EuropeanaId(datasetId, localId), qry, pageSize, annoType, (debug != null), requestVersion);
+        SearchResult searchResult = searchService.searchIssue(searchId, new EuropeanaId(datasetId, localId), qry,
+                pageSize, annoType, requestVersion, (debug != null));
         return new ResponseEntity<>(searchResult, HttpStatus.OK);
     }
-
 
     private String validateQuery(String query, String q) throws FTException {
         if (StringUtils.isEmpty(query) && StringUtils.isEmpty(q)) {

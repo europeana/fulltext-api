@@ -29,12 +29,12 @@ public class HitV3Test {
         JacksonTester.initFields(this, objectMapper);
     }
 
-    @Test
-    public void testSerialization() throws IOException {
-        JsonContent<HitV3> serialized = json.write(new HitV3(10, 100, "exact"));
-        assertThat(serialized).hasJsonPathArrayValue("@.annotations");
-        assertThat(serialized).hasJsonPathArrayValue("@.selectors");
-        assertThat(serialized).extractingJsonPathStringValue("@.type")
-                .isEqualTo("Hit");
-    }
+//    @Test
+//    public void testSerialization() throws IOException {
+//        JsonContent<HitV3> serialized = json.write(new HitV3(10, 100, "exact"));
+//        assertThat(serialized).hasJsonPathArrayValue("@.annotations");
+//        assertThat(serialized).hasJsonPathArrayValue("@.selectors");
+//        assertThat(serialized).extractingJsonPathStringValue("@.type")
+//                .isEqualTo("Hit");
+//    }
 }

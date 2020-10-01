@@ -1,8 +1,8 @@
 package eu.europeana.fulltext.repository;
 
-import eu.europeana.fulltext.entity.AnnoPage;
 import dev.morphia.AdvancedDatastore;
-import dev.morphia.query.Query;
+import eu.europeana.fulltext.AnnotationType;
+import eu.europeana.fulltext.entity.AnnoPage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -82,14 +82,33 @@ public class AnnoPageRepository {
     }
 
     /**
+     * Find and return AnnoPage that contains an annotation that matches the given parameters
+     * @param datasetId ID of the dataset
+     * @param localId   ID of the parent of the Annopage object
+     * @param imageId   ID of the image
+     * @param textGranularity type of annotations that should be retrieve, if null or empty all annotations of that
+     *                        annopage will be retrieved
+     * @return AnnoPage
+     */
+    public AnnoPage findByDatasetLocalImageId(String datasetId, String localId, String imageId, AnnotationType textGranularity) {
+        // TODO filter by textGranularity
+        return datastore.createQuery(AnnoPage.class)
+                .field("dsId").equal(datasetId)
+                .field("lcId").equal(localId)
+                .field("tgtId").equal(imageId).first();
+    }
+
+    /**
      * Deletes all annotation pages part of a particular dataset
      * @param datasetId ID of the dataset to be deleted
      * @return the number of deleted annotation pages
      */
+    // TODO move this to the loader?
     public int deleteDataset(String datasetId) {
         return datastore.delete(datastore.createQuery(AnnoPage.class).field("dsId").equal(datasetId)).getN();
     }
 
+    // TODO move this to the loader?
     public void save(AnnoPage apToSave){
         datastore.save(apToSave);
     }

@@ -13,31 +13,27 @@ import java.util.List;
  * @author Patrick Ehlert
  * Created on 9 June 2020
  */
-@JsonPropertyOrder({"solrSnippets", "keywords"})
+@JsonPropertyOrder({"solrQuery", "solrHits"})
 public class Debug implements Serializable {
 
     private static final long serialVersionUID = 3800855960101156128L;
 
-    private List<String> solrSnippets = new ArrayList<>();
-    private List<SolrHit> keywords = new ArrayList<>();
+    private String solrQuery;
+    private List<SolrHit> solrHits = new ArrayList<>();
 
-    public void addSolrSnippet(String solrSnippet) {
-        this.solrSnippets.add(solrSnippet);
+    public void setSolrQuery(String solrQuery) {
+        this.solrQuery = solrQuery;
     }
 
-    public void addKeyword(SolrHit hit) {
-        this.keywords.add(hit);
+    public String getSolrQuery() {
+        return this.solrQuery;
     }
 
-    public void removeKeyword(SolrHit hit) {
-        this.keywords.remove(hit);
+    public void addSolrSnippet(SolrHit solrHit) {
+        this.solrHits.add(solrHit);
     }
 
-    public List<String> getSolrSnippets() {
-        return solrSnippets;
-    }
-
-    public List<SolrHit> getKeywords() {
-        return keywords;
+    public List<SolrHit> getSolrHits() {
+        return solrHits;
     }
 }
