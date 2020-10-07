@@ -1,5 +1,6 @@
 package eu.europeana.fulltext.api.web;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.web.servlet.DispatcherServlet;
@@ -25,6 +26,7 @@ public class LoggableDispatcherServlet extends DispatcherServlet {
 
     @Override
     protected void doDispatch(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        long startTime = System.currentTimeMillis();
         if (!(request instanceof ContentCachingRequestWrapper)) {
             request = new ContentCachingRequestWrapper(request);
         }
@@ -43,13 +45,17 @@ public class LoggableDispatcherServlet extends DispatcherServlet {
         } catch (Exception e) {
             LOG.error("Exception occurred while invoking DispatcherServlet", e);
         } finally {
-            logRequest(request, response, handler);
+            logRequest(request, response, startTime, handler);
 
             updateResponse(response);
         }
     }
 
-    private void logRequest(HttpServletRequest requestToCache, HttpServletResponse responseToCache, HandlerExecutionChain handler) {
+    private void logRequest(HttpServletRequest requestToCache, HttpServletResponse responseToCache, long startTime, HandlerExecutionChain handler) {
+
+
+        System.out.println("GO ROUTER TIME " +getGoRouterTime(requestToCache, startTime));
+
         LogMessage logMessage = new LogMessage();
         logMessage.setHttpStatus(responseToCache.getStatus());
         logMessage.setHttpMethod(requestToCache.getMethod());
@@ -58,6 +64,26 @@ public class LoggableDispatcherServlet extends DispatcherServlet {
         logMessage.setJavaMethod(handler.toString());
         logMessage.setResponse(getResponsePayload(responseToCache));
         LOG.info(logMessage);
+    }
+
+    private static long getGoRouterTime(HttpServletRequest request, long startTime) {
+        String requestStartTime = request.getHeader("x_request_start");
+        System.out.println("requestStartTime " +requestStartTime);
+        System.out.println("starttime " +startTime);
+
+        if (!StringUtils.isEmpty(requestStartTime)) {
+            return startTime - parseLong(requestStartTime);
+        }
+        return 0L;
+    }
+
+    private static long parseLong(String value) {
+        try {
+            return Long.parseLong(value);
+        } catch (NumberFormatException e) {
+            LOG.error("NumberFormat Exception while parsing {} to long ",value, e);
+        }
+        return 0L;
     }
 
     private String getResponsePayload(HttpServletResponse response) {
