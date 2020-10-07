@@ -67,7 +67,7 @@ public class LoggableDispatcherServlet extends DispatcherServlet {
     }
 
     private static long getGoRouterTime(HttpServletRequest request, long startTime) {
-        String requestStartTime = request.getHeader("x_request_start");
+        String requestStartTime = request.getHeader("x-request-start"); //x-request-start
         System.out.println("requestStartTime " +requestStartTime);
         System.out.println("starttime " +startTime);
 
