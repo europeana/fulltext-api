@@ -50,20 +50,6 @@ public class LoggableDispatcherServlet extends DispatcherServlet {
     }
 
     private void logRequest(HttpServletRequest requestToCache, HttpServletResponse responseToCache, HandlerExecutionChain handler) {
-        System.out.println("REquest header ");
-
-        for (Enumeration<?> e = requestToCache.getHeaderNames(); e.hasMoreElements();) {
-            String nextHeaderName = (String) e.nextElement();
-            String headerValue = requestToCache.getHeader(nextHeaderName);
-            System.out.println(nextHeaderName + "   " +headerValue);
-        }
-        System.out.println("response header ");
-        for (String s : responseToCache.getHeaderNames()) {
-            System.out.println( s + "=== " + responseToCache.getHeader(s));
-
-
-
-        }
         LogMessage logMessage = new LogMessage();
         logMessage.setHttpStatus(responseToCache.getStatus());
         logMessage.setHttpMethod(requestToCache.getMethod());
