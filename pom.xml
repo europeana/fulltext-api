@@ -22,7 +22,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		
-		<spring-boot.version>2.1.7.RELEASE</spring-boot.version>
+		<spring-boot.version>2.3.4.RELEASE</spring-boot.version>
 		<jackson.version>2.9.9</jackson.version>
 		<io-informatics.version>0.1.1</io-informatics.version>
 		<morphia.version>1.5.3</morphia.version>
