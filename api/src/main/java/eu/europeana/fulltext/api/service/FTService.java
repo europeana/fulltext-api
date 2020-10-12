@@ -20,6 +20,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  *
@@ -63,11 +64,12 @@ public class FTService {
      * @param datasetId identifier of the AnnoPage's dataset
      * @param localId   identifier of the AnnoPage's record
      * @param pageId    identifier of the AnnoPage
+     * @param textGranValues dcType values to filter annotations with
      * @throws AnnoPageDoesNotExistException when the Annopage cannot be found
      * @return AnnoPage
      */
-    public AnnoPage fetchAnnoPage(String datasetId, String localId, String pageId) throws AnnoPageDoesNotExistException {
-        AnnoPage result = annoPageRepository.findByDatasetLocalPageId(datasetId, localId, pageId);
+    public AnnoPage fetchAnnoPage(String datasetId, String localId, String pageId, List<String> textGranValues) throws AnnoPageDoesNotExistException {
+        AnnoPage result = annoPageRepository.findByDatasetLocalPageId(datasetId, localId, pageId, textGranValues);
         if (result == null) {
             throw new AnnoPageDoesNotExistException(String.format("/%s/%s/annopage/%s", datasetId, localId, pageId));
         }

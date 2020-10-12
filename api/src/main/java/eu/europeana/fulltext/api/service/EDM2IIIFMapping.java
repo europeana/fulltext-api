@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static eu.europeana.fulltext.api.config.FTDefinitions.*;
@@ -63,14 +64,18 @@ public final class EDM2IIIFMapping {
     private static AnnotationV2[] getAnnotationV2Array(AnnoPage annoPage, boolean derefResource){
         ArrayList<AnnotationV2> annoArrayList = new ArrayList<>();
         for (Annotation ftAnno : annoPage.getAns()){
-            // make sure page annotations are listed first.
-            if (ftAnno.isTopLevel()) {
-                annoArrayList.add(0, getAnnotationV2(annoPage, ftAnno, false, derefResource ));
-            } else {
-                annoArrayList.add(getAnnotationV2(annoPage, ftAnno, false, false));
-            }
+            addAnnotationV2(annoPage, ftAnno, derefResource, annoArrayList);
         }
         return annoArrayList.toArray(new AnnotationV2[0]);
+    }
+
+    private static void addAnnotationV2(AnnoPage annoPage, Annotation ftAnno, boolean derefResource, ArrayList<AnnotationV2> annoArrayList) {
+        // make sure page annotations are listed first.
+        if (ftAnno.isTopLevel()) {
+            annoArrayList.add(0, getAnnotationV2(annoPage, ftAnno, false, derefResource ));
+        } else {
+            annoArrayList.add(getAnnotationV2(annoPage, ftAnno, false, false));
+        }
     }
 
     public static AnnotationV2 getAnnotationV2(AnnoPage annoPage, Annotation annotation, boolean includeContext, boolean derefResource){
@@ -116,15 +121,19 @@ public final class EDM2IIIFMapping {
     private static AnnotationV3[] getAnnotationV3Array(AnnoPage annoPage, boolean derefResource){
         ArrayList<AnnotationV3> annoArrayList = new ArrayList<>();
         for (Annotation ftAnno : annoPage.getAns()){
-            // make sure page annotations are listed first.
-            if (ftAnno.isTopLevel()) {
-                annoArrayList.add(0, getAnnotationV3(annoPage, ftAnno, false, derefResource));
-
-            } else {
-                annoArrayList.add(getAnnotationV3(annoPage, ftAnno, false, false));
-            }
+            addAnnotationV3(annoPage, ftAnno, derefResource, annoArrayList);
         }
         return annoArrayList.toArray(new AnnotationV3[0]);
+    }
+
+    private static void addAnnotationV3(AnnoPage annoPage, Annotation ftAnno, boolean derefResource, ArrayList<AnnotationV3> annoArrayList) {
+        // make sure page annotations are listed first.
+        if (ftAnno.isTopLevel()) {
+            annoArrayList.add(0, getAnnotationV3(annoPage, ftAnno, false, derefResource));
+
+        } else {
+            annoArrayList.add(getAnnotationV3(annoPage, ftAnno, false, false));
+        }
     }
 
     public static AnnotationV3 getAnnotationV3(AnnoPage annoPage, Annotation annotation, boolean includeContext, boolean derefResource){

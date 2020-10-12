@@ -7,12 +7,12 @@ import eu.europeana.fulltext.api.model.v2.AnnotationPageV2;
 import eu.europeana.fulltext.api.model.v2.AnnotationV2;
 import eu.europeana.fulltext.api.model.v3.AnnotationPageV3;
 import eu.europeana.fulltext.api.model.v3.AnnotationV3;
-import eu.europeana.fulltext.api.service.exception.ResourceDoesNotExistException;
-import eu.europeana.fulltext.repository.AnnoPageRepository;
-import eu.europeana.fulltext.repository.ResourceRepository;
 import eu.europeana.fulltext.api.service.EDM2IIIFMapping;
 import eu.europeana.fulltext.api.service.FTService;
 import eu.europeana.fulltext.api.service.exception.AnnoPageDoesNotExistException;
+import eu.europeana.fulltext.api.service.exception.ResourceDoesNotExistException;
+import eu.europeana.fulltext.repository.AnnoPageRepository;
+import eu.europeana.fulltext.repository.ResourceRepository;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,7 +22,10 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.util.Collections;
+
 import static eu.europeana.fulltext.TestUtils.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.unitils.reflectionassert.ReflectionAssert.assertReflectionEquals;
@@ -52,7 +55,7 @@ public class FTServiceTest {
     public void setup(){
         given(apRepository.existsByPageId(eq("ds1"), eq("lc1"), eq("pg1")))
                 .willReturn(true);
-        given(apRepository.findByDatasetLocalPageId(eq("ds1"), eq("lc1"), eq("pg1")))
+        given(apRepository.findByDatasetLocalPageId(eq("ds1"), eq("lc1"), eq("pg1"), any()))
                 .willReturn(anp_1);
         given(apRepository.existsWithAnnoId(eq("ds1"), eq("lc1"), eq("an1")))
                 .willReturn(true);
@@ -86,7 +89,7 @@ public class FTServiceTest {
     @Test
     public void testGetAnnotationPageV2() throws AnnoPageDoesNotExistException {
         prepareAnnotationPageV2();
-        AnnotationPageV2 ap = ftService.generateAnnoPageV2(ftService.fetchAnnoPage("ds1", "lc1", "pg1"),false);
+        AnnotationPageV2 ap = ftService.generateAnnoPageV2(ftService.fetchAnnoPage("ds1", "lc1", "pg1", Collections.emptyList()),false);
         assertReflectionEquals(anpv2_1, ap);
     }
 
@@ -98,7 +101,7 @@ public class FTServiceTest {
     @Test
     public void testGetAnnotationPageV3() throws AnnoPageDoesNotExistException {
         prepareAnnotationPageV3();
-        AnnotationPageV3 ap = ftService.generateAnnoPageV3(ftService.fetchAnnoPage("ds1", "lc1", "pg1"),false);
+        AnnotationPageV3 ap = ftService.generateAnnoPageV3(ftService.fetchAnnoPage("ds1", "lc1", "pg1", Collections.emptyList()),false);
         assertReflectionEquals(anpv3_1, ap);
     }
 

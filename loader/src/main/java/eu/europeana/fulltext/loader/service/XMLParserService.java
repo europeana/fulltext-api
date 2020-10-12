@@ -59,7 +59,7 @@ public class XMLParserService {
     private static final String ANNOTATION    = "Annotation";
     private static final String ANNOTATION_ID = "ID";
 
-    private static final String ANNOTATION_TYPE      = "type";
+    private static final String ANNOTATION_TYPE = "type";
 
     private static final String ANNOTATION_MOTIVATION      = "motivatedBy";
     private static final String ANNOTATION_MOTIVATION_TEXT = "resource";

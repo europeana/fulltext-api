@@ -6,13 +6,13 @@
     <parent>
         <artifactId>fulltext</artifactId>
         <groupId>eu.europeana</groupId>
-        <version>0.7-SNAPSHOT</version>
+        <version>0.8-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <groupId>eu.europeana.fulltext</groupId>
     <artifactId>api</artifactId>
-    <version>0.7-SNAPSHOT</version>
+    <version>0.8-SNAPSHOT</version>
     <packaging>war</packaging>
 
     <name>Europeana Newspapers Fulltext API</name>
@@ -161,6 +161,13 @@
                 <artifactId>maven-war-plugin</artifactId>
                 <configuration>
                     <attachClasses>true</attachClasses>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <release>11</release>
                 </configuration>
             </plugin>
         </plugins>
