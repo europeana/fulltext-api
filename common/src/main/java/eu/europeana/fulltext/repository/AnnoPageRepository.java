@@ -17,7 +17,7 @@ import static dev.morphia.aggregation.experimental.expressions.Expressions.field
 import static dev.morphia.aggregation.experimental.stages.Group.id;
 import static dev.morphia.query.experimental.filters.Filters.eq;
 import static dev.morphia.query.experimental.filters.Filters.in;
-import static eu.europeana.fulltext.util.MongoUtils.MULTI_DELETE_OPTS;
+import static eu.europeana.fulltext.util.MorphiaUtils.MULTI_DELETE_OPTS;
 
 
 /**
@@ -99,7 +99,6 @@ public class AnnoPageRepository {
      * @return AnnoPage
      */
     public AnnoPage findByDatasetLocalPageId(String datasetId, String localId, String pageId, List<String> textGranValues) {
-
         Aggregation<AnnoPage> query = datastore.aggregate(AnnoPage.class).match(
                 eq("dsId", datasetId),
                 eq("lcId", localId),
