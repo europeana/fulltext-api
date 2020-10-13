@@ -1,13 +1,12 @@
 package eu.europeana.fulltext.repository;
 
 import dev.morphia.Datastore;
-import dev.morphia.DeleteOptions;
 import eu.europeana.fulltext.entity.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import static dev.morphia.query.experimental.filters.Filters.eq;
-import static eu.europeana.fulltext.util.MongoUtils.MULTI_DELETE_OPTS;
+import static eu.europeana.fulltext.util.MorphiaUtils.MULTI_DELETE_OPTS;
 
 
 /**

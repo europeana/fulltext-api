@@ -11,6 +11,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.util.StringUtils;
 
+import static eu.europeana.fulltext.util.MorphiaUtils.MAPPER_OPTIONS;
+
 /**
  * Created by luthien on 01/10/2018.
  */
@@ -30,7 +32,7 @@ public class DataSourceConfig {
         }
         LogManager.getLogger(eu.europeana.fulltext.api.config.DataSourceConfig.class).
                 info("Connecting to {} Mongo database on hosts {}...", database, uri.getHosts());
-        final Datastore datastore = Morphia.createDatastore(mongoClient, database);
+        final Datastore datastore = Morphia.createDatastore(mongoClient, database, MAPPER_OPTIONS);
         datastore.ensureIndexes();
         return datastore;
     }
