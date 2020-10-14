@@ -9,6 +9,7 @@ import eu.europeana.fulltext.entity.AnnoPage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -109,21 +110,12 @@ public class AnnoPageRepository {
         if (!textGranValues.isEmpty()) {
             // ans.dcType stored as first letter of text granularity value in uppercase. ie. WORD -> 'W'
             List<String> dcTypes = textGranValues.stream().map(s -> s.substring(0, 1).toUpperCase()).collect(Collectors.toUnmodifiableList());
-
-            query = query.unwind(Unwind.on("ans")).match(in("ans.dcType", dcTypes))
-                    .group(Group.of(id("_id"))
-                            .field("ans", push().single(field("ans")))
-                            .field("dsId", first(field("dsId")))
-                            .field("lcId", first(field("lcId")))
-                            .field("pgId", first(field("pgId")))
-                            .field("res", first(field("res")))
-                            .field("className", first(field("className")))
-                            .field("tgtId", first(field("tgtId")))
-                    );
+            query = filterTextGranularity(query, dcTypes);
         }
 
         return query.execute(AnnoPage.class).next();
     }
+
 
     /**
      * Find and return AnnoPage that contains an annotation that matches the given parameters
@@ -150,13 +142,18 @@ public class AnnoPageRepository {
      * @return AnnoPage
      */
     public List<AnnoPage> findByDatasetLocalImageId(String datasetId, String localId, List<String> imageIds, AnnotationType textGranularity) {
-        // TODO filter by textGranularity
-        // OutOfMemoryError risk for large datasets.
-        return datastore.find(AnnoPage.class).filter(
+        Aggregation<AnnoPage> query = datastore.aggregate(AnnoPage.class).match(
                 eq("dsId", datasetId),
                 eq("lcId", localId),
                 in("tgtId", imageIds)
-        ).iterator().toList();
+        );
+
+        if (textGranularity != null) {
+            query = filterTextGranularity(query, Collections.singletonList(String.valueOf(textGranularity.getAbbreviation())));
+        }
+
+        // OutOfMemoryError risk for large result set!
+        return query.execute(AnnoPage.class).toList();
     }
 
     /**
@@ -174,5 +171,25 @@ public class AnnoPageRepository {
     // TODO move this to the loader?
     public void save(AnnoPage apToSave){
         datastore.save(apToSave);
+    }
+
+
+    /**
+     * Creates an AnnoPage aggregation query to return only matching annotation types.
+     * @param annoPageQuery aggregation query
+     * @param textGranValues list containing text granularity values to match
+     * @return Updated aggregation query
+     */
+    private Aggregation<AnnoPage> filterTextGranularity(Aggregation<AnnoPage> annoPageQuery, List<String> textGranValues) {
+        return annoPageQuery.unwind(Unwind.on("ans")).match(in("ans.dcType", textGranValues))
+                .group(Group.of(id("_id"))
+                        .field("ans", push().single(field("ans")))
+                        .field("dsId", first(field("dsId")))
+                        .field("lcId", first(field("lcId")))
+                        .field("pgId", first(field("pgId")))
+                        .field("res", first(field("res")))
+                        .field("className", first(field("className")))
+                        .field("tgtId", first(field("tgtId")))
+                );
     }
 }

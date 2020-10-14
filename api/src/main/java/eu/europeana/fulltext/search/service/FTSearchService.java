@@ -121,8 +121,7 @@ public class FTSearchService {
         LOG.trace("  Searching for {} annotations that overlap with {}...", annoType, solrHit.getDebugInfo());
         boolean annotationsFound = false;
         for (Annotation anno : annoPage.getAns()) {
-            // TODO for now we have to check if the annoType matches (see TODO in AnnoPageRepository)
-            if (anno.getDcType() == annoType.getAbbreviation() && anno.getFrom() != null && anno.getTo() != null &&
+            if (anno.getFrom() != null && anno.getTo() != null &&
                     overlap(solrHit.getStart(), solrHit.getEnd(), anno.getFrom(), anno.getTo())) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("  Found overlap between {} and annotation {},{} with text '{}'", solrHit.getDebugInfo(),
