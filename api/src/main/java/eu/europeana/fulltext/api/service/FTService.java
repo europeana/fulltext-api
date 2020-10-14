@@ -77,19 +77,20 @@ public class FTService {
     }
 
     /**
-     * Retrieve the AnnoPage with the provided datasetId, localId and imageId. If the annotationType is specified the
-     * returned AnnoPage will only contain annotations of that type. If annotationType is null or empty then all
+     * Retrieve AnnoPages with the provided datasetId, localId and imageIds. If the annotationType is specified the
+     * returned AnnoPages will only contain annotations of that type. If annotationType is null or empty then all
      * annotations of that type will be returned
      * @param datasetId ID of the dataset
      * @param localId   ID of the parent of the Annopage object
-     * @param imageId   ID of the image
+     * @param imageIds   IDs of the images
      * @param annotationType type of annotations that should be retrieved, if null or empty all annotations of that
      *                        annopage will be retrieved
      * @return null if it doesn't exists, otherwise the retrieve annopage
      */
-    public AnnoPage fetchAnnoPageFromImageId(String datasetId, String localId, String imageId, AnnotationType annotationType) {
-        return annoPageRepository.findByDatasetLocalImageId(datasetId, localId, imageId, annotationType);
+    public List<AnnoPage> fetchAnnoPageFromImageId(String datasetId, String localId, List<String> imageIds, AnnotationType annotationType) {
+        return annoPageRepository.findByDatasetLocalImageId(datasetId, localId, imageIds, annotationType);
     }
+
 
     /**
      * Handles fetching an Annotation page (aka AnnoPage) containing the Annotation with given annoId
@@ -227,5 +228,6 @@ public class FTService {
             throw new SerializationException("Error serialising data: " + e.getMessage(), e);
         }
     }
+
 
 }

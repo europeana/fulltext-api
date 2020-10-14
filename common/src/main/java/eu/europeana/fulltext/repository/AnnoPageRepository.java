@@ -141,21 +141,22 @@ public class AnnoPageRepository {
     }
 
     /**
-     * Find and return AnnoPage that contains an annotation that matches the given parameters
+     * Find and return AnnoPages that contains an annotation that matches the given parameters
      * @param datasetId ID of the dataset
      * @param localId   ID of the parent of the Annopage object
-     * @param imageId   ID of the image
+     * @param imageIds   ID of the image
      * @param textGranularity type of annotations that should be retrieve, if null or empty all annotations of that
      *                        annopage will be retrieved
      * @return AnnoPage
      */
-    public AnnoPage findByDatasetLocalImageId(String datasetId, String localId, String imageId, AnnotationType textGranularity) {
+    public List<AnnoPage> findByDatasetLocalImageId(String datasetId, String localId, List<String> imageIds, AnnotationType textGranularity) {
         // TODO filter by textGranularity
+        // OutOfMemoryError risk for large datasets.
         return datastore.find(AnnoPage.class).filter(
                 eq("dsId", datasetId),
                 eq("lcId", localId),
-                eq("tgtId", imageId)
-        ).first();
+                in("tgtId", imageIds)
+        ).iterator().toList();
     }
 
     /**
@@ -174,5 +175,4 @@ public class AnnoPageRepository {
     public void save(AnnoPage apToSave){
         datastore.save(apToSave);
     }
-
 }
