@@ -4,6 +4,7 @@ import dev.morphia.Datastore;
 import dev.morphia.aggregation.experimental.Aggregation;
 import dev.morphia.aggregation.experimental.stages.Group;
 import dev.morphia.aggregation.experimental.stages.Unwind;
+import dev.morphia.query.internal.MorphiaCursor;
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.entity.AnnoPage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -141,7 +142,7 @@ public class AnnoPageRepository {
      *                        annopage will be retrieved
      * @return AnnoPage
      */
-    public List<AnnoPage> findByDatasetLocalImageId(String datasetId, String localId, List<String> imageIds, AnnotationType textGranularity) {
+    public MorphiaCursor<AnnoPage> findByDatasetLocalImageId(String datasetId, String localId, List<String> imageIds, AnnotationType textGranularity) {
         Aggregation<AnnoPage> query = datastore.aggregate(AnnoPage.class).match(
                 eq("dsId", datasetId),
                 eq("lcId", localId),
@@ -152,8 +153,7 @@ public class AnnoPageRepository {
             query = filterTextGranularity(query, Collections.singletonList(String.valueOf(textGranularity.getAbbreviation())));
         }
 
-        // OutOfMemoryError risk for large result set!
-        return query.execute(AnnoPage.class).toList();
+        return query.execute(AnnoPage.class);
     }
 
     /**

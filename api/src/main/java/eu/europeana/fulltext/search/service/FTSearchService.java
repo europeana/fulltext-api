@@ -1,5 +1,6 @@
 package eu.europeana.fulltext.search.service;
 
+import dev.morphia.query.internal.MorphiaCursor;
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.api.service.FTService;
 import eu.europeana.fulltext.api.service.exception.FTException;
@@ -93,22 +94,26 @@ public class FTSearchService {
                 .collect(Collectors.groupingBy(SolrHit::getImageId));
 
         long start = System.currentTimeMillis();
-        List<AnnoPage> matchingAnnoPages = fulltextRepo.fetchAnnoPageFromImageId(europeanaId.getDatasetId(), europeanaId.getLocalId(), new ArrayList<>(solrHitsByImageId.keySet()), annoType);
-        if (matchingAnnoPages == null || matchingAnnoPages.isEmpty()) {
-            throw new RecordDoesNotExistException(europeanaId);
-        } else {
-            LOG.debug("Retrieved {} AnnoPages from /{}/{} in {} ms", matchingAnnoPages.size(),
-                    europeanaId.getDatasetId(), europeanaId.getLocalId(),
-                    System.currentTimeMillis() - start);
-        }
+        try (MorphiaCursor<AnnoPage> annoPageCursor = fulltextRepo.fetchAnnoPageFromImageId(europeanaId.getDatasetId(),
+                europeanaId.getLocalId(),
+                new ArrayList<>(solrHitsByImageId.keySet()), annoType)) {
+            if (annoPageCursor == null || !annoPageCursor.hasNext()) {
+                throw new RecordDoesNotExistException(europeanaId);
+            } else {
+                LOG.debug("Retrieved AnnoPages from /{}/{} in {} ms",
+                        europeanaId.getDatasetId(), europeanaId.getLocalId(),
+                        System.currentTimeMillis() - start);
+            }
 
-        for (AnnoPage annoPage : matchingAnnoPages) {
-            // get relevant SolrHits by imageId (which match annoPage.tgId)
-            for (SolrHit solrHit : solrHitsByImageId.get(annoPage.getTgtId())) {
-                // use the annopage to find the matching annotations
-                findAnnotations(result, solrHit, annoPage, pageSize, annoType, requestVersion);
-                if (result.itemSize() >= pageSize) {
-                    return;
+            while (annoPageCursor.hasNext()) {
+                AnnoPage annoPage = annoPageCursor.next();
+                // get relevant SolrHits by imageId (which match annoPage.tgId)
+                for (SolrHit solrHit : solrHitsByImageId.get(annoPage.getTgtId())) {
+                    // use the annopage to find the matching annotations
+                    findAnnotations(result, solrHit, annoPage, pageSize, annoType, requestVersion);
+                    if (result.itemSize() >= pageSize) {
+                        return;
+                    }
                 }
             }
         }

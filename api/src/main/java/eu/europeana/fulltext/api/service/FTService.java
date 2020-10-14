@@ -1,6 +1,7 @@
 package eu.europeana.fulltext.api.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.morphia.query.internal.MorphiaCursor;
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.api.config.FTSettings;
 import eu.europeana.fulltext.api.model.FTResource;
@@ -87,7 +88,7 @@ public class FTService {
      *                        annopage will be retrieved
      * @return null if it doesn't exists, otherwise the retrieve annopage
      */
-    public List<AnnoPage> fetchAnnoPageFromImageId(String datasetId, String localId, List<String> imageIds, AnnotationType annotationType) {
+    public MorphiaCursor<AnnoPage> fetchAnnoPageFromImageId(String datasetId, String localId, List<String> imageIds, AnnotationType annotationType) {
         return annoPageRepository.findByDatasetLocalImageId(datasetId, localId, imageIds, annotationType);
     }
 
