@@ -89,8 +89,7 @@ public class SolrHighlightQueryImpl implements SolrHighlightQuery {
                 .set(HL_EXTENDED_PARAM, "true")
                 .set(HL_METHOD_PARAM, "unified")
                 .set(HL_QUERY, ClientUtils.escapeQueryChars(query))
-                // TODO temporarily request to set to fulltext.fr as our current test instance only supports that
-                .set(HL_FIELDS, "fulltext.fr");
+                .set(HL_FIELDS, "fulltext.*");
         if (maxAnalyzedChars != null) {
             sq.set(HL_MAXANALYZEDCHARS_PARAM, String.valueOf(maxAnalyzedChars));
         }
