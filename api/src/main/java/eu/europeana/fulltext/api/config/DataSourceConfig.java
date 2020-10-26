@@ -3,8 +3,8 @@ package eu.europeana.fulltext.api.config;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import org.apache.logging.log4j.LogManager;
-import org.mongodb.morphia.AdvancedDatastore;
-import org.mongodb.morphia.Morphia;
+import dev.morphia.AdvancedDatastore;
+import dev.morphia.Morphia;
 import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,7 +30,6 @@ public class DataSourceConfig {
         }
         LogManager.getLogger(eu.europeana.fulltext.api.config.DataSourceConfig.class).
                 info("Connecting to {} Mongo database on hosts {}...", database, uri.getHosts());
-        final AdvancedDatastore datastore = (AdvancedDatastore) new Morphia().createDatastore(mongoClient, database);
-        return datastore;
+        return (AdvancedDatastore) new Morphia().createDatastore(mongoClient, database);
     }
 }

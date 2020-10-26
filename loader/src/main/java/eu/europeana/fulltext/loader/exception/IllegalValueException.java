@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 public class IllegalValueException extends LoaderException {
 
+    private static final long serialVersionUID = 4206287459589008850L;
+
     public IllegalValueException(String msg) {
         super(msg);
     }

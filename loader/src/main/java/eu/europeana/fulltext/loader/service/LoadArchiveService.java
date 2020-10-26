@@ -32,6 +32,8 @@ public class LoadArchiveService extends SimpleFileVisitor<Path> {
 
     private static final Logger LOG = LogManager.getLogger(LoadArchiveService.class);
 
+    private static final String IGNORE_REGEX = "(?i).*?(MACOSX|DS_STORE).*?";
+
     private XMLParserService parser;
     private MongoService mongoService;
     private LoaderSettings settings;
@@ -138,7 +140,7 @@ public class LoadArchiveService extends SimpleFileVisitor<Path> {
         Enumeration<? extends ZipEntry> zippies = zips.entries();
         while (zippies.hasMoreElements()) {
             ZipEntry zippy = zippies.nextElement();
-            if (!zippy.isDirectory()) {
+            if (!zippy.isDirectory() && !zippy.getName().matches(IGNORE_REGEX)) {
                 count++;
             }
         }

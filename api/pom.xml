@@ -5,13 +5,13 @@
     <parent>
         <artifactId>fulltext</artifactId>
         <groupId>eu.europeana</groupId>
-        <version>0.6-SNAPSHOT</version>
+        <version>0.8-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <groupId>eu.europeana.fulltext</groupId>
     <artifactId>api</artifactId>
-    <version>0.6-SNAPSHOT</version>
+    <version>0.8-SNAPSHOT</version>
     <packaging>war</packaging>
 
     <name>Europeana Newspapers Fulltext API</name>
@@ -25,7 +25,7 @@
         <dependency>
             <groupId>eu.europeana.fulltext</groupId>
             <artifactId>common</artifactId>
-            <version>0.6-SNAPSHOT</version>
+            <version>0.8-SNAPSHOT</version>
         </dependency>
 
         <dependency>
@@ -80,7 +80,7 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
-        
+
         <!-- for serializing -->
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
@@ -184,6 +184,22 @@
                     <attachClasses>true</attachClasses>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>9</source>
+                    <target>9</target>
+                </configuration>
+            </plugin>
+            <!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-compiler-plugin</artifactId>-->
+<!--                <configuration>-->
+<!--                    <source>9</source>-->
+<!--                    <target>9</target>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
         </plugins>
     </build>
 </project>

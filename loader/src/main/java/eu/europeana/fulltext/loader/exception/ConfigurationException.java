@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 public class ConfigurationException extends LoaderException {
 
+    private static final long serialVersionUID = 5022468163458616001L;
+
     public ConfigurationException(String msg) {
         super(msg);
     }

@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 public class DuplicateDefinitionException extends LoaderException {
 
+    private static final long serialVersionUID = 7246636549053909675L;
+
     public DuplicateDefinitionException(String msg) {
         super(msg);
     }

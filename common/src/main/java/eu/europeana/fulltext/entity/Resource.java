@@ -1,6 +1,6 @@
 package eu.europeana.fulltext.entity;
 
-import org.mongodb.morphia.annotations.*;
+import dev.morphia.annotations.*;
 
 /**
  * Created by luthien on 31/05/2018.
@@ -16,19 +16,28 @@ public class Resource {
     private String lang;
     private String value;
 
+    private String source;
+    private String rights;
+
     public Resource() {
     }
 
-    public Resource(String id, String lang, String value) {
-        this.id = id;
-        this.lang = lang;
-        this.value = value;
+    public Resource(String id, String lang, String value, String rights) {
+        this.id     = id;
+        this.lang   = lang;
+        this.value  = value;
+        this.rights = rights;
     }
 
-    public Resource(String id, String lang, String value, String dsId, String lcId) {
-        this(id, lang, value);
+    public Resource(String id, String lang, String value, String rights, String dsId, String lcId) {
+        this(id, lang, value, rights);
         this.dsId = dsId;
         this.lcId = lcId;
+    }
+
+    public Resource(String id, String lang, String value, String rights, String dsId, String lcId, String source) {
+        this(id, lang, value, rights, dsId, lcId);
+        this.source = source;
     }
 
     public String getId() {
@@ -71,4 +80,15 @@ public class Resource {
         this.lcId = lcId;
     }
 
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
+
+    public String getRights() { return rights; }
+
+    public void setRights(String rights) { this.rights = rights; }
 }
