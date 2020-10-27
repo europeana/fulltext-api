@@ -1,6 +1,6 @@
 package eu.europeana.fulltext.search.repository;
 
-import eu.europeana.fulltext.search.model.query.SolrNewspaper;
+import eu.europeana.fulltext.search.model.query.SolrDocument;
 import org.springframework.data.solr.repository.SolrCrudRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,7 +11,8 @@ import org.springframework.stereotype.Repository;
  * Created on 28 May 2020
  */
 @Repository
-public interface SolrNewspaperRepo extends SolrCrudRepository<SolrNewspaper, String>, SolrIssueQuery {
+public interface SolrRepo extends SolrCrudRepository<SolrDocument, String>, SolrHighlightQuery {
 
-   // no methods defined, we use the ones in SolrEuropeanaQuery(Impl)
+   // no methods defined, we use the ones in SolrHighlightQueryImpl
+
 }

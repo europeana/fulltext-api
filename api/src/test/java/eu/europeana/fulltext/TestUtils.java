@@ -20,9 +20,7 @@ import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Date;
 
-import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_EDM_JSONLD;
-import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_IIIF_V2;
-import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_IIIF_V3;
+import static eu.europeana.fulltext.api.config.FTDefinitions.*;
 
 /**
  * Created by luthien on 26/09/2018.
@@ -145,14 +143,14 @@ public class TestUtils {
     private static void buildAnnotationsV2(boolean includeContext){
         annv2_1 = createAnnotationV2("an1", anbv2_1,
                                      new String[]{getTargetIdUrl("pg1", "60","100","30","14")},
-                                     "Word", includeContext);
+                                     TYPE_WORD, includeContext);
         annv2_2 = createAnnotationV2("an2", anbv2_2,
                                      new String[]{getTargetIdUrl("pg1", "95","102","53","15")},
-                                     "Word", includeContext);
+                                     TYPE_WORD, includeContext);
         annv2_3 = createAnnotationV2("an3", anbv2_3,
                                      new String[]{getTargetIdUrl("pg1", "60","96","404","19"),
                                              getTargetIdUrl("pg1", "59","138","133","25")},
-                                     "Line", includeContext);
+                                     TYPE_LINE, includeContext);
     }
 
     private static void buildAnnotationBodiesV3(){
@@ -164,14 +162,14 @@ public class TestUtils {
     private static void buildAnnotationsV3(boolean includeContext){
         annv3_1 = createAnnotationV3("an1", anbv3_1,
                                      new String[]{getTargetIdUrl("pg1", "60","100","30","14")},
-                                     "Word", includeContext);
+                                     TYPE_WORD, includeContext);
         annv3_2 = createAnnotationV3("an2", anbv3_2,
                                      new String[]{getTargetIdUrl("pg1", "95","102","53","15")},
-                                     "Word", includeContext);
+                                     TYPE_WORD, includeContext);
         annv3_3 = createAnnotationV3("an3", anbv3_3,
                                      new String[]{getTargetIdUrl("pg1", "60","96","404","19"),
                                              getTargetIdUrl("pg1", "59","138","133","25")},
-                                     "Line", includeContext);
+                                     TYPE_LINE, includeContext);
     }
 
     public static void buildFTResources(){

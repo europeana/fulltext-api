@@ -9,10 +9,6 @@ public class HitV2 extends Hit {
     private static final String TYPE = "search:Hit";
     private static final long serialVersionUID = -5695711109165049290L;
 
-    public HitV2(Integer startIndex, Integer endIndex, String exact) {
-        super(startIndex, endIndex, exact);
-    }
-
     @Override
     @JsonProperty("@type")
     public String getType() {

@@ -24,16 +24,10 @@ public abstract class Hit implements Serializable {
 
     private Integer startIndex; // for processing purposes only
     private Integer endIndex; // for processing purposes only
-    private List<String> annotations = new ArrayList<>();// even though this is a list, it will contain only 1 annotation id
+    private List<String> annotations = new ArrayList<>(); // even though this is a list, it will contain only 1 annotation id
     private List<HitSelector> selectors = new ArrayList<>(); // even though this is a list, it will contain only 1 hitselector
-    
-    public Hit(Integer startIndex, Integer endIndex, String exact) {
-        this.startIndex = startIndex;
-        this.endIndex = endIndex;
-        this.selectors.add(createSelector(exact));
-    }
 
-    abstract public String getType();
+    public abstract String getType();
 
     @JsonIgnore
     public Integer getStartIndex() {
@@ -54,28 +48,37 @@ public abstract class Hit implements Serializable {
     }
 
     /**
-     * This adds a new annotation to the hit and also sets the prefix and suffix. Note that the first added
-     * annotation determines the prefix, and the last added annotation the suffix
+     * This adds an annotation to the hit and also sets the prefix and suffix. Note that if multiple annotations
+     * are added the first annotation determines the prefix, and the last one determines the suffix
      *
      * @param annoPage   the annotation page where the hit was found
      * @param annotation the annotation that was found
      */
-    public void addAnnotation(AnnoPage annoPage, Annotation annotation) {
+    public Hit addAnnotation(int start, int end, AnnoPage annoPage, Annotation annotation) {
         String fulltext = annoPage.getRes().getValue();
-        HitSelector hs = this.selectors.get(0); // should be only 1 hitSelector per hit
+        HitSelector hs;
 
-        if (this.getAnnotations().isEmpty() && (annotation.getFrom() < this.startIndex)) {
-            hs.setPrefix(fulltext.substring(annotation.getFrom(), this.startIndex));
+        if (this.selectors.isEmpty()) {
+            // first annotation so set prefix
+            this.startIndex = start;
+            this.endIndex = end;
+            hs = createSelector(fulltext.substring(start, end));
+            this.selectors.add(hs);
+            if ((annotation.getFrom() < this.startIndex)) {
+                hs.setPrefix(fulltext.substring(annotation.getFrom(), this.startIndex));
+            }
+        } else {
+            // second or later annotation, so reuse selector to set new suffix
+            hs = this.selectors.get(0);
         }
-
         if (this.endIndex < annotation.getTo()) {
             hs.setSuffix(fulltext.substring(this.endIndex, annotation.getTo()));
-        } else {
-            hs.setSuffix("");
         }
 
+        // add annotation itself
         EuropeanaId id = new EuropeanaId(annoPage.getDsId(), annoPage.getLcId());
         this.annotations.add(EDM2IIIFMapping.getAnnotationIdUrl(id.toString(), annotation));
+        return this;
     }
 
     protected abstract HitSelector createSelector(String exact);

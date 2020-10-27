@@ -1,9 +1,8 @@
 package eu.europeana.fulltext.api.service;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.morphia.query.internal.MorphiaCursor;
+import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.api.config.FTSettings;
 import eu.europeana.fulltext.api.model.FTResource;
 import eu.europeana.fulltext.api.model.v2.AnnotationPageV2;
@@ -17,13 +16,11 @@ import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Resource;
 import eu.europeana.fulltext.repository.AnnoPageRepository;
 import eu.europeana.fulltext.repository.ResourceRepository;
-import ioinformarics.oss.jackson.module.jsonld.JsonldModule;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -68,11 +65,12 @@ public class FTService {
      * @param datasetId identifier of the AnnoPage's dataset
      * @param localId   identifier of the AnnoPage's record
      * @param pageId    identifier of the AnnoPage
+     * @param textGranValues dcType values to filter annotations with
      * @throws AnnoPageDoesNotExistException when the Annopage cannot be found
      * @return AnnoPage
      */
-    public AnnoPage fetchAnnoPage(String datasetId, String localId, String pageId) throws AnnoPageDoesNotExistException {
-        AnnoPage result = annoPageRepository.findByDatasetLocalPageId(datasetId, localId, pageId);
+    public AnnoPage fetchAnnoPage(String datasetId, String localId, String pageId, List<String> textGranValues) throws AnnoPageDoesNotExistException {
+        AnnoPage result = annoPageRepository.findByDatasetLocalPageId(datasetId, localId, pageId, textGranValues);
         if (result == null) {
             throw new AnnoPageDoesNotExistException(String.format("/%s/%s/annopage/%s", datasetId, localId, pageId));
         }
@@ -80,28 +78,20 @@ public class FTService {
     }
 
     /**
-     * Retrieve all annopages for a particular issue.
-     * @param datasetId
-     * @param localId
-     * @return List of AnnoPages, empty list if there are none
+     * Retrieve AnnoPages with the provided datasetId, localId and imageIds. If the annotationType is specified the
+     * returned AnnoPages will only contain annotations of that type. If annotationType is null or empty then all
+     * annotations of that type will be returned
+     * @param datasetId ID of the dataset
+     * @param localId   ID of the parent of the Annopage object
+     * @param imageIds   IDs of the images
+     * @param annotationType type of annotations that should be retrieved, if null or empty all annotations of that
+     *                        annopage will be retrieved
+     * @return null if it doesn't exists, otherwise the retrieve annopage
      */
-    public List<AnnoPage> fetchAnnoPages(String datasetId, String localId) {
-        List<AnnoPage> result = new ArrayList<>();
-        int i = 1;
-        AnnoPage page = annoPageRepository.findByDatasetLocalPageId(datasetId, localId, String.valueOf(i));
-        while (page != null) {
-            result.add(page);
-            i++;
-            page = annoPageRepository.findByDatasetLocalPageId(datasetId, localId, String.valueOf(i));
-            // Temporary workaround to prevent stopping earlier if we there's an empty (non-existing) page
-            // Instead we now stop if we find 2 non-existing pages in a row
-            if (page == null) {
-                i++;
-                page = annoPageRepository.findByDatasetLocalPageId(datasetId, localId, String.valueOf(i));
-            }
-        }
-        return result;
+    public MorphiaCursor<AnnoPage> fetchAnnoPageFromImageId(String datasetId, String localId, List<String> imageIds, AnnotationType annotationType) {
+        return annoPageRepository.findByDatasetLocalImageId(datasetId, localId, imageIds, annotationType);
     }
+
 
     /**
      * Handles fetching an Annotation page (aka AnnoPage) containing the Annotation with given annoId
@@ -239,5 +229,6 @@ public class FTService {
             throw new SerializationException("Error serialising data: " + e.getMessage(), e);
         }
     }
+
 
 }

@@ -3,20 +3,20 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <groupId>eu.europeana.fulltext</groupId>
+    <artifactId>common</artifactId>
+    <version>0.8-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>Common functionality (Mongo and Entity definitions)</name>
+    <description>Mongodb connectivity and document mapping for Fulltext API and Loader</description>
+
     <parent>
         <artifactId>fulltext</artifactId>
         <groupId>eu.europeana</groupId>
-        <version>0.7-SNAPSHOT</version>
+        <version>0.8-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-
-    <groupId>eu.europeana.fulltext</groupId>
-    <artifactId>common</artifactId>
-    <version>0.7-SNAPSHOT</version>
-    <packaging>jar</packaging>
-
-    <name>Europeana Newspapers Fulltext Model </name>
-    <description>Mongodb connectivity and document mapping for Fulltext API and Loader</description>
 
     <dependencies>
         <dependency>
@@ -26,7 +26,7 @@
 
         <dependency>
             <groupId>dev.morphia.morphia</groupId>
-            <artifactId>core</artifactId>
+            <artifactId>morphia-core</artifactId>
             <version>${morphia.version}</version>
         </dependency>
 
@@ -35,7 +35,6 @@
             <artifactId>mongo-java-driver</artifactId>
             <version>${mongodb.version}</version>
         </dependency>
-
     </dependencies>
 
 </project>
