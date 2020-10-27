@@ -16,14 +16,18 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultMatcher;
 
 import static eu.europeana.fulltext.TestUtils.*;
 import static eu.europeana.fulltext.api.config.FTDefinitions.*;
 import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.hasItems;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.startsWith;
 import static org.mockito.BDDMockito.eq;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.http.HttpHeaders.ACCEPT;
+import static org.springframework.http.HttpHeaders.VARY;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.head;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -363,7 +367,7 @@ public class FTControllerTest {
                 .andExpect(header().string(HEADER_LASTMODIFIED, containsString(LASTMODIFIED_GMT)))
                 .andExpect(header().string(HEADER_ALLOW, containsString(VALUE_ALLOW)))
                 .andExpect(header().string(HEADER_CACHECONTROL, containsString(VALUE_CACHECONTROL)))
-                .andExpect(header().string(HEADER_VARY, containsString(VALUE_VARY)))
+                .andExpect(header().stringValues(HEADER_VARY, hasItems(containsString(VALUE_VARY))))
                 .andExpect(content().string(""))
                 .andExpect(status().isNotModified())
                 .andDo(print());
@@ -394,7 +398,7 @@ public class FTControllerTest {
                 .andExpect(header().string(HEADER_LASTMODIFIED, containsString(LASTMODIFIED_GMT)))
                 .andExpect(header().string(HEADER_ALLOW, containsString(VALUE_ALLOW)))
                 .andExpect(header().string(HEADER_CACHECONTROL, containsString(VALUE_CACHECONTROL)))
-                .andExpect(header().string(HEADER_VARY, containsString(VALUE_VARY)))
+                .andExpect(header().stringValues(HEADER_VARY, hasItems(containsString(VALUE_VARY))))
                 .andExpect(content().json(JSONLD_ANP_V3_OUTPUT))
                 .andExpect(status().isOk())
                 .andDo(print());
@@ -422,7 +426,7 @@ public class FTControllerTest {
                 .andExpect(header().string(HEADER_LASTMODIFIED, containsString(LASTMODIFIED_GMT)))
                 .andExpect(header().string(HEADER_ALLOW, containsString(VALUE_ALLOW)))
                 .andExpect(header().string(HEADER_CACHECONTROL, containsString(VALUE_CACHECONTROL)))
-                .andExpect(header().string(HEADER_VARY, containsString(VALUE_VARY)))
+                .andExpect(header().stringValues(HEADER_VARY, hasItems(containsString(VALUE_VARY))))
                 .andExpect(content().json(JSONLD_ANP_V2_OUTPUT))
                 .andExpect(status().isOk())
                 .andDo(print());
@@ -449,7 +453,7 @@ public class FTControllerTest {
                 .andExpect(header().string(HEADER_LASTMODIFIED, nullValue()))
                 .andExpect(header().string(HEADER_ALLOW, nullValue()))
                 .andExpect(header().string(HEADER_CACHECONTROL, nullValue()))
-                .andExpect(header().string(HEADER_VARY, nullValue()))
+                .andExpect(defaultVaryValues())
                 .andExpect(content().string(""))
                 .andExpect(status().isPreconditionFailed())
                 .andDo(print());
@@ -469,7 +473,7 @@ public class FTControllerTest {
                 .andExpect(header().string(HEADER_LASTMODIFIED, containsString(LASTMODIFIED_GMT)))
                 .andExpect(header().string(HEADER_ALLOW, containsString(VALUE_ALLOW)))
                 .andExpect(header().string(HEADER_CACHECONTROL, containsString(VALUE_CACHECONTROL)))
-                .andExpect(header().string(HEADER_VARY, containsString(VALUE_VARY)))
+                .andExpect(header().stringValues(HEADER_VARY, hasItems(containsString(VALUE_VARY))))
                 .andExpect(content().string(""))
                 .andExpect(status().isNotModified())
                 .andDo(print());
@@ -500,7 +504,7 @@ public class FTControllerTest {
                 .andExpect(header().string(HEADER_LASTMODIFIED, containsString(LASTMODIFIED_GMT)))
                 .andExpect(header().string(HEADER_ALLOW, containsString(VALUE_ALLOW)))
                 .andExpect(header().string(HEADER_CACHECONTROL, containsString(VALUE_CACHECONTROL)))
-                .andExpect(header().string(HEADER_VARY, containsString(VALUE_VARY)))
+                .andExpect(header().stringValues(HEADER_VARY, hasItems(containsString(VALUE_VARY))))
                 .andExpect(content().json(JSONLD_ANN_V3_1_OUTPUT))
                 .andExpect(status().isOk())
                 .andDo(print());
@@ -520,7 +524,7 @@ public class FTControllerTest {
                 .andExpect(header().string(HEADER_LASTMODIFIED, containsString(LASTMODIFIED_GMT)))
                 .andExpect(header().string(HEADER_ALLOW, containsString(VALUE_ALLOW)))
                 .andExpect(header().string(HEADER_CACHECONTROL, containsString(VALUE_CACHECONTROL)))
-                .andExpect(header().string(HEADER_VARY, containsString(VALUE_VARY)))
+                .andExpect(header().stringValues(HEADER_VARY, hasItems(containsString(VALUE_VARY))))
                 .andExpect(content().json(JSONLD_ANN_V2_1_OUTPUT))
                 .andExpect(status().isOk())
                 .andDo(print());
@@ -549,7 +553,7 @@ public class FTControllerTest {
                 .andExpect(header().string(HEADER_LASTMODIFIED, nullValue()))
                 .andExpect(header().string(HEADER_ALLOW, nullValue()))
                 .andExpect(header().string(HEADER_CACHECONTROL, nullValue()))
-                .andExpect(header().string(HEADER_VARY, nullValue()))
+                .andExpect(defaultVaryValues())
                 .andExpect(content().string(""))
                 .andExpect(status().isPreconditionFailed())
                 .andDo(print());
@@ -602,7 +606,7 @@ public class FTControllerTest {
                 .andExpect(header().string(HEADER_LASTMODIFIED, containsString(BEGINNINGOFTIME)))
                 .andExpect(header().string(HEADER_ALLOW, containsString(VALUE_ALLOW)))
                 .andExpect(header().string(HEADER_CACHECONTROL, containsString(VALUE_CACHECONTROL)))
-                .andExpect(header().string(HEADER_VARY, containsString(VALUE_VARY)))
+                .andExpect(header().stringValues(HEADER_VARY, hasItems(containsString(VALUE_VARY))))
                 .andExpect(content().string(""))
                 .andExpect(status().isNotModified())
                 .andDo(print());
@@ -632,7 +636,7 @@ public class FTControllerTest {
                 .andExpect(header().string(HEADER_LASTMODIFIED, containsString(BEGINNINGOFTIME)))
                 .andExpect(header().string(HEADER_ALLOW, containsString(VALUE_ALLOW)))
                 .andExpect(header().string(HEADER_CACHECONTROL, containsString(VALUE_CACHECONTROL)))
-                .andExpect(header().string(HEADER_VARY, containsString(VALUE_VARY)))
+                .andExpect(header().stringValues(HEADER_VARY, hasItems(containsString(VALUE_VARY))))
                 .andExpect(content().json(JSON_RES_1_OUTPUT))
                 .andExpect(status().isOk())
                 .andDo(print());
@@ -662,7 +666,7 @@ public class FTControllerTest {
                 .andExpect(header().string(HEADER_LASTMODIFIED, containsString(BEGINNINGOFTIME)))
                 .andExpect(header().string(HEADER_ALLOW, containsString(VALUE_ALLOW)))
                 .andExpect(header().string(HEADER_CACHECONTROL, containsString(VALUE_CACHECONTROL)))
-                .andExpect(header().string(HEADER_VARY, containsString(VALUE_VARY)))
+                .andExpect(header().stringValues(HEADER_VARY, hasItems(containsString(VALUE_VARY))))
                 .andExpect(content().json(JSON_RES_1_OUTPUT))
                 .andExpect(status().isOk())
                 .andDo(print());
@@ -689,7 +693,7 @@ public class FTControllerTest {
                 .andExpect(header().string(HEADER_LASTMODIFIED, nullValue()))
                 .andExpect(header().string(HEADER_ALLOW, nullValue()))
                 .andExpect(header().string(HEADER_CACHECONTROL, nullValue()))
-                .andExpect(header().string(HEADER_VARY, nullValue()))
+                .andExpect(defaultVaryValues())
                 .andExpect(content().string(""))
                 .andExpect(status().isPreconditionFailed())
                 .andDo(print());
@@ -709,7 +713,7 @@ public class FTControllerTest {
                 .andExpect(header().string(HEADER_LASTMODIFIED, containsString(BEGINNINGOFTIME)))
                 .andExpect(header().string(HEADER_ALLOW, containsString(VALUE_ALLOW)))
                 .andExpect(header().string(HEADER_CACHECONTROL, containsString(VALUE_CACHECONTROL)))
-                .andExpect(header().string(HEADER_VARY, containsString(VALUE_VARY)))
+                .andExpect(header().stringValues(HEADER_VARY, hasItems(containsString(VALUE_VARY))))
                 .andExpect(content().json(JSON_RES_1_OUTPUT))
                 .andExpect(status().isOk())
                 .andDo(print());
@@ -722,7 +726,7 @@ public class FTControllerTest {
                 .andExpect(header().string(HEADER_LASTMODIFIED, nullValue()))
                 .andExpect(header().string(HEADER_ALLOW, nullValue()))
                 .andExpect(header().string(HEADER_CACHECONTROL, nullValue()))
-                .andExpect(header().string(HEADER_VARY, nullValue()))
+                .andExpect(defaultVaryValues())
                 .andExpect(content().string(""))
                 .andExpect(status().isNotModified())
                 .andDo(print());
@@ -730,4 +734,11 @@ public class FTControllerTest {
     }
 
 
+    /**
+     * Spring boot 2.3.x onwards vary Origin and Access-Control header by default if CORS is configured.
+     * This method checks that "Accept" isn't included in the Vary header
+     */
+    private ResultMatcher defaultVaryValues() {
+        return header().stringValues(HEADER_VARY, not(hasItems(containsString(VALUE_VARY))));
+    }
 }

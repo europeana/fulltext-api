@@ -1,5 +1,6 @@
 package eu.europeana.fulltext.search.service;
 
+import dev.morphia.query.internal.MorphiaCursor;
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.api.service.FTService;
 import eu.europeana.fulltext.api.service.exception.FTException;
@@ -9,7 +10,11 @@ import eu.europeana.fulltext.search.config.SearchConfig;
 import eu.europeana.fulltext.search.exception.RecordDoesNotExistException;
 import eu.europeana.fulltext.search.model.query.EuropeanaId;
 import eu.europeana.fulltext.search.model.query.SolrHit;
-import eu.europeana.fulltext.search.model.response.*;
+import eu.europeana.fulltext.search.model.response.Debug;
+import eu.europeana.fulltext.search.model.response.Hit;
+import eu.europeana.fulltext.search.model.response.HitFactory;
+import eu.europeana.fulltext.search.model.response.SearchResult;
+import eu.europeana.fulltext.search.model.response.SearchResultFactory;
 import eu.europeana.fulltext.search.repository.SolrRepo;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,9 +23,9 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Service for querying solr, retrieving fulltext data and sending back results
@@ -75,54 +80,53 @@ public class FTSearchService {
             }
         } else {
             LOG.debug("Solr returned {} document in {} ms", solrResult.size(), System.currentTimeMillis() - start);
-            result = findAnnopageAndAnnotations(result, solrResult, europeanaId, pageSize, annotationType, requestVersion);
+            findAnnopageAndAnnotations(result, solrResult, europeanaId, pageSize, annotationType, requestVersion);
         }
         LOG.debug("Search done in {} ms. Found {} annotations", (System.currentTimeMillis() - start), result.itemSize());
         return result;
     }
 
-    private SearchResult findAnnopageAndAnnotations(SearchResult result, Map<String, List<String>> highlightInfo,
-              EuropeanaId europeanaId, int pageSize, AnnotationType annoType, String requestVersion) throws FTException {
-        List<SolrHit> solrHits = parseHighlightData(highlightInfo, result.getDebug());
+    private void findAnnopageAndAnnotations(SearchResult result, Map<String, List<String>> highlightInfo,
+                                            EuropeanaId europeanaId, int pageSize, AnnotationType annoType, String requestVersion) throws FTException {
+        // Group Solr hits by imageId so we can link an AnnoPage to its corresponding hit(s)
+        Map<String, List<SolrHit>> solrHitsByImageId = parseHighlightData(highlightInfo, result.getDebug())
+                .stream()
+                .collect(Collectors.groupingBy(SolrHit::getImageId));
 
-        // TODO retrieve all annopages in 1 go instead of 1 by one?
-        // we keep track of retrieved anno pages to avoid retrieving the same one multiple times
-        Map<String, AnnoPage> annoPagesCache = new HashMap<>();
-        for (SolrHit solrHit : solrHits) {
-            // retrieve the annopage
-            AnnoPage annoPage = annoPagesCache.get(solrHit.getImageId());
-            if (annoPage == null) {
-                Long start = System.currentTimeMillis();
-                annoPage = fulltextRepo.fetchAnnoPageFromImageId(europeanaId.getDatasetId(), europeanaId.getLocalId(),
-                        solrHit.getImageId(), annoType);
-                if (annoPage == null) {
-                    throw new RecordDoesNotExistException(europeanaId);
-                } else {
-                    LOG.debug("Retrieved /{}/{}/annopage/{} in {} ms", annoPage.getDsId(), annoPage.getLcId(), annoPage.getPgId(),
-                            System.currentTimeMillis() - start);
-                    annoPagesCache.put(solrHit.getImageId(), annoPage);
+        long start = System.currentTimeMillis();
+        try (MorphiaCursor<AnnoPage> annoPageCursor = fulltextRepo.fetchAnnoPageFromImageId(europeanaId.getDatasetId(),
+                europeanaId.getLocalId(),
+                new ArrayList<>(solrHitsByImageId.keySet()), annoType)) {
+            if (annoPageCursor == null || !annoPageCursor.hasNext()) {
+                throw new RecordDoesNotExistException(europeanaId);
+            } else {
+                LOG.debug("Retrieved AnnoPages from /{}/{} in {} ms",
+                        europeanaId.getDatasetId(), europeanaId.getLocalId(),
+                        System.currentTimeMillis() - start);
+            }
+
+            while (annoPageCursor.hasNext()) {
+                AnnoPage annoPage = annoPageCursor.next();
+                // get relevant SolrHits by imageId (which match annoPage.tgId)
+                for (SolrHit solrHit : solrHitsByImageId.get(annoPage.getTgtId())) {
+                    // use the annopage to find the matching annotations
+                    findAnnotations(result, solrHit, annoPage, pageSize, annoType, requestVersion);
+                    if (result.itemSize() >= pageSize) {
+                        return;
+                    }
                 }
             }
-
-            // use the annopage to find the matching annotations
-            result = findAnnotations(result, solrHit, annoPage, pageSize, annoType, requestVersion);
-            if (result.itemSize() >= pageSize) {
-                break;
-            }
         }
-
-        return result;
     }
 
 
 
-    private SearchResult findAnnotations(SearchResult result, SolrHit solrHit, AnnoPage annoPage, int pageSize,
-                                         AnnotationType annoType, String requestVersion) {
+    private void findAnnotations(SearchResult result, SolrHit solrHit, AnnoPage annoPage, int pageSize,
+                                 AnnotationType annoType, String requestVersion) {
         LOG.trace("  Searching for {} annotations that overlap with {}...", annoType, solrHit.getDebugInfo());
         boolean annotationsFound = false;
         for (Annotation anno : annoPage.getAns()) {
-            // TODO for now we have to check if the annoType matches (see TODO in AnnoPageRepository)
-            if (anno.getDcType() == annoType.getAbbreviation() && anno.getFrom() != null && anno.getTo() != null &&
+            if (anno.getFrom() != null && anno.getTo() != null &&
                     overlap(solrHit.getStart(), solrHit.getEnd(), anno.getFrom(), anno.getTo())) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("  Found overlap between {} and annotation {},{} with text '{}'", solrHit.getDebugInfo(),
@@ -153,7 +157,6 @@ public class FTSearchService {
             LOG.warn("No annotations found for {},{} on /{}/{}/annopage/{}", solrHit.getStart(), solrHit.getEnd(),
                     annoPage.getDsId(), annoPage.getLcId(), annoPage.getPgId());
         }
-        return result;
     }
 
 
