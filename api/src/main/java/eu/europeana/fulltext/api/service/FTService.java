@@ -78,15 +78,15 @@ public class FTService {
     }
 
     /**
-     * Retrieve AnnoPages with the provided datasetId, localId and imageIds. If the annotationType is specified the
-     * returned AnnoPages will only contain annotations of that type. If annotationType is null or empty then all
-     * annotations of that type will be returned
+     * Retrieve a cursor to AnnoPages with the provided datasetId, localId and imageIds. If the annotationType is
+     * specified the returned AnnoPages will only contain annotations of that type. If annotationType is null or empty
+     * then all annotations of that type will be returned. The cursor must be closed when the caller is done!
      * @param datasetId ID of the dataset
      * @param localId   ID of the parent of the Annopage object
      * @param imageIds   IDs of the images
      * @param annotationType type of annotations that should be retrieved, if null or empty all annotations of that
      *                        annopage will be retrieved
-     * @return null if it doesn't exists, otherwise the retrieve annopage
+     * @return MorphiaCursor containing AnnoPage entries.
      */
     public MorphiaCursor<AnnoPage> fetchAnnoPageFromImageId(String datasetId, String localId, List<String> imageIds, AnnotationType annotationType) {
         return annoPageRepository.findByDatasetLocalImageId(datasetId, localId, imageIds, annotationType);
