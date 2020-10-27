@@ -1,9 +1,12 @@
 package eu.europeana.fulltext.repository;
 
+import dev.morphia.Datastore;
 import eu.europeana.fulltext.entity.Resource;
-import dev.morphia.AdvancedDatastore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+
+import static dev.morphia.query.experimental.filters.Filters.eq;
+import static eu.europeana.fulltext.util.MorphiaUtils.MULTI_DELETE_OPTS;
 
 
 /**
@@ -14,7 +17,7 @@ public class ResourceRepository {
 
 
     @Autowired
-    private AdvancedDatastore datastore;
+    private Datastore datastore;
 
     /**
      * Check if a Resource exists that matches the given parameters
@@ -24,17 +27,19 @@ public class ResourceRepository {
      * @return true if yes, otherwise false
      */
     public boolean existsByLimitOne(String datasetId, String localId, String resId) {
-        return datastore.createQuery(Resource.class)
-                                .field("dsId").equal(datasetId)
-                                .field("lcId").equal(localId)
-                                .field("_id").equal(resId).count() >= 1;
+        return datastore.find(Resource.class)
+                .filter(
+                        eq("dsId", datasetId),
+                        eq("lcId", localId),
+                        eq("_id", resId))
+                .count() > 0;
     }
 
     /**
      * @return the total number of resources in the database
      */
     public long count() {
-        return datastore.createQuery(Resource.class).count();
+        return datastore.find(Resource.class).count();
     }
 
     /**
@@ -45,10 +50,12 @@ public class ResourceRepository {
      * @return List containing matching Resource(s) (should be just one)
      */
     public Resource findByDatasetLocalResId(String datasetId, String localId, String resId) {
-        return datastore.createQuery(Resource.class)
-                        .field("dsId").equal(datasetId)
-                        .field("lcId").equal(localId)
-                        .field("_id").equal(resId).first();
+        return datastore.find(Resource.class)
+                .filter(
+                        eq("dsId", datasetId),
+                        eq("lcId", localId),
+                        eq("_id", resId))
+                .first();
     }
 
     /**
@@ -56,8 +63,9 @@ public class ResourceRepository {
      * @param datasetId ID of the associated dataset
      * @return the number of deleted resources
      */
-    public int deleteDataset(String datasetId) {
-        return datastore.delete(datastore.createQuery(Resource.class).field("dsId").equal(datasetId)).getN();
+    public long deleteDataset(String datasetId) {
+        return datastore.find(Resource.class)
+                .filter(eq("dsId", datasetId)).delete(MULTI_DELETE_OPTS).getDeletedCount();
     }
 
     public void save(Resource resToSave){
