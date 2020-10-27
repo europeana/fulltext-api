@@ -1,5 +1,6 @@
 package eu.europeana.fulltext.loader.test;
 
+import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Annotation;
 import eu.europeana.fulltext.entity.Resource;
@@ -169,7 +170,7 @@ public class XMLParserServiceTest {
         Annotation annotation1 = annoPage1.getAns().get(0);
         assertEquals("64764db9df0b1e87843b2fa3fec0a384", annotation1.getAnId());
         //assertEquals("http://www.w3.org/ns/oa#transcribing", annotation1.getMotiv());
-        assertEquals('W', annotation1.getDcType());
+        assertEquals(AnnotationType.WORD.getAbbreviation(), annotation1.getDcType());
         assertEquals(1, annotation1.getTgs().size());
         testTarget(annotation1.getTgs().get(0), 313, 239, 174, 74);
         testCharFromTo(annotation1, 0, 2);
@@ -179,7 +180,7 @@ public class XMLParserServiceTest {
         Annotation annotation2 = annoPage2.getAns().get(0);
         assertEquals("61be9cf0c12760ddce9de59b77e8a490", annotation2.getAnId());
         //assertEquals("http://www.w3.org/ns/oa#transcribing", annotation2.getMotiv());
-        assertEquals('W', annotation2.getDcType());
+        assertEquals(AnnotationType.WORD.getAbbreviation(), annotation2.getDcType());
         assertEquals(1, annotation2.getTgs().size());
         testTarget(annotation2.getTgs().get(0), 1683,0,144,66);
         testCharFromTo(annotation2, 0, 3);

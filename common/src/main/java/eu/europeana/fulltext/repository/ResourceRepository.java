@@ -6,6 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import static dev.morphia.query.experimental.filters.Filters.eq;
+import static eu.europeana.fulltext.util.MorphiaUtils.Fields.DATASET_ID;
+import static eu.europeana.fulltext.util.MorphiaUtils.Fields.DOC_ID;
+import static eu.europeana.fulltext.util.MorphiaUtils.Fields.LOCAL_ID;
 import static eu.europeana.fulltext.util.MorphiaUtils.MULTI_DELETE_OPTS;
 
 
@@ -29,9 +32,9 @@ public class ResourceRepository {
     public boolean existsByLimitOne(String datasetId, String localId, String resId) {
         return datastore.find(Resource.class)
                 .filter(
-                        eq("dsId", datasetId),
-                        eq("lcId", localId),
-                        eq("_id", resId))
+                        eq(DATASET_ID, datasetId),
+                        eq(LOCAL_ID, localId),
+                        eq(DOC_ID, resId))
                 .count() > 0;
     }
 
@@ -52,9 +55,9 @@ public class ResourceRepository {
     public Resource findByDatasetLocalResId(String datasetId, String localId, String resId) {
         return datastore.find(Resource.class)
                 .filter(
-                        eq("dsId", datasetId),
-                        eq("lcId", localId),
-                        eq("_id", resId))
+                        eq(DATASET_ID, datasetId),
+                        eq(LOCAL_ID, localId),
+                        eq(DOC_ID, resId))
                 .first();
     }
 
@@ -65,7 +68,7 @@ public class ResourceRepository {
      */
     public long deleteDataset(String datasetId) {
         return datastore.find(Resource.class)
-                .filter(eq("dsId", datasetId)).delete(MULTI_DELETE_OPTS).getDeletedCount();
+                .filter(eq(DATASET_ID, datasetId)).delete(MULTI_DELETE_OPTS).getDeletedCount();
     }
 
     public void save(Resource resToSave){

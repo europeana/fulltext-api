@@ -32,23 +32,28 @@ public class FTErrorController implements ErrorController {
                     method   = {RequestMethod.HEAD, RequestMethod.GET, RequestMethod.POST })
     public ResponseEntity<String> handleError(HttpServletRequest request) throws SerializationException {
 
+        String message = "Unexpected error";
+        int statusCode = HttpStatus.INTERNAL_SERVER_ERROR.value();
+
         Object status = request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);
-        String requestedPath = request.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI).toString();
         if (status != null) {
-            int statusCode = Integer.parseInt(status.toString());
+            statusCode = Integer.valueOf(status.toString());
             if (statusCode == HttpStatus.NOT_FOUND.value()) {
-                return new ResponseEntity<>(fts.serialise(
-                        new JsonErrorResponse("The requested URL: " + requestedPath + " could not be resolved")),
-                                            HttpStatus.NOT_FOUND);
+                message = "The requested URL: " + request.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI).toString()
+                        + " could not be resolved";
+            } else if (HttpStatus.valueOf(statusCode).is4xxClientError()) {
+                message = request.getAttribute(RequestDispatcher.ERROR_MESSAGE).toString();
+                if (StringUtils.isBlank(message)) {
+                    message = "Please check your request, considering the HTTP " + statusCode + " return status";
+                }
             } else {
-                String message = (StringUtils.isNotBlank(request.getAttribute(RequestDispatcher.ERROR_MESSAGE).toString()) ?
-                                  request.getAttribute(RequestDispatcher.ERROR_MESSAGE).toString() :
-                                  "please check your request, considering the HTTP " + statusCode + " return status");
-                return new ResponseEntity<>(fts.serialise(
-                        new JsonErrorResponse(message)), HttpStatus.valueOf(statusCode));
+                message = request.getAttribute(RequestDispatcher.ERROR_MESSAGE).toString();
+                if (StringUtils.isBlank(message)) {
+                    message = "Unknown exception, statuscode = " + statusCode;
+                }
             }
         }
-        return null;
+        return new ResponseEntity<>(fts.serialise(new JsonErrorResponse(message)), HttpStatus.valueOf(statusCode));
     }
 
     @Override

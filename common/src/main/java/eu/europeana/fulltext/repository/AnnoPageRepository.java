@@ -4,10 +4,13 @@ import dev.morphia.Datastore;
 import dev.morphia.aggregation.experimental.Aggregation;
 import dev.morphia.aggregation.experimental.stages.Group;
 import dev.morphia.aggregation.experimental.stages.Unwind;
+import dev.morphia.query.internal.MorphiaCursor;
+import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.entity.AnnoPage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -17,6 +20,7 @@ import static dev.morphia.aggregation.experimental.expressions.Expressions.field
 import static dev.morphia.aggregation.experimental.stages.Group.id;
 import static dev.morphia.query.experimental.filters.Filters.eq;
 import static dev.morphia.query.experimental.filters.Filters.in;
+import static eu.europeana.fulltext.util.MorphiaUtils.Fields.*;
 import static eu.europeana.fulltext.util.MorphiaUtils.MULTI_DELETE_OPTS;
 
 
@@ -47,9 +51,9 @@ public class AnnoPageRepository {
      */
     public boolean existsByPageId(String datasetId, String localId, String pageId) {
         return datastore.find(AnnoPage.class).filter(
-                eq("dsId", datasetId),
-                eq("lcId", localId),
-                eq("pgId", pageId)
+                eq(DATASET_ID, datasetId),
+                eq(LOCAL_ID, localId),
+                eq(PAGE_ID, pageId)
         ).count() > 0 ;
     }
 
@@ -63,9 +67,9 @@ public class AnnoPageRepository {
     public boolean existsWithAnnoId(String datasetId, String localId, String annoId) {
         return datastore.find(AnnoPage.class)
                 .filter(
-                        eq("dsId", datasetId),
-                        eq("lcId", localId),
-                        eq("ans.anId", annoId)
+                        eq(DATASET_ID, datasetId),
+                        eq(LOCAL_ID, localId),
+                        eq(ANNOTATIONS_ID, annoId)
                 )
                 .count() > 0;
     }
@@ -100,29 +104,20 @@ public class AnnoPageRepository {
      */
     public AnnoPage findByDatasetLocalPageId(String datasetId, String localId, String pageId, List<String> textGranValues) {
         Aggregation<AnnoPage> query = datastore.aggregate(AnnoPage.class).match(
-                eq("dsId", datasetId),
-                eq("lcId", localId),
-                eq("pgId", pageId)
+                eq(DATASET_ID, datasetId),
+                eq(LOCAL_ID, localId),
+                eq(PAGE_ID, pageId)
         );
 
         if (!textGranValues.isEmpty()) {
             // ans.dcType stored as first letter of text granularity value in uppercase. ie. WORD -> 'W'
             List<String> dcTypes = textGranValues.stream().map(s -> s.substring(0, 1).toUpperCase()).collect(Collectors.toUnmodifiableList());
-
-            query = query.unwind(Unwind.on("ans")).match(in("ans.dcType", dcTypes))
-                    .group(Group.of(id("_id"))
-                            .field("ans", push().single(field("ans")))
-                            .field("dsId", first(field("dsId")))
-                            .field("lcId", first(field("lcId")))
-                            .field("pgId", first(field("pgId")))
-                            .field("res", first(field("res")))
-                            .field("className", first(field("className")))
-                            .field("tgtId", first(field("tgtId")))
-                    );
+            query = filterTextGranularity(query, dcTypes);
         }
 
-        return query.execute(AnnoPage.class).next();
+        return query.execute(AnnoPage.class).tryNext();
     }
+
 
     /**
      * Find and return AnnoPage that contains an annotation that matches the given parameters
@@ -133,10 +128,38 @@ public class AnnoPageRepository {
      */
     public AnnoPage findByDatasetLocalAnnoId(String datasetId, String localId, String annoId) {
         return datastore.find(AnnoPage.class).filter(
-                eq("dsId", datasetId),
-                eq("lcId", localId),
-                eq("ans.anId", annoId))
+                eq(DATASET_ID, datasetId),
+                eq(LOCAL_ID, localId),
+                eq(ANNOTATIONS_ID, annoId))
                 .first();
+    }
+
+    /**
+     * Find and return AnnoPages that contains an annotation that matches the given parameters.
+     *
+     * Returns a {@link MorphiaCursor} that can be iterated on to obtain matching AnnoPages.
+     * The cursor must be closed after iteration is completed.
+     *
+     * The Cursor returned by this method must be closed
+     * @param datasetId ID of the dataset
+     * @param localId   ID of the parent of the Annopage object
+     * @param imageIds   ID of the image
+     * @param textGranularity type of annotations that should be retrieve, if null or empty all annotations of that
+     *                        annopage will be retrieved
+     * @return MorphiaCursor containing AnnoPage entries.
+     */
+    public MorphiaCursor<AnnoPage> findByDatasetLocalImageId(String datasetId, String localId, List<String> imageIds, AnnotationType textGranularity) {
+        Aggregation<AnnoPage> query = datastore.aggregate(AnnoPage.class).match(
+                eq(DATASET_ID, datasetId),
+                eq(LOCAL_ID, localId),
+                in(IMAGE_ID, imageIds)
+        );
+
+        if (textGranularity != null) {
+            query = filterTextGranularity(query, Collections.singletonList(String.valueOf(textGranularity.getAbbreviation())));
+        }
+
+        return query.execute(AnnoPage.class);
     }
 
     /**
@@ -144,14 +167,35 @@ public class AnnoPageRepository {
      * @param datasetId ID of the dataset to be deleted
      * @return the number of deleted annotation pages
      */
+    // TODO move this to the loader?
     public long deleteDataset(String datasetId) {
         return datastore.find(AnnoPage.class).filter(
-                eq("dsId",datasetId))
+                eq(DATASET_ID,datasetId))
                 .delete(MULTI_DELETE_OPTS).getDeletedCount();
     }
 
+    // TODO move this to the loader?
     public void save(AnnoPage apToSave){
         datastore.save(apToSave);
     }
 
+
+    /**
+     * Creates an AnnoPage aggregation query to return only matching annotation types.
+     * @param annoPageQuery aggregation query
+     * @param textGranValues list containing text granularity values to match
+     * @return Updated aggregation query
+     */
+    private Aggregation<AnnoPage> filterTextGranularity(Aggregation<AnnoPage> annoPageQuery, List<String> textGranValues) {
+        return annoPageQuery.unwind(Unwind.on(ANNOTATIONS)).match(in(ANNOTATIONS_DCTYPE, textGranValues))
+                .group(Group.of(id(DOC_ID))
+                        .field(ANNOTATIONS, push().single(field(ANNOTATIONS)))
+                        .field(DATASET_ID, first(field(DATASET_ID)))
+                        .field(LOCAL_ID, first(field(LOCAL_ID)))
+                        .field(PAGE_ID, first(field(PAGE_ID)))
+                        .field(RESOURCE, first(field(RESOURCE)))
+                        .field(CLASSNAME, first(field(CLASSNAME)))
+                        .field(IMAGE_ID, first(field(IMAGE_ID)))
+                );
+    }
 }

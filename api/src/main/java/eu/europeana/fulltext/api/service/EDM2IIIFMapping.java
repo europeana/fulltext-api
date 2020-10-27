@@ -1,6 +1,7 @@
 package eu.europeana.fulltext.api.service;
 
 import eu.europeana.fulltext.api.config.FTSettings;
+import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.api.model.FTResource;
 import eu.europeana.fulltext.api.model.v2.AnnotationBodyV2;
 import eu.europeana.fulltext.api.model.v2.AnnotationFullBodyV2;
@@ -54,13 +55,13 @@ public final class EDM2IIIFMapping {
         EDM2IIIFMapping.ftService = ftService;
     }
 
-    static AnnotationPageV2 getAnnotationPageV2(AnnoPage annoPage, boolean derefResource, List<String> textGranValues){
+    static AnnotationPageV2 getAnnotationPageV2(AnnoPage annoPage, boolean derefResource){
         AnnotationPageV2 annPage = new AnnotationPageV2(getAnnoPageIdUrl(annoPage));
-        annPage.setResources(getAnnotationV2Array(annoPage, derefResource, textGranValues));
+        annPage.setResources(getAnnotationV2Array(annoPage, derefResource));
         return annPage;
     }
 
-    private static AnnotationV2[] getAnnotationV2Array(AnnoPage annoPage, boolean derefResource, List<String> textGranValues){
+    private static AnnotationV2[] getAnnotationV2Array(AnnoPage annoPage, boolean derefResource){
         ArrayList<AnnotationV2> annoArrayList = new ArrayList<>();
         for (Annotation ftAnno : annoPage.getAns()){
             addAnnotationV2(annoPage, ftAnno, derefResource, annoArrayList);
@@ -77,7 +78,7 @@ public final class EDM2IIIFMapping {
         }
     }
 
-    private static AnnotationV2 getAnnotationV2(AnnoPage annoPage, Annotation annotation, boolean includeContext, boolean derefResource){
+    public static AnnotationV2 getAnnotationV2(AnnoPage annoPage, Annotation annotation, boolean includeContext, boolean derefResource){
         String       resourceIdUrl  = getResourceIdUrl(annoPage, annotation);
         AnnotationV2 ann            = new AnnotationV2(getAnnotationIdUrl(annoPage, annotation));
         if (includeContext){
@@ -111,13 +112,13 @@ public final class EDM2IIIFMapping {
         return ann;
     }
 
-    static AnnotationPageV3 getAnnotationPageV3(AnnoPage annoPage, boolean derefResource, List<String> textGranValues){
+    static AnnotationPageV3 getAnnotationPageV3(AnnoPage annoPage, boolean derefResource){
         AnnotationPageV3 annPage = new AnnotationPageV3(getAnnoPageIdUrl(annoPage));
-        annPage.setItems(getAnnotationV3Array(annoPage, derefResource, textGranValues));
+        annPage.setItems(getAnnotationV3Array(annoPage, derefResource));
         return annPage;
     }
 
-    private static AnnotationV3[] getAnnotationV3Array(AnnoPage annoPage, boolean derefResource, List<String> textGranValues){
+    private static AnnotationV3[] getAnnotationV3Array(AnnoPage annoPage, boolean derefResource){
         ArrayList<AnnotationV3> annoArrayList = new ArrayList<>();
         for (Annotation ftAnno : annoPage.getAns()){
             addAnnotationV3(annoPage, ftAnno, derefResource, annoArrayList);
@@ -135,7 +136,7 @@ public final class EDM2IIIFMapping {
         }
     }
 
-    private static AnnotationV3 getAnnotationV3(AnnoPage annoPage, Annotation annotation, boolean includeContext, boolean derefResource){
+    public static AnnotationV3 getAnnotationV3(AnnoPage annoPage, Annotation annotation, boolean includeContext, boolean derefResource){
         String       body = getResourceIdUrl(annoPage, annotation);
         AnnotationV3 ann  = new AnnotationV3(getAnnotationIdUrl(annoPage, annotation));
         AnnotationBodyV3 anb;
@@ -228,7 +229,7 @@ public final class EDM2IIIFMapping {
         try {
             resource = ftService.fetchFTResource(annoPage.getDsId(), annoPage.getLcId(), annoPage.getRes().getId());
         } catch (ResourceDoesNotExistException e) {
-            LOG.info(e.getMessage());
+            LOG.info("Error retrieving fulltext resource for annoPage {}", annoPage, e);
             resource = null;
         }
         return resource;
@@ -260,31 +261,23 @@ public final class EDM2IIIFMapping {
                fts.getAnnotationDirectory() + annotation.getAnId();
     }
 
-    private static String expandDCType(char dcTypeCode){
-        String dcType;
-        switch (Character.toUpperCase(dcTypeCode)) {
-            case 'P':
-                dcType = TYPE_PAGE;
-                break;
-            case 'M':
-                dcType = TYPE_MEDIA;
-                break;
-            case 'B':
-                dcType = TYPE_BLOCK;
-                break;
-            case 'L':
-                dcType = TYPE_LINE;
-                break;
-            case 'W':
-                dcType = TYPE_WORD;
-                break;
-            case 'C':
-                dcType = TYPE_CAPTION;
-                break;
-            default:
-                dcType = TYPE_UNDEFINED;
-                break;
+    public static String getAnnotationIdUrl(String europeanaId, Annotation annotation) {
+        StringBuilder s = new StringBuilder(fts.getAnnotationBaseUrl());
+        if (europeanaId.startsWith("/")) {
+            s.deleteCharAt(s.length() - 1);
         }
-        return dcType;
+        s.append(europeanaId)
+                .append(fts.getAnnotationDirectory())
+                .append(annotation.getAnId());
+        return s.toString();
+    }
+
+    private static String expandDCType(char dcTypeCode){
+        AnnotationType dcType = AnnotationType.fromAbbreviation(dcTypeCode);
+        if (dcType == null) {
+            LOG.warn("Unknown dcType code '{}'", dcTypeCode);
+            return "undefined";
+        }
+        return dcType.getName();
     }
 }

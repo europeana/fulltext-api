@@ -1,9 +1,10 @@
 package eu.europeana.fulltext.api.model.v3;
 
-import java.io.Serializable;
-
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import eu.europeana.fulltext.api.model.JsonLdIdType;
+
+import java.io.Serializable;
 
 /**
  * Created by luthien on 14/06/2018.

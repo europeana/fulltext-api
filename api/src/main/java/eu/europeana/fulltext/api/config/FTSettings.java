@@ -1,5 +1,6 @@
 package eu.europeana.fulltext.api.config;
 
+import org.apache.logging.log4j.LogManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -7,6 +8,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
@@ -62,7 +64,8 @@ public class FTSettings {
         try {
             buildProperties.load(resourceAsStream);
             return environment.getProperty("info.app.version");
-        } catch (Exception e) {
+        } catch (IOException e) {
+            LogManager.getLogger(FTSettings.class).warn("Error loading build.properties", e);
             return "default";
         }
     }

@@ -1,14 +1,14 @@
 package eu.europeana.fulltext.api.model.v3;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import eu.europeana.fulltext.api.model.AnnotationWrapper;
+import eu.europeana.fulltext.api.model.JsonLdIdType;
 
 import java.io.Serializable;
 
 import static eu.europeana.fulltext.api.config.FTDefinitions.V3_ANNOTATION_TYPE;
-
-import eu.europeana.fulltext.api.model.AnnotationWrapper;
-import eu.europeana.fulltext.api.model.JsonLdIdType;
 
 /**
  * Created by luthien target 14/06/2018.

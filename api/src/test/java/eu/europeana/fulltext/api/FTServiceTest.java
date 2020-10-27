@@ -1,17 +1,18 @@
 package eu.europeana.fulltext.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.europeana.fulltext.api.config.FTSettings;
 import eu.europeana.fulltext.api.model.FTResource;
 import eu.europeana.fulltext.api.model.v2.AnnotationPageV2;
 import eu.europeana.fulltext.api.model.v2.AnnotationV2;
 import eu.europeana.fulltext.api.model.v3.AnnotationPageV3;
 import eu.europeana.fulltext.api.model.v3.AnnotationV3;
-import eu.europeana.fulltext.api.service.exception.ResourceDoesNotExistException;
-import eu.europeana.fulltext.repository.AnnoPageRepository;
-import eu.europeana.fulltext.repository.ResourceRepository;
 import eu.europeana.fulltext.api.service.EDM2IIIFMapping;
 import eu.europeana.fulltext.api.service.FTService;
 import eu.europeana.fulltext.api.service.exception.AnnoPageDoesNotExistException;
+import eu.europeana.fulltext.api.service.exception.ResourceDoesNotExistException;
+import eu.europeana.fulltext.repository.AnnoPageRepository;
+import eu.europeana.fulltext.repository.ResourceRepository;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,10 +22,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.util.ArrayList;
 import java.util.Collections;
 
-import static eu.europeana.fulltext.api.TestUtils.*;
+import static eu.europeana.fulltext.TestUtils.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -48,6 +48,8 @@ public class FTServiceTest {
     @MockBean
     private ResourceRepository resRepository;
 
+    @MockBean
+    private ObjectMapper mapper;
 
     @Before
     public void setup(){
@@ -87,7 +89,7 @@ public class FTServiceTest {
     @Test
     public void testGetAnnotationPageV2() throws AnnoPageDoesNotExistException {
         prepareAnnotationPageV2();
-        AnnotationPageV2 ap = ftService.generateAnnoPageV2(ftService.fetchAnnoPage("ds1", "lc1", "pg1", Collections.EMPTY_LIST),false, new ArrayList<>());
+        AnnotationPageV2 ap = ftService.generateAnnoPageV2(ftService.fetchAnnoPage("ds1", "lc1", "pg1", Collections.emptyList()),false);
         assertReflectionEquals(anpv2_1, ap);
     }
 
@@ -99,7 +101,7 @@ public class FTServiceTest {
     @Test
     public void testGetAnnotationPageV3() throws AnnoPageDoesNotExistException {
         prepareAnnotationPageV3();
-        AnnotationPageV3 ap = ftService.generateAnnoPageV3(ftService.fetchAnnoPage("ds1", "lc1", "pg1", Collections.EMPTY_LIST),false, new ArrayList<>());
+        AnnotationPageV3 ap = ftService.generateAnnoPageV3(ftService.fetchAnnoPage("ds1", "lc1", "pg1", Collections.emptyList()),false);
         assertReflectionEquals(anpv3_1, ap);
     }
 

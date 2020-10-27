@@ -2,26 +2,25 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<artifactId>europeana-parent-pom</artifactId>
-		<groupId>eu.europeana</groupId>
-		<version>2.0</version>
-	</parent>
+    <parent>
+        <artifactId>europeana-parent-pom</artifactId>
+        <groupId>eu.europeana</groupId>
+        <version>2.1</version>
+    </parent>
 
-	<artifactId>fulltext</artifactId>
-	<version>0.8-SNAPSHOT</version>
-	<packaging>pom</packaging>
+    <artifactId>fulltext</artifactId>
+    <version>0.8-SNAPSHOT</version>
+    <packaging>pom</packaging>
 
-	<name>Europeana Newspapers Fulltext API &amp; Loader</name>
-	<description>Europeana Newspapers Fulltext API &amp; Loader (Spring Boot applications)</description>
+    <name>Europeana Newspapers Fulltext</name>
+    <description>Europeana Newspapers Fulltext API &amp; Loader (Spring Boot applications)</description>
 
 	<properties>
 		<java.version>11</java.version>
-		<maven.compiler.source>${java.version}</maven.compiler.source>
-		<maven.compiler.target>${java.version}</maven.compiler.target>
+		<maven.compiler.release>${java.version}</maven.compiler.release>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		
+
 		<spring-boot.version>2.3.4.RELEASE</spring-boot.version>
 		<jackson.version>2.9.9</jackson.version>
 		<io-informatics.version>0.1.1</io-informatics.version>
@@ -46,25 +45,14 @@
 
     <dependencyManagement>
         <dependencies>
-
-			<!-- Import dependency management start Spring Boot (because we don't use Spring-Boot as parent pom)-->
+            <!-- Import dependency management start Spring Boot (because we don't use Spring-Boot as parent pom)-->
             <dependency>
-                <!-- Import dependency management from Spring Boot (because we don't use Spring-Boot as parent pom)-->
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
                 <version>${spring-boot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-
-			<!-- we should check if this dependency needs to be updated now and then-->
-<!--            <dependency>-->
-<!--                <groupId>org.springframework.cloud</groupId>-->
-<!--                <artifactId>spring-cloud-dependencies</artifactId>-->
-<!--                <version>Finchley.RC2</version>-->
-<!--                <type>pom</type>-->
-<!--                <scope>import</scope>-->
-<!--            </dependency>-->
 
 			<dependency>
 				<groupId>dev.morphia.morphia</groupId>
@@ -81,5 +69,4 @@
 
         </dependencies>
     </dependencyManagement>
-
 </project>

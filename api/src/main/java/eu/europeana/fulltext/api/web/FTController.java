@@ -14,28 +14,27 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static eu.europeana.fulltext.RequestUtils.*;
 import static eu.europeana.fulltext.api.config.FTDefinitions.*;
 import static eu.europeana.fulltext.api.service.CacheUtils.generateETag;
 import static eu.europeana.fulltext.api.service.CacheUtils.generateSimpleETag;
 
 /**
  * Rest controller that handles fulltext annotation page (annopage)- annotation- & resource requests
+ *
  * @author Lúthien
  * Created on 27-02-2018
  * Note that the eTag for the Fulltext response is created from a concatenation of:
@@ -48,28 +47,9 @@ import static eu.europeana.fulltext.api.service.CacheUtils.generateSimpleETag;
 @RequestMapping("/presentation")
 public class FTController {
 
-    private static final Logger  LOG                    = LogManager.getLogger(FTController.class);
-    private static final String  ACCEPT                 = "Accept";
-    private static final String  ACCEPT_JSON            = "Accept=" + MEDIA_TYPE_JSON;
-    private static final String  ACCEPT_JSONLD          = "Accept=" + MEDIA_TYPE_JSONLD;
-    private static final String  ACCEPT_VERSION_INVALID = "Unknown profile or format version";
-    private static final String  CONTENT_TYPE           = "Content-Type";
-    private static final Pattern ACCEPT_PROFILE_PATTERN = Pattern.compile("profile=\"(.*?)\"");
-    private static final String  PROFILE_TEXT           = "text";
+    private static final Logger LOG = LogManager.getLogger(FTController.class);
 
     private FTService fts;
-
-    /**
-     * This will set json-ld as the default type if there is no accept header specified or if it's *
-     */
-    @EnableWebMvc
-    public static class WebConfig implements WebMvcConfigurer {
-        @Override
-        public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
-            configurer.defaultContentType(MediaType.valueOf(MEDIA_TYPE_JSONLD));
-        }
-    }
-
 
     public  FTController(FTService ftService) {
         this.fts = ftService;
@@ -129,7 +109,6 @@ public class FTController {
                                             HttpServletRequest request,
                                             boolean isJson) throws SerializationException {
         LOG.debug("Retrieve Annopage: {}/{}/{}", datasetId, localId, pageId);
-        List<String> textGranValues;
         String requestVersion = getRequestVersion(request, versionParam);
         if (ACCEPT_VERSION_INVALID.equals(requestVersion)){
             return new ResponseEntity<>(ACCEPT_VERSION_INVALID, HttpStatus.NOT_ACCEPTABLE);
@@ -137,12 +116,7 @@ public class FTController {
         AnnotationWrapper annotationPage;
         HttpHeaders headers;
 
-        if (StringUtils.isNotBlank(textGranularity)){
-            textGranValues = getTextGranularityValues(textGranularity.toLowerCase(Locale.GERMANY));
-        } else {
-            textGranValues = new ArrayList<>();
-        }
-
+        List<String> textGranValues = StringUtils.isBlank(textGranularity) ? Collections.emptyList() : getTextGranularityValues(textGranularity.toLowerCase(Locale.GERMANY));
         try {
             AnnoPage                annoPage = fts.fetchAnnoPage(datasetId, localId, pageId, textGranValues);
             ZonedDateTime           modified = CacheUtils.dateToZonedUTC(annoPage.getModified());
@@ -159,22 +133,22 @@ public class FTController {
             addContentTypeToResponseHeader(headers, requestVersion, isJson);
 
             if ("3".equalsIgnoreCase(requestVersion)) {
-                annotationPage = fts.generateAnnoPageV3(annoPage, StringUtils.equalsAnyIgnoreCase(profile, PROFILE_TEXT), textGranValues);
+                annotationPage = fts.generateAnnoPageV3(annoPage, StringUtils.equalsAnyIgnoreCase(profile, PROFILE_TEXT));
             } else {
-                annotationPage = fts.generateAnnoPageV2(annoPage, StringUtils.equalsAnyIgnoreCase(profile, PROFILE_TEXT), textGranValues);
+                annotationPage = fts.generateAnnoPageV2(annoPage, StringUtils.equalsAnyIgnoreCase(profile, PROFILE_TEXT));
             }
 
         } catch (AnnoPageDoesNotExistException e) {
             LOG.debug(e);
             return new ResponseEntity<>(fts.serialise(new JsonErrorResponse(e.getMessage())),
-                                        HttpStatus.NOT_FOUND);
+                    HttpStatus.NOT_FOUND);
         }
         if (isJson) {
             annotationPage.setContext(null);
         }
         return new ResponseEntity<>(fts.serialise(annotationPage),
-                                    headers,
-                                    HttpStatus.OK);
+                headers,
+                HttpStatus.OK);
     }
 
     /**
@@ -267,11 +241,11 @@ public class FTController {
     }
 
     private ResponseEntity<String> annotation(String datasetId,
-                                             String localId,
-                                             String annoID,
-                                             String versionParam,
-                                             HttpServletRequest request,
-                                             boolean isJson) throws SerializationException {
+                                              String localId,
+                                              String annoID,
+                                              String versionParam,
+                                              HttpServletRequest request,
+                                              boolean isJson) throws SerializationException {
         LOG.debug("Retrieve Annotation: {}/{}/{}", datasetId, localId, annoID);
         String requestVersion = getRequestVersion(request, versionParam);
         if (ACCEPT_VERSION_INVALID.equals(requestVersion)){
@@ -309,8 +283,8 @@ public class FTController {
             annotation.setContext(null);
         }
         return new ResponseEntity<>(fts.serialise(annotation),
-                                    headers,
-                                    HttpStatus.OK);
+                headers,
+                HttpStatus.OK);
     }
 
     /**
@@ -363,7 +337,7 @@ public class FTController {
                                                          resource.getLanguage() +
                                                          resource.getValue() +
                                                          fts.getSettings().getAppVersion(),
-                                                         true);
+                    true);
             ResponseEntity<String> cached = CacheUtils.checkCached(request, modified, eTag);
             if (cached != null) {
                 return cached;
@@ -375,15 +349,15 @@ public class FTController {
         } catch (ResourceDoesNotExistException e) {
             LOG.debug(e);
             return new ResponseEntity<>(fts.serialise(new JsonErrorResponse(e.getMessage())),
-                                        HttpStatus.NOT_FOUND);
+                    HttpStatus.NOT_FOUND);
         }
 
         if (isJson) {
             resource.setContext(null);
         }
         return new ResponseEntity<>(fts.serialise(resource),
-                                    headers,
-                                    HttpStatus.OK);
+                headers,
+                HttpStatus.OK);
     }
 
     // --- utils ---
