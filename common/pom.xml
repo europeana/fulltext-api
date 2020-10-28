@@ -29,12 +29,6 @@
             <artifactId>morphia-core</artifactId>
             <version>${morphia.version}</version>
         </dependency>
-
-        <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongo-java-driver</artifactId>
-            <version>${mongodb.version}</version>
-        </dependency>
     </dependencies>
 
 </project>
