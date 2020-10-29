@@ -38,6 +38,7 @@ public class MorphiaUtils {
         public static final String CLASSNAME = "className";
         public static final String ANNOTATIONS = "ans";
         public static final String RESOURCE = "res";
+        public static final String MODIFIED = "modified";
 
         public static final String ANNOTATIONS_DCTYPE = ANNOTATIONS + ".dcType";
         public static final String ANNOTATIONS_ID = ANNOTATIONS + ".anId";

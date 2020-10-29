@@ -2,8 +2,8 @@ package eu.europeana.fulltext.repository;
 
 import dev.morphia.Datastore;
 import dev.morphia.aggregation.experimental.Aggregation;
-import dev.morphia.aggregation.experimental.stages.Group;
-import dev.morphia.aggregation.experimental.stages.Unwind;
+import dev.morphia.aggregation.experimental.expressions.ArrayExpressions;
+import dev.morphia.aggregation.experimental.stages.Projection;
 import dev.morphia.query.internal.MorphiaCursor;
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.entity.AnnoPage;
@@ -14,10 +14,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static dev.morphia.aggregation.experimental.expressions.AccumulatorExpressions.first;
-import static dev.morphia.aggregation.experimental.expressions.AccumulatorExpressions.push;
+import static dev.morphia.aggregation.experimental.expressions.ArrayExpressions.filter;
 import static dev.morphia.aggregation.experimental.expressions.Expressions.field;
-import static dev.morphia.aggregation.experimental.stages.Group.id;
+import static dev.morphia.aggregation.experimental.expressions.Expressions.value;
 import static dev.morphia.query.experimental.filters.Filters.eq;
 import static dev.morphia.query.experimental.filters.Filters.in;
 import static eu.europeana.fulltext.util.MorphiaUtils.Fields.*;
@@ -38,7 +37,7 @@ public class AnnoPageRepository {
      * @return the total number of resources in the database
      */
     public long count() {
-       return datastore.find(AnnoPage.class).count();
+        return datastore.find(AnnoPage.class).count();
     }
 
     /**
@@ -81,20 +80,22 @@ public class AnnoPageRepository {
      * The mongodb query implemented by this method is:
      * db.getCollection("AnnoPage").aggregate(
      * {$match: {"dsId": <datasetId>, "lcId": <localId>, "pgId": <pageId>}},
-     * {$unwind: "$ans"},
-     * {$match: {"ans.dcType":
-     * {"$in": [<textGranValues>]}}},
-     * { "$group": {
-     * "_id": "$_id",
-     * "dsId": { "$first": "$dsId"},
-     * "lcId": { "$first": "$lcId"},
-     * "pgId":{ "$first": "$pgId"},
-     * "tgtId": { "$first": "$tgtId"},
-     * "res": { "$first": "$res"},
-     * "className": { "$first": "$className"},
-     * "ans": { "$push": "$ans" }
-     * }}
-     * )
+     * {$project: {
+     *   "dsId": "$dsId",
+     *   "lcId":"$lcId",
+     *   "pgId": "$pgId",
+     *   "tgtId": "$tgtId",
+     *   "res": "$res",
+     *   "className": "$className",
+     *   "modified": "$modified",
+     *   "ans": {
+     *                 $filter: {
+     *                   input: "$ans",
+     *                   as: "annotation",
+     *                   cond: { $in: [ '$$annotation.dcType', [<textGranValues>] ] }
+     *                 }
+     *             }
+     * })
      *
      * @param datasetId      ID of the dataset
      * @param localId        ID of the parent of the Annopage object
@@ -187,15 +188,21 @@ public class AnnoPageRepository {
      * @return Updated aggregation query
      */
     private Aggregation<AnnoPage> filterTextGranularity(Aggregation<AnnoPage> annoPageQuery, List<String> textGranValues) {
-        return annoPageQuery.unwind(Unwind.on(ANNOTATIONS)).match(in(ANNOTATIONS_DCTYPE, textGranValues))
-                .group(Group.of(id(DOC_ID))
-                        .field(ANNOTATIONS, push().single(field(ANNOTATIONS)))
-                        .field(DATASET_ID, first(field(DATASET_ID)))
-                        .field(LOCAL_ID, first(field(LOCAL_ID)))
-                        .field(PAGE_ID, first(field(PAGE_ID)))
-                        .field(RESOURCE, first(field(RESOURCE)))
-                        .field(CLASSNAME, first(field(CLASSNAME)))
-                        .field(IMAGE_ID, first(field(IMAGE_ID)))
-                );
+        // _id implicitly included in projection
+        return annoPageQuery.project(
+                Projection.of()
+                        .include(DATASET_ID)
+                        .include(LOCAL_ID)
+                        .include(PAGE_ID)
+                        .include(RESOURCE)
+                        .include(CLASSNAME)
+                        .include(IMAGE_ID)
+                        .include(MODIFIED)
+                        .include(ANNOTATIONS,
+                                filter(field(ANNOTATIONS),
+                                        ArrayExpressions.in(value("$$annotation.dcType"), value(textGranValues))
+                                ).as("annotation")
+                        )
+        );
     }
 }
