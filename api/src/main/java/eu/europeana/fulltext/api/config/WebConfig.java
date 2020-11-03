@@ -1,5 +1,8 @@
 package eu.europeana.fulltext.api.config;
 
+import eu.europeana.api.commons.error.EuropeanaApiErrorAttributes;
+import org.springframework.boot.web.servlet.error.ErrorAttributes;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
@@ -16,5 +19,14 @@ public class WebConfig implements WebMvcConfigurer {
     public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
         // application/ld+json should take precedence over application/json
         configurer.defaultContentType(MediaType.valueOf(MEDIA_TYPE_JSONLD), MediaType.APPLICATION_JSON);
+    }
+
+
+    /**
+     * Use custom fields in Error responses
+     */
+    @Bean
+    public ErrorAttributes errorAttributes() {
+        return new EuropeanaApiErrorAttributes();
     }
 }

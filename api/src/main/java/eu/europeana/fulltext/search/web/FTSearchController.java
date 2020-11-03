@@ -1,7 +1,7 @@
 package eu.europeana.fulltext.search.web;
 
+import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.fulltext.AnnotationType;
-import eu.europeana.fulltext.api.service.exception.FTException;
 import eu.europeana.fulltext.search.config.SearchConfig;
 import eu.europeana.fulltext.search.exception.InvalidParameterException;
 import eu.europeana.fulltext.search.model.query.EuropeanaId;
@@ -52,7 +52,7 @@ public class FTSearchController {
      * @param page
      * @param lang
      * @param debug           if specified then include debug information in the response
-     * @throws FTException when there is an error processing the request
+     * @throws EuropeanaApiException when there is an error processing the request
      */
     @GetMapping(value = "/{datasetId}/{localId}/search", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity searchIssue(@PathVariable String datasetId, @PathVariable String localId,
@@ -65,7 +65,7 @@ public class FTSearchController {
                                     @RequestParam(required = false) String lang,
                                     @RequestParam(value = "format", required = false) String versionParam,
                                     @RequestParam(required = false) String debug,
-                                    HttpServletRequest request) throws FTException {
+                                    HttpServletRequest request) throws EuropeanaApiException {
 
         String requestVersion = getRequestVersion(request, versionParam);
         if (ACCEPT_VERSION_INVALID.equals(requestVersion)){
@@ -86,7 +86,7 @@ public class FTSearchController {
         return new ResponseEntity<>(searchResult, HttpStatus.OK);
     }
 
-    private String validateQuery(String query, String q) throws FTException {
+    private String validateQuery(String query, String q) throws EuropeanaApiException {
         if (StringUtils.isEmpty(query) && StringUtils.isEmpty(q)) {
             throw new InvalidParameterException("No or empty query parameter");
         }

@@ -1,6 +1,6 @@
 package eu.europeana.fulltext.search.repository;
 
-import eu.europeana.fulltext.api.service.exception.FTException;
+import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.fulltext.search.config.SearchConfig;
 import eu.europeana.fulltext.search.model.query.EuropeanaId;
 import eu.europeana.fulltext.search.model.response.Debug;
@@ -48,7 +48,7 @@ public class SolrHighlightQueryImpl implements SolrHighlightQuery {
      * @see SolrHighlightQuery#getHighlightsWithOffsets(EuropeanaId, String, int, Debug)
      */
     public Map<String, List<String>> getHighlightsWithOffsets(EuropeanaId europeanaId, String query, int maxSnippets,
-                                                              Debug debug) throws FTException {
+                                                              Debug debug) throws EuropeanaApiException {
         SolrQuery q = createQuery(europeanaId, query, maxSnippets);
         if (debug != null) {
             debug.setSolrQuery(q.toQueryString());
@@ -62,7 +62,7 @@ public class SolrHighlightQueryImpl implements SolrHighlightQuery {
                 LOG.trace("Solr response = {}", response.jsonStr());
             }
         } catch (SolrServerException | IOException e) {
-            throw new FTException("Error querying Solr", e);
+            throw new EuropeanaApiException("Error querying Solr", e);
         }
 
         // process results

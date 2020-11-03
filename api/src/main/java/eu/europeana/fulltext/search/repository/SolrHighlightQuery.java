@@ -1,6 +1,6 @@
 package eu.europeana.fulltext.search.repository;
 
-import eu.europeana.fulltext.api.service.exception.FTException;
+import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.fulltext.search.model.query.EuropeanaId;
 import eu.europeana.fulltext.search.model.response.Debug;
 
@@ -22,9 +22,9 @@ public interface SolrHighlightQuery {
      * @param maxSnippets    maximum number of snippets we want from solr
      * @param debug          if not null we store debug information in the object
      * @return Map containing snippets and passages (offsets)
-     * @throws FTException when there's an error sending/reading the request to/from Solr
+     * @throws EuropeanaApiException when there's an error sending/reading the request to/from Solr
      */
     Map<String, List<String>> getHighlightsWithOffsets(EuropeanaId europeanaId, String query, int maxSnippets,
-                                                       Debug debug) throws FTException;
+                                                       Debug debug) throws EuropeanaApiException;
 
 }

@@ -1,9 +1,9 @@
 package eu.europeana.fulltext.search.service;
 
 import dev.morphia.query.internal.MorphiaCursor;
+import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.api.service.FTService;
-import eu.europeana.fulltext.api.service.exception.FTException;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Annotation;
 import eu.europeana.fulltext.search.config.SearchConfig;
@@ -67,7 +67,7 @@ public class FTSearchService {
      * @throws FTException when there is a problem processing the request (e.g. issue doesn't exist)
      */
     public SearchResult searchIssue(String searchId, EuropeanaId europeanaId, String query, int pageSize, AnnotationType annotationType,
-                                    String requestVersion, boolean debug) throws FTException {
+                                    String requestVersion, boolean debug) throws EuropeanaApiException {
         long start = System.currentTimeMillis();
         SearchResult result = SearchResultFactory.createSearchResult(searchId, debug, requestVersion);
 
@@ -87,7 +87,7 @@ public class FTSearchService {
     }
 
     private void findAnnopageAndAnnotations(SearchResult result, Map<String, List<String>> highlightInfo,
-                                            EuropeanaId europeanaId, int pageSize, AnnotationType annoType, String requestVersion) throws FTException {
+                                            EuropeanaId europeanaId, int pageSize, AnnotationType annoType, String requestVersion) throws EuropeanaApiException {
         // Group Solr hits by imageId so we can link an AnnoPage to its corresponding hit(s)
         Map<String, List<SolrHit>> solrHitsByImageId = parseHighlightData(highlightInfo, result.getDebug())
                 .stream()
