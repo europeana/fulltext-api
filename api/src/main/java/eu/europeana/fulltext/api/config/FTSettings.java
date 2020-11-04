@@ -1,6 +1,8 @@
 package eu.europeana.fulltext.api.config;
 
+import eu.europeana.fulltext.AnnotationType;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -8,6 +10,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -21,8 +24,10 @@ import java.util.Properties;
 @Component
 @PropertySource("classpath:fulltext.properties")
 @PropertySource(value = "classpath:fulltext.user.properties", ignoreResourceNotFound = true)
-//@EnableMongoRepositories(basePackages="eu.europeana.fulltext")
 public class FTSettings {
+
+    private static final Logger LOG = LogManager.getLogger(FTSettings.class);
+
     private Boolean suppressParseException = false; // default value if we run this outside of Spring
 
     @Value("${annopage.baseurl}")
@@ -40,9 +45,20 @@ public class FTSettings {
     @Value("${annotation.directory}")
     private String annotationDirectory;
 
+    @Value("${search.textGranularity.default:Word}")
+    AnnotationType defaultSearchTextGranularity;
+
     @Autowired
     private Environment environment;
 
+
+    @PostConstruct
+    private void init() {
+        if (defaultSearchTextGranularity == null) {
+            defaultSearchTextGranularity = AnnotationType.WORD;
+        }
+        LOG.info("Default text granularity for search = {}", defaultSearchTextGranularity);
+    }
 
     /**
      * For production we want to suppress exceptions that arise from parsing record data, but for testing/debugging we
@@ -90,4 +106,7 @@ public class FTSettings {
         return annotationDirectory;
     }
 
+    public AnnotationType getDefaultSearchTextGranularity() {
+        return defaultSearchTextGranularity;
+    }
 }

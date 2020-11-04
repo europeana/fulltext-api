@@ -1,6 +1,7 @@
 package eu.europeana.fulltext.search.web;
 
 import eu.europeana.fulltext.AnnotationType;
+import eu.europeana.fulltext.api.config.FTSettings;
 import eu.europeana.fulltext.api.service.exception.FTException;
 import eu.europeana.fulltext.search.config.SearchConfig;
 import eu.europeana.fulltext.search.exception.InvalidParameterException;
@@ -34,9 +35,11 @@ public class FTSearchController {
     private static final Logger LOG = LogManager.getLogger(FTSearchController.class);
 
     private FTSearchService searchService;
+    private FTSettings settings;
 
-    public FTSearchController(FTSearchService searchService) {
+    public FTSearchController(FTSearchService searchService, FTSettings settings) {
         this.searchService = searchService;
+        this.settings = settings;
     }
 
     /**
@@ -61,7 +64,7 @@ public class FTSearchController {
                                     @RequestParam(required = false) String[] qf,
                                     @RequestParam(required = false, defaultValue = "0") int page,
                                     @RequestParam(required = false, defaultValue = "12") int pageSize,
-                                    @RequestParam(required = false, defaultValue = "W") String textGranularity,
+                                    @RequestParam(required = false) String textGranularity,
                                     @RequestParam(required = false) String lang,
                                     @RequestParam(value = "format", required = false) String versionParam,
                                     @RequestParam(required = false) String debug,
@@ -103,6 +106,11 @@ public class FTSearchController {
      * For now we only support Block, Line and Word level annotations
      */
     private AnnotationType validateAnnoType(String textGranularity) throws InvalidParameterException {
+        // if the user didn't provide a parameter, we use the configured default
+        if (textGranularity == null) {
+            return settings.getDefaultSearchTextGranularity();
+        }
+
         AnnotationType result = AnnotationType.fromAbbreviationOrName(textGranularity);
         if (AnnotationType.WORD.equals(result) || AnnotationType.LINE.equals(result) || AnnotationType.BLOCK.equals(result)) {
             return result;
