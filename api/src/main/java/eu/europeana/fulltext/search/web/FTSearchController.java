@@ -3,7 +3,6 @@ package eu.europeana.fulltext.search.web;
 import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.api.config.FTSettings;
-import eu.europeana.fulltext.api.service.exception.FTException;
 import eu.europeana.fulltext.search.config.SearchConfig;
 import eu.europeana.fulltext.search.exception.InvalidParameterException;
 import eu.europeana.fulltext.search.model.query.EuropeanaId;
