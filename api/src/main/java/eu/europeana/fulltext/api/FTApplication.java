@@ -91,7 +91,7 @@ public class FTApplication extends SpringBootServletInitializer {
             socksConfig.addProperties("fulltext.user.properties");
         } catch (IOException e) {
             // user.properties may not be available so only show warning
-            LogManager.getLogger(FTApplication.class).warn("Cannot read fulltext.user.properties file", e);
+            LogManager.getLogger(FTApplication.class).warn("Cannot read fulltext.user.properties file. Reason: ", e.getMessage());
         }
         socksConfig.inject();
     }
