@@ -1,6 +1,6 @@
 package eu.europeana.fulltext.search.exception;
 
-import eu.europeana.fulltext.api.service.exception.FTException;
+import eu.europeana.api.commons.error.EuropeanaApiException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * Created on 28 May 2020
  */
 @ResponseStatus(HttpStatus.BAD_REQUEST)
-public class InvalidParameterException extends FTException {
+public class InvalidParameterException extends EuropeanaApiException {
+
+    private static final long serialVersionUID = -5555912949147932111L;
 
     public InvalidParameterException(String error) {
         super("Invalid parameter:" + error);

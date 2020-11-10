@@ -34,6 +34,7 @@
 		<wiremock.version>2.18.0</wiremock.version>
 		<unitils.version>3.4.6</unitils.version>
 		<snappy.version>1.1.7.2</snappy.version>
+		<api-commons.version>0.2.12-SNAPSHOT</api-commons.version>
 	</properties>
 
     <modules>
