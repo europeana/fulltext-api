@@ -7,6 +7,8 @@ import org.springframework.boot.web.servlet.error.ErrorAttributes;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
@@ -14,7 +16,8 @@ import java.util.Map;
 /**
  * Created by luthien on 2019-08-13.
  */
-@Controller
+@RestController
+@ApiIgnore
 public class FTErrorController extends AbstractErrorController {
 
     public FTErrorController(ErrorAttributes errorAttributes) {
