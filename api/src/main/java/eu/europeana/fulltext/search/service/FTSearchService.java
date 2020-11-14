@@ -64,7 +64,7 @@ public class FTSearchService {
      * @param debug          if true we include debug information
      * @param requestVersion API version for request. If empty, version 2 is used by default
      * @return SearchResult object (can be empty if no hits were found)
-     * @throws FTException when there is a problem processing the request (e.g. issue doesn't exist)
+     * @throws EuropeanaApiException when there is a problem processing the request (e.g. issue doesn't exist)
      */
     public SearchResult searchIssue(String searchId, EuropeanaId europeanaId, String query, int pageSize, AnnotationType annotationType,
                                     String requestVersion, boolean debug) throws EuropeanaApiException {
@@ -73,9 +73,10 @@ public class FTSearchService {
 
         Map<String, List<String>> solrResult = solrRepo.getHighlightsWithOffsets(europeanaId, query, pageSize, result.getDebug());
         if (solrResult.isEmpty()) {
-            LOG.debug("Solr return empty result in {} ms", System.currentTimeMillis() - start);
+            LOG.debug("Solr returned empty result in {} ms", System.currentTimeMillis() - start);
             // check if there are 0 hits because the record doesn't exist
             if (!fulltextRepo.doesAnnoPageExist(europeanaId.getDatasetId(), europeanaId.getLocalId(), "1")) {
+                LOG.debug("No results from Mongo");
                 throw new RecordDoesNotExistException(europeanaId);
             }
         } else {
@@ -98,6 +99,7 @@ public class FTSearchService {
                 europeanaId.getLocalId(),
                 new ArrayList<>(solrHitsByImageId.keySet()), annoType)) {
             if (annoPageCursor == null || !annoPageCursor.hasNext()) {
+                LOG.debug("No results from Solr");
                 throw new RecordDoesNotExistException(europeanaId);
             } else {
                 LOG.debug("Retrieved AnnoPages from /{}/{} in {} ms",
@@ -166,11 +168,21 @@ public class FTSearchService {
      * Expected data in passages:
      *  {"startOffsetUtf16=<number>,matchStartsUtf16=[<number1>,<number2>....],matchEndsUtf16=[<number1><number2>....]}
      */
-    private List<SolrHit> parseHighlightData(Map<String, List<String>> highlightInfo, Debug debug) {
+    private List<SolrHit> parseHighlightData(Map<String, List<String>> highlightInfo, Debug debug) throws EuropeanaApiException {
         List<SolrHit> result = new ArrayList<>();
+
         // TODO for now we assume there will always be only 1 language, so 1 set of snippets and offsets
-        List<String> snippetsTxt = (ArrayList<String>) ((NamedList) highlightInfo.values().iterator().next()).get(SNIPPETS);
-        ArrayList<NamedList> offsetsLists =(ArrayList<NamedList>) ((NamedList) highlightInfo.values().iterator().next()).get(OFFSETS);
+        Object highlightObj = highlightInfo.values().iterator().next();
+        List<String> snippetsTxt;
+        ArrayList<NamedList> offsetsLists;
+        if (highlightObj instanceof NamedList) {
+            NamedList namedList = (NamedList) highlightObj;
+            snippetsTxt = (ArrayList<String>) namedList.get(SNIPPETS);
+            offsetsLists = (ArrayList<NamedList>) namedList.get(OFFSETS);
+        } else {
+            throw new EuropeanaApiException("Unexpected highlights object type: " +
+                    (highlightObj == null ? null : highlightObj.getClass()));
+        }
         int nrMergedHits = 0;
         for (int i = 0; i < snippetsTxt.size(); i++) {
             // parse snippets data
