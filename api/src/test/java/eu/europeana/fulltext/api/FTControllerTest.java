@@ -756,6 +756,7 @@ public class FTControllerTest {
                 .andExpect(header().exists(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN))
                 .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, containsString("GET")))
                 .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*"));
+    }
 
     /**
      * Spring boot 2.3.x onwards vary Origin and Access-Control header by default if CORS is configured.
