@@ -6,14 +6,15 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import java.io.IOException;
+import java.util.Collections;
 
 /**
  * Main application and configuration.
@@ -26,16 +27,6 @@ import java.io.IOException;
 public class FTApplication extends SpringBootServletInitializer {
 
     public static final int THOUSAND = 1000;
-
-    /**
-     * Setup CORS for all requests
-     *
-     * @return
-     */
-    @Bean
-    public WebMvcConfigurer corsConfigurer() {
-        return new WebConfig();
-    }
 
     /**
      * This method is called when starting as a Spring-Boot application (run this class from the IDE)
@@ -96,12 +87,22 @@ public class FTApplication extends SpringBootServletInitializer {
         socksConfig.inject();
     }
 
-    @Configuration
-    static class WebConfig implements WebMvcConfigurer {
-        @Override
-        public void addCorsMappings(CorsRegistry registry) {
-            registry.addMapping("/**").allowedOrigins("*").maxAge(THOUSAND);
-        }
-    }
+    /**
+     * Configure CORS.
+     * This would normally be done via WebMvcConfigurer.addCorsMapping(), but that doesn't set the
+     * correct Access-Control-Allow-Origin:* header in the current Spring Boot version (2.1.7)
+     */
+    @Bean
+    public CorsFilter corsFilter() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(false);
+        config.setAllowedHeaders(Collections.singletonList("*"));
+        config.setAllowedOrigins(Collections.singletonList("*"));
+        config.setAllowedMethods(Collections.singletonList("*"));
+        config.setMaxAge(1000L);
 
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return new CorsFilter(source);
+    }
 }

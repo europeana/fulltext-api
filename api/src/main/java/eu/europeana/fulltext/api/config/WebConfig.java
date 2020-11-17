@@ -15,12 +15,12 @@ import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_JSONLD;
  */
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
+  
     @Override
     public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
         // application/ld+json should take precedence over application/json
         configurer.defaultContentType(MediaType.valueOf(MEDIA_TYPE_JSONLD), MediaType.APPLICATION_JSON);
     }
-
 
     /**
      * Use custom fields in Error responses
