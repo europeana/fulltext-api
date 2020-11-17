@@ -8,6 +8,7 @@ import eu.europeana.fulltext.search.exception.InvalidParameterException;
 import eu.europeana.fulltext.search.model.query.EuropeanaId;
 import eu.europeana.fulltext.search.model.response.SearchResult;
 import eu.europeana.fulltext.search.service.FTSearchService;
+import io.swagger.annotations.Api;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,7 @@ import static eu.europeana.fulltext.RequestUtils.getRequestVersion;
  * Created on 28 May 2020
  */
 //@Lazy
+@Api(tags = {"Full-text search"}, description = "Search all full-texts that are part of an item (e.g. newspaper issue)")
 @RestController
 @RequestMapping("/presentation")
 public class FTSearchController {

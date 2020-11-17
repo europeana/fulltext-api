@@ -8,14 +8,16 @@ import eu.europeana.fulltext.api.service.FTService;
 import eu.europeana.fulltext.api.service.exception.AnnoPageDoesNotExistException;
 import eu.europeana.fulltext.api.service.exception.SerializationException;
 import eu.europeana.fulltext.entity.AnnoPage;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.ZonedDateTime;
@@ -39,6 +41,7 @@ import static eu.europeana.fulltext.api.service.CacheUtils.generateSimpleETag;
  * - Fulltext API version as defined in the pom.xml
  */
 @RestController
+@Api(tags = {"Full-text item"}, description = "Retrieve a page with annotations, an individual annotation or a full-text")
 @RequestMapping("/presentation")
 public class FTController {
 
@@ -61,6 +64,7 @@ public class FTController {
      * @return response in json format
      * @throws SerializationException when serialising to Json fails
      */
+    @ApiOperation(value = "Retrieve a page with annotations")
     @GetMapping(value = "/{datasetId}/{localId}/annopage/{pageId}", headers = ACCEPT_JSON)
     public ResponseEntity<String> annoPageJson(@PathVariable String datasetId,
                                                @PathVariable String localId,
@@ -84,6 +88,7 @@ public class FTController {
      * @return response in json-ld format
      * @throws EuropeanaApiException when serialising to JsonLd fails
      */
+    @ApiOperation(value = "Retrieve a page with annotations")
     @GetMapping(value = "/{datasetId}/{localId}/annopage/{pageId}", headers = ACCEPT_JSONLD)
     public ResponseEntity<String> annoPageJsonLd(@PathVariable String datasetId,
                                                  @PathVariable String localId,
@@ -149,6 +154,7 @@ public class FTController {
      * @param pageId    identifier of the AnnoPage
      * @return ResponseEntity
      */
+    @ApiOperation(value = "Check if a page with annotations exists")
     @RequestMapping(value    = {"/{datasetId}/{localId}/annopage/{pageId}"},
                     method   = RequestMethod.HEAD,
                     headers  =  ACCEPT_JSON)
@@ -167,6 +173,7 @@ public class FTController {
      * @param pageId    identifier of the AnnoPage
      * @return ResponseEntity
      */
+    @ApiOperation(value = "Check if a page with annotations exists")
     @RequestMapping(value    = {"/{datasetId}/{localId}/annopage/{pageId}"},
             method   = RequestMethod.HEAD,
             headers  = ACCEPT_JSONLD)
@@ -202,6 +209,7 @@ public class FTController {
      * @return response in json format
      * @throws EuropeanaApiException when serialising to Json fails
      */
+    @ApiOperation(value = "Retrieve a single annotation")
     @GetMapping(value = "/{datasetId}/{localId}/anno/{annoID}", headers = ACCEPT_JSON)
     public ResponseEntity<String> annotationJson(@PathVariable String datasetId,
                                                  @PathVariable String localId,
@@ -221,6 +229,7 @@ public class FTController {
      * @return response in json-ld format
      * @throws SerializationException when serialising to JsonLd fails
      */
+    @ApiOperation(value = "Retrieve a single annotation")
     @GetMapping(value = "/{datasetId}/{localId}/anno/{annoID}", headers = ACCEPT_JSONLD)
     public ResponseEntity<String> annotationJsonLd(@PathVariable String datasetId,
                                                    @PathVariable String localId,
@@ -281,6 +290,7 @@ public class FTController {
      * @return response in json-ld format
      * @throws SerializationException when serialising to JsonLd fails
      */
+    @ApiOperation(value = "Retrieve a full-text")
     @GetMapping(value = "/{datasetId}/{localId}/{resId}", headers = ACCEPT_JSONLD,
                 produces = MEDIA_TYPE_JSONLD + ';' + UTF_8)
     public ResponseEntity<String> resourceJsonLd(@PathVariable String datasetId,
@@ -299,6 +309,7 @@ public class FTController {
      * @return response in json format
      * @throws SerializationException when serialising to Json fails
      */
+    @ApiOperation(value = "Retrieve a full-text")
     @GetMapping(value = "/{datasetId}/{localId}/{resId}", headers = ACCEPT_JSON,
                 produces = MEDIA_TYPE_JSON + ';' + UTF_8)
     public ResponseEntity<String> resourceJson(@PathVariable String datasetId,
@@ -399,6 +410,7 @@ public class FTController {
      * @return String representing the API version
      * @throws SerializationException when serialising to a String fails
      */
+    @ApiIgnore
     @GetMapping(value = "/showversion")
     public ResponseEntity<String> showVersion() throws SerializationException {
         String response = "The version of this API is: " + fts.getSettings().getAppVersion();
