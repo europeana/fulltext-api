@@ -22,7 +22,7 @@ import java.util.Collections;
  * @author Lúthien
  * Created on 27-02-2018
  */
-@SpringBootApplication(scanBasePackages = {"eu.europeana.fulltext.api", "eu.europeana.fulltext.repository"})
+@SpringBootApplication(scanBasePackages = {"eu.europeana.fulltext.api", "eu.europeana.fulltext.search", "eu.europeana.fulltext.repository"})
 @PropertySource(value = "classpath:build.properties")
 public class FTApplication extends SpringBootServletInitializer {
 
@@ -82,7 +82,7 @@ public class FTApplication extends SpringBootServletInitializer {
             socksConfig.addProperties("fulltext.user.properties");
         } catch (IOException e) {
             // user.properties may not be available so only show warning
-            LogManager.getLogger(FTApplication.class).warn("Cannot read fulltext.user.properties file", e);
+            LogManager.getLogger(FTApplication.class).warn("Cannot read fulltext.user.properties file. Reason: ", e.getMessage());
         }
         socksConfig.inject();
     }

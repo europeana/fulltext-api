@@ -1,21 +1,18 @@
 package eu.europeana.fulltext.api.model.v3;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import eu.europeana.fulltext.api.model.AnnotationWrapper;
+import eu.europeana.fulltext.api.model.JsonLdIdType;
 
 import java.io.Serializable;
 
-import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_EDM_JSONLD;
-import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_IIIF_V3;
-import static eu.europeana.fulltext.api.config.FTDefinitions.V3_ANNO_PAGE_TYPE;
-
-import eu.europeana.fulltext.api.model.AnnotationWrapper;
-import eu.europeana.fulltext.api.model.JsonLdIdType;
+import static eu.europeana.fulltext.api.config.FTDefinitions.*;
 
 /**
  * Created by luthien on 14/06/2018.
  */
-
 @JsonPropertyOrder({"context", "id", "type"})
 public class AnnotationPageV3 extends JsonLdIdType implements Serializable, AnnotationWrapper {
 

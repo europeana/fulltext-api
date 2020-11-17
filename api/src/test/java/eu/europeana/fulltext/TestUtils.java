@@ -1,5 +1,6 @@
-package eu.europeana.fulltext.api;
+package eu.europeana.fulltext;
 
+import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.api.model.FTResource;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Annotation;
@@ -25,57 +26,57 @@ import static eu.europeana.fulltext.api.config.FTDefinitions.*;
  * Created by luthien on 26/09/2018.
  */
 
-class TestUtils {
+public class TestUtils {
 
     private static final String RESOURCEBASEURL     = "http://data.europeana.eu/fulltext/";
     private static final String IIIFBASEURL         = "https://iiif.europeana.eu/presentation/";
     private static final String ANNOTATIONBASEURL   = "https://data.europeana.eu/annotation/";
 
-    static final String KUCKEBACKENWOLLTE       = "Es war einmal eine Frau, die diese sogenannte 'Kucken' unbedingt backen wollte";
-    static final String WUERDEJANICHTAUFGEHEN   = "Aber das Teig würde ja gar nicht aufgehen! Himmeldonnerwetter!";
-    static final String EDMRIGHTS               = "http://test/edmRights";
-    static final String SOURCE_1                = "http://test/item/1/source";
-    static final String SOURCE_2                = "http://test/item/2/source";
+    public static final String KUCKEBACKENWOLLTE       = "Es war einmal eine Frau, die diese sogenannte 'Kucken' unbedingt backen wollte";
+    public static final String WUERDEJANICHTAUFGEHEN   = "Aber das Teig würde ja gar nicht aufgehen! Himmeldonnerwetter!";
+    public static final String EDMRIGHTS               = "http://test/edmRights";
+    public static final String SOURCE_1                = "http://test/item/1/source";
+    public static final String SOURCE_2                = "http://test/item/2/source";
 
     private static final String DS_ID   = "ds1";
     private static final String LCL_ID  = "lc1";
     private static final String MOTIV_2 = "sc:painting";
     private static final String MOTIV_3 = "transcribing";
 
-    static AnnotationBodyV2 anbv2_1;
-    static AnnotationBodyV2 anbv2_2;
-    static AnnotationBodyV2 anbv2_3;
-    static AnnotationV2     annv2_1;
-    static AnnotationV2     annv2_2;
-    static AnnotationV2     annv2_3;
-    static AnnotationV2[]   ansv2_1;
-    static AnnotationPageV2 anpv2_1;
+    public static AnnotationBodyV2 anbv2_1;
+    public static AnnotationBodyV2 anbv2_2;
+    public static AnnotationBodyV2 anbv2_3;
+    public static AnnotationV2     annv2_1;
+    public static AnnotationV2     annv2_2;
+    public static AnnotationV2     annv2_3;
+    public static AnnotationV2[]   ansv2_1;
+    public static AnnotationPageV2 anpv2_1;
 
-    static AnnotationBodyV3 anbv3_1;
-    static AnnotationBodyV3 anbv3_2;
-    static AnnotationBodyV3 anbv3_3;
-    static AnnotationV3     annv3_1;
-    static AnnotationV3     annv3_2;
-    static AnnotationV3     annv3_3;
-    static AnnotationV3[]   ansv3_1;
-    static AnnotationPageV3 anpv3_1;
-    static FTResource       ftres_1;
-    static FTResource       ftres_2;
+    public static AnnotationBodyV3 anbv3_1;
+    public static AnnotationBodyV3 anbv3_2;
+    public static AnnotationBodyV3 anbv3_3;
+    public static AnnotationV3     annv3_1;
+    public static AnnotationV3     annv3_2;
+    public static AnnotationV3     annv3_3;
+    public static AnnotationV3[]   ansv3_1;
+    public static AnnotationPageV3 anpv3_1;
+    public static FTResource       ftres_1;
+    public static FTResource       ftres_2;
 
-    static Resource   res_1;
-    static Resource   res_2;
-    static Target     tgt_1;
-    static Target     tgt_2;
-    static Target     tgt_3;
-    static Target     tgt_4;
-    static Annotation ann_1;
-    static Annotation ann_2;
-    static Annotation ann_3;
-    static AnnoPage   anp_1;
+    public static Resource   res_1;
+    public static Resource   res_2;
+    public static Target     tgt_1;
+    public static Target     tgt_2;
+    public static Target     tgt_3;
+    public static Target     tgt_4;
+    public static Annotation ann_1;
+    public static Annotation ann_2;
+    public static Annotation ann_3;
+    public static AnnoPage   anp_1;
 
-    static Date lastModifiedDate = Date.from(LocalDate.of(2015 , Month.FEBRUARY , 23)
+    public static Date lastModifiedDate = Date.from(LocalDate.of(2015 , Month.FEBRUARY , 23)
                                                       .atStartOfDay(ZoneId.systemDefault()).toInstant());
-    static Date theDayBefore = Date.from(LocalDate.of(2015 , Month.FEBRUARY , 22)
+    public static Date theDayBefore = Date.from(LocalDate.of(2015 , Month.FEBRUARY , 22)
                                                       .atStartOfDay(ZoneId.systemDefault()).toInstant());
 
     static{
@@ -89,9 +90,9 @@ class TestUtils {
         tgt_2 = new Target(95,102,53,15);
         tgt_3 = new Target(60,96,404,19);
         tgt_4 = new Target(59,138,133,25);
-        ann_1 = new Annotation("an1", 'W', 0, 7, Arrays.asList(tgt_1));
-        ann_2 = new Annotation("an2", 'W', 9, 18, Arrays.asList(tgt_2), "en");
-        ann_3 = new Annotation("an3", 'L', 0, 214, Arrays.asList(tgt_3, tgt_4));
+        ann_1 = new Annotation("an1", AnnotationType.WORD.getAbbreviation(), 0, 7, Arrays.asList(tgt_1));
+        ann_2 = new Annotation("an2", AnnotationType.WORD.getAbbreviation(), 9, 18, Arrays.asList(tgt_2), "en");
+        ann_3 = new Annotation("an3", AnnotationType.LINE.getAbbreviation(), 0, 214, Arrays.asList(tgt_3, tgt_4));
         anp_1 = new AnnoPage(DS_ID, LCL_ID, "pg1", "tg1", res_1);
         anp_1.setAns(Arrays.asList(new Annotation[] {ann_1, ann_2, ann_3}));
         anp_1.setTgtId(getTargetIdBaseUrl("pg1"));
@@ -107,14 +108,14 @@ class TestUtils {
         prepareAnnotationPageV3();
     }
 
-    static void prepareAnnotationPageV2(){
+    public static void prepareAnnotationPageV2(){
         buildAnnotationBodiesV2();
         buildAnnotationsV2(false);
         ansv2_1 = new AnnotationV2[] {annv2_1, annv2_2, annv2_3};
         anpv2_1 = createAnnotationPageV2("pg1", ansv2_1);
     }
 
-    static void prepareAnnotationPageV3(){
+    public static void prepareAnnotationPageV3(){
         buildAnnotationBodiesV3();
         buildAnnotationsV3(false);
         ansv3_1 = new AnnotationV3[] {annv3_1, annv3_2, annv3_3};
@@ -122,13 +123,13 @@ class TestUtils {
     }
 
     // prepares Annotations entity beans only (Annotations WITH context)
-    static void prepareAnnotationsV2(){
+    public static void prepareAnnotationsV2(){
         buildAnnotationBodiesV2();
         buildAnnotationsV2(true);
     }
 
     // prepares Annotations entity beans only (Annotations WITH context)
-    static void prepareAnnotationsV3(){
+    public static void prepareAnnotationsV3(){
         buildAnnotationBodiesV3();
         buildAnnotationsV3(true);
     }
@@ -171,7 +172,7 @@ class TestUtils {
                                      TYPE_LINE, includeContext);
     }
 
-    static void buildFTResources(){
+    public static void buildFTResources(){
         ftres_1 = createFTResource("res1", "de", KUCKEBACKENWOLLTE, SOURCE_1, EDMRIGHTS);
         ftres_2 = createFTResource("res2", "de" , WUERDEJANICHTAUFGEHEN, SOURCE_2, EDMRIGHTS);
         ftres_2.setContext(MEDIA_TYPE_EDM_JSONLD);

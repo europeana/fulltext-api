@@ -1,9 +1,8 @@
 package eu.europeana.fulltext.api.service;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.morphia.query.internal.MorphiaCursor;
+import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.api.config.FTSettings;
 import eu.europeana.fulltext.api.model.FTResource;
 import eu.europeana.fulltext.api.model.v2.AnnotationPageV2;
@@ -17,7 +16,6 @@ import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Resource;
 import eu.europeana.fulltext.repository.AnnoPageRepository;
 import eu.europeana.fulltext.repository.ResourceRepository;
-import ioinformarics.oss.jackson.module.jsonld.JsonldModule;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
@@ -41,20 +39,16 @@ public class FTService {
     private AnnoPageRepository annoPageRepository;
     private FTSettings ftSettings;
 
-    // create a single objectMapper for efficiency purposes (see https://github.com/FasterXML/jackson-docs/wiki/Presentation:-Jackson-Performance)
-    private static ObjectMapper mapper = new ObjectMapper();
+    private ObjectMapper mapper;
 
     /*
      * Constructs an FTService object with autowired dependencies
      */
-    public FTService(ResourceRepository resourceRepository, AnnoPageRepository annoPageRepository, FTSettings ftSettings) {
+    public FTService(ResourceRepository resourceRepository, AnnoPageRepository annoPageRepository, FTSettings ftSettings, ObjectMapper mapper) {
         this.resourceRepository = resourceRepository;
         this.annoPageRepository = annoPageRepository;
         this.ftSettings = ftSettings;
-        // configure Jackson serialization
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
-        mapper.registerModule(new JsonldModule());
+        this.mapper = mapper;
     }
 
     /**
@@ -75,16 +69,29 @@ public class FTService {
      * @throws AnnoPageDoesNotExistException when the Annopage cannot be found
      * @return AnnoPage
      */
-    public AnnoPage fetchAnnoPage(String datasetId, String localId, String pageId, List<String> textGranValues)
-            throws AnnoPageDoesNotExistException {
-        if (doesAnnoPageExist(datasetId, localId, pageId)){
-            return annoPageRepository.findByDatasetLocalPageId(datasetId, localId, pageId, textGranValues);
-        } else {
-            throw new AnnoPageDoesNotExistException(String.format(
-                    "No AnnoPage with datasetId: %s, localId: %s and pageId: %s could be found",
-                    datasetId, localId, pageId));
+    public AnnoPage fetchAnnoPage(String datasetId, String localId, String pageId, List<String> textGranValues) throws AnnoPageDoesNotExistException {
+        AnnoPage result = annoPageRepository.findByDatasetLocalPageId(datasetId, localId, pageId, textGranValues);
+        if (result == null) {
+            throw new AnnoPageDoesNotExistException(String.format("/%s/%s/annopage/%s", datasetId, localId, pageId));
         }
+        return result;
     }
+
+    /**
+     * Retrieve a cursor to AnnoPages with the provided datasetId, localId and imageIds. If the annotationType is
+     * specified the returned AnnoPages will only contain annotations of that type. If annotationType is null or empty
+     * then all annotations of that type will be returned. The cursor must be closed when the caller is done!
+     * @param datasetId ID of the dataset
+     * @param localId   ID of the parent of the Annopage object
+     * @param imageIds   IDs of the images
+     * @param annotationType type of annotations that should be retrieved, if null or empty all annotations of that
+     *                        annopage will be retrieved
+     * @return MorphiaCursor containing AnnoPage entries.
+     */
+    public MorphiaCursor<AnnoPage> fetchAnnoPageFromImageId(String datasetId, String localId, List<String> imageIds, AnnotationType annotationType) {
+        return annoPageRepository.findByDatasetLocalImageId(datasetId, localId, imageIds, annotationType);
+    }
+
 
     /**
      * Handles fetching an Annotation page (aka AnnoPage) containing the Annotation with given annoId
@@ -96,13 +103,11 @@ public class FTService {
      */
     public AnnoPage fetchAPAnnotation(String datasetId, String localId, String annoId)
             throws AnnoPageDoesNotExistException {
-        if (doesAnnotationExist(datasetId, localId, annoId)){
-            return annoPageRepository.findByDatasetLocalAnnoId(datasetId, localId, annoId);
-        } else {
-            throw new AnnoPageDoesNotExistException(String.format(
-                    "No AnnoPage with datasetId: %s and localId: %s could be found that contains an Annotation with annotationId: %s",
-                    datasetId, localId, annoId));
+        AnnoPage result = annoPageRepository.findByDatasetLocalAnnoId(datasetId, localId, annoId);
+        if (result == null) {
+            throw new AnnoPageDoesNotExistException(String.format("/%s/%s/anno/%s", datasetId, localId, annoId));
         }
+        return result;
     }
 
 
@@ -116,14 +121,11 @@ public class FTService {
      */
     public FTResource fetchFTResource(String datasetId, String localId, String resId)
             throws ResourceDoesNotExistException {
-        if (doesFTResourceExist(datasetId, localId, resId)){
-            return generateFTResource(
-                    resourceRepository.findByDatasetLocalResId(datasetId, localId, resId));
-        } else {
-            throw new ResourceDoesNotExistException(String.format(
-                    "No Fulltext Resource with resourceId: %s was found that is associated with datasetId: %s and localId: %s",
-                    resId, datasetId, localId));
+        Resource resource = resourceRepository.findByDatasetLocalResId(datasetId, localId, resId);
+        if (resource == null) {
+            throw new ResourceDoesNotExistException(String.format("/%s/%s/%s", datasetId, localId, resId));
         }
+        return generateFTResource(resource);
     }
 
 
@@ -140,29 +142,6 @@ public class FTService {
         return annoPageRepository.existsByPageId(datasetId, localId, pageId);
     }
 
-    /**
-     * Check if a particular annotation with the provided ids exists or not
-     * @param datasetId Identifier of the dataset
-     * @param localId   Identifier of the item
-     * @param annoId    Identifier of the annotation
-     * @return true if it exists, otherwise false
-     */
-    private boolean doesAnnotationExist(String datasetId, String localId, String annoId){
-        return annoPageRepository.existsWithAnnoId(datasetId, localId, annoId);
-    }
-
-    /**
-     * Check if a particular resource with the provided ids exists or not
-     * @param datasetId Identifier of the dataset
-     * @param localId   Identifier of the item
-     * @param resId     Identifier of the fulltext resource
-     * @return true if it exists, otherwise false
-     */
-    private boolean doesFTResourceExist(String datasetId, String localId, String resId){
-        return resourceRepository.existsByLimitOne(datasetId, localId, resId);
-    }
-
-
     // = = [ generate JSON objects ] = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
     /**
      * Generates an AnnotationPageV3 (IIIF V3 response type) object with the AnnoPage as input
@@ -170,9 +149,9 @@ public class FTService {
      * @param derefResource boolean indicating whether to dereference the Resource object on the top level Annotation
      * @return AnnotationPageV3
      */
-     public AnnotationPageV3 generateAnnoPageV3(AnnoPage annoPage, boolean derefResource, List<String> textGranValues){
+     public AnnotationPageV3 generateAnnoPageV3(AnnoPage annoPage, boolean derefResource){
         long start = System.currentTimeMillis();
-        AnnotationPageV3 result = EDM2IIIFMapping.getAnnotationPageV3(annoPage, derefResource, textGranValues);
+        AnnotationPageV3 result = EDM2IIIFMapping.getAnnotationPageV3(annoPage, derefResource);
         if (LOG.isDebugEnabled()) {
             LOG.debug(GENERATED_IN, System.currentTimeMillis() - start);
         }
@@ -184,9 +163,9 @@ public class FTService {
      * @param annoPage AnnoPage input object
      * @return AnnotationPageV2
      */
-    public AnnotationPageV2 generateAnnoPageV2(AnnoPage annoPage, boolean derefResource, List<String> textGranValues){
+    public AnnotationPageV2 generateAnnoPageV2(AnnoPage annoPage, boolean derefResource){
         long start = System.currentTimeMillis();
-        AnnotationPageV2 result = EDM2IIIFMapping.getAnnotationPageV2(annoPage, derefResource, textGranValues);
+        AnnotationPageV2 result = EDM2IIIFMapping.getAnnotationPageV2(annoPage, derefResource);
         if (LOG.isDebugEnabled()) {
             LOG.debug(GENERATED_IN, System.currentTimeMillis() - start);
         }
@@ -250,5 +229,6 @@ public class FTService {
             throw new SerializationException("Error serialising data: " + e.getMessage(), e);
         }
     }
+
 
 }

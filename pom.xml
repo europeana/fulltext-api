@@ -2,31 +2,29 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<artifactId>europeana-parent-pom</artifactId>
-		<groupId>eu.europeana</groupId>
-		<version>2.0</version>
-	</parent>
+    <parent>
+        <artifactId>europeana-parent-pom</artifactId>
+        <groupId>eu.europeana</groupId>
+        <version>2.1</version>
+    </parent>
 
-	<artifactId>fulltext</artifactId>
-	<version>0.8-SNAPSHOT</version>
-	<packaging>pom</packaging>
+    <artifactId>fulltext</artifactId>
+    <version>0.8-SNAPSHOT</version>
+    <packaging>pom</packaging>
 
-	<name>Europeana Newspapers Fulltext API &amp; Loader</name>
-	<description>Europeana Newspapers Fulltext API &amp; Loader (Spring Boot applications)</description>
+    <name>Europeana Newspapers Fulltext</name>
+    <description>Europeana Newspapers Fulltext API &amp; Loader (Spring Boot applications)</description>
 
 	<properties>
 		<java.version>11</java.version>
-		<maven.compiler.source>${java.version}</maven.compiler.source>
-		<maven.compiler.target>${java.version}</maven.compiler.target>
+		<maven.compiler.release>${java.version}</maven.compiler.release>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		
-		<spring-boot.version>2.1.7.RELEASE</spring-boot.version>
+
+		<spring-boot.version>2.3.4.RELEASE</spring-boot.version>
 		<jackson.version>2.9.9</jackson.version>
 		<io-informatics.version>0.1.1</io-informatics.version>
-		<morphia.version>1.5.3</morphia.version>
-		<mongodb.version>3.10.2</mongodb.version>
+		<morphia.version>2.0.1</morphia.version>
 		<commons-lang3.version>3.9</commons-lang3.version>
 		<commons-io.version>2.4</commons-io.version>
 		<maven-surefire-plugin.version>2.19.1</maven-surefire-plugin.version>
@@ -36,6 +34,7 @@
 		<wiremock.version>2.18.0</wiremock.version>
 		<unitils.version>3.4.6</unitils.version>
 		<snappy.version>1.1.7.2</snappy.version>
+		<api-commons.version>0.2.12-SNAPSHOT</api-commons.version>
 	</properties>
 
     <modules>
@@ -46,10 +45,8 @@
 
     <dependencyManagement>
         <dependencies>
-
-			<!-- Import dependency management start Spring Boot (because we don't use Spring-Boot as parent pom)-->
+            <!-- Import dependency management start Spring Boot (because we don't use Spring-Boot as parent pom)-->
             <dependency>
-                <!-- Import dependency management from Spring Boot (because we don't use Spring-Boot as parent pom)-->
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
                 <version>${spring-boot.version}</version>
@@ -57,28 +54,11 @@
                 <scope>import</scope>
             </dependency>
 
-			<!-- we should check if this dependency needs to be updated now and then-->
-<!--            <dependency>-->
-<!--                <groupId>org.springframework.cloud</groupId>-->
-<!--                <artifactId>spring-cloud-dependencies</artifactId>-->
-<!--                <version>Finchley.RC2</version>-->
-<!--                <type>pom</type>-->
-<!--                <scope>import</scope>-->
-<!--            </dependency>-->
-
 			<dependency>
 				<groupId>dev.morphia.morphia</groupId>
-				<artifactId>core</artifactId>
+				<artifactId>morphia-core</artifactId>
 				<version>${morphia.version}</version>
 			</dependency>
-
-			<dependency>
-				<groupId>org.mongodb</groupId>
-				<artifactId>mongo-java-driver</artifactId>
-				<version>${mongodb.version}</version>
-			</dependency>
-
         </dependencies>
     </dependencyManagement>
-
 </project>

@@ -1,54 +1,32 @@
 package eu.europeana.fulltext.api.web;
 
-import eu.europeana.fulltext.api.model.JsonErrorResponse;
-import eu.europeana.fulltext.api.service.FTService;
-import eu.europeana.fulltext.api.service.exception.SerializationException;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.boot.web.servlet.error.ErrorController;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import eu.europeana.fulltext.api.config.FTDefinitions;
+import org.springframework.boot.autoconfigure.web.servlet.error.AbstractErrorController;
+import org.springframework.boot.web.error.ErrorAttributeOptions;
+import org.springframework.boot.web.servlet.error.ErrorAttributes;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.servlet.RequestDispatcher;
 import javax.servlet.http.HttpServletRequest;
+import java.util.Map;
 
 /**
  * Created by luthien on 2019-08-13.
  */
-
 @Controller
-public class FTErrorController implements ErrorController {
+public class FTErrorController extends AbstractErrorController {
 
-    private FTService fts;
-
-    public  FTErrorController(FTService ftService) {
-        this.fts = ftService;
+    public FTErrorController(ErrorAttributes errorAttributes) {
+        super(errorAttributes);
     }
 
-    @RequestMapping(value = "/error", produces = MediaType.ALL_VALUE,
-                    method   = {RequestMethod.HEAD, RequestMethod.GET, RequestMethod.POST })
-    public ResponseEntity<String> handleError(HttpServletRequest request) throws SerializationException {
 
-        Object status = request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);
-        String requestedPath = request.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI).toString();
-        if (status != null) {
-            int statusCode = Integer.parseInt(status.toString());
-            if (statusCode == HttpStatus.NOT_FOUND.value()) {
-                return new ResponseEntity<>(fts.serialise(
-                        new JsonErrorResponse("The requested URL: " + requestedPath + " could not be resolved")),
-                                            HttpStatus.NOT_FOUND);
-            } else {
-                String message = (StringUtils.isNotBlank(request.getAttribute(RequestDispatcher.ERROR_MESSAGE).toString()) ?
-                                  request.getAttribute(RequestDispatcher.ERROR_MESSAGE).toString() :
-                                  "please check your request, considering the HTTP " + statusCode + " return status");
-                return new ResponseEntity<>(fts.serialise(
-                        new JsonErrorResponse(message)), HttpStatus.valueOf(statusCode));
-            }
-        }
-        return null;
+    @RequestMapping(value = "/error", produces = {FTDefinitions.MEDIA_TYPE_JSON, FTDefinitions.MEDIA_TYPE_JSONLD})
+    @ResponseBody
+    public Map<String, Object> error(final HttpServletRequest request) {
+        return this.getErrorAttributes(request,
+                ErrorAttributeOptions.of(ErrorAttributeOptions.Include.MESSAGE));
     }
 
     @Override

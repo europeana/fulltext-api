@@ -1,5 +1,6 @@
 package eu.europeana.fulltext.api.service.exception;
 
+import eu.europeana.api.commons.error.EuropeanaApiException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
@@ -9,12 +10,12 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * Created on 27-02-2018
  */
 @ResponseStatus(HttpStatus.NOT_FOUND)
-public class AnnoPageDoesNotExistException extends FTException {
+public class AnnoPageDoesNotExistException extends EuropeanaApiException {
 
     private static final long serialVersionUID = -8172379300509594428L;
 
     public AnnoPageDoesNotExistException(String id) {
-        super(id, ErrorCode.ID_DOES_NOT_EXIST);
+        super("Annotation Page with id " + id + " does not exist");
     }
 
     @Override

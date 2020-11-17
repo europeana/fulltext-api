@@ -1,5 +1,7 @@
 package eu.europeana.fulltext.api.config;
 
+import java.util.Map;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -75,5 +77,8 @@ public final class FTDefinitions {
                                                            + MEDIA_TYPE_IIIF_V3
                                                            + "\";" + UTF_8;
 
-    private FTDefinitions(){}
+    private FTDefinitions(){
+        // empty constructor to prevent initialization
+    }
+
 }

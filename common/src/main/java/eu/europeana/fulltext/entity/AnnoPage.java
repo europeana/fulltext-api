@@ -97,4 +97,8 @@ public class AnnoPage {
     public void setModified(Date modified) {
         this.modified = modified;
     }
+
+    public String toString() {
+        return "/" + this.dsId + "/" + this.getLcId() + "/" + this.getPgId();
+    }
 }
