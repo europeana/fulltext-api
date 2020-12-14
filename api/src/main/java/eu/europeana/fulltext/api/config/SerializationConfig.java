@@ -9,6 +9,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
+import java.text.SimpleDateFormat;
+
 /**
  * Configure Jackson serialization output.
  */
@@ -20,6 +22,7 @@ public class SerializationConfig {
         return new Jackson2ObjectMapperBuilder()
                 // ignore null properties when serializing objects
                 .serializationInclusion(JsonInclude.Include.NON_NULL)
+                .dateFormat(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXX"))
                 .visibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY).build();
     }
 

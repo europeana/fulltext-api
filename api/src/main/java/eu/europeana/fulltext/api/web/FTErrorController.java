@@ -4,7 +4,6 @@ import eu.europeana.fulltext.api.config.FTDefinitions;
 import org.springframework.boot.autoconfigure.web.servlet.error.AbstractErrorController;
 import org.springframework.boot.web.error.ErrorAttributeOptions;
 import org.springframework.boot.web.servlet.error.ErrorAttributes;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,8 +27,7 @@ public class FTErrorController extends AbstractErrorController {
     @RequestMapping(value = "/error", produces = {FTDefinitions.MEDIA_TYPE_JSON, FTDefinitions.MEDIA_TYPE_JSONLD})
     @ResponseBody
     public Map<String, Object> error(final HttpServletRequest request) {
-        return this.getErrorAttributes(request,
-                ErrorAttributeOptions.of(ErrorAttributeOptions.Include.MESSAGE));
+        return this.getErrorAttributes(request, ErrorAttributeOptions.defaults());
     }
 
     @Override
