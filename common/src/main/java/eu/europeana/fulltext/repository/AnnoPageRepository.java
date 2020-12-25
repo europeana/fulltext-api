@@ -10,7 +10,6 @@ import eu.europeana.fulltext.entity.AnnoPage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,6 +23,7 @@ import static eu.europeana.fulltext.util.MorphiaUtils.MULTI_DELETE_OPTS;
 
 
 /**
+ * Repository for retrieving AnnoPage objects / data
  * Created by luthien on 31/05/2018.
  */
 @Repository
@@ -100,22 +100,16 @@ public class AnnoPageRepository {
      * @param datasetId      ID of the dataset
      * @param localId        ID of the parent of the Annopage object
      * @param pageId         index (page number) of the Annopage object within its parent
-     * @param textGranValues dcType values to filter annotations with
+     * @param annoTypes      dcType values to filter annotations with
      * @return AnnoPage
      */
-    public AnnoPage findByDatasetLocalPageId(String datasetId, String localId, String pageId, List<String> textGranValues) {
+    public AnnoPage findByDatasetLocalPageId(String datasetId, String localId, String pageId, List<AnnotationType> annoTypes) {
         Aggregation<AnnoPage> query = datastore.aggregate(AnnoPage.class).match(
                 eq(DATASET_ID, datasetId),
                 eq(LOCAL_ID, localId),
                 eq(PAGE_ID, pageId)
         );
-
-        if (!textGranValues.isEmpty()) {
-            // ans.dcType stored as first letter of text granularity value in uppercase. ie. WORD -> 'W'
-            List<String> dcTypes = textGranValues.stream().map(s -> s.substring(0, 1).toUpperCase()).collect(Collectors.toUnmodifiableList());
-            query = filterTextGranularity(query, dcTypes);
-        }
-
+        query = filterTextGranularity(query, annoTypes);
         return query.execute(AnnoPage.class).tryNext();
     }
 
@@ -144,22 +138,19 @@ public class AnnoPageRepository {
      * The Cursor returned by this method must be closed
      * @param datasetId ID of the dataset
      * @param localId   ID of the parent of the Annopage object
-     * @param imageIds   ID of the image
-     * @param textGranularity type of annotations that should be retrieve, if null or empty all annotations of that
+     * @param imageIds  ID of the image
+     * @param annoTypes type of annotations that should be retrieve, if null or empty all annotations of that
      *                        annopage will be retrieved
      * @return MorphiaCursor containing AnnoPage entries.
      */
-    public MorphiaCursor<AnnoPage> findByDatasetLocalImageId(String datasetId, String localId, List<String> imageIds, AnnotationType textGranularity) {
+    public MorphiaCursor<AnnoPage> findByDatasetLocalImageId(String datasetId, String localId, List<String> imageIds,
+                                                             List<AnnotationType> annoTypes) {
         Aggregation<AnnoPage> query = datastore.aggregate(AnnoPage.class).match(
                 eq(DATASET_ID, datasetId),
                 eq(LOCAL_ID, localId),
                 in(IMAGE_ID, imageIds)
         );
-
-        if (textGranularity != null) {
-            query = filterTextGranularity(query, Collections.singletonList(String.valueOf(textGranularity.getAbbreviation())));
-        }
-
+        query = filterTextGranularity(query, annoTypes);
         return query.execute(AnnoPage.class);
     }
 
@@ -184,10 +175,17 @@ public class AnnoPageRepository {
     /**
      * Creates an AnnoPage aggregation query to return only matching annotation types.
      * @param annoPageQuery aggregation query
-     * @param textGranValues list containing text granularity values to match
+     * @param annoTypes list containing text granularity values to match
      * @return Updated aggregation query
      */
-    private Aggregation<AnnoPage> filterTextGranularity(Aggregation<AnnoPage> annoPageQuery, List<String> textGranValues) {
+    private Aggregation<AnnoPage> filterTextGranularity(Aggregation<AnnoPage> annoPageQuery, List<AnnotationType> annoTypes) {
+        if (annoTypes.isEmpty()) {
+            return annoPageQuery;
+        }
+
+        // ans.dcType stored as first letter of text granularity value in uppercase. ie. WORD -> 'W'
+        List<String> dcTypes = annoTypes.stream().map(s -> String.valueOf(s.getAbbreviation())).collect(Collectors.toUnmodifiableList());
+
         // _id implicitly included in projection
         return annoPageQuery.project(
                 Projection.of()
@@ -200,7 +198,7 @@ public class AnnoPageRepository {
                         .include(MODIFIED)
                         .include(ANNOTATIONS,
                                 filter(field(ANNOTATIONS),
-                                        ArrayExpressions.in(value("$$annotation.dcType"), value(textGranValues))
+                                        ArrayExpressions.in(value("$$annotation.dcType"), value(dcTypes))
                                 ).as("annotation")
                         )
         );

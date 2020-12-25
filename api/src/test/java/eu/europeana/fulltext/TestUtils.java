@@ -1,6 +1,5 @@
 package eu.europeana.fulltext;
 
-import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.api.model.FTResource;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Annotation;
@@ -143,14 +142,14 @@ public class TestUtils {
     private static void buildAnnotationsV2(boolean includeContext){
         annv2_1 = createAnnotationV2("an1", anbv2_1,
                                      new String[]{getTargetIdUrl("pg1", "60","100","30","14")},
-                                     TYPE_WORD, includeContext);
+                                     AnnotationType.WORD.getDisplayName(), includeContext);
         annv2_2 = createAnnotationV2("an2", anbv2_2,
                                      new String[]{getTargetIdUrl("pg1", "95","102","53","15")},
-                                     TYPE_WORD, includeContext);
+                                     AnnotationType.WORD.getDisplayName(), includeContext);
         annv2_3 = createAnnotationV2("an3", anbv2_3,
                                      new String[]{getTargetIdUrl("pg1", "60","96","404","19"),
                                              getTargetIdUrl("pg1", "59","138","133","25")},
-                                     TYPE_LINE, includeContext);
+                                     AnnotationType.LINE.getDisplayName(), includeContext);
     }
 
     private static void buildAnnotationBodiesV3(){
@@ -162,14 +161,14 @@ public class TestUtils {
     private static void buildAnnotationsV3(boolean includeContext){
         annv3_1 = createAnnotationV3("an1", anbv3_1,
                                      new String[]{getTargetIdUrl("pg1", "60","100","30","14")},
-                                     TYPE_WORD, includeContext);
+                                     AnnotationType.WORD.getDisplayName(), includeContext);
         annv3_2 = createAnnotationV3("an2", anbv3_2,
                                      new String[]{getTargetIdUrl("pg1", "95","102","53","15")},
-                                     TYPE_WORD, includeContext);
+                                     AnnotationType.WORD.getDisplayName(), includeContext);
         annv3_3 = createAnnotationV3("an3", anbv3_3,
                                      new String[]{getTargetIdUrl("pg1", "60","96","404","19"),
                                              getTargetIdUrl("pg1", "59","138","133","25")},
-                                     TYPE_LINE, includeContext);
+                                     AnnotationType.LINE.getDisplayName(), includeContext);
     }
 
     public static void buildFTResources(){

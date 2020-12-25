@@ -2,12 +2,13 @@ package eu.europeana.fulltext.search.web;
 
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.api.FTApplication;
+import eu.europeana.fulltext.api.config.FTSettings;
+import eu.europeana.fulltext.search.exception.InvalidParameterException;
 import eu.europeana.fulltext.search.model.query.EuropeanaId;
 import eu.europeana.fulltext.search.model.response.v2.SearchResultV2;
 import eu.europeana.fulltext.search.model.response.v3.SearchResultV3;
 import eu.europeana.fulltext.search.service.FTSearchService;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,15 +18,18 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_IIIF_V2;
 import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_IIIF_V3;
+import static junit.framework.TestCase.assertEquals;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@Ignore
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = FTApplication.class)
 @WebMvcTest(FTSearchController.class)
@@ -33,6 +37,9 @@ public class FTSearchControllerTest {
 
     @MockBean
     private FTSearchService searchService;
+
+    @MockBean
+    private FTSettings ftSettings;
 
     @Autowired
     private MockMvc mockMvc;
@@ -43,18 +50,19 @@ public class FTSearchControllerTest {
     @Before
     public void setUp() throws Exception {
         SearchResultV2 testResultV2 = new SearchResultV2(TEST_SEARCH_ID, false);
-
         SearchResultV3 testResultV3 = new SearchResultV3(TEST_SEARCH_ID, false);
 
         // return SearchResultV2 when requestVersion is 2
-//        when(searchService.searchIssue(anyString(), any(EuropeanaId.class), anyString(), anyInt(), any(AnnotationType.class), anyBoolean(), eq("2"))).thenReturn(
-//                testResultV2
-//        );
+        when(searchService.searchIssue(anyString(), any(EuropeanaId.class), anyString(), anyInt(), any(List.class),
+                eq("2"), anyBoolean())).thenReturn(
+                        testResultV2
+        );
 
         // return SearchResultV3 when requestVersion is 3
-//        when(searchService.searchIssue(anyString(), any(EuropeanaId.class), anyString(), anyInt(), any(AnnotationType.class), anyBoolean(), eq("3"))).thenReturn(
-//                testResultV3
-//        );
+        when(searchService.searchIssue(anyString(), any(EuropeanaId.class), anyString(), anyInt(), any(List.class),
+                eq("3"), anyBoolean())).thenReturn(
+                        testResultV3
+        );
     }
 
     @Test
@@ -120,4 +128,18 @@ public class FTSearchControllerTest {
                 .andExpect(jsonPath("$.id").value(TEST_SEARCH_ID))
                 .andExpect(jsonPath("$.type").value("AnnotationPage"));
     }
+
+    @Test
+    public void testValidateTextGranularityNoValue() throws InvalidParameterException {
+        List<AnnotationType> defaultAnnoTypes = new ArrayList<>(){{
+            add(AnnotationType.WORD);
+        }};
+        when(ftSettings.getDefaultSearchTextGranularity()).thenReturn(defaultAnnoTypes);
+
+        FTSearchController searchController = new FTSearchController(searchService, ftSettings);
+        List<AnnotationType> annoTypes = searchController.validateTextGranularity(null);
+        assertEquals(defaultAnnoTypes, annoTypes);
+    }
+
+
 }

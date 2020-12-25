@@ -1,11 +1,12 @@
 package eu.europeana.fulltext.api.web;
 
 import eu.europeana.api.commons.error.EuropeanaApiException;
+import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.api.model.AnnotationWrapper;
 import eu.europeana.fulltext.api.model.FTResource;
 import eu.europeana.fulltext.api.service.CacheUtils;
+import eu.europeana.fulltext.api.service.ControllerUtils;
 import eu.europeana.fulltext.api.service.FTService;
-import eu.europeana.fulltext.api.service.exception.AnnoPageDoesNotExistException;
 import eu.europeana.fulltext.api.service.exception.SerializationException;
 import eu.europeana.fulltext.entity.AnnoPage;
 import io.swagger.annotations.Api;
@@ -45,6 +46,9 @@ import static eu.europeana.fulltext.api.service.CacheUtils.generateSimpleETag;
 @RequestMapping("/presentation")
 public class FTController {
 
+    private static final Set<AnnotationType> ALLOWED_ANNOTATION_TYPES = EnumSet.of(AnnotationType.PAGE, AnnotationType.BLOCK,
+            AnnotationType.LINE, AnnotationType.WORD, AnnotationType.MEDIA, AnnotationType.CAPTION);
+
     private static final Logger LOG = LogManager.getLogger(FTController.class);
 
     private FTService fts;
@@ -61,8 +65,9 @@ public class FTController {
      * @param pageId       identifier of the AnnoPage
      * @param versionParam requested IIIF output format (2|3)
      * @param profile      when value = 'text', resources are dereferenced
+     * @param textGranularity types of annotations that should be included (e.g. Block, Line, Page)
      * @return response in json format
-     * @throws SerializationException when serialising to Json fails
+     * @throws EuropeanaApiException when serialising to Json fails or an invalid parameter value is provided
      */
     @ApiOperation(value = "Retrieve a page with annotations")
     @GetMapping(value = "/{datasetId}/{localId}/annopage/{pageId}", headers = ACCEPT_JSON)
@@ -72,7 +77,7 @@ public class FTController {
                                                @RequestParam(value = "format", required = false) String versionParam,
                                                @RequestParam(value = "profile", required = false) String profile,
                                                @RequestParam(value = "textGranularity", required = false) String textGranularity,
-                                               HttpServletRequest request) throws SerializationException, AnnoPageDoesNotExistException {
+                                               HttpServletRequest request) throws EuropeanaApiException {
         return annoPage(datasetId, localId, pageId, versionParam, profile, textGranularity, request, true);
     }
 
@@ -86,7 +91,7 @@ public class FTController {
      * @param profile         when value = 'text', resources are dereferenced
      * @param textGranularity specifies what annotations should be returned
      * @return response in json-ld format
-     * @throws EuropeanaApiException when serialising to JsonLd fails
+     * @throws EuropeanaApiException when serialising to JsonLd fails or an invalid parameter value is provided
      */
     @ApiOperation(value = "Retrieve a page with annotations")
     @GetMapping(value = "/{datasetId}/{localId}/annopage/{pageId}", headers = ACCEPT_JSONLD)
@@ -107,7 +112,7 @@ public class FTController {
                                             String profile,
                                             String textGranularity,
                                             HttpServletRequest request,
-                                            boolean isJson) throws AnnoPageDoesNotExistException, SerializationException {
+                                            boolean isJson) throws EuropeanaApiException {
         LOG.debug("Retrieve Annopage: {}/{}/{}", datasetId, localId, pageId);
         String requestVersion = getRequestVersion(request, versionParam);
         if (ACCEPT_VERSION_INVALID.equals(requestVersion)){
@@ -116,7 +121,7 @@ public class FTController {
         AnnotationWrapper annotationPage;
         HttpHeaders headers;
 
-        List<String> textGranValues = StringUtils.isBlank(textGranularity) ? Collections.emptyList() : getTextGranularityValues(textGranularity.toLowerCase(Locale.GERMANY));
+        List<AnnotationType> textGranValues = ControllerUtils.validateTextGranularity(textGranularity, ALLOWED_ANNOTATION_TYPES);
 
         AnnoPage annoPage = fts.fetchAnnoPage(datasetId, localId, pageId, textGranValues);
         ZonedDateTime modified = CacheUtils.dateToZonedUTC(annoPage.getModified());
@@ -227,7 +232,7 @@ public class FTController {
      * @param annoID       identifier of the Annotation
      * @param versionParam requested IIIF output format (2|3)
      * @return response in json-ld format
-     * @throws SerializationException when serialising to JsonLd fails
+     * @throws EuropeanaApiException when serialising to JsonLd fails
      */
     @ApiOperation(value = "Retrieve a single annotation")
     @GetMapping(value = "/{datasetId}/{localId}/anno/{annoID}", headers = ACCEPT_JSONLD)
@@ -288,7 +293,7 @@ public class FTController {
      * @param localId   identifier of the record that contains the Annopage that refers to the Resource
      * @param resId     identifier of the Resource
      * @return response in json-ld format
-     * @throws SerializationException when serialising to JsonLd fails
+     * @throws EuropeanaApiException when serialising to JsonLd fails
      */
     @ApiOperation(value = "Retrieve a full-text")
     @GetMapping(value = "/{datasetId}/{localId}/{resId}", headers = ACCEPT_JSONLD,
@@ -307,7 +312,7 @@ public class FTController {
      * @param localId   identifier of the record that contains the Annopage that refers to the Resource
      * @param resId     identifier of the Resource
      * @return response in json format
-     * @throws SerializationException when serialising to Json fails
+     * @throws EuropeanaApiException when serialising to Json fails
      */
     @ApiOperation(value = "Retrieve a full-text")
     @GetMapping(value = "/{datasetId}/{localId}/{resId}", headers = ACCEPT_JSON,
@@ -417,21 +422,4 @@ public class FTController {
         return new ResponseEntity<>(fts.serialise(response), HttpStatus.I_AM_A_TEAPOT);
     }
 
-    /**
-     * filter the textGranularity parameter values.
-     * valid values: page, line, block, word, caption, media
-     * return empty list if none is present.
-     *
-     * @return list with valid values.
-     */
-    private List<String> getTextGranularityValues(String textGranularity) {
-        List<String> preList = new ArrayList<>(Arrays.asList(textGranularity.split("\\+|\\s|,")));
-        List<String> finalList = new ArrayList<>();
-        for (String value : preList){
-            if (GRANULARITY_VALUES.stream().anyMatch(x -> x.equalsIgnoreCase(value))){
-                finalList.add(value);
-            }
-        }
-        return finalList;
-    }
 }

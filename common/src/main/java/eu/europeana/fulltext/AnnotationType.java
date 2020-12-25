@@ -47,7 +47,7 @@ public enum AnnotationType {
     /**
      * @return the name of the annotation type in a public friendly format (capitalized first letter)
      */
-    public String getName() {
+    public String getDisplayName() {
         return StringUtils.capitalize(this.name().toLowerCase(Locale.GERMAN));
     }
 
