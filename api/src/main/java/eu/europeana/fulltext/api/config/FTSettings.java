@@ -1,6 +1,10 @@
 package eu.europeana.fulltext.api.config;
 
 import eu.europeana.fulltext.AnnotationType;
+import eu.europeana.fulltext.api.service.ControllerUtils;
+import eu.europeana.fulltext.search.exception.InvalidParameterException;
+import eu.europeana.fulltext.search.web.FTSearchController;
+import io.micrometer.core.instrument.util.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +17,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Contains settings from fulltext.properties and fulltext.user.properties files
@@ -46,18 +50,23 @@ public class FTSettings {
     private String annotationDirectory;
 
     @Value("${search.textGranularity.default:Word}")
-    AnnotationType defaultSearchTextGranularity;
+    private String searchTextGranularity;
+    private List<AnnotationType> defaultSearchTextGranularity;
 
     @Autowired
     private Environment environment;
 
 
     @PostConstruct
-    private void init() {
-        if (defaultSearchTextGranularity == null) {
-            defaultSearchTextGranularity = AnnotationType.WORD;
+    private void init() throws InvalidParameterException {
+        if (StringUtils.isBlank(searchTextGranularity)) {
+            LOG.info("No default text granularity for search found in configuration files");
+            defaultSearchTextGranularity = Arrays.asList(AnnotationType.BLOCK, AnnotationType.LINE, AnnotationType.WORD);
+        } else {
+            defaultSearchTextGranularity = ControllerUtils.validateTextGranularity(searchTextGranularity,
+                    FTSearchController.ALLOWED_ANNOTATION_TYPES);
         }
-        LOG.info("Default text granularity for search = {}", defaultSearchTextGranularity);
+        LOG.info("Default text granularity for search = {}", searchTextGranularity);
     }
 
     /**
@@ -106,7 +115,7 @@ public class FTSettings {
         return annotationDirectory;
     }
 
-    public AnnotationType getDefaultSearchTextGranularity() {
-        return defaultSearchTextGranularity;
+    public List<AnnotationType> getDefaultSearchTextGranularity() {
+        return Collections.unmodifiableList(defaultSearchTextGranularity);
     }
 }

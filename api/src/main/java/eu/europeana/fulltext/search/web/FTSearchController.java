@@ -3,6 +3,7 @@ package eu.europeana.fulltext.search.web;
 import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.api.config.FTSettings;
+import eu.europeana.fulltext.api.service.ControllerUtils;
 import eu.europeana.fulltext.search.config.SearchConfig;
 import eu.europeana.fulltext.search.exception.InvalidParameterException;
 import eu.europeana.fulltext.search.model.query.EuropeanaId;
@@ -18,6 +19,9 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
 
 import static eu.europeana.fulltext.RequestUtils.ACCEPT_VERSION_INVALID;
 import static eu.europeana.fulltext.RequestUtils.getRequestVersion;
@@ -28,11 +32,13 @@ import static eu.europeana.fulltext.RequestUtils.getRequestVersion;
  * @author Patrick Ehlert
  * Created on 28 May 2020
  */
-//@Lazy
 @Api(tags = {"Full-text search"}, description = "Search all full-texts that are part of an item (e.g. newspaper issue)")
 @RestController
 @RequestMapping("/presentation")
 public class FTSearchController {
+
+    public static final Set<AnnotationType> ALLOWED_ANNOTATION_TYPES = EnumSet.of(
+            AnnotationType.BLOCK, AnnotationType.LINE, AnnotationType.WORD);
 
     private static final Logger LOG = LogManager.getLogger(FTSearchController.class);
 
@@ -51,11 +57,8 @@ public class FTSearchController {
      * @param localId         itemId of the issue to search
      * @param query           search query
      * @param q               alternative search query (will override query if specified both
-     * @param qf
      * @param pageSize        maximum number of hits
      * @param textGranularity one-letter abbreviation or name of an Annotation type
-     * @param page
-     * @param lang
      * @param debug           if specified then include debug information in the response
      * @throws EuropeanaApiException when there is an error processing the request
      */
@@ -63,11 +66,8 @@ public class FTSearchController {
     public ResponseEntity searchIssue(@PathVariable String datasetId, @PathVariable String localId,
                                     @RequestParam(required = false) String query,
                                     @RequestParam(required = false) String q,
-                                    @RequestParam(required = false) String[] qf,
-                                    @RequestParam(required = false, defaultValue = "0") int page,
                                     @RequestParam(required = false, defaultValue = "12") int pageSize,
                                     @RequestParam(required = false) String textGranularity,
-                                    @RequestParam(required = false) String lang,
                                     @RequestParam(value = "format", required = false) String versionParam,
                                     @RequestParam(required = false) String debug,
                                     HttpServletRequest request) throws EuropeanaApiException {
@@ -82,12 +82,12 @@ public class FTSearchController {
         if (pageSize < 1 || pageSize > SearchConfig.MAXIMUM_HITS) {
             throw new InvalidParameterException("Page size should be between 1 and " + SearchConfig.MAXIMUM_HITS);
         }
-        AnnotationType annoType = validateAnnoType(textGranularity);
+        List<AnnotationType> annoTypes = validateTextGranularity(textGranularity);
 
         // start processing
         String searchId = request.getRequestURI() + "?" + request.getQueryString();
         SearchResult searchResult = searchService.searchIssue(searchId, new EuropeanaId(datasetId, localId), qry,
-                pageSize, annoType, requestVersion, (debug != null));
+                pageSize, annoTypes, requestVersion, (debug != null));
         return new ResponseEntity<>(searchResult, HttpStatus.OK);
     }
 
@@ -105,19 +105,15 @@ public class FTSearchController {
     }
 
     /**
-     * For now we only support Block, Line and Word level annotations
+     * Validate if there's a text granularity parameter value. If not we use the default settings, if so we
+     * check if the values are valid.
      */
-    private AnnotationType validateAnnoType(String textGranularity) throws InvalidParameterException {
+    List<AnnotationType> validateTextGranularity(String textGranularityParams) throws InvalidParameterException {
         // if the user didn't provide a parameter, we use the configured default
-        if (textGranularity == null) {
+        if (textGranularityParams == null) {
             return settings.getDefaultSearchTextGranularity();
         }
-
-        AnnotationType result = AnnotationType.fromAbbreviationOrName(textGranularity);
-        if (AnnotationType.WORD.equals(result) || AnnotationType.LINE.equals(result) || AnnotationType.BLOCK.equals(result)) {
-            return result;
-        }
-        throw new InvalidParameterException(("Invalid text granularity value. Possible values are: Word, Line or Block"));
+        return ControllerUtils.validateTextGranularity(textGranularityParams, ALLOWED_ANNOTATION_TYPES);
     }
 
 }

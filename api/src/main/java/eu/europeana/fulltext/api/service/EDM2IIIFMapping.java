@@ -22,7 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import static eu.europeana.fulltext.api.config.FTDefinitions.*;
@@ -278,6 +277,6 @@ public final class EDM2IIIFMapping {
             LOG.warn("Unknown dcType code '{}'", dcTypeCode);
             return "undefined";
         }
-        return dcType.getName();
+        return dcType.getDisplayName();
     }
 }

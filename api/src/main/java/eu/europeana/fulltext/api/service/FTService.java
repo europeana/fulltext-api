@@ -69,7 +69,7 @@ public class FTService {
      * @throws AnnoPageDoesNotExistException when the Annopage cannot be found
      * @return AnnoPage
      */
-    public AnnoPage fetchAnnoPage(String datasetId, String localId, String pageId, List<String> textGranValues) throws AnnoPageDoesNotExistException {
+    public AnnoPage fetchAnnoPage(String datasetId, String localId, String pageId, List<AnnotationType> textGranValues) throws AnnoPageDoesNotExistException {
         AnnoPage result = annoPageRepository.findByDatasetLocalPageId(datasetId, localId, pageId, textGranValues);
         if (result == null) {
             throw new AnnoPageDoesNotExistException(String.format("/%s/%s/annopage/%s", datasetId, localId, pageId));
@@ -83,13 +83,13 @@ public class FTService {
      * then all annotations of that type will be returned. The cursor must be closed when the caller is done!
      * @param datasetId ID of the dataset
      * @param localId   ID of the parent of the Annopage object
-     * @param imageIds   IDs of the images
-     * @param annotationType type of annotations that should be retrieved, if null or empty all annotations of that
+     * @param imageIds  IDs of the images
+     * @param annoTypes type of annotations that should be retrieved, if null or empty all annotations of that
      *                        annopage will be retrieved
      * @return MorphiaCursor containing AnnoPage entries.
      */
-    public MorphiaCursor<AnnoPage> fetchAnnoPageFromImageId(String datasetId, String localId, List<String> imageIds, AnnotationType annotationType) {
-        return annoPageRepository.findByDatasetLocalImageId(datasetId, localId, imageIds, annotationType);
+    public MorphiaCursor<AnnoPage> fetchAnnoPageFromImageId(String datasetId, String localId, List<String> imageIds, List<AnnotationType> annoTypes) {
+        return annoPageRepository.findByDatasetLocalImageId(datasetId, localId, imageIds, annoTypes);
     }
 
 
