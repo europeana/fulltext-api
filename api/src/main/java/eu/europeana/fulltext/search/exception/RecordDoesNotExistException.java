@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * @author Patrick Ehlert
  * Created on 28 May 2020
  */
-@ResponseStatus(HttpStatus.NOT_FOUND)
 public class RecordDoesNotExistException extends EuropeanaApiException {
 
     private static final long serialVersionUID = -2506967519765835153L;
@@ -20,4 +19,8 @@ public class RecordDoesNotExistException extends EuropeanaApiException {
         super("No record with id '" + europeanaId + "' found");
     }
 
+    @Override
+    public HttpStatus getResponseStatus() {
+        return HttpStatus.NOT_FOUND;
+    }
 }
