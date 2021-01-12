@@ -17,8 +17,12 @@ public class InvalidParameterException extends EuropeanaApiException {
 
     private static final long serialVersionUID = -5555912949147932111L;
 
+    /**
+     *
+     * @param error String describing the error
+     */
     public InvalidParameterException(String error) {
-        super("Invalid parameter:" + error);
+        super("Invalid parameter: " + error);
     }
 
 }

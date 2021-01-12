@@ -60,14 +60,15 @@ public class FTSearchService {
      * @param europeanaId    europeana id of the issue to search
      * @param query          the string to search
      * @param pageSize       maximum number of hits
-     * @param annotationType requested types of annotations
+     * @param annoTypes      requested types of annotations
      * @param debug          if true we include debug information
      * @param requestVersion API version for request. If empty, version 2 is used by default
      * @return SearchResult object (can be empty if no hits were found)
      * @throws EuropeanaApiException when there is a problem processing the request (e.g. issue doesn't exist)
      */
-    public SearchResult searchIssue(String searchId, EuropeanaId europeanaId, String query, int pageSize, AnnotationType annotationType,
-                                    String requestVersion, boolean debug) throws EuropeanaApiException {
+    public SearchResult searchIssue(String searchId, EuropeanaId europeanaId, String query, int pageSize,
+                                    List<AnnotationType> annoTypes, String requestVersion, boolean debug)
+            throws EuropeanaApiException {
         long start = System.currentTimeMillis();
         SearchResult result = SearchResultFactory.createSearchResult(searchId, debug, requestVersion);
 
@@ -81,14 +82,15 @@ public class FTSearchService {
             }
         } else {
             LOG.debug("Solr returned {} document in {} ms", solrResult.size(), System.currentTimeMillis() - start);
-            findAnnopageAndAnnotations(result, solrResult, europeanaId, pageSize, annotationType, requestVersion);
+            findAnnopageAndAnnotations(result, solrResult, europeanaId, pageSize, annoTypes, requestVersion);
         }
         LOG.debug("Search done in {} ms. Found {} annotations", (System.currentTimeMillis() - start), result.itemSize());
         return result;
     }
 
     private void findAnnopageAndAnnotations(SearchResult result, Map<String, List<String>> highlightInfo,
-                                            EuropeanaId europeanaId, int pageSize, AnnotationType annoType, String requestVersion) throws EuropeanaApiException {
+                                            EuropeanaId europeanaId, int pageSize, List<AnnotationType> annoTypes, String requestVersion)
+            throws EuropeanaApiException {
         // Group Solr hits by imageId so we can link an AnnoPage to its corresponding hit(s)
         Map<String, List<SolrHit>> solrHitsByImageId = parseHighlightData(highlightInfo, result.getDebug())
                 .stream()
@@ -96,15 +98,13 @@ public class FTSearchService {
 
         long start = System.currentTimeMillis();
         try (MorphiaCursor<AnnoPage> annoPageCursor = fulltextRepo.fetchAnnoPageFromImageId(europeanaId.getDatasetId(),
-                europeanaId.getLocalId(),
-                new ArrayList<>(solrHitsByImageId.keySet()), annoType)) {
+                europeanaId.getLocalId(), new ArrayList<>(solrHitsByImageId.keySet()), annoTypes)) {
             if (annoPageCursor == null || !annoPageCursor.hasNext()) {
                 LOG.debug("No results from Solr");
                 throw new RecordDoesNotExistException(europeanaId);
             } else {
                 LOG.debug("Retrieved AnnoPages from /{}/{} in {} ms",
-                        europeanaId.getDatasetId(), europeanaId.getLocalId(),
-                        System.currentTimeMillis() - start);
+                        europeanaId.getDatasetId(), europeanaId.getLocalId(), System.currentTimeMillis() - start);
             }
 
             while (annoPageCursor.hasNext()) {
@@ -112,7 +112,7 @@ public class FTSearchService {
                 // get relevant SolrHits by imageId (which match annoPage.tgId)
                 for (SolrHit solrHit : solrHitsByImageId.get(annoPage.getTgtId())) {
                     // use the annopage to find the matching annotations
-                    findAnnotations(result, solrHit, annoPage, pageSize, annoType, requestVersion);
+                    findAnnotations(result, solrHit, annoPage, pageSize, annoTypes, requestVersion);
                     if (result.itemSize() >= pageSize) {
                         return;
                     }
@@ -121,11 +121,9 @@ public class FTSearchService {
         }
     }
 
-
-
     private void findAnnotations(SearchResult result, SolrHit solrHit, AnnoPage annoPage, int pageSize,
-                                 AnnotationType annoType, String requestVersion) {
-        LOG.trace("  Searching for {} annotations that overlap with {}...", annoType, solrHit.getDebugInfo());
+                                 List<AnnotationType> annoTypes, String requestVersion) {
+        LOG.trace("  Searching for {} annotations that overlap with {}...", annoTypes, solrHit.getDebugInfo());
         boolean annotationsFound = false;
         for (Annotation anno : annoPage.getAns()) {
             if (anno.getFrom() != null && anno.getTo() != null &&
@@ -138,14 +136,14 @@ public class FTSearchService {
                 // Sometimes a trailing character like a dot or comma directly after the keyword is regarded as
                 // another annotation (word). So we filter those out.
                 if (anno.getTo() - anno.getFrom() > 1) {
-                    if (AnnotationType.WORD.equals(annoType)) {
+                    annotationsFound = true;
+                    if (anno.getDcType() == AnnotationType.WORD.getAbbreviation()) {
                         // Don't output hit data for word level annotations
                         result.addAnnotationHit(annoPage, anno, null);
                     } else {
                         Hit hit = HitFactory.createHit(solrHit.getStart(), solrHit.getEnd(), annoPage, anno, requestVersion);
                         result.addAnnotationHit(annoPage, anno, hit);
                     }
-                    annotationsFound = true;
                 } else {
                     LOG.debug("Ignoring overlap with annotation {} because it's only 1 character long", anno.getAnId());
                 }
@@ -169,8 +167,6 @@ public class FTSearchService {
      *  {"startOffsetUtf16=<number>,matchStartsUtf16=[<number1>,<number2>....],matchEndsUtf16=[<number1><number2>....]}
      */
     private List<SolrHit> parseHighlightData(Map<String, List<String>> highlightInfo, Debug debug) throws EuropeanaApiException {
-        List<SolrHit> result = new ArrayList<>();
-
         // TODO for now we assume there will always be only 1 language, so 1 set of snippets and offsets
         Object highlightObj = highlightInfo.values().iterator().next();
         List<String> snippetsTxt;
@@ -183,6 +179,8 @@ public class FTSearchService {
             throw new EuropeanaApiException("Unexpected highlights object type: " +
                     (highlightObj == null ? null : highlightObj.getClass()));
         }
+
+        List<SolrHit> result = new ArrayList<>();
         int nrMergedHits = 0;
         for (int i = 0; i < snippetsTxt.size(); i++) {
             // parse snippets data
