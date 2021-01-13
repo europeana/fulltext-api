@@ -1,4 +1,4 @@
-package eu.europeana.fulltext.api;
+package eu.europeana.fulltext.api.web;
 
 
 import eu.europeana.fulltext.api.config.FTSettings;
@@ -7,15 +7,12 @@ import eu.europeana.fulltext.api.service.FTService;
 import eu.europeana.fulltext.api.service.exception.AnnoPageDoesNotExistException;
 import eu.europeana.fulltext.api.service.exception.ResourceDoesNotExistException;
 import eu.europeana.fulltext.api.service.exception.SerializationException;
-import eu.europeana.fulltext.api.web.FTController;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultMatcher;
 
@@ -27,15 +24,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.startsWith;
 import static org.mockito.BDDMockito.eq;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.http.HttpHeaders.ACCEPT;
-import static org.springframework.http.HttpHeaders.VARY;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.head;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
  * Test the application's controller
@@ -45,7 +36,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * TODO add tests for If-Modified-Since header and the CORS headers
  */
 
-@RunWith(SpringJUnit4ClassRunner.class)
 @WebMvcTest(FTController.class)
 //@AutoConfigureMockMvc
 public class FTControllerTest {
@@ -109,7 +99,7 @@ public class FTControllerTest {
 //    @MockBean
 //    private CacheUtils cacheUtils;
 
-    @Before
+    @BeforeEach
     public void setup() throws AnnoPageDoesNotExistException, SerializationException, ResourceDoesNotExistException {
 
         given(ftService.fetchAnnoPage(any(), any(), any(), any())).willReturn(anp_1);

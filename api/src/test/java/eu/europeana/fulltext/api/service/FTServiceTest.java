@@ -1,4 +1,4 @@
-package eu.europeana.fulltext.api;
+package eu.europeana.fulltext.api.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.europeana.fulltext.api.config.FTSettings;
@@ -7,20 +7,16 @@ import eu.europeana.fulltext.api.model.v2.AnnotationPageV2;
 import eu.europeana.fulltext.api.model.v2.AnnotationV2;
 import eu.europeana.fulltext.api.model.v3.AnnotationPageV3;
 import eu.europeana.fulltext.api.model.v3.AnnotationV3;
-import eu.europeana.fulltext.api.service.EDM2IIIFMapping;
-import eu.europeana.fulltext.api.service.FTService;
 import eu.europeana.fulltext.api.service.exception.AnnoPageDoesNotExistException;
 import eu.europeana.fulltext.api.service.exception.ResourceDoesNotExistException;
 import eu.europeana.fulltext.repository.AnnoPageRepository;
 import eu.europeana.fulltext.repository.ResourceRepository;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.Collections;
 
@@ -34,7 +30,6 @@ import static org.unitils.reflectionassert.ReflectionAssert.assertReflectionEqua
  * Created by luthien on 26/09/2018.
  * TODO - add some FTResource handling test cases (prepared two FTResource objects already in the TestUtils class)
  */
-@RunWith(SpringJUnit4ClassRunner.class)
 @TestPropertySource(locations = "classpath:fulltext-test.properties")
 @SpringBootTest(classes = {FTService.class, FTSettings.class, EDM2IIIFMapping.class})
 public class FTServiceTest {
@@ -51,7 +46,7 @@ public class FTServiceTest {
     @MockBean
     private ObjectMapper mapper;
 
-    @Before
+    @BeforeEach
     public void setup(){
         given(apRepository.existsByPageId(eq("ds1"), eq("lc1"), eq("pg1")))
                 .willReturn(true);
