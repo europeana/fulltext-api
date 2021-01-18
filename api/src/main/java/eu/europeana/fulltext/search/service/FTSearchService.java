@@ -100,15 +100,15 @@ public class FTSearchService {
         try (MorphiaCursor<AnnoPage> annoPageCursor = fulltextRepo.fetchAnnoPageFromImageId(europeanaId.getDatasetId(),
                 europeanaId.getLocalId(), new ArrayList<>(solrHitsByImageId.keySet()), annoTypes)) {
             if (annoPageCursor == null || !annoPageCursor.hasNext()) {
-                LOG.debug("No results from Solr");
+                LOG.debug("No results from Mongo");
                 throw new RecordDoesNotExistException(europeanaId);
             } else {
-                LOG.debug("Retrieved AnnoPages from /{}/{} in {} ms",
-                        europeanaId.getDatasetId(), europeanaId.getLocalId(), System.currentTimeMillis() - start);
+                LOG.debug("Retrieved AnnoPages for {} in {} ms", europeanaId, System.currentTimeMillis() - start);
             }
 
             while (annoPageCursor.hasNext()) {
                 AnnoPage annoPage = annoPageCursor.next();
+                LOG.debug("Processing annoPage {}", annoPage);
                 // get relevant SolrHits by imageId (which match annoPage.tgId)
                 for (SolrHit solrHit : solrHitsByImageId.get(annoPage.getTgtId())) {
                     // use the annopage to find the matching annotations

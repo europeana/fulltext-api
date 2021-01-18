@@ -74,7 +74,7 @@ public class SolrHighlightQueryImpl implements SolrHighlightQuery {
         return highlights.get(europeanaId.toString()); // should only be 1 item
     }
 
-    private SolrQuery createQuery(EuropeanaId europeanaId, String query, int maxSnippets) {
+    SolrQuery createQuery(EuropeanaId europeanaId, String query, int maxSnippets) {
         SolrQuery sq = new SolrQuery();
         sq.setQuery(EUROPEANA_ID_FIELD + ":" + ClientUtils.escapeQueryChars(europeanaId.toString()));
         sq.setRows(1);  // we expect 1 issue to return anyway

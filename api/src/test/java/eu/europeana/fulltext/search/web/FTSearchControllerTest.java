@@ -8,14 +8,12 @@ import eu.europeana.fulltext.search.model.query.EuropeanaId;
 import eu.europeana.fulltext.search.model.response.v2.SearchResultV2;
 import eu.europeana.fulltext.search.model.response.v3.SearchResultV3;
 import eu.europeana.fulltext.search.service.FTSearchService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.ArrayList;
@@ -23,14 +21,13 @@ import java.util.List;
 
 import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_IIIF_V2;
 import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_IIIF_V3;
-import static junit.framework.TestCase.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
 @ContextConfiguration(classes = FTApplication.class)
 @WebMvcTest(FTSearchController.class)
 public class FTSearchControllerTest {
@@ -47,7 +44,7 @@ public class FTSearchControllerTest {
     private final String TEST_SEARCH_ID = "test_search_id";
 
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         SearchResultV2 testResultV2 = new SearchResultV2(TEST_SEARCH_ID, false);
         SearchResultV3 testResultV3 = new SearchResultV3(TEST_SEARCH_ID, false);

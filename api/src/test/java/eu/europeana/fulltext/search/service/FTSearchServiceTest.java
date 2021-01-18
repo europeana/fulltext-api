@@ -1,17 +1,44 @@
 package eu.europeana.fulltext.search.service;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.morphia.query.internal.MorphiaCursor;
+import eu.europeana.api.commons.error.EuropeanaApiException;
+import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.api.config.FTSettings;
+import eu.europeana.fulltext.api.model.v2.AnnotationV2;
 import eu.europeana.fulltext.api.service.EDM2IIIFMapping;
-import org.junit.FixMethodOrder;
-import org.junit.Ignore;
-import org.junit.runner.RunWith;
-import org.junit.runners.MethodSorters;
+import eu.europeana.fulltext.api.service.FTService;
+import eu.europeana.fulltext.entity.AnnoPage;
+import eu.europeana.fulltext.entity.Annotation;
+import eu.europeana.fulltext.search.exception.RecordDoesNotExistException;
+import eu.europeana.fulltext.search.model.query.EuropeanaId;
+import eu.europeana.fulltext.search.model.response.Hit;
+import eu.europeana.fulltext.search.model.response.SearchResult;
+import eu.europeana.fulltext.search.model.response.v2.SearchResultV2;
+import eu.europeana.fulltext.search.model.response.v3.SearchResultV3;
+import eu.europeana.fulltext.search.repository.SolrRepo;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.solr.common.util.NamedList;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.given;
 
 /**
  * Unit test for the FTSearchService class
@@ -19,293 +46,282 @@ import static org.junit.Assert.assertTrue;
  * @author Patrick Ehlert
  * Created on 10 Jun 2020
  */
-@Ignore
-@RunWith(SpringJUnit4ClassRunner.class)
 @TestPropertySource(locations = "classpath:fulltext-test.properties")
 @SpringBootTest(classes = {FTSearchService.class, FTSettings.class, EDM2IIIFMapping.class})
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class FTSearchServiceTest {
 
-//    private static final String searchVersion = "3";
-//    // from page3 (start of page)
-//    private static final String SNIPPET_START_PAGE = "<em>Aus der</em> 49. Verlustliste.";
-//    private static final SolrSnippetOffset HIT_START_PAGE = new SolrSnippetOffset(null, "Aus der", ' ', -1, -1); // 1 hit
-//    private static final String ANNO_START_PAGE_ID = "AnnoStartPage";
-//    private static final Annotation ANNO_START_PAGE = new Annotation(ANNO_START_PAGE_ID, AnnotationType.LINE.getAbbreviation(),
-//            0, 7);
-//
-//    // from page3 (end of page)
-//    private static final String SNIPPET_END_PAGE = "am 29. Oktober in der Philharmonie ein <em>zweites Konzert</em>";
-//    private static final SolrSnippetOffset HIT_END_PAGE = new SolrSnippetOffset(' ', "zweites Konzert", null, -1, -1); // 1 hits
-//    private static final String ANNO_END_PAGE_ID = "AnnoEndPage";
-//    private static final Annotation ANNO_END_PAGE = new Annotation(ANNO_END_PAGE_ID,  AnnotationType.WORD.getAbbreviation(),
-//            22970, 22985);
-//
-//    // from page3 (middle of page)
-//    private static final String SNIPPET_2_SAME_HITS = "Paul E h r e n f e l d (<em>Berlin</em>) tot. Pion. Fritz Hage n (<em>Berlin</em>) tot.";
-//    private static final SolrSnippetOffset HIT_2_SAME_HITS = new SolrSnippetOffset('(', "Berlin", ')', -1, -1); // 65 hits
-//
-//    // from page3 (middle of page, before snippet is a space)
-//    private static final SolrSnippetOffset HIT_NO_PREFIX_SPACE = new SolrSnippetOffset(null, "Erich", ' ', -1, -1); // 2 hits
-//
-//    // from page 3 (middle of page, before snippet is a newline
-//    private static final SolrSnippetOffset HIT_NO_PREFIX_NEWLINE = new SolrSnippetOffset(null,"Kommandowechsel", ' ', -1, -1); // 1 hit
-//    private static final String ANNO_NO_PREFIX_NEWLINE_WORD_ID = "AnnoNoPrefixWord";
-//    private static final String ANNO_NO_PREFIX_NEWLINE_BLOCK_ID = "AnnoNoPrefixBlock";
-//    private static final Annotation ANNO_NO_PREFIX_NEWLINE_WORD = new Annotation(ANNO_NO_PREFIX_NEWLINE_WORD_ID,  AnnotationType.WORD.getAbbreviation(),
-//            10764, 10779);
-//    private static final Annotation ANNO_NO_PREFIX_NEWLINE_BLOCK = new Annotation(ANNO_NO_PREFIX_NEWLINE_BLOCK_ID,  AnnotationType.BLOCK.getAbbreviation(),
-//            10700, 10800);
-//
-//    // from page3 (middle of page, after snippet is a space)
-//    private static final SolrSnippetOffset HIT_NO_SUFFIX_SPACE = new SolrSnippetOffset(' ',"Kirkwall", null, -1, -1); // 1 hit
-//    private static final String ANNO1_NO_SUFFIX_SPACE_ID = "AnnoNoSuffix1";
-//    private static final Annotation ANNO1_NO_SUFFIX_SPACE = new Annotation(ANNO1_NO_SUFFIX_SPACE_ID,  AnnotationType.LINE.getAbbreviation(),
-//            12270, 12280);
-//    private static final String ANNO2_NO_SUFFIX_SPACE_ID = "AnnoNoSuffix2";
-//    private static final Annotation ANNO2_NO_SUFFIX_SPACE = new Annotation(ANNO2_NO_SUFFIX_SPACE_ID,  AnnotationType.LINE.getAbbreviation(),
-//            12272, 12278);
-//
-//    // from page 3 (middle of page, after snippet is a newline)
-//    private static final SolrSnippetOffset HIT_NO_SUFFIX_NEWLINE = new SolrSnippetOffset(' ', "Raincourt", null, -1, -1); // 1 hit
-//    private static final SolrSnippetOffset HIT_NO_PREFIX_SUFFIX = new SolrSnippetOffset("", "Raincourt", "", -1, -1); // 1 hit
-//
-//
-//    @Autowired
-//    private FTSearchService searchService;
-//
-//    @MockBean
-//    private SolrRepo solrRepo;
-//    @MockBean
-//    private FTService fulltextRepo;
-//
-//    private AnnoPage annoPage;
-//
-//    @Before
-//    public void loadAnnoPage() throws IOException {
-//        ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-//        String fulltext = IOUtils.toString(classloader.getResourceAsStream(
-//                "fulltext_9200355_BibliographicResource_3000096341989_page3.txt"), StandardCharsets.UTF_8);
-//
-//        AnnoPage ap = new AnnoPage();
-//        Resource res = new Resource();
-//        res.setValue(fulltext);
-//        res.setId("test-resource3");
-//        ap.setPgId("3");
-//        ap.setRes(res);
-//        this.annoPage = ap;
-//
-//        List<Annotation> annotations = new ArrayList<>() {
-//            {
-//                add(ANNO_START_PAGE);
-//                add(ANNO1_NO_SUFFIX_SPACE);
-//                add(ANNO2_NO_SUFFIX_SPACE);
-//                add(ANNO_NO_PREFIX_NEWLINE_WORD);
-//                add(ANNO_NO_PREFIX_NEWLINE_BLOCK);
-//                add(ANNO_END_PAGE);
-//            }
-//        };
-//        ap.setAns(annotations);
-//    }
-//
-//    /**
-//     * Test if extracting hits/keywords from a Solr Snippet works fine
-//     */
-//    @Test
-//    public void testGetSolrHitsFromSnippet() {
-//        // find a keyword at the start of a page
-//        List<SolrSnippetOffset> hits = new ArrayList<>();
-//        searchService.getHitsFromSolrSnippet(hits, SNIPPET_START_PAGE, null);
-//        assertEquals(1, hits.size());
-//        SolrSnippetOffset hit1 = hits.get(0);
-//        assertEquals(HIT_START_PAGE, hit1);
-//
-//        // find a keyword at the end of a page
-//        searchService.getHitsFromSolrSnippet(hits, SNIPPET_END_PAGE, null);
-//        assertEquals(2, hits.size());
-//        SolrSnippetOffset hit2 = hits.get(1);
-//        assertEquals(HIT_END_PAGE, hit2);
-//
-//        // find 2 different keywords in 1 snippet
-//        String twoDistinctHits = "Truck und Verlag: <em>Berlin</em>.      \n<em>Berliner</em> Jageblalt 43.\\\"z.»rg.";
-//        SolrSnippetOffset expectedHit1 = new SolrSnippetOffset(' ',"Berlin", '.', -1, -1);
-//        SolrSnippetOffset expectedHit2 = new SolrSnippetOffset('\n', "Berliner", ' ', -1, -1);
-//        searchService.getHitsFromSolrSnippet(hits, twoDistinctHits, null);
-//        assertEquals(4, hits.size());
-//        SolrSnippetOffset hit3 = hits.get(hits.indexOf(expectedHit1));
-//        assertEquals(expectedHit1, hit3);
-//        SolrSnippetOffset hit4 = hits.get(hits.indexOf(expectedHit2));
-//        assertEquals(expectedHit2, hit4);
-//
-//        // find 2 exactly the same keywords (so should count as 1)
-//        searchService.getHitsFromSolrSnippet(hits, SNIPPET_2_SAME_HITS, null);
-//        assertEquals(5, hits.size());
-//        SolrSnippetOffset hit5 = hits.get(hits.indexOf(HIT_2_SAME_HITS));
-//        assertEquals(HIT_2_SAME_HITS, hit5);
-//    }
-//
-//    /**
-//     * Test if merging 2 solr hits found next to each other works fine.
-//     */
-//    @Test
-//    public void testMergeSolrHitsFromSnippet() {
-//        String snippet = "Na ELSENEUR, Kaptein <em>Daniel</em> <em>Ehlert</em>, van Koningsbergen";
-//        SolrSnippetOffset expectedSolrHit = new SolrSnippetOffset(" ", "Daniel Ehlert", ",", -1, -1);
-//
-//        List<SolrSnippetOffset> hits = new ArrayList<>();
-//        searchService.getHitsFromSolrSnippet(hits, snippet, null);
-//        assertEquals(1, hits.size());
-//        assertEquals(expectedSolrHit, hits.get(0));
-//    }
-//
-//    /**
-//     * Test if searching for a particular solrhit in a fulltext works fine.
-//     */
-//    @Test
-//    public void testFindSolrHitInFullText() {
-//        List<Hit> hits1a = searchService.findHitInFullText(HIT_2_SAME_HITS, annoPage, 100, searchVersion);
-//        assertEquals(65, hits1a.size());
-//
-//        // test maxHits parameter
-//        List<Hit> hits1b = searchService.findHitInFullText(HIT_2_SAME_HITS, annoPage, 5, searchVersion);
-//        assertEquals(5, hits1b.size());
-//
-//        // no prefix, before is a space
-//        List<Hit> hits2 = searchService.findHitInFullText(HIT_NO_PREFIX_SPACE, annoPage, 10, searchVersion);
-//        assertEquals(2, hits2.size());
-//
-//        // no prefix, before is a newline
-//        List<Hit> hits3 = searchService.findHitInFullText(HIT_NO_PREFIX_NEWLINE, annoPage, 10, searchVersion);
-//        assertEquals(1, hits3.size());
-//
-//        // no suffix, after is a space
-//        List<Hit> hit4 = searchService.findHitInFullText(HIT_NO_SUFFIX_SPACE, annoPage, 10, searchVersion);
-//        assertEquals(1, hit4.size());
-//
-//        // no suffix, after is a newline
-//        List<Hit> hits5 = searchService.findHitInFullText(HIT_NO_SUFFIX_NEWLINE, annoPage, 10, searchVersion);
-//        assertEquals(1, hits5.size());
-//
-//        // no prefix and suffix (not sure if Solr will ever return something like this, but to be sure)
-//        List<Hit> hits6 = searchService.findHitInFullText(HIT_NO_PREFIX_SUFFIX, annoPage, 10, searchVersion);
-//        assertEquals(1, hits5.size());
-//    }
-//
-//    /**
-//     * Test if we handle not finding a solrhit properly
-//     */
-//    @Test
-//    public void testFindNoSolrHit() {
-//        // although the test fulltext does contain a word with an x, there is no ' x '
-//        List<Hit> hits = searchService.findHitInFullText(new SolrSnippetOffset("", "x", "", -1, -1), annoPage, 10, searchVersion);
-//        assertEquals(0, hits.size());
-//    }
-//
-//    /**
-//     * Test if we set the proper start and end coordinates when we find a solrhit and create a hit object
-//     */
-//    @Test
-//    public void testFindSolrHitInFulltextCoordinates() {
-//        String text = "This is another test test";
-//        AnnoPage annoPage = new AnnoPage("x", "y", "1", null,
-//                new Resource(null, null, text, null));
-//
-//        SolrSnippetOffset hitToFind = new SolrSnippetOffset(null, "This", ' ', -1, -1);
-//        List<Hit> hits = searchService.findHitInFullText(hitToFind, annoPage, 5, searchVersion);
-//        assertEquals(1, hits.size());
-//        Hit hitFound = hits.get(0);
-//        assertEquals(Integer.valueOf(0), hitFound.getStartIndex());
-//        assertEquals(Integer.valueOf(4), hitFound.getEndIndex());
-//
-//        hitToFind = new SolrSnippetOffset(' ', "another", ' ', -1, -1);
-//        hits = searchService.findHitInFullText(hitToFind, annoPage, 5, searchVersion);
-//        assertEquals(1, hits.size());
-//        hitFound = hits.get(0);
-//        assertEquals(Integer.valueOf(8), hitFound.getStartIndex());
-//        assertEquals(Integer.valueOf(15), hitFound.getEndIndex());
-//
-//        hitToFind = new SolrSnippetOffset(' ', "test", null, -1, -1);
-//        hits = searchService.findHitInFullText(hitToFind, annoPage, 5, searchVersion);
-//        assertEquals(2, hits.size());
-//        hitFound = hits.get(0);
-//        assertEquals(Integer.valueOf(16), hitFound.getStartIndex());
-//        assertEquals(Integer.valueOf(20), hitFound.getEndIndex());
-//        hitFound = hits.get(1);
-//        assertEquals(Integer.valueOf(21), hitFound.getStartIndex());
-//        assertEquals(Integer.valueOf(25), hitFound.getEndIndex());
-//    }
-//
-//    /**
-//     * Test if we can find a solrhit that is at the start of a fulltext
-//     */
-//    @Test
-//    public void testFindSolrHitInFulltextStart() {
-//        List<Hit> hits = searchService.findHitInFullText(HIT_START_PAGE, annoPage, 10, searchVersion);
-//        assertEquals(1, hits.size());
-//        Hit startPageHit = hits.get(0);
-//        assertEquals(Integer.valueOf(0), startPageHit.getStartIndex());
-//        assertEquals(Integer.valueOf(HIT_START_PAGE.getExact().length()), startPageHit.getEndIndex());
-//    }
-//
-//    /**
-//     * Test if we can find a hit that is at the end of a fulltext
-//     */
-//    @Test
-//    public void testFindSolrHitInFulltextEnd() {
-//        List<Hit> hits = searchService.findHitInFullText(HIT_END_PAGE, annoPage, 10, searchVersion);
-//        assertEquals(1, hits.size());
-//        Hit endPageHit = hits.get(0);
-//        int ftLength = annoPage.getRes().getValue().length();
-//        assertEquals(Integer.valueOf(ftLength - HIT_END_PAGE.getExact().length()), endPageHit.getStartIndex());
-//        assertEquals(Integer.valueOf(ftLength), endPageHit.getEndIndex());
-//    }
-//
-//    /**
-//     * Test if we can match a hit to an annotation
-//     */
-//    @Test
-//    public void testFindAnnotation() {
-//        // find annotation with a perfect match (same start and end coordinate)
-//        List<Hit> hit1 = searchService.findHitInFullText(HIT_NO_PREFIX_NEWLINE, annoPage, 10, searchVersion);
-//        assertEquals(1, hit1.size());
-//
-//        SearchResultV3 result1 = new SearchResultV3("test", true);
-//        searchService.findAnnotation(result1, hit1.get(0), annoPage, AnnotationType.BLOCK);
-//        assertEquals(Integer.valueOf(1), Integer.valueOf(result1.getHits().size()));
-//        assertEquals(Integer.valueOf(1), Integer.valueOf(result1.getItems().size()));
-//        assertTrue(result1.getItems().get(0).getId().endsWith(ANNO_NO_PREFIX_NEWLINE_BLOCK_ID));
-//
-//        // if we retry again for word-level annotations we should still find 1 annotation, but there should be no hit
-//        // in the result because we don't output those for word-level annotations
-//        SearchResultV3 result2 = new SearchResultV3("test", true);
-//        searchService.findAnnotation(result2, hit1.get(0), annoPage, AnnotationType.WORD);
-//        assertTrue(result2.getHits().isEmpty());
-//        assertEquals(Integer.valueOf(1), Integer.valueOf(result2.getItems().size()));
-//        assertTrue(result2.getItems().get(0).getId().endsWith(ANNO_NO_PREFIX_NEWLINE_WORD_ID));
-//
-//        // find 2 overlapping annotations; one where the start coordinate is -1 and end coordinate +1 and another
-//        // where the start coordinate is +1 and the end coordinate -1.
-//        // This should not happen in practice of course.
-//        List<Hit> hit2 = searchService.findHitInFullText(HIT_NO_SUFFIX_SPACE, annoPage, 10, searchVersion);
-//        assertEquals(1, hit2.size());
-//        SearchResultV3 result3 = new SearchResultV3("test", true);
-//        searchService.findAnnotation(result3, hit2.get(0), annoPage, AnnotationType.LINE);
-//        assertEquals(Integer.valueOf(1), Integer.valueOf(result3.getHits().size())); // should have only 1 hit
-//        assertEquals(Integer.valueOf(2), Integer.valueOf(result3.getItems().size()));
-//        assertTrue(result3.getItems().get(0).getId().endsWith(ANNO1_NO_SUFFIX_SPACE_ID));
-//        assertTrue(result3.getItems().get(1).getId().endsWith(ANNO2_NO_SUFFIX_SPACE_ID));
-//    }
-//
-//    /**
-//     * Test if we handle finding no annotation okay (we don't add the hit)
-//     */
-//    @Test
-//    public void testFindNoAnnotations() {
-//        Hit noHit =  HitFactory.createHit(100, 101, "x", searchVersion);
-//        SearchResult result = SearchResultFactory.createSearchResult("test", true, searchVersion);
-//        searchService.findAnnotation(result, noHit, annoPage, AnnotationType.LINE);
-//        assertEquals(0, result.itemSize());
-//        assertTrue(result.getHits().isEmpty());
-//    }
+    // Create dummy Solr result (for query "presentation/9200396/BibliographicResource_3000118435970/search?query=flandre")
+    // --------------------------------------------------------------------------------------------
+    private static final NamedList HIT1 = new NamedList(){{
+        add("startOffsetUtf16", 95053);
+        add("matchStartsUtf16", new ArrayList<>(List.of(95987, 96399, 0, 0, 0, 0, 0, 0)));
+        add("matchEndsUtf16", new ArrayList<>(List.of(95994, 96406, 0, 0, 0, 0, 0, 0)));
+    }};
+    private static final NamedList HIT2 = new NamedList(){{
+        add("startOffsetUtf16", 96790);
+        add("matchStartsUtf16", new ArrayList<>(List.of(97730, 0, 0, 0, 0, 0, 0, 0)));
+        add("matchEndsUtf16", new ArrayList<>(List.of(97737, 0, 0, 0, 0, 0, 0, 0)));
+    }};
+    private static final String SNIPPET1 = "{https://iiif.europeana.eu/image/AVB5EMAWXYXPY2NSRANVZQ77OZBQWXFUFDDJ74OTHTVU6OBRAHIA/presentation_images/60de4440-022a-11e6-a696-fa163e2dd531/node-3/image/BNL/Journal_historique_et_littéraire/1774/07/15/00123/full/full/0/default.jpg} JUILLET. 1774, de la petite-vérole, même à celles qui font de fervice auprès de Ca Perfonne, de paroltre à la Cour pendant le danger de la contagion. Avant le départ de Sa Maj. de la Muette , le Peuple s’y étoit rendu plufieurs fois en foule , criant Vive le Roi & point d’inoculation , & il a été remis au Roi plufieurs mémoires anonymes fur des accidents  caufés par l'inoculation , mais rien n’a pd faire changer Sa Majefté de réfolution (*>\n" +
+            "«5\n" +
+            "PAYS-BAS.\n" +
+            "B R u x elles (7e a3 Juin. ) Monfei-gneur l’Archiduc accompagné du Prince de Stahremberg, Miniftre Plénipotentiaire, du Comte de Lamberg , & de Mr. de Crum-pipen, eft parti lundi dernier pour Tournay, d’où ce Séréniflime Prince fe rendra en Flandre  pour voir les principales Villes de la Province, les coupures, l’Eclufe de Schli-ken & les ouvrages de Mer. Le Comte de Rofemberg n’a pu être du voïage à caufe d’une nouvelle attaque de goutte. Ostbnde ( le 24 Juin. ) Avanthier à huit heures du foir S. A. R. Mgr. l’Archiduc  Maximilien , accompagné de plufieurs perfonnes de diftinftion , arriva en cette Ville, venant de Tournay & autres Villes de la Flandre autrichienne, & defcendit à l’Hôtel-de-Ville, où on avoit préparé un logement pour lui & pour fa fuite. Le len-\n" +
+            "(*) Des raifons particulières nous aïant engagés  à finir la fécondé partie du Journal avant le 15, nous ne pouvons rafsùrer encore le Public fur les fuites de l’inoculation du Roi & de la ■famille roïale , qui julqu’ici ne préfente rieti qui puiflè fonder des craintes.";
+    private static final String SNIPPET2 = "{https://iiif.europeana.eu/image/AVB5EMAWXYXPY2NSRANVZQ77OZBQWXFUFDDJ74OTHTVU6OBRAHIA/presentation_images/60de4440-022a-11e6-a696-fa163e2dd531/node-3/image/BNL/Journal_historique_et_littéraire/1774/07/15/00124/full/full/0/default.jpg} J V I LL if. îfjii, demain mâtin de Prince alla voir la Ville', les Fortifications & les autres ouvrages remarquables  ,■ & revint dîner à l’Hôtel-de -Tille. Après-dîner S. A.- R. fe rendit aux Bancs des huîtres, de là par le petit trajet du port aux Eclufes de Slykens, & enfuite aux Moulins à ■ feièr, d’ôù Elle partit pour Bru- -ges avec fa compagnie dans une barque nouvellement cônftruiie pour le paffage de Bruges à Gand. ■ G an b (/e 47 juin.') Mgr.- l’Archiduc Maximilien après avoir vu ,à Bruges ce qu’il y a de remarquablè, en partit le 25 dans la barque neuve , & arriva ici à cinq heures après midi , accompagné des Seigneurs quî ont fait le voyage avec lui & de quelques Députés des Etats de Flandre. S. A. R. allâ voir d’abord la nouvelle maifon de force, de là Elle alla faire un tour dans les principales  rues de la T ille , en carroflè à fix chevaux,  avec S. A. le Prince de Stahrernbèrg le Comte de Lâmberg & Mr. notre Evêque,  & alla defeendre à l’Abbaye de faint Pierre où elle logea. Ce Prince y foupï avec fa fuite & plufieurs autres perfonnes de diitinftion , & hier il entendit la MeiT® q l’Eglife Cathédrale de St. Bavon , d’où il fut dîner chez Mr. l’Evêqué. L’après-midt il alla voir tirer l’oie par ceux du Serment de St. Sebaftien, & où tous les autres Sermons  avoient été invités. Le foir il y eut! grand fouper à l’Hôtel-dc-Vilîé, fuivi d’un beau Bal paré ; & ce matin S. A. R. ave® fa'fuite a repris le chemin de Bruxelles, • i\n" +
+            "fù'4";
+    private static final NamedList SOLR_RESULT = new NamedList(){{
+        add("snippets", new ArrayList(List.of(SNIPPET1, SNIPPET2)));
+        add("passages", new ArrayList<>(List.of(HIT1, HIT2)));
+    }};
+    private static final Map<String, List<String>> SOLR_RESPONSE = new HashMap(){{
+        // Note that the Map actually contains 1 NamedList value, but we say it's a List<String> because that matches
+        // what the Solr QueryReponse.getHighlighting() method is returning.
+        put("fulltext.fr", SOLR_RESULT);
+    }};
+
+    private static final Map<String, List<String>> SOLR_EMPTY_RESPONSE = new HashMap<>();
+
+    private static final EuropeanaId RECORDID_HAS_RESULTS = new EuropeanaId("9200396", "BibliographicResource_3000118435970");
+    private static final String QUERY_HAS_RESULTS = "flandre";
+    private static final EuropeanaId RECORDID_NOT_EXISTS = new EuropeanaId("not", "exists");
+
+
+    @Autowired
+    private FTSearchService searchService;
+
+    @MockBean
+    private SolrRepo solrRepo;
+    @MockBean
+    private FTService fulltextRepo;
+    @MockBean
+    private MorphiaCursor<AnnoPage> morphiaCursor;
+
+    @BeforeEach
+    public void setupMocks() throws EuropeanaApiException {
+        // default we return empty Solr results
+        given(solrRepo.getHighlightsWithOffsets(any(EuropeanaId.class), anyString(), anyInt(), anyObject())).willReturn(
+                SOLR_EMPTY_RESPONSE
+        );
+        // but we do return results when recordId = /x/y and query = flandre
+        given(solrRepo.getHighlightsWithOffsets(eq(RECORDID_HAS_RESULTS), eq(QUERY_HAS_RESULTS), anyInt(), anyObject())).willReturn(
+                SOLR_RESPONSE
+        );
+
+        // default no AnnoPages are available for any record
+        given(fulltextRepo.doesAnnoPageExist(anyString(), anyString(), anyString())).willReturn(
+                Boolean.FALSE
+        );
+        // except for 1 record
+        given(fulltextRepo.doesAnnoPageExist(eq(RECORDID_HAS_RESULTS.getDatasetId()), eq(RECORDID_HAS_RESULTS.getLocalId()),
+                anyString())).willReturn(
+                        Boolean.TRUE
+        );
+    }
+
+    /**
+     * Load 2 AnnoPages from file
+     * @return List of loaded AnnoPages containing annotations of all types
+     */
+    private List<AnnoPage> loadAnnoPages() {
+        ObjectMapper o = new ObjectMapper();
+        o.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        ClassLoader classloader = Thread.currentThread().getContextClassLoader();
+
+        List<AnnoPage> result = new ArrayList<>();
+        // load the json files of 2 annopages
+        try (InputStream s1 = classloader.getResourceAsStream("9200396_BibliographicResource_3000118435970_annopage_61.json");
+             InputStream s2 = classloader.getResourceAsStream("9200396_BibliographicResource_3000118435970_annopage_62.json")) {
+            result.add(o.readValue(s1, AnnoPage.class));
+            result.add(o.readValue(s2, AnnoPage.class));
+        } catch (IOException e) {
+            LogManager.getLogger(FTSearchServiceTest.class).error("Error reading stored annotation pages", e);
+        }
+        assertEquals(2, result.size());
+        return result;
+    }
+
+    /**
+     * Since the test will initially load 2 annopages with all annotation types, this method allow us to filter
+     * based on specific types so we can better mock the morphia cursor returning only annotations of requested type(s)
+     * @param annoTypes list of annotation types to filter the loaded AnnoPages
+     * @return copy of the List of loaded annopages with only the annotations with the provided annotation types
+     */
+    private List<AnnoPage> filterByType(List<AnnotationType> annoTypes) {
+        List<AnnoPage> result = loadAnnoPages();
+        for (AnnoPage ap : result) {
+            List<Annotation> filtered = ap.getAns().stream().
+                    filter(ans -> annoTypes.contains(AnnotationType.fromAbbreviation(ans.getDcType()))).collect(Collectors.toList());
+            ap.setAns(filtered);
+        }
+        return result;
+    }
+
+    /**
+     * This will mock a morphia cursor returning 2 annopages with annotations of the requested type(s).
+     * This method needs to be called before calling the SearchService.searchIssue() method
+     */
+    private void mockMorphiaCursor(List<AnnotationType> annoTypes){
+        List<AnnoPage> filteredAnnoPages = filterByType(annoTypes);
+
+        given(morphiaCursor.hasNext())
+                // This is a bit of a hack, we know we will request hasNext() 1 extra time in the code so we should
+                // return true 3 times so we can return 2 items and after that return false
+                // However if our code changes and calls hasNext() more often or less often, this may need to be adjusted
+                .willReturn(true)
+                .willReturn(true)
+                .willReturn(true)
+                .willReturn(false);
+        given(morphiaCursor.next())
+                .willReturn(filteredAnnoPages.get(0))
+                .willReturn(filteredAnnoPages.get(1));
+        given(fulltextRepo.fetchAnnoPageFromImageId(eq(RECORDID_HAS_RESULTS.getDatasetId()), eq(RECORDID_HAS_RESULTS.getLocalId()),
+                any(), any())).willReturn(
+                morphiaCursor
+        );
+    }
+
+    /**
+     * This tests if we can retrieve a v2 search result with only line annotations
+     * Test also checks if we have:
+     * <pre>
+     *  - the expected annotations (annotation ids)
+     *  - if annotations have an image ("on" field)
+     *  - the expected hits (annotation ids)
+     *  - if each hit has the expected prefix, exact and suffix
+     * </pre>
+     */
+    @Test
+    void testRetrieveResultsV2Line() throws EuropeanaApiException {
+        List<AnnotationType> annoTypes = List.of(AnnotationType.LINE);
+        mockMorphiaCursor(annoTypes);
+        String searchId = "testV2";
+
+        SearchResult result = searchService.searchIssue(searchId, RECORDID_HAS_RESULTS, QUERY_HAS_RESULTS, 12, annoTypes, "2", false);
+        assertTrue(result instanceof SearchResultV2);
+        SearchResultV2 resultV2 = (SearchResultV2) result;
+        assertEquals(searchId, resultV2.getId());
+
+        // Test annotations
+        assertNotNull(resultV2.getItems());
+        assertEquals(3, resultV2.getItems().size());
+
+        String annotationRecordId = "/annotation" + RECORDID_HAS_RESULTS.toString();
+        String id1 = "/bd498efe85327039cd1f48a9f4ccb8ec";
+        AnnotationV2 item1 = resultV2.getItems().get(0);
+        assertTrue(item1.getId().endsWith(annotationRecordId + id1), item1.getId());
+        assertEquals(1, item1.getOn().length);
+        assertTrue(StringUtils.isNoneEmpty(item1.getOn()[0]));
+
+        String id2 = "/4a3b1091f1ab484af3eaeec52bd1b721";
+        AnnotationV2 item2 = resultV2.getItems().get(1);
+        assertTrue(item2.getId().endsWith(annotationRecordId + id2), item2.getId());
+        assertEquals(1, item2.getOn().length);
+        assertTrue(StringUtils.isNoneEmpty(item2.getOn()[0]));
+
+        String id3 = "/2264ba0fc35330f14bcc3c3e0a8d4e96";
+        AnnotationV2 item3 = resultV2.getItems().get(2);
+        assertTrue(item3.getId().endsWith(annotationRecordId + id3), item3.getId());
+        assertEquals(1, item3.getOn().length);
+        assertTrue(StringUtils.isNoneEmpty(item3.getOn()[0]));
+
+        // Test hits
+        assertNotNull(resultV2.getHits());
+        assertEquals(3, resultV2.getHits().size());
+
+        Hit hit1 = resultV2.getHits().get(0);
+        assertEquals(1, hit1.getAnnotations().size());
+        assertTrue(hit1.getAnnotations().get(0).endsWith(annotationRecordId + id1), hit1.getAnnotations().get(0));
+        assertEquals("d’où ce Séréniflime Prince fe rendra en ", hit1.getSelectors().get(0).getPrefix());
+        assertEquals("Flandre", hit1.getSelectors().get(0).getExact());
+        assertEquals("", hit1.getSelectors().get(0).getSuffix());
+
+        Hit hit2 = resultV2.getHits().get(1);
+        assertEquals(1, hit2.getAnnotations().size());
+        assertTrue(hit2.getAnnotations().get(0).endsWith(annotationRecordId + id2), hit2.getAnnotations().get(0));
+        assertEquals("de la ", hit2.getSelectors().get(0).getPrefix());
+        assertEquals("Flandre", hit2.getSelectors().get(0).getExact());
+        assertEquals(" autrichienne, & defcendit à", hit2.getSelectors().get(0).getSuffix());
+
+        Hit hit3 = resultV2.getHits().get(2);
+        assertEquals(1, hit3.getAnnotations().size());
+        assertTrue(hit3.getAnnotations().get(0).endsWith(annotationRecordId + id3), hit3.getAnnotations().get(0));
+        assertEquals("Députés des Etats de ", hit3.getSelectors().get(0).getPrefix());
+        assertEquals("Flandre", hit3.getSelectors().get(0).getExact());
+        assertEquals(". S. A. R. allâ", hit3.getSelectors().get(0).getSuffix());
+    }
+
+    /**
+     * Test V3 search result with block line and word annotations
+     * @throws EuropeanaApiException
+     */
+    @Test
+    void testRetrieveResultsV3BlockLineWord() throws EuropeanaApiException {
+        List<AnnotationType> annoTypes = List.of(AnnotationType.BLOCK, AnnotationType.LINE, AnnotationType.WORD);
+        mockMorphiaCursor(annoTypes);
+        String searchId = "testV3";
+
+        SearchResult result = searchService.searchIssue(searchId, RECORDID_HAS_RESULTS, QUERY_HAS_RESULTS, 12, annoTypes, "3", false);
+        assertTrue(result instanceof SearchResultV3);
+        SearchResultV3 resultV3 = (SearchResultV3) result;
+        assertEquals(searchId, resultV3.getId());
+
+        // Test annotations
+        assertNotNull(resultV3.getItems());
+        assertEquals(9, resultV3.getItems().size());
+
+        // Test hits
+        assertNotNull(resultV3.getHits());
+        assertEquals(6, resultV3.getHits().size());
+    }
+
+    /**
+     * Test if the pageSize parameter works
+     */
+    @Test
+    void testMaxPageSize() throws EuropeanaApiException {
+        List<AnnotationType> annoTypes = List.of(AnnotationType.BLOCK, AnnotationType.LINE, AnnotationType.WORD);
+        mockMorphiaCursor(annoTypes);
+        int maxPageSize = 2;
+
+        SearchResult result = searchService.searchIssue(null, RECORDID_HAS_RESULTS, QUERY_HAS_RESULTS, maxPageSize, annoTypes, "2", true);
+        assertTrue(result instanceof SearchResultV2);
+        SearchResultV2 resultV2 = (SearchResultV2) result;
+
+        assertNotNull(resultV2.getItems());
+        assertEquals(maxPageSize, resultV2.getItems().size());
+    }
+
+    /**
+     * Test if we return a result with no hits if only Word-level annotations are asked
+     */
+    @Test
+    void testRetrieveResultsNoHitsForWordAnnotations() throws EuropeanaApiException {
+        List<AnnotationType> annoTypes = List.of(AnnotationType.WORD);
+        mockMorphiaCursor(annoTypes);
+
+        SearchResult result = searchService.searchIssue(null, RECORDID_HAS_RESULTS, QUERY_HAS_RESULTS, 12, annoTypes, "3", true);
+        assertNotNull(result.getHits());
+        assertEquals(0, result.getHits().size());
+    }
+
+    /**
+     * Test if we handle not finding a solr hit properly (even though the record exists)
+     */
+    @Test
+    void testNoSolrResultRecordExists() throws EuropeanaApiException {
+        SearchResult resultV2 = searchService.searchIssue("test", RECORDID_HAS_RESULTS, "Some other query", 12, List.of(AnnotationType.BLOCK), "3", false);
+        assertNotNull(resultV2);
+        assertTrue(resultV2.getHits().isEmpty());
+    }
+
+    /**
+     * Test if we handle not finding a solr hit properly (because record doesn't exist)
+     */
+    @Test
+    void testNoSolrResultRecordNotExists() throws EuropeanaApiException {
+        assertThrows(RecordDoesNotExistException.class, () -> {
+            searchService.searchIssue("test", RECORDID_NOT_EXISTS, "Flandres", 12, List.of(AnnotationType.BLOCK), "3", false);
+        });
+    }
 
 }

@@ -60,6 +60,7 @@ public class SearchResultV2 implements Serializable, SearchResult {
     public List<AnnotationV2> getItems(){
         return items;
     }
+
     @Override
     public void addAnnotationHit(AnnoPage annoPage, Annotation annotation, Hit hit) {
         AnnotationV2 annoV2 = EDM2IIIFMapping.getAnnotationV2(annoPage, annotation, false, false);
