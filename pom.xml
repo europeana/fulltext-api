@@ -41,7 +41,7 @@
 		<unitils.version>3.4.6</unitils.version>
 		<snappy.version>1.1.7.2</snappy.version>
 		<swagger.version>3.0.0</swagger.version>
-		<api-commons.version>0.2.12</api-commons.version>
+		<api-commons.version>0.2.14-SNAPSHOT</api-commons.version>
 	</properties>
 
     <dependencyManagement>
