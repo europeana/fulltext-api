@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * @author Patrick Ehlert
  * Created on 28 May 2020
  */
+@ResponseStatus(HttpStatus.BAD_REQUEST)
 public class InvalidParameterException extends EuropeanaApiException {
 
     private static final long serialVersionUID = -5555912949147932111L;
@@ -24,7 +25,7 @@ public class InvalidParameterException extends EuropeanaApiException {
         super("Invalid parameter: " + error);
     }
 
-    @Override
+    //@Override
     public HttpStatus getResponseStatus() {
         return HttpStatus.BAD_REQUEST;
     }

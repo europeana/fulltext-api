@@ -16,12 +16,12 @@ public class SerializationException extends EuropeanaApiException {
         super(msg, t);
     }
 
-    @Override
+    //@Override
     public HttpStatus getResponseStatus() {
         return HttpStatus.INTERNAL_SERVER_ERROR;
     }
 
-    @Override
+    //@Override
     public boolean doExposeMessage() {
         // Serialization exception message not exposed to end users.
         // Requests with debug query param can still view exception stacktrace.
