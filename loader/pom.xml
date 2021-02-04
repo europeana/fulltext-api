@@ -5,13 +5,13 @@
     <parent>
         <artifactId>fulltext</artifactId>
         <groupId>eu.europeana</groupId>
-        <version>0.8.1-SNAPSHOT</version>
+        <version>0.8.1</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <groupId>eu.europeana.fulltext</groupId>
     <artifactId>loader</artifactId>
-    <version>0.8.1-SNAPSHOT</version>
+    <version>0.8.1</version>
     <packaging>war</packaging>
 
     <name>Europeana Newspapers Fulltext Loader</name>
@@ -28,7 +28,7 @@
         <dependency>
             <groupId>eu.europeana.fulltext</groupId>
             <artifactId>api</artifactId>
-            <version>${project.version}</version>
+            <version>0.8.1</version>
             <classifier>classes</classifier>
             <exclusions>
                 <exclusion>
