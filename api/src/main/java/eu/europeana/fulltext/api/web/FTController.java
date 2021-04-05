@@ -63,9 +63,10 @@ public class FTController {
      * @param datasetId    identifier of the AnnoPage's dataset
      * @param localId      identifier of the AnnoPage's record
      * @param pageId       identifier of the AnnoPage
-     * @param versionParam requested IIIF output format (2|3)
-     * @param profile      when value = 'text', resources are dereferenced
-     * @param textGranularity types of annotations that should be included (e.g. Block, Line, Page)
+     * @param lang         optional, in which language should the AnnoPage be
+     * @param versionParam optional, requested IIIF output format (2|3)
+     * @param profile      optional, when value = 'text', resources are dereferenced
+     * @param textGranularity optional, types of annotations that should be included (e.g. Block, Line, Page)
      * @return response in json format
      * @throws EuropeanaApiException when serialising to Json fails or an invalid parameter value is provided
      */
@@ -74,11 +75,12 @@ public class FTController {
     public ResponseEntity<String> annoPageJson(@PathVariable String datasetId,
                                                @PathVariable String localId,
                                                @PathVariable String pageId,
+                                               @RequestParam(value = "lang", required = false) String lang,
                                                @RequestParam(value = "format", required = false) String versionParam,
                                                @RequestParam(value = "profile", required = false) String profile,
                                                @RequestParam(value = "textGranularity", required = false) String textGranularity,
                                                HttpServletRequest request) throws EuropeanaApiException {
-        return annoPage(datasetId, localId, pageId, versionParam, profile, textGranularity, request, true);
+        return annoPage(datasetId, localId, pageId, lang, versionParam, profile, textGranularity, request, true);
     }
 
     /**
@@ -87,9 +89,10 @@ public class FTController {
      * @param datasetId       identifier of the AnnoPage's dataset
      * @param localId         identifier of the AnnoPage's record
      * @param pageId          identifier of the AnnoPage
-     * @param versionParam    requested IIIF output format (2|3)
-     * @param profile         when value = 'text', resources are dereferenced
-     * @param textGranularity specifies what annotations should be returned
+     * @param lang            optional, in which language should the AnnoPage be
+     * @param versionParam    optional, requested IIIF output format (2|3)
+     * @param profile         optional, when value = 'text', resources are dereferenced
+     * @param textGranularity optional, specifies what annotations should be returned
      * @return response in json-ld format
      * @throws EuropeanaApiException when serialising to JsonLd fails or an invalid parameter value is provided
      */
@@ -98,22 +101,24 @@ public class FTController {
     public ResponseEntity<String> annoPageJsonLd(@PathVariable String datasetId,
                                                  @PathVariable String localId,
                                                  @PathVariable String pageId,
+                                                 @RequestParam(value = "lang", required = false) String lang,
                                                  @RequestParam(value = "format", required = false) String versionParam,
                                                  @RequestParam(value = "profile", required = false) String profile,
                                                  @RequestParam(value = "textGranularity", required = false) String textGranularity,
                                                  HttpServletRequest request) throws EuropeanaApiException {
-        return annoPage(datasetId, localId, pageId, versionParam, profile, textGranularity, request, false);
+        return annoPage(datasetId, localId, pageId, lang, versionParam, profile, textGranularity, request, false);
     }
 
     private ResponseEntity<String> annoPage(String datasetId,
                                             String localId,
                                             String pageId,
+                                            String lang,
                                             String versionParam,
                                             String profile,
                                             String textGranularity,
                                             HttpServletRequest request,
                                             boolean isJson) throws EuropeanaApiException {
-        LOG.debug("Retrieve Annopage: {}/{}/{}", datasetId, localId, pageId);
+        LOG.debug("Retrieve Annopage: {}/{}/{} with language", datasetId, localId, pageId, lang);
         String requestVersion = getRequestVersion(request, versionParam);
         if (ACCEPT_VERSION_INVALID.equals(requestVersion)){
             return new ResponseEntity<>(ACCEPT_VERSION_INVALID, HttpStatus.NOT_ACCEPTABLE);
@@ -123,7 +128,7 @@ public class FTController {
 
         List<AnnotationType> textGranValues = ControllerUtils.validateTextGranularity(textGranularity, ALLOWED_ANNOTATION_TYPES);
 
-        AnnoPage annoPage = fts.fetchAnnoPage(datasetId, localId, pageId, textGranValues);
+        AnnoPage annoPage = fts.fetchAnnoPage(datasetId, localId, pageId, textGranValues, lang);
         ZonedDateTime modified = CacheUtils.dateToZonedUTC(annoPage.getModified());
         String eTag = generateETag(datasetId + localId + pageId,
                 modified,
@@ -155,8 +160,9 @@ public class FTController {
      * HTTP Head endpoint to check for existence of an AnnoPage
      *
      * @param datasetId identifier of the AnnoPage's dataset
-     * @param localId  identifier of the AnnoPage's record
+     * @param localId   identifier of the AnnoPage's record
      * @param pageId    identifier of the AnnoPage
+     * @param lang      optional, in which language should the AnnoPage be
      * @return ResponseEntity
      */
     @ApiOperation(value = "Check if a page with annotations exists")
@@ -164,18 +170,20 @@ public class FTController {
                     method   = RequestMethod.HEAD,
                     headers  =  ACCEPT_JSON)
     public ResponseEntity annoPageHeadExistsJson(@PathVariable String datasetId,
-                                             @PathVariable String localId,
-                                             @PathVariable String pageId,
-                                             @RequestParam(value = "format", required = false) String versionParam,
-                                             HttpServletRequest request) {
-       return getAnnoPageHead(request, versionParam, datasetId, localId, pageId, true);
+                                                 @PathVariable String localId,
+                                                 @PathVariable String pageId,
+                                                 @RequestParam(value = "lang", required = false) String lang,
+                                                 @RequestParam(value = "format", required = false) String versionParam,
+                                                 HttpServletRequest request) {
+       return getAnnoPageHead(datasetId, localId, pageId, lang, versionParam, true, request);
     }
 
     /**
      * HTTP Head endpoint to check for existence of an AnnoPage
      * @param datasetId identifier of the AnnoPage's dataset
-     * @param localId  identifier of the AnnoPage's record
+     * @param localId   identifier of the AnnoPage's record
      * @param pageId    identifier of the AnnoPage
+     * @param lang      optional, in which language should the AnnoPage be              *
      * @return ResponseEntity
      */
     @ApiOperation(value = "Check if a page with annotations exists")
@@ -183,21 +191,23 @@ public class FTController {
             method   = RequestMethod.HEAD,
             headers  = ACCEPT_JSONLD)
     public ResponseEntity annoPageHeadExistsJsonld(@PathVariable String datasetId,
-                                                 @PathVariable String localId,
-                                                 @PathVariable String pageId,
-                                                 @RequestParam(value = "format", required = false) String versionParam,
-                                                 HttpServletRequest request) {
-        return getAnnoPageHead(request, versionParam, datasetId, localId, pageId, false);
+                                                   @PathVariable String localId,
+                                                   @PathVariable String pageId,
+                                                   @RequestParam(value = "lang", required = false) String lang,
+                                                   @RequestParam(value = "format", required = false) String versionParam,
+                                                   HttpServletRequest request) {
+        return getAnnoPageHead(datasetId, localId, pageId, lang, versionParam, false, request);
     }
 
-    private ResponseEntity getAnnoPageHead(HttpServletRequest request, String versionParam, String datasetId, String localId, String pageId, boolean isJson) {
+    private ResponseEntity getAnnoPageHead(String datasetId, String localId, String pageId, String lang,
+                                          String versionParam, boolean isJson, HttpServletRequest request) {
         String requestVersion = getRequestVersion(request, versionParam);
         if (ACCEPT_VERSION_INVALID.equals(requestVersion)){
             return new ResponseEntity(ACCEPT_VERSION_INVALID, HttpStatus.NOT_ACCEPTABLE);
         }
         HttpHeaders headers = new HttpHeaders();
         addContentTypeToResponseHeader(headers, requestVersion, isJson);
-        if (fts.doesAnnoPageExist(datasetId, localId, pageId)){
+        if (fts.doesAnnoPageExist(datasetId, localId, pageId, lang)){
             return new ResponseEntity(headers, HttpStatus.OK);
         } else {
             return new ResponseEntity(headers, HttpStatus.NOT_FOUND);

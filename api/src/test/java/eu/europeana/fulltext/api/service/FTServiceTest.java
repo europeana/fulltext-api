@@ -48,29 +48,29 @@ public class FTServiceTest {
 
     @BeforeEach
     public void setup(){
-        given(apRepository.existsByPageId(eq("ds1"), eq("lc1"), eq("pg1")))
+        given(apRepository.existsOriginalByPageId(eq("ds1"), eq("lc1"), eq("pg1")))
                 .willReturn(true);
-        given(apRepository.findByDatasetLocalPageId(eq("ds1"), eq("lc1"), eq("pg1"), any()))
+        given(apRepository.findOriginalByPageId(eq("ds1"), eq("lc1"), eq("pg1"), any()))
                 .willReturn(anp_1);
         given(apRepository.existsWithAnnoId(eq("ds1"), eq("lc1"), eq("an1")))
                 .willReturn(true);
-        given(apRepository.findByDatasetLocalAnnoId(eq("ds1"), eq("lc1"), eq("an1")))
+        given(apRepository.findOriginalByAnnoId(eq("ds1"), eq("lc1"), eq("an1")))
                 .willReturn(anp_1);
         given(apRepository.existsWithAnnoId(eq("ds1"), eq("lc1"), eq("an2")))
                 .willReturn(true);
-        given(apRepository.findByDatasetLocalAnnoId(eq("ds1"), eq("lc1"), eq("an2")))
+        given(apRepository.findOriginalByAnnoId(eq("ds1"), eq("lc1"), eq("an2")))
                 .willReturn(anp_1);
         given(apRepository.existsWithAnnoId(eq("ds1"), eq("lc1"), eq("an3")))
                 .willReturn(true);
-        given(apRepository.findByDatasetLocalAnnoId(eq("ds1"), eq("lc1"), eq("an3")))
+        given(apRepository.findOriginalByAnnoId(eq("ds1"), eq("lc1"), eq("an3")))
                 .willReturn(anp_1);
-        given(resRepository.existsByLimitOne(eq("ds1"), eq("lc1"), eq("res1")))
+        given(resRepository.existsOriginal(eq("ds1"), eq("lc1"), eq("res1")))
                 .willReturn(true);
-        given(resRepository.findByDatasetLocalResId(eq("ds1"), eq("lc1"), eq("res1")))
+        given(resRepository.findOriginalByResId(eq("ds1"), eq("lc1"), eq("res1")))
                 .willReturn(res_1);
-        given(resRepository.existsByLimitOne(eq("ds1"), eq("lc1"), eq("res2")))
+        given(resRepository.existsOriginal(eq("ds1"), eq("lc1"), eq("res2")))
                 .willReturn(true);
-        given(resRepository.findByDatasetLocalResId(eq("ds1"), eq("lc1"), eq("res2")))
+        given(resRepository.findOriginalByResId(eq("ds1"), eq("lc1"), eq("res2")))
                 .willReturn(res_2);
     }
 
@@ -84,7 +84,7 @@ public class FTServiceTest {
     @Test
     public void testGetAnnotationPageV2() throws AnnoPageDoesNotExistException {
         prepareAnnotationPageV2();
-        AnnotationPageV2 ap = ftService.generateAnnoPageV2(ftService.fetchAnnoPage("ds1", "lc1", "pg1", Collections.emptyList()),false);
+        AnnotationPageV2 ap = ftService.generateAnnoPageV2(ftService.fetchAnnoPage("ds1", "lc1", "pg1", Collections.emptyList(), null),false);
         assertReflectionEquals(anpv2_1, ap);
     }
 
@@ -96,7 +96,7 @@ public class FTServiceTest {
     @Test
     public void testGetAnnotationPageV3() throws AnnoPageDoesNotExistException {
         prepareAnnotationPageV3();
-        AnnotationPageV3 ap = ftService.generateAnnoPageV3(ftService.fetchAnnoPage("ds1", "lc1", "pg1", Collections.emptyList()),false);
+        AnnotationPageV3 ap = ftService.generateAnnoPageV3(ftService.fetchAnnoPage("ds1", "lc1", "pg1", Collections.emptyList(), null),false);
         assertReflectionEquals(anpv3_1, ap);
     }
 

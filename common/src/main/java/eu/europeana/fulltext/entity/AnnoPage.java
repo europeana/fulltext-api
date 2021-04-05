@@ -27,6 +27,7 @@ public class AnnoPage {
     private String           tgtId;
     private List<Annotation> ans;
     private Date             modified = Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant());
+    private String           lang;
 
     @Reference
     private Resource res;
@@ -34,12 +35,13 @@ public class AnnoPage {
 
     public AnnoPage() {}
 
-    public AnnoPage(String dsId, String lcId, String pgId, String tgtId, Resource res) {
+    public AnnoPage(String dsId, String lcId, String pgId, String tgtId, String lang, Resource res) {
         this.dsId  = dsId;
         this.lcId  = lcId;
         this.pgId  = pgId;
         this.tgtId = tgtId;
         this.res   = res;
+        this.lang  = lang;
     }
 
     public String getDsId() {
@@ -96,6 +98,14 @@ public class AnnoPage {
 
     public void setModified(Date modified) {
         this.modified = modified;
+    }
+
+    public String getLang() {
+        return lang;
+    }
+
+    public void setLang(String lang) {
+        this.lang = lang;
     }
 
     public String toString() {

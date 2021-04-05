@@ -3,12 +3,11 @@ package eu.europeana.fulltext.loader.service;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Resource;
 import eu.europeana.fulltext.loader.config.LoaderSettings;
-import eu.europeana.fulltext.repository.AnnoPageRepository;
-import eu.europeana.fulltext.repository.ResourceRepository;
 import eu.europeana.fulltext.loader.exception.LoaderException;
+import eu.europeana.fulltext.loader.repository.LoaderAnnoPageRepository;
+import eu.europeana.fulltext.loader.repository.LoaderResourceRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,32 +19,32 @@ import java.util.List;
 @Service
 public class MongoService {
 
+    // TODO At the moment this only saves original AnnoPage and Resources. There is no support for saving translations yet
+
     private static final Logger LOG = LogManager.getLogger(MongoService.class);
 
-    @Autowired
-    ResourceRepository resourceRepository;
-
-    @Autowired
-    AnnoPageRepository annoPageRepository;
-
+    private LoaderResourceRepository resourceRepository;
+    private LoaderAnnoPageRepository annoPageRepository;
     private LoaderSettings settings;
 
-    public MongoService(LoaderSettings settings) {
+    public MongoService(LoaderResourceRepository resourceRepository, LoaderAnnoPageRepository annoPageRepository, LoaderSettings settings) {
+        this.resourceRepository = resourceRepository;
+        this.annoPageRepository = annoPageRepository;
         this.settings = settings;
     }
 
     public void saveAnnoPageList(List<AnnoPage> apList, MongoSaveMode saveMode) throws LoaderException {
         LOG.debug("Saving {} annoPages...", apList.size());
 
-        long resourceCount = resourceRepository.count();
-        long annoPageCount = annoPageRepository.count();
+        long resourceCount = resourceRepository.countOriginal();
+        long annoPageCount = annoPageRepository.countOriginal();
         if (MongoSaveMode.INSERT.equals(saveMode)) {
             for (AnnoPage annoPage : apList) {
                 saveResource(annoPage.getRes());
                 saveAnnoPage(annoPage);
             }
-            long newResourceCount = resourceRepository.count();
-            long newAnnoPageCount = annoPageRepository.count();
+            long newResourceCount = resourceRepository.countOriginal();
+            long newAnnoPageCount = annoPageRepository.countOriginal();
             if (resourceCount + apList.size() != newResourceCount) {
                 LogFile.OUT.warn("Expected number of resource in database is {}, but actual number is {}",
                         resourceCount + apList.size(), newResourceCount);
@@ -67,7 +66,7 @@ public class MongoService {
         String lcId = resource.getLcId();
         String id = resource.getId();
         try{
-            resourceRepository.save(resource);
+            resourceRepository.saveOriginal(resource);
             LOG.debug("{}/{}/{} - Resource saved", dsId, lcId, id);
             return true;
         } catch (Exception e){
@@ -87,7 +86,7 @@ public class MongoService {
      * @return the number of deleted resources
      */
     public long deleteAllResources(String datasetId) {
-        return resourceRepository.deleteDataset(datasetId);
+        return resourceRepository.deleteOriginalDataset(datasetId);
     }
 
     /**
@@ -100,7 +99,7 @@ public class MongoService {
         String lcId = annoPage.getLcId();
         String pgId = annoPage.getPgId();
         try{
-            annoPageRepository.save(annoPage);
+            annoPageRepository.saveOriginal(annoPage);
             LOG.debug("{}/{}/{} AnnoPage saved", dsId, lcId, pgId);
             return true;
         } catch (Exception e){
@@ -120,7 +119,7 @@ public class MongoService {
      * @return the number of deleted annopages
      */
     public long deleteAllAnnoPages(String datasetId) {
-        return annoPageRepository.deleteDataset(datasetId);
+        return annoPageRepository.deleteOriginalDataset(datasetId);
     }
 
 

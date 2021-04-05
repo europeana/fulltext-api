@@ -102,7 +102,7 @@ public class FTControllerTest {
     @BeforeEach
     public void setup() throws AnnoPageDoesNotExistException, SerializationException, ResourceDoesNotExistException {
 
-        given(ftService.fetchAnnoPage(any(), any(), any(), any())).willReturn(anp_1);
+        given(ftService.fetchAnnoPage(any(), any(), any(), any(), any())).willReturn(anp_1);
         given(ftService.generateAnnoPageV2(anp_1, false)).willReturn(anpv2_1);
         given(ftService.generateAnnoPageV3(anp_1, false)).willReturn(anpv3_1);
         given(ftService.fetchAPAnnotation(any(), any(), any())).willReturn(anp_1);
@@ -128,8 +128,8 @@ public class FTControllerTest {
         given(ftService.serialise(ftres_1)).willReturn(JSON_RES_1_OUTPUT);
         given(ftService.serialise(ftres_2)).willReturn(JSON_RES_2_OUTPUT);
 
-        given(ftService.doesAnnoPageExist(any(), any(), startsWith("a"))).willReturn(true);
-        given(ftService.doesAnnoPageExist(any(), any(), startsWith("z"))).willReturn(false);
+        given(ftService.doesAnnoPageExist(any(), any(), startsWith("a"), any())).willReturn(true);
+        given(ftService.doesAnnoPageExist(any(), any(), startsWith("z"), any())).willReturn(false);
 
         given(ftSettings.getAppVersion()).willReturn("v1.0-test");
         given(ftService.getSettings()).willReturn(ftSettings);

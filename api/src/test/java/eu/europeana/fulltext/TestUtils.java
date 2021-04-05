@@ -92,7 +92,7 @@ public class TestUtils {
         ann_1 = new Annotation("an1", AnnotationType.WORD.getAbbreviation(), 0, 7, Arrays.asList(tgt_1));
         ann_2 = new Annotation("an2", AnnotationType.WORD.getAbbreviation(), 9, 18, Arrays.asList(tgt_2), "en");
         ann_3 = new Annotation("an3", AnnotationType.LINE.getAbbreviation(), 0, 214, Arrays.asList(tgt_3, tgt_4));
-        anp_1 = new AnnoPage(DS_ID, LCL_ID, "pg1", "tg1", res_1);
+        anp_1 = new AnnoPage(DS_ID, LCL_ID, "pg1", "tg1", "de", res_1);
         anp_1.setAns(Arrays.asList(new Annotation[] {ann_1, ann_2, ann_3}));
         anp_1.setTgtId(getTargetIdBaseUrl("pg1"));
         anp_1.setModified(lastModifiedDate);
