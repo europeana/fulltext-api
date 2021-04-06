@@ -15,7 +15,7 @@ import java.util.List;
  * Resource base URL: https://www.europeana.eu/api/fulltext/
  *
  */
-@Entity(value = "AnnoPage")
+@Entity(value = "AnnoPage", useDiscriminator = false)
 @Indexes(@Index(fields = { @Field("dsId"), @Field("lcId"), @Field("pgId") }, options = @IndexOptions(unique = true)))
 public class AnnoPage {
 
