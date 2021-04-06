@@ -111,14 +111,14 @@ public class TestUtils {
         buildAnnotationBodiesV2();
         buildAnnotationsV2(false);
         ansv2_1 = new AnnotationV2[] {annv2_1, annv2_2, annv2_3};
-        anpv2_1 = createAnnotationPageV2("pg1", ansv2_1);
+        anpv2_1 = createAnnotationPageV2("pg1", "en", ansv2_1);
     }
 
     public static void prepareAnnotationPageV3(){
         buildAnnotationBodiesV3();
         buildAnnotationsV3(false);
         ansv3_1 = new AnnotationV3[] {annv3_1, annv3_2, annv3_3};
-        anpv3_1 = createAnnotationPageV3("pg1", ansv3_1);
+        anpv3_1 = createAnnotationPageV3("pg1", "en", ansv3_1);
     }
 
     // prepares Annotations entity beans only (Annotations WITH context)
@@ -177,8 +177,9 @@ public class TestUtils {
         ftres_2.setContext(MEDIA_TYPE_EDM_JSONLD);
     }
 
-    private static AnnotationPageV2 createAnnotationPageV2(String pageId, AnnotationV2[] resources){
+    private static AnnotationPageV2 createAnnotationPageV2(String pageId, String lang, AnnotationV2[] resources){
         AnnotationPageV2 anp = new AnnotationPageV2(getAnnopageIdUrl(pageId));
+        anp.setLang(lang);
         anp.setResources(resources);
         return anp;
     }
@@ -205,8 +206,9 @@ public class TestUtils {
         return ann;
     }
 
-    private static AnnotationPageV3 createAnnotationPageV3(String pageId, AnnotationV3[] items){
+    private static AnnotationPageV3 createAnnotationPageV3(String pageId, String lang, AnnotationV3[] items){
         AnnotationPageV3 anp = new AnnotationPageV3(getAnnopageIdUrl(pageId));
+        anp.setLang(lang);
         anp.setItems(items);
         return anp;
     }
