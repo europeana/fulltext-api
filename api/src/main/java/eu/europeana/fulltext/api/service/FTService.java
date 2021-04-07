@@ -146,7 +146,7 @@ public class FTService {
         //  (or maybe when lang is specified we can sent 2 requests in parallel)
         Resource result = resourceRepository.findOriginalByResId(datasetId, localId, resId);
         if (result == null) {
-            resourceRepository.findTranslationByResId(datasetId, localId, resId);
+            result = resourceRepository.findTranslationByResId(datasetId, localId, resId);
             LOG.debug("No original Resource, TranslationResource = {}", result);
         }
 
