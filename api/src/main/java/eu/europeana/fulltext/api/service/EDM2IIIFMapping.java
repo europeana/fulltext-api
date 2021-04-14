@@ -252,7 +252,7 @@ public final class EDM2IIIFMapping {
                annoPage.getRes().getId();
     }
 
-    private static String getAnnoPageIdUrl(AnnoPage annoPage){
+    protected static String getAnnoPageIdUrl(AnnoPage annoPage){
         return fts.getAnnoPageBaseUrl() + annoPage.getDsId() + "/" +
                annoPage.getLcId() + fts.getAnnoPageDirectory() + annoPage.getPgId();
     }

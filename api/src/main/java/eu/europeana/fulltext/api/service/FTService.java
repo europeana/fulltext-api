@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.morphia.query.internal.MorphiaCursor;
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.api.config.FTSettings;
+import eu.europeana.fulltext.api.model.AnnoPageInfo;
 import eu.europeana.fulltext.api.model.FTResource;
 import eu.europeana.fulltext.api.model.v2.AnnotationPageV2;
 import eu.europeana.fulltext.api.model.v2.AnnotationV2;
@@ -14,6 +15,7 @@ import eu.europeana.fulltext.api.service.exception.ResourceDoesNotExistException
 import eu.europeana.fulltext.api.service.exception.SerializationException;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Resource;
+import eu.europeana.fulltext.entity.TranslationAnnoPage;
 import eu.europeana.fulltext.repository.AnnoPageRepository;
 import eu.europeana.fulltext.repository.ResourceRepository;
 import org.apache.logging.log4j.LogManager;
@@ -22,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -36,11 +39,11 @@ public class FTService {
     private static final String GENERATED_IN    = "Generated in {} ms ";
     private static final Logger LOG             = LogManager.getLogger(FTService.class);
 
-    private ResourceRepository resourceRepository;
-    private AnnoPageRepository annoPageRepository;
-    private FTSettings ftSettings;
+    private final ResourceRepository resourceRepository;
+    private final AnnoPageRepository annoPageRepository;
+    private final FTSettings         ftSettings;
 
-    private ObjectMapper mapper;
+    private final ObjectMapper mapper;
 
     /*
      * Constructs an FTService object with autowired dependencies
@@ -156,6 +159,24 @@ public class FTService {
         return generateFTResource(result);
     }
 
+    // = = [ get Annopage information ]= = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+    public AnnoPageInfo collectAnnoPageInfo(String datasetId, String localId) throws AnnoPageDoesNotExistException {
+        AnnoPageInfo apInfo = new AnnoPageInfo(datasetId, localId);
+        if (annoPageRepository.existForEuropeanaId(datasetId, localId, AnnoPage.class) > 0){
+            for (AnnoPage ap : annoPageRepository.findOrigPages(datasetId, localId)){
+                apInfo.addPage(EDM2IIIFMapping.getAnnoPageIdUrl(ap), ap.getPgId(), ap.getLang());
+                if (annoPageRepository.existForEuropeanaId(datasetId, localId, TranslationAnnoPage.class) > 0){
+                    for (TranslationAnnoPage tap : annoPageRepository.findTranslatedPages(datasetId, localId)){
+                        apInfo.addLangToPage(EDM2IIIFMapping.getAnnoPageIdUrl(tap), tap.getPgId(), tap.getLang());
+                    }
+                }
+            }
+        } else {
+            throw new AnnoPageDoesNotExistException(datasetId + "/" + localId);
+        }
+        return apInfo;
+    }
 
     // = = [ check Document existence ]= = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 

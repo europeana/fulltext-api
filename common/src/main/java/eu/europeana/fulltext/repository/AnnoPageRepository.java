@@ -61,6 +61,45 @@ public class AnnoPageRepository {
     }
 
     /**
+     * Check if any AnnoPages exist that match the given parameters using DBCollection.count().
+     * @param datasetId ID of the dataset
+     * @param localId   ID of the parent of the Annopage object
+     * @return true if yes, otherwise false
+     */
+    public long existForEuropeanaId(String datasetId, String localId, Class claph) {
+        return datastore.find(claph).filter(
+                eq(DATASET_ID, datasetId),
+                eq(LOCAL_ID, localId)
+        ).count();
+    }
+
+    /**
+     * Find and return AnnoPages that match the given parameters using DBCollection.count().
+     * @param datasetId ID of the dataset
+     * @param localId   ID of the parent of the Annopage object
+     * @return List of AnnoPage objects
+     */
+    public List<AnnoPage> findOrigPages(String datasetId, String localId) {
+        return findPages(datasetId, localId, AnnoPage.class);
+    }
+
+    /**
+     * Find and return TranslationAnnoPages that match the given parameters using DBCollection.count().
+     * @param datasetId ID of the dataset
+     * @param localId   ID of the parent of the Annopage object
+     * @return List of AnnoPage objects
+     */
+    public List<TranslationAnnoPage> findTranslatedPages(String datasetId, String localId) {
+        return findPages(datasetId, localId, TranslationAnnoPage.class);
+    }
+
+    private List findPages(String datasetId, String localId, Class claph) {
+        return datastore.find(claph).filter(
+                eq(DATASET_ID, datasetId),
+                eq(LOCAL_ID, localId)).iterator().toList();
+    }
+
+    /**
      * Check if an original AnnoPage exists that matches the given parameters using DBCollection.count().
      * @param datasetId ID of the dataset
      * @param localId   ID of the parent of the Annopage object
