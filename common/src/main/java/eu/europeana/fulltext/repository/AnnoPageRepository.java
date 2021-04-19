@@ -80,7 +80,9 @@ public class AnnoPageRepository {
      * @return List of AnnoPage objects
      */
     public List<AnnoPage> findOrigPages(String datasetId, String localId) {
-        return findPages(datasetId, localId, AnnoPage.class);
+        return datastore.find(AnnoPage.class).filter(
+                eq(DATASET_ID, datasetId),
+                eq(LOCAL_ID, localId)).iterator().toList();
     }
 
     /**
@@ -89,14 +91,11 @@ public class AnnoPageRepository {
      * @param localId   ID of the parent of the Annopage object
      * @return List of AnnoPage objects
      */
-    public List<TranslationAnnoPage> findTranslatedPages(String datasetId, String localId) {
-        return findPages(datasetId, localId, TranslationAnnoPage.class);
-    }
-
-    private List findPages(String datasetId, String localId, Class claph) {
-        return datastore.find(claph).filter(
+    public List<TranslationAnnoPage> findTranslatedPages(String datasetId, String localId, String pageId) {
+        return datastore.find(TranslationAnnoPage.class).filter(
                 eq(DATASET_ID, datasetId),
-                eq(LOCAL_ID, localId)).iterator().toList();
+                eq(LOCAL_ID, localId),
+                eq(PAGE_ID, pageId)).iterator().toList();
     }
 
     /**

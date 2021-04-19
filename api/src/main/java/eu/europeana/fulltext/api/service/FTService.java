@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.morphia.query.internal.MorphiaCursor;
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.api.config.FTSettings;
-import eu.europeana.fulltext.api.model.AnnoPageInfo;
+import eu.europeana.fulltext.api.model.info.AnnotationLangPage;
+import eu.europeana.fulltext.api.model.info.Canvas;
+import eu.europeana.fulltext.api.model.info.Record;
 import eu.europeana.fulltext.api.model.FTResource;
 import eu.europeana.fulltext.api.model.v2.AnnotationPageV2;
 import eu.europeana.fulltext.api.model.v2.AnnotationV2;
@@ -24,7 +26,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -161,21 +162,37 @@ public class FTService {
 
     // = = [ get Annopage information ]= = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
-    public AnnoPageInfo collectAnnoPageInfo(String datasetId, String localId) throws AnnoPageDoesNotExistException {
-        AnnoPageInfo apInfo = new AnnoPageInfo(datasetId, localId);
+    public Record collectAnnoPageInfo(String datasetId, String localId) throws AnnoPageDoesNotExistException {
+        // 1) create Record container for this EuropeanaID
+        Record apInfoRecord = new Record(datasetId, localId);
+
+        // 2) find all original AnnoPages and create a Canvas for each
         if (annoPageRepository.existForEuropeanaId(datasetId, localId, AnnoPage.class) > 0){
             for (AnnoPage ap : annoPageRepository.findOrigPages(datasetId, localId)){
-                apInfo.addPage(EDM2IIIFMapping.getAnnoPageIdUrl(ap), ap.getPgId(), ap.getLang());
-                if (annoPageRepository.existForEuropeanaId(datasetId, localId, TranslationAnnoPage.class) > 0){
-                    for (TranslationAnnoPage tap : annoPageRepository.findTranslatedPages(datasetId, localId)){
-                        apInfo.addLangToPage(EDM2IIIFMapping.getAnnoPageIdUrl(tap), tap.getPgId(), tap.getLang());
-                    }
+                Canvas canvas = new Canvas(makeCanvasID(ap));
+
+                // add original AnnotationLangPage to the Canvas
+                canvas.addAnnotation(new AnnotationLangPage(makeAlPageID(ap), ap.getLang(), true));
+
+                // add translated AnnotationLangPages (if any) to the Canvas
+                for (TranslationAnnoPage tap : annoPageRepository.findTranslatedPages(datasetId, localId, ap.getPgId())) {
+                    canvas.addAnnotation(new AnnotationLangPage(makeAlPageID(tap), tap.getLang(), false));
                 }
+                // add Canvas to Record
+                apInfoRecord.addCanvas(canvas);
             }
         } else {
             throw new AnnoPageDoesNotExistException(datasetId + "/" + localId);
         }
-        return apInfo;
+        return apInfoRecord;
+    }
+
+    private String makeCanvasID(AnnoPage ap){
+        return ftSettings.getAnnoPageBaseUrl() + ap.getDsId() + "/" + ap.getLcId() + ftSettings.getCanvasDirectory() + ap.getPgId();
+    }
+
+    private String makeAlPageID(AnnoPage ap){
+        return makeCanvasID(ap) + ftSettings.getLangParameter() + ap.getLang();
     }
 
     // = = [ check Document existence ]= = = = = = = = = = = = = = = = = = = = = = = = = = = = = =

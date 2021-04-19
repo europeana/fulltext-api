@@ -11,6 +11,8 @@ public final class FTDefinitions {
     public static final  String V3_ANNOTATION_TYPE        = "Annotation";
     public static final  String V3_ANNO_BODY_TYPE         = "SpecificResource";
     public static final  String EDM_FULLTEXTRESOURCE_TYPE = "FullTextResource";
+    public static final  String INFO_CANVAS_TYPE          = "Canvas";
+    public static final  String INFO_ANNOPAGE_TYPE        = "AnnotationPage";
     public static final  String UTF_8                     = "charset=UTF-8";
     private static final String PROFILE_IS                = ";profile=\"";
 

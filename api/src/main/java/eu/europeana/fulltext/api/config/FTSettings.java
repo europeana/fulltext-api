@@ -46,6 +46,12 @@ public class FTSettings {
     @Value("${annopage.directory}")
     private String annoPageDirectory;
 
+    @Value("${canvas.directory}")
+    private String canvasDirectory;
+
+    @Value("${language.parameter}")
+    private String langParameter;
+
     @Value("${annotation.directory}")
     private String annotationDirectory;
 
@@ -113,6 +119,14 @@ public class FTSettings {
 
     public String getAnnotationDirectory() {
         return annotationDirectory;
+    }
+
+    public String getCanvasDirectory() {
+        return canvasDirectory;
+    }
+
+    public String getLangParameter() {
+        return langParameter;
     }
 
     public List<AnnotationType> getDefaultSearchTextGranularity() {
