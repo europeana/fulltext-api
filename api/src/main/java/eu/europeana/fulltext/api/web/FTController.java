@@ -78,7 +78,7 @@ public class FTController {
             @PathVariable String datasetId,
             @PathVariable String localId) throws EuropeanaApiException {
         Record apInfo = fts.collectAnnoPageInfo(datasetId, localId);
-        return new ResponseEntity<>(fts.serialise(apInfo), HttpStatus.I_AM_A_TEAPOT);
+        return new ResponseEntity<>(fts.serialise(apInfo), HttpStatus.OK);
     }
 
     /**
