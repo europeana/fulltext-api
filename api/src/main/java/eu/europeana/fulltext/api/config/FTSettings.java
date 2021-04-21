@@ -46,8 +46,8 @@ public class FTSettings {
     @Value("${annopage.directory}")
     private String annoPageDirectory;
 
-    @Value("${canvas.directory}")
-    private String canvasDirectory;
+    @Value("${summary.canvas.directory}")
+    private String summaryCanvasDirectory;
 
     @Value("${language.parameter}")
     private String langParameter;
@@ -121,8 +121,8 @@ public class FTSettings {
         return annotationDirectory;
     }
 
-    public String getCanvasDirectory() {
-        return canvasDirectory;
+    public String getSummaryCanvasDirectory() {
+        return summaryCanvasDirectory;
     }
 
     public String getLangParameter() {

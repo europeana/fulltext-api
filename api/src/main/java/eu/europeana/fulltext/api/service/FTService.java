@@ -4,9 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.morphia.query.internal.MorphiaCursor;
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.api.config.FTSettings;
-import eu.europeana.fulltext.api.model.info.AnnotationLangPage;
-import eu.europeana.fulltext.api.model.info.Canvas;
-import eu.europeana.fulltext.api.model.info.Record;
+import eu.europeana.fulltext.api.model.info.SummaryAnnoPage;
+import eu.europeana.fulltext.api.model.info.SummaryCanvas;
+import eu.europeana.fulltext.api.model.info.SummaryManifest;
 import eu.europeana.fulltext.api.model.FTResource;
 import eu.europeana.fulltext.api.model.v2.AnnotationPageV2;
 import eu.europeana.fulltext.api.model.v2.AnnotationV2;
@@ -162,37 +162,37 @@ public class FTService {
 
     // = = [ get Annopage information ]= = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
-    public Record collectAnnoPageInfo(String datasetId, String localId) throws AnnoPageDoesNotExistException {
-        // 1) create Record container for this EuropeanaID
-        Record apInfoRecord = new Record(datasetId, localId);
+    public SummaryManifest collectAnnoPageInfo(String datasetId, String localId) throws AnnoPageDoesNotExistException {
+        // 1) create SummaryManifest container for this EuropeanaID
+        SummaryManifest apInfoSummaryManifest = new SummaryManifest(datasetId, localId);
 
-        // 2) find all original AnnoPages and create a Canvas for each
+        // 2) find all original AnnoPages and create a SummaryCanvas for each
         if (annoPageRepository.existForEuropeanaId(datasetId, localId, AnnoPage.class) > 0){
             for (AnnoPage ap : annoPageRepository.findOrigPages(datasetId, localId)){
-                Canvas canvas = new Canvas(makeCanvasID(ap));
+                SummaryCanvas summaryCanvas = new SummaryCanvas(makeSummaryCanvasID(ap));
 
-                // add original AnnotationLangPage to the Canvas
-                canvas.addAnnotation(new AnnotationLangPage(makeAlPageID(ap), ap.getLang(), true));
+                // add original SummaryAnnoPage to the SummaryCanvas
+                summaryCanvas.addAnnotation(new SummaryAnnoPage(makeLangAwareAnnoPageID(ap), ap.getLang(), true));
 
-                // add translated AnnotationLangPages (if any) to the Canvas
+                // add translated AnnotationLangPages (if any) to the SummaryCanvas
                 for (TranslationAnnoPage tap : annoPageRepository.findTranslatedPages(datasetId, localId, ap.getPgId())) {
-                    canvas.addAnnotation(new AnnotationLangPage(makeAlPageID(tap), tap.getLang(), false));
+                    summaryCanvas.addAnnotation(new SummaryAnnoPage(makeLangAwareAnnoPageID(tap), tap.getLang(), false));
                 }
-                // add Canvas to Record
-                apInfoRecord.addCanvas(canvas);
+                // add SummaryCanvas to SummaryManifest
+                apInfoSummaryManifest.addCanvas(summaryCanvas);
             }
         } else {
             throw new AnnoPageDoesNotExistException(datasetId + "/" + localId);
         }
-        return apInfoRecord;
+        return apInfoSummaryManifest;
     }
 
-    private String makeCanvasID(AnnoPage ap){
-        return ftSettings.getAnnoPageBaseUrl() + ap.getDsId() + "/" + ap.getLcId() + ftSettings.getCanvasDirectory() + ap.getPgId();
+    private String makeSummaryCanvasID(AnnoPage ap){
+        return ftSettings.getAnnoPageBaseUrl() + ap.getDsId() + "/" + ap.getLcId() + ftSettings.getSummaryCanvasDirectory() + ap.getPgId();
     }
 
-    private String makeAlPageID(AnnoPage ap){
-        return makeCanvasID(ap) + ftSettings.getLangParameter() + ap.getLang();
+    private String makeLangAwareAnnoPageID(AnnoPage ap){
+        return makeSummaryCanvasID(ap) + ftSettings.getLangParameter() + ap.getLang();
     }
 
     // = = [ check Document existence ]= = = = = = = = = = = = = = = = = = = = = = = = = = = = = =

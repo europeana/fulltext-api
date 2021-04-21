@@ -2,7 +2,7 @@ package eu.europeana.fulltext.api.web;
 
 import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.fulltext.AnnotationType;
-import eu.europeana.fulltext.api.model.info.Record;
+import eu.europeana.fulltext.api.model.info.SummaryManifest;
 import eu.europeana.fulltext.api.model.AnnotationWrapper;
 import eu.europeana.fulltext.api.model.FTResource;
 import eu.europeana.fulltext.api.service.CacheUtils;
@@ -77,7 +77,7 @@ public class FTController {
     public ResponseEntity<String> annoPageInfo(
             @PathVariable String datasetId,
             @PathVariable String localId) throws EuropeanaApiException {
-        Record apInfo = fts.collectAnnoPageInfo(datasetId, localId);
+        SummaryManifest apInfo = fts.collectAnnoPageInfo(datasetId, localId);
         return new ResponseEntity<>(fts.serialise(apInfo), HttpStatus.OK);
     }
 
