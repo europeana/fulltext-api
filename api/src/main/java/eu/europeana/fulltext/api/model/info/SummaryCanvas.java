@@ -1,11 +1,11 @@
 package eu.europeana.fulltext.api.model.info;
 
-import com.fasterxml.jackson.annotation.JsonRootName;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import eu.europeana.fulltext.api.model.JsonLdIdType;
 
 import java.util.*;
 
-import static eu.europeana.fulltext.api.config.FTDefinitions.INFO_CANVAS_TYPE;
+import static eu.europeana.fulltext.api.config.FTDefinitions.*;
 
 /**
  * Created by luthien on 15/04/2021.

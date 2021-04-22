@@ -32,6 +32,9 @@ public class Annotation {
     @Transient
     private boolean      isTopLevel;
 
+    /**
+     * Empty constructor required for serialisation
+     */
     public Annotation(){}
 
     public Annotation(String      anId,

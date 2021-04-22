@@ -19,6 +19,9 @@ public class Resource {
     private String source;
     private String rights;
 
+    /**
+     * Empty constructor required for serialisation
+     */
     public Resource() {
     }
 

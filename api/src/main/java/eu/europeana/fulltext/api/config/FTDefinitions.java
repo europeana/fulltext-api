@@ -19,18 +19,22 @@ public final class FTDefinitions {
     /**
      * Media type for IIIF version 2
      */
-    public static final String MEDIA_TYPE_IIIF_V2  = "http://iiif.io/api/presentation/2/context.json";
+    public static final String MEDIA_TYPE_IIIF_V2  = "https://iiif.io/api/presentation/2/context.json";
 
     /**
      * Media type for IIIF version 3
      */
-    public static final String MEDIA_TYPE_IIIF_V3  = "http://iiif.io/api/presentation/3/context.json";
-
+    public static final String MEDIA_TYPE_IIIF_V3  = "https://iiif.io/api/presentation/3/context.json";
 
     /**
      * Media type used in @context tag of Fulltext Resource
      */
     public static final String MEDIA_TYPE_EDM_JSONLD  = "https://www.europeana.eu/schemas/context/edm.jsonld";
+
+    /**
+     * Media type used in @context tag of Fulltext Summary
+     */
+    public static final String MEDIA_TYPE_W3ORG_JSONLD  = "https://www.w3.org/ns/anno.jsonld";
 
     /**
      * Default Content-type returned on manifest requests for version 2

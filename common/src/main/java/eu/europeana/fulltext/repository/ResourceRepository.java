@@ -37,6 +37,14 @@ public class ResourceRepository {
         return existsResource(datasetId, localId, resId, Resource.class);
     }
 
+
+    /**
+     * Check if any TranslationResources exist that match the given parameters using DBCollection.count().
+     * @param datasetId ID of the dataset
+     * @param localId   ID of the parent of the TranslationAnnopage object
+     * @param resId     ID of the Resource document
+     * @return true if yes, otherwise false
+     */
     public boolean existsTranslation(String datasetId, String localId, String resId) {
         return existsResource(datasetId, localId, resId, TranslationResource.class);
     }
@@ -89,7 +97,7 @@ public class ResourceRepository {
     /**
      * Find a Translation Resource that matches the given parameters
      * @param datasetId ID of the associated dataset
-     * @param localId   ID of the associated Annopage parent object
+     * @param localId   ID of the associated TranslationAnnopage parent object
      * @param resId     ID of the Resource document
      * @return List containing matching Resource(s) (should be just one)
      */

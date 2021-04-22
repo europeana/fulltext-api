@@ -5,18 +5,19 @@ import dev.morphia.annotations.*;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by luthien on 31/05/2018.
  * Namespace assumptions (see the FTDefinitions class):
  * IIIF Api base URL: https://iiif.europeana.eu/presentation/
  * Resource base URL: https://www.europeana.eu/api/fulltext/
- *
  */
 @Entity(value = "AnnoPage", useDiscriminator = false)
-@Indexes(@Index(fields = { @Field("dsId"), @Field("lcId"), @Field("pgId") }, options = @IndexOptions(unique = true)))
+@Indexes(@Index(fields = {@Field("dsId"), @Field("lcId"), @Field("pgId")}, options = @IndexOptions(unique = true)))
 public class AnnoPage {
 
     @Id
@@ -33,15 +34,28 @@ public class AnnoPage {
     private Resource res;
 
 
+    /**
+     * Empty constructor required for serialisation
+     */
     public AnnoPage() {}
 
+    /**
+     * Create a new AnnoPage object using the following parameters:
+     *
+     * @param dsId  String containing the dataset of this Fulltext SummaryManifest
+     * @param lcId  String containing the localId of this Fulltext SummaryManifest
+     * @param pgId  String containing the page number of this Fulltext SummaryManifest
+     * @param tgtId String containing the target ID of this Fulltext SummaryManifest
+     * @param lang  String containing the language code of this Fulltext SummaryManifest
+     * @param res   reference to the Resource linked to this Fulltext SummaryManifest
+     */
     public AnnoPage(String dsId, String lcId, String pgId, String tgtId, String lang, Resource res) {
-        this.dsId  = dsId;
-        this.lcId  = lcId;
-        this.pgId  = pgId;
+        this.dsId = dsId;
+        this.lcId = lcId;
+        this.pgId = pgId;
         this.tgtId = tgtId;
-        this.res   = res;
-        this.lang  = lang;
+        this.res = res;
+        this.lang = lang;
     }
 
     public String getDsId() {
@@ -85,23 +99,23 @@ public class AnnoPage {
     }
 
     public List<Annotation> getAns() {
-        return ans;
+        return new ArrayList<>(ans);
     }
 
     public void setAns(List<Annotation> ans) {
-        this.ans = ans;
+        this.ans = new ArrayList<>(ans);
     }
 
     public Date getModified() {
-        return modified;
+        return (Date) modified.clone();
     }
 
     public void setModified(Date modified) {
-        this.modified = modified;
+        this.modified = (Date) modified.clone();
     }
 
     public String getLang() {
-        return lang;
+        return Objects.requireNonNullElse(lang, "x");
     }
 
     public void setLang(String lang) {
