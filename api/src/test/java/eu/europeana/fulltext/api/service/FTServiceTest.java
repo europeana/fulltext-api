@@ -52,6 +52,9 @@ public class FTServiceTest {
                 .willReturn(true);
         given(apRepository.findOriginalByPageId(eq("ds1"), eq("lc1"), eq("pg1"), any()))
                 .willReturn(anp_1);
+        //"ds1", "lc1", "pg1"
+        given(apRepository.findOriginalByPageIdLang(eq("ds1"), eq("lc1"), eq("pg1"), any(), eq("de")))
+                .willReturn(anp_1);
         given(apRepository.existsWithAnnoId(eq("ds1"), eq("lc1"), eq("an1")))
                 .willReturn(true);
         given(apRepository.findOriginalByAnnoId(eq("ds1"), eq("lc1"), eq("an1")))
@@ -84,7 +87,7 @@ public class FTServiceTest {
     @Test
     public void testGetAnnotationPageV2() throws AnnoPageDoesNotExistException {
         prepareAnnotationPageV2();
-        AnnotationPageV2 ap = ftService.generateAnnoPageV2(ftService.fetchAnnoPage("ds1", "lc1", "pg1", Collections.emptyList(), null),false);
+        AnnotationPageV2 ap = ftService.generateAnnoPageV2(ftService.fetchAnnoPage("ds1", "lc1", "pg1", Collections.emptyList(), "de"),false);
         assertReflectionEquals(anpv2_1, ap);
     }
 

@@ -111,14 +111,14 @@ public class TestUtils {
         buildAnnotationBodiesV2();
         buildAnnotationsV2(false);
         ansv2_1 = new AnnotationV2[] {annv2_1, annv2_2, annv2_3};
-        anpv2_1 = createAnnotationPageV2("pg1", "en", ansv2_1);
+        anpv2_1 = createAnnotationPageV2("pg1", "de", ansv2_1);
     }
 
     public static void prepareAnnotationPageV3(){
         buildAnnotationBodiesV3();
         buildAnnotationsV3(false);
         ansv3_1 = new AnnotationV3[] {annv3_1, annv3_2, annv3_3};
-        anpv3_1 = createAnnotationPageV3("pg1", "en", ansv3_1);
+        anpv3_1 = createAnnotationPageV3("pg1", "de", ansv3_1);
     }
 
     // prepares Annotations entity beans only (Annotations WITH context)
