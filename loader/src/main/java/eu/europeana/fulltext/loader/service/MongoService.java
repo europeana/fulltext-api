@@ -23,6 +23,13 @@ public class MongoService {
 
     private static final Logger LOG = LogManager.getLogger(MongoService.class);
 
+    private static final int LIMIT_NUMBER_ANNOTATIONS = 25_000;
+
+    @Autowired
+    ResourceRepository resourceRepository;
+
+    private static final Logger LOG = LogManager.getLogger(MongoService.class);
+
     private LoaderResourceRepository resourceRepository;
     private LoaderAnnoPageRepository annoPageRepository;
     private LoaderSettings settings;
@@ -98,6 +105,10 @@ public class MongoService {
         String dsId = annoPage.getDsId();
         String lcId = annoPage.getLcId();
         String pgId = annoPage.getPgId();
+        if (annoPage.getAns() != null && annoPage.getAns().size() > LIMIT_NUMBER_ANNOTATIONS) {
+            LogFile.OUT.warn("AnnoPage /{}/{}/{} has {} annotations!",
+                    annoPage.getDsId(), annoPage.getLcId(), annoPage.getPgId(), annoPage.getAns().size());
+        }
         try{
             annoPageRepository.saveOriginal(annoPage);
             LOG.debug("{}/{}/{} AnnoPage saved", dsId, lcId, pgId);
