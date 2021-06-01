@@ -14,29 +14,16 @@ public class SummaryAnnoPage extends JsonLdIdType {
 
     private String language;
 
-    @JsonIgnore
-    private boolean orig;
-
     /**
      * This object serves as a placeholder for either an original or translated AnnoPage
      * It is used in the summary info endpoint only
      *
      * @param id    String containing identifying URL of the SummaryAnnoPage
      * @param language  String containing language of the SummaryAnnoPage
-     * @param orig  boolean is this the original language true / false
      */
-    public SummaryAnnoPage(String id, String language, boolean orig){
+    public SummaryAnnoPage(String id, String language){
         super(id, INFO_ANNOPAGE_TYPE);
         this.language = language;
-        this.orig = orig;
-    }
-
-    public boolean isOrig() {
-        return orig;
-    }
-
-    public void setOrig(boolean orig) {
-        this.orig = orig;
     }
 
     public String getLanguage() {

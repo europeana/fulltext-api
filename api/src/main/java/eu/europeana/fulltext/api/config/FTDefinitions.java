@@ -14,6 +14,12 @@ public final class FTDefinitions {
     public static final  String INFO_CANVAS_TYPE          = "Canvas";
     public static final  String INFO_ANNOPAGE_TYPE        = "AnnotationPage";
     public static final  String UTF_8                     = "charset=UTF-8";
+
+    public static final String ANNOPAGE_PATH             = "/annopage";
+    public static final String ANNOTATION_PATH           = "/";
+    public static final String CANVAS_PATH               = "/canvas";
+    public static final String LANGUAGE_PARAM            = "language=";
+
     private static final String PROFILE_IS                = ";profile=\"";
 
     /**
