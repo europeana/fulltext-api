@@ -325,10 +325,6 @@ public class XMLParserService {
         if (!anno.isTopLevel() && (anno.getTgs() == null || anno.getTgs().isEmpty())) {
             throw new MissingDataException("no annotation target defined");
         }
-
-        if (annoPage.getAns() == null) {
-            annoPage.setAns(new ArrayList<>());
-        }
         return annoPage.getAns().add(anno);
     }
 

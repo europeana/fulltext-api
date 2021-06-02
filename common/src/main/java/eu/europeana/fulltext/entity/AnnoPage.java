@@ -27,7 +27,7 @@ public class AnnoPage {
     private String           pgId;
     private String           tgtId;
     private List<Annotation> ans;
-    private Date             modified = Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant());
+    private Date             modified;
     private String           lang;
 
     @Reference
@@ -37,7 +37,9 @@ public class AnnoPage {
     /**
      * Empty constructor required for serialisation
      */
-    public AnnoPage() {}
+    public AnnoPage() {
+        init();
+    }
 
     /**
      * Create a new AnnoPage object using the following parameters:
@@ -56,6 +58,12 @@ public class AnnoPage {
         this.tgtId = tgtId;
         this.res = res;
         this.lang = lang;
+        init();
+    }
+
+    private void init(){
+        ans = new ArrayList<>();
+        modified = Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant());
     }
 
     public String getDsId() {
@@ -99,11 +107,11 @@ public class AnnoPage {
     }
 
     public List<Annotation> getAns() {
-        return new ArrayList<>(ans);
+        return ans;
     }
 
     public void setAns(List<Annotation> ans) {
-        this.ans = new ArrayList<>(ans);
+        this.ans = ans;
     }
 
     public Date getModified() {
