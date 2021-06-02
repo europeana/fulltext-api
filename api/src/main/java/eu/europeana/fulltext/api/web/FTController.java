@@ -72,7 +72,6 @@ public class FTController {
      * @throws EuropeanaApiException when serialising to Json fails
      */
     @ApiOperation(value = "Lists available Annotation Pages for a given EuropeanaID (dataset + localID), including translations")
-//    @GetMapping(value = "/annopage/{datasetId}/{localId}", headers = ACCEPT_JSON)
     @GetMapping(value = "/{datasetId}/{localId}/annopage", headers = ACCEPT_JSON)
     public ResponseEntity<String> annoPageInfo(
             @PathVariable String datasetId,
@@ -145,7 +144,7 @@ public class FTController {
             String textGranularity,
             HttpServletRequest request,
             boolean isJson) throws EuropeanaApiException {
-        LOG.debug("Retrieve Annopage: {}/{}/{} with language", datasetId, localId, pageId, lang);
+        LOG.debug("Retrieve Annopage: {}/{}/{} with language {}", datasetId, localId, pageId, lang);
         String requestVersion = getRequestVersion(request, versionParam);
         if (ACCEPT_VERSION_INVALID.equals(requestVersion)) {
             return new ResponseEntity<>(ACCEPT_VERSION_INVALID, HttpStatus.NOT_ACCEPTABLE);

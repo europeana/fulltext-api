@@ -3,6 +3,7 @@ package eu.europeana.fulltext.api.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.morphia.query.internal.MorphiaCursor;
 import eu.europeana.fulltext.AnnotationType;
+import eu.europeana.fulltext.api.config.FTDefinitions;
 import eu.europeana.fulltext.api.config.FTSettings;
 import eu.europeana.fulltext.api.model.info.SummaryAnnoPage;
 import eu.europeana.fulltext.api.model.info.SummaryCanvas;
@@ -172,11 +173,11 @@ public class FTService {
                 SummaryCanvas summaryCanvas = new SummaryCanvas(makeSummaryCanvasID(ap));
 
                 // add original SummaryAnnoPage to the SummaryCanvas
-                summaryCanvas.addAnnotation(new SummaryAnnoPage(makeLangAwareAnnoPageID(ap), ap.getLang(), true));
+                summaryCanvas.addAnnotation(new SummaryAnnoPage(makeLangAwareAnnoPageID(ap), ap.getLang()));
 
                 // add translated AnnotationLangPages (if any) to the SummaryCanvas
                 for (TranslationAnnoPage tap : annoPageRepository.findTranslatedPages(datasetId, localId, ap.getPgId())) {
-                    summaryCanvas.addAnnotation(new SummaryAnnoPage(makeLangAwareAnnoPageID(tap), tap.getLang(), false));
+                    summaryCanvas.addAnnotation(new SummaryAnnoPage(makeLangAwareAnnoPageID(tap), tap.getLang()));
                 }
                 // add SummaryCanvas to SummaryManifest
                 apInfoSummaryManifest.addCanvas(summaryCanvas);
@@ -188,11 +189,12 @@ public class FTService {
     }
 
     private String makeSummaryCanvasID(AnnoPage ap){
-        return ftSettings.getAnnoPageBaseUrl() + ap.getDsId() + "/" + ap.getLcId() + ftSettings.getSummaryCanvasDirectory() + ap.getPgId();
+        return ftSettings.getAnnoPageBaseUrl() + ap.getDsId() + "/" + ap.getLcId() + FTDefinitions.CANVAS_PATH +"/" + ap.getPgId();
     }
 
     private String makeLangAwareAnnoPageID(AnnoPage ap){
-        return makeSummaryCanvasID(ap) + ftSettings.getLangParameter() + ap.getLang();
+        return makeSummaryCanvasID(ap) +
+                "?"+ FTDefinitions.LANGUAGE_PARAM + ap.getLang();
     }
 
     // = = [ check Document existence ]= = = = = = = = = = = = = = = = = = = = = = = = = = = = = =

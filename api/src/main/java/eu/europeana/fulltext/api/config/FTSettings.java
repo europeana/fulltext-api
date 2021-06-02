@@ -43,18 +43,6 @@ public class FTSettings {
     @Value("${resource.baseurl}")
     private String resourceBaseUrl;
 
-    @Value("${annopage.directory}")
-    private String annoPageDirectory;
-
-    @Value("${summary.canvas.directory}")
-    private String summaryCanvasDirectory;
-
-    @Value("${language.parameter}")
-    private String langParameter;
-
-    @Value("${annotation.directory}")
-    private String annotationDirectory;
-
     @Value("${search.textGranularity.default:Word}")
     private String searchTextGranularity;
     private List<AnnotationType> defaultSearchTextGranularity;
@@ -111,22 +99,6 @@ public class FTSettings {
 
     public String getResourceBaseUrl() {
         return resourceBaseUrl;
-    }
-
-    public String getAnnoPageDirectory() {
-        return annoPageDirectory;
-    }
-
-    public String getAnnotationDirectory() {
-        return annotationDirectory;
-    }
-
-    public String getSummaryCanvasDirectory() {
-        return summaryCanvasDirectory;
-    }
-
-    public String getLangParameter() {
-        return langParameter;
     }
 
     public List<AnnotationType> getDefaultSearchTextGranularity() {
