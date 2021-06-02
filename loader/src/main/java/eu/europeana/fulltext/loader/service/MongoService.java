@@ -25,11 +25,6 @@ public class MongoService {
 
     private static final int LIMIT_NUMBER_ANNOTATIONS = 25_000;
 
-    @Autowired
-    ResourceRepository resourceRepository;
-
-    private static final Logger LOG = LogManager.getLogger(MongoService.class);
-
     private LoaderResourceRepository resourceRepository;
     private LoaderAnnoPageRepository annoPageRepository;
     private LoaderSettings settings;
