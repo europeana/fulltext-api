@@ -81,6 +81,7 @@ public class AnnoPageRepository {
      * @return List of AnnoPage objects
      */
     public List<AnnoPage> findOrigPages(String datasetId, String localId) {
+        //TODO instead of loading the AnnoPage + Resource, we should load have the option to only the AnnoPage
         return datastore.find(AnnoPage.class).filter(
                 eq(DATASET_ID, datasetId),
                 eq(LOCAL_ID, localId)).iterator().toList();
@@ -89,10 +90,6 @@ public class AnnoPageRepository {
     /**
      * Find and return TranslationAnnoPages that match the given parameters using DBCollection.count().
      * The Morphia ReferenceException is thrown if there is no matching TranslationResource document found;
-     * the try-catch block was added to prevent HTTP 500 errors in case of data inconsistency caused by
-     * adding translations.
-     *
-     * TODO consider making this more explicit in the results than the silent logging here.
      *
      * @param datasetId ID of the dataset
      * @param localId   ID of the parent of the TranslationAnnopage object
@@ -100,16 +97,11 @@ public class AnnoPageRepository {
      * @return List of TranslationAnnopage objects
      */
     public List<TranslationAnnoPage> findTranslatedPages(String datasetId, String localId, String pageId) {
-        List<TranslationAnnoPage> tapList = null;
-        try{
-            tapList = datastore.find(TranslationAnnoPage.class).filter(
+        // TODO instead of loading the AnnoPage + Resource, we should load only the AnnoPage
+        return datastore.find(TranslationAnnoPage.class).filter(
                     eq(DATASET_ID, datasetId),
                     eq(LOCAL_ID, localId),
                     eq(PAGE_ID, pageId)).iterator().toList();
-        } catch (ReferenceException e) {
-            LOG.error("Could not find a referenced TranslationResource", e);
-        }
-        return tapList;
     }
 
     /**
