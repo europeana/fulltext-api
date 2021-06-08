@@ -200,10 +200,12 @@ public class FTService {
                 .append(ap.getLcId())
                 .append(FTDefinitions.ANNOPAGE_PATH)
                 .append("/")
-                .append(ap.getPgId())
-                .append("?")
-                .append(FTDefinitions.LANGUAGE_PARAM)
-                .append(ap.getLang());
+                .append(ap.getPgId());
+        if (!StringUtils.isEmpty(ap.getLang())) {
+            result.append("?")
+                    .append(FTDefinitions.LANGUAGE_PARAM)
+                    .append(ap.getLang());
+        }
         return result.toString();
     }
 
