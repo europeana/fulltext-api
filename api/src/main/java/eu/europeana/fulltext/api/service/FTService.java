@@ -193,8 +193,18 @@ public class FTService {
     }
 
     private String makeLangAwareAnnoPageID(AnnoPage ap){
-        return makeSummaryCanvasID(ap) +
-                "?"+ FTDefinitions.LANGUAGE_PARAM + ap.getLang();
+        StringBuilder result = new StringBuilder(100);
+        result.append(ftSettings.getAnnoPageBaseUrl())
+                .append(ap.getDsId())
+                .append("/")
+                .append(ap.getLcId())
+                .append(FTDefinitions.ANNOPAGE_PATH)
+                .append("/")
+                .append(ap.getPgId())
+                .append("?")
+                .append(FTDefinitions.LANGUAGE_PARAM)
+                .append(ap.getLang());
+        return result.toString();
     }
 
     // = = [ check Document existence ]= = = = = = = = = = = = = = = = = = = = = = = = = = = = = =

@@ -18,8 +18,7 @@ public final class FTDefinitions {
     public static final String ANNOPAGE_PATH             = "/annopage";
     public static final String ANNOTATION_PATH           = "/";
     public static final String CANVAS_PATH               = "/canvas";
-    public static final String LANGUAGE_PARAM            = "language=";
-
+    public static final String LANGUAGE_PARAM            = "lang=";
     private static final String PROFILE_IS                = ";profile=\"";
 
     /**
