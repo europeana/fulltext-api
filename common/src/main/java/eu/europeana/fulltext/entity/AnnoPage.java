@@ -123,7 +123,7 @@ public class AnnoPage {
     }
 
     public String getLang() {
-        return Objects.requireNonNullElse(lang, "x");
+        return this.lang;
     }
 
     public void setLang(String lang) {
