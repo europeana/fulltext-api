@@ -168,22 +168,22 @@ public class FTService {
         SummaryManifest apInfoSummaryManifest = new SummaryManifest(datasetId, localId);
 
         // 2) find all original AnnoPages and create a SummaryCanvas for each
-        if (annoPageRepository.existForEuropeanaId(datasetId, localId, AnnoPage.class) > 0){
-            for (AnnoPage ap : annoPageRepository.findOrigPages(datasetId, localId)){
-                SummaryCanvas summaryCanvas = new SummaryCanvas(makeSummaryCanvasID(ap));
-
-                // add original SummaryAnnoPage to the SummaryCanvas
-                summaryCanvas.addAnnotation(new SummaryAnnoPage(makeLangAwareAnnoPageID(ap), ap.getLang()));
-
-                // add translated AnnotationLangPages (if any) to the SummaryCanvas
-                for (TranslationAnnoPage tap : annoPageRepository.findTranslatedPages(datasetId, localId, ap.getPgId())) {
-                    summaryCanvas.addAnnotation(new SummaryAnnoPage(makeLangAwareAnnoPageID(tap), tap.getLang()));
-                }
-                // add SummaryCanvas to SummaryManifest
-                apInfoSummaryManifest.addCanvas(summaryCanvas);
-            }
-        } else {
+        List<AnnoPage> annoPages = annoPageRepository.findOrigPages(datasetId, localId);
+        if (annoPages == null || annoPages.size() == 0) {
             throw new AnnoPageDoesNotExistException(datasetId + "/" + localId);
+        }
+        for (AnnoPage ap : annoPages) {
+            SummaryCanvas summaryCanvas = new SummaryCanvas(makeSummaryCanvasID(ap));
+
+            // add original SummaryAnnoPage to the SummaryCanvas
+            summaryCanvas.addAnnotation(new SummaryAnnoPage(makeLangAwareAnnoPageID(ap), ap.getLang()));
+
+            // add translated AnnotationLangPages (if any) to the SummaryCanvas
+            for (TranslationAnnoPage tap : annoPageRepository.findTranslatedPages(datasetId, localId, ap.getPgId())) {
+                summaryCanvas.addAnnotation(new SummaryAnnoPage(makeLangAwareAnnoPageID(tap), tap.getLang()));
+            }
+            // add SummaryCanvas to SummaryManifest
+            apInfoSummaryManifest.addCanvas(summaryCanvas);
         }
         return apInfoSummaryManifest;
     }
