@@ -5,7 +5,7 @@ import dev.morphia.annotations.*;
 /**
  * Created by luthien on 31/05/2018.
  */
-@Entity(value = "Resource")
+@Entity(value = "Resource", useDiscriminator = false)
 @Indexes(@Index(fields = { @Field("dsId"), @Field("lcId"), @Field("_id") }, options = @IndexOptions(unique = true)))
 public class Resource {
 
@@ -19,6 +19,9 @@ public class Resource {
     private String source;
     private String rights;
 
+    /**
+     * Empty constructor required for serialisation
+     */
     public Resource() {
     }
 

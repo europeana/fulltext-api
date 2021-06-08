@@ -76,7 +76,7 @@ public class FTSearchService {
         if (solrResult.isEmpty()) {
             LOG.debug("Solr returned empty result in {} ms", System.currentTimeMillis() - start);
             // check if there are 0 hits because the record doesn't exist
-            if (!fulltextRepo.doesAnnoPageExist(europeanaId.getDatasetId(), europeanaId.getLocalId(), "1")) {
+            if (!fulltextRepo.doesAnnoPageExist(europeanaId.getDatasetId(), europeanaId.getLocalId(), "1", null)) {
                 LOG.debug("No results from Mongo");
                 throw new RecordDoesNotExistException(europeanaId);
             }

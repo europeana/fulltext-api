@@ -1,0 +1,14 @@
+# Port for local testing
+server.port: 8084
+
+server:
+  error:
+    include-message: always
+    include-stacktrace: on_trace_param
+    include-exception: false
+
+  compression:
+    enabled: true
+    min-response-size: 4096
+    mime-types: application/json, application/ld+json, application/xml, text/html, text/xml, text/plain
+

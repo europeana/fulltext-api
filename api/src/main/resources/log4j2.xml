@@ -17,6 +17,9 @@
         <Root level="INFO">
             <AppenderRef ref="Console"/>
         </Root>
+        <logger name="eu.europeana.fulltext.api" level="INFO"/>
+<!--        <logger name="dev.morphia" level="TRACE"/>-->
+<!--        <logger name="org.mongodb.driver" level="DEBUG"/>-->
         <logger name="eu.europeana.fulltext.search" level="INFO"/>
         <logger name="org.springframework.data.solr.core.SolrTemplate" level="INFO"/>
     </Loggers>

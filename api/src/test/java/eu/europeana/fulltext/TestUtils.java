@@ -92,7 +92,7 @@ public class TestUtils {
         ann_1 = new Annotation("an1", AnnotationType.WORD.getAbbreviation(), 0, 7, Arrays.asList(tgt_1));
         ann_2 = new Annotation("an2", AnnotationType.WORD.getAbbreviation(), 9, 18, Arrays.asList(tgt_2), "en");
         ann_3 = new Annotation("an3", AnnotationType.LINE.getAbbreviation(), 0, 214, Arrays.asList(tgt_3, tgt_4));
-        anp_1 = new AnnoPage(DS_ID, LCL_ID, "pg1", "tg1", res_1);
+        anp_1 = new AnnoPage(DS_ID, LCL_ID, "pg1", "tg1", "de", res_1);
         anp_1.setAns(Arrays.asList(new Annotation[] {ann_1, ann_2, ann_3}));
         anp_1.setTgtId(getTargetIdBaseUrl("pg1"));
         anp_1.setModified(lastModifiedDate);
@@ -111,14 +111,14 @@ public class TestUtils {
         buildAnnotationBodiesV2();
         buildAnnotationsV2(false);
         ansv2_1 = new AnnotationV2[] {annv2_1, annv2_2, annv2_3};
-        anpv2_1 = createAnnotationPageV2("pg1", ansv2_1);
+        anpv2_1 = createAnnotationPageV2("pg1", "de", ansv2_1);
     }
 
     public static void prepareAnnotationPageV3(){
         buildAnnotationBodiesV3();
         buildAnnotationsV3(false);
         ansv3_1 = new AnnotationV3[] {annv3_1, annv3_2, annv3_3};
-        anpv3_1 = createAnnotationPageV3("pg1", ansv3_1);
+        anpv3_1 = createAnnotationPageV3("pg1", "de", ansv3_1);
     }
 
     // prepares Annotations entity beans only (Annotations WITH context)
@@ -177,8 +177,9 @@ public class TestUtils {
         ftres_2.setContext(MEDIA_TYPE_EDM_JSONLD);
     }
 
-    private static AnnotationPageV2 createAnnotationPageV2(String pageId, AnnotationV2[] resources){
+    private static AnnotationPageV2 createAnnotationPageV2(String pageId, String lang, AnnotationV2[] resources){
         AnnotationPageV2 anp = new AnnotationPageV2(getAnnopageIdUrl(pageId));
+        anp.setLang(lang);
         anp.setResources(resources);
         return anp;
     }
@@ -205,8 +206,9 @@ public class TestUtils {
         return ann;
     }
 
-    private static AnnotationPageV3 createAnnotationPageV3(String pageId, AnnotationV3[] items){
+    private static AnnotationPageV3 createAnnotationPageV3(String pageId, String lang, AnnotationV3[] items){
         AnnotationPageV3 anp = new AnnotationPageV3(getAnnopageIdUrl(pageId));
+        anp.setLang(lang);
         anp.setItems(items);
         return anp;
     }

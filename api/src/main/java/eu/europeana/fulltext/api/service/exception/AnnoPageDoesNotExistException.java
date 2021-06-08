@@ -18,6 +18,10 @@ public class AnnoPageDoesNotExistException extends EuropeanaApiException {
         super("Annotation Page with id " + id + " does not exist");
     }
 
+    public AnnoPageDoesNotExistException(String id, String language) {
+        super("Annotation Page with id " + id + " does not exist for language " + language);
+    }
+
     @Override
     public boolean doLog() {
         return false;

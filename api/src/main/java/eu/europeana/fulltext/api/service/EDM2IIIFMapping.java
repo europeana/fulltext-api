@@ -1,5 +1,6 @@
 package eu.europeana.fulltext.api.service;
 
+import eu.europeana.fulltext.api.config.FTDefinitions;
 import eu.europeana.fulltext.api.config.FTSettings;
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.api.model.FTResource;
@@ -56,6 +57,7 @@ public final class EDM2IIIFMapping {
 
     static AnnotationPageV2 getAnnotationPageV2(AnnoPage annoPage, boolean derefResource){
         AnnotationPageV2 annPage = new AnnotationPageV2(getAnnoPageIdUrl(annoPage));
+        annPage.setLang(annoPage.getLang());
         annPage.setResources(getAnnotationV2Array(annoPage, derefResource));
         return annPage;
     }
@@ -113,6 +115,7 @@ public final class EDM2IIIFMapping {
 
     static AnnotationPageV3 getAnnotationPageV3(AnnoPage annoPage, boolean derefResource){
         AnnotationPageV3 annPage = new AnnotationPageV3(getAnnoPageIdUrl(annoPage));
+        annPage.setLang(annoPage.getLang());
         annPage.setItems(getAnnotationV3Array(annoPage, derefResource));
         return annPage;
     }
@@ -250,14 +253,14 @@ public final class EDM2IIIFMapping {
                annoPage.getRes().getId();
     }
 
-    private static String getAnnoPageIdUrl(AnnoPage annoPage){
+    protected static String getAnnoPageIdUrl(AnnoPage annoPage){
         return fts.getAnnoPageBaseUrl() + annoPage.getDsId() + "/" +
-               annoPage.getLcId() + fts.getAnnoPageDirectory() + annoPage.getPgId();
+               annoPage.getLcId() + FTDefinitions.ANNOPAGE_PATH + "/" + annoPage.getPgId();
     }
 
     private static String getAnnotationIdUrl(AnnoPage annoPage, Annotation annotation) {
         return fts.getAnnotationBaseUrl() + annoPage.getDsId() + "/" + annoPage.getLcId() +
-               fts.getAnnotationDirectory() + annotation.getAnId();
+               ANNOTATION_PATH + annotation.getAnId();
     }
 
     public static String getAnnotationIdUrl(String europeanaId, Annotation annotation) {
@@ -266,7 +269,7 @@ public final class EDM2IIIFMapping {
             s.deleteCharAt(s.length() - 1);
         }
         s.append(europeanaId)
-                .append(fts.getAnnotationDirectory())
+                .append(ANNOTATION_PATH)
                 .append(annotation.getAnId());
         return s.toString();
     }

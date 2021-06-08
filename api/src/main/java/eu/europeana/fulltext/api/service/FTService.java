@@ -3,7 +3,11 @@ package eu.europeana.fulltext.api.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.morphia.query.internal.MorphiaCursor;
 import eu.europeana.fulltext.AnnotationType;
+import eu.europeana.fulltext.api.config.FTDefinitions;
 import eu.europeana.fulltext.api.config.FTSettings;
+import eu.europeana.fulltext.api.model.info.SummaryAnnoPage;
+import eu.europeana.fulltext.api.model.info.SummaryCanvas;
+import eu.europeana.fulltext.api.model.info.SummaryManifest;
 import eu.europeana.fulltext.api.model.FTResource;
 import eu.europeana.fulltext.api.model.v2.AnnotationPageV2;
 import eu.europeana.fulltext.api.model.v2.AnnotationV2;
@@ -14,11 +18,13 @@ import eu.europeana.fulltext.api.service.exception.ResourceDoesNotExistException
 import eu.europeana.fulltext.api.service.exception.SerializationException;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Resource;
+import eu.europeana.fulltext.entity.TranslationAnnoPage;
 import eu.europeana.fulltext.repository.AnnoPageRepository;
 import eu.europeana.fulltext.repository.ResourceRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.util.List;
@@ -35,11 +41,11 @@ public class FTService {
     private static final String GENERATED_IN    = "Generated in {} ms ";
     private static final Logger LOG             = LogManager.getLogger(FTService.class);
 
-    private ResourceRepository resourceRepository;
-    private AnnoPageRepository annoPageRepository;
-    private FTSettings ftSettings;
+    private final ResourceRepository resourceRepository;
+    private final AnnoPageRepository annoPageRepository;
+    private final FTSettings         ftSettings;
 
-    private ObjectMapper mapper;
+    private final ObjectMapper mapper;
 
     /*
      * Constructs an FTService object with autowired dependencies
@@ -66,13 +72,29 @@ public class FTService {
      * @param localId   identifier of the AnnoPage's record
      * @param pageId    identifier of the AnnoPage
      * @param textGranValues dcType values to filter annotations with
+     * @param lang      optional, if provided we'll check if there's an original or translation annopage with this language
      * @throws AnnoPageDoesNotExistException when the Annopage cannot be found
      * @return AnnoPage
      */
-    public AnnoPage fetchAnnoPage(String datasetId, String localId, String pageId, List<AnnotationType> textGranValues) throws AnnoPageDoesNotExistException {
-        AnnoPage result = annoPageRepository.findByDatasetLocalPageId(datasetId, localId, pageId, textGranValues);
-        if (result == null) {
-            throw new AnnoPageDoesNotExistException(String.format("/%s/%s/annopage/%s", datasetId, localId, pageId));
+    public AnnoPage fetchAnnoPage(String datasetId, String localId, String pageId, List<AnnotationType> textGranValues,
+                                  String lang) throws AnnoPageDoesNotExistException {
+        AnnoPage result;
+        if (StringUtils.isEmpty(lang)) {
+            result = annoPageRepository.findOriginalByPageId(datasetId, localId, pageId, textGranValues);
+            if (result == null) {
+                throw new AnnoPageDoesNotExistException(String.format("/%s/%s/annopage/%s", datasetId, localId, pageId));
+            }
+        } else  {
+            // TODO do request to get original and translation in parallel instead in series
+            //  (unless we can fix this my doing 1 query in AnnoPageRepository)
+            result = annoPageRepository.findOriginalByPageIdLang(datasetId, localId, pageId, textGranValues, lang);
+            if (result == null) {
+                result = annoPageRepository.findTranslationByPageIdLang(datasetId, localId, pageId, textGranValues, lang);
+                LOG.debug("No original AnnoPage, TranslationAnnoPage = {}", result);
+            }
+            if (result == null) {
+                throw new AnnoPageDoesNotExistException(String.format("/%s/%s/annopage/%s", datasetId, localId, pageId), lang);
+            }
         }
         return result;
     }
@@ -89,7 +111,7 @@ public class FTService {
      * @return MorphiaCursor containing AnnoPage entries.
      */
     public MorphiaCursor<AnnoPage> fetchAnnoPageFromImageId(String datasetId, String localId, List<String> imageIds, List<AnnotationType> annoTypes) {
-        return annoPageRepository.findByDatasetLocalImageId(datasetId, localId, imageIds, annoTypes);
+        return annoPageRepository.findByImageId(datasetId, localId, imageIds, annoTypes);
     }
 
 
@@ -101,9 +123,14 @@ public class FTService {
      * @throws AnnoPageDoesNotExistException when the Annopage containing the required Annotation can't be found
      * @return AnnoPage
      */
-    public AnnoPage fetchAPAnnotation(String datasetId, String localId, String annoId)
-            throws AnnoPageDoesNotExistException {
-        AnnoPage result = annoPageRepository.findByDatasetLocalAnnoId(datasetId, localId, annoId);
+    public AnnoPage fetchAPAnnotation(String datasetId, String localId, String annoId) throws AnnoPageDoesNotExistException {
+        // TODO do request to get original and translation in parallel instead in series (unless we can fix this my doing 1 query in AnnoPageRepository)
+        AnnoPage result = annoPageRepository.findOriginalByAnnoId(datasetId, localId, annoId);
+        if (result == null) {
+            annoPageRepository.findTranslationByAnnoId(datasetId, localId, annoId);
+            LOG.debug("Annotation not in original AnnoPage, TranslationAnnoPage = {}", result);
+        }
+
         if (result == null) {
             throw new AnnoPageDoesNotExistException(String.format("/%s/%s/anno/%s", datasetId, localId, annoId));
         }
@@ -119,15 +146,66 @@ public class FTService {
      * @throws ResourceDoesNotExistException when the Resource can't be found
      * @return FTResource
      */
-    public FTResource fetchFTResource(String datasetId, String localId, String resId)
-            throws ResourceDoesNotExistException {
-        Resource resource = resourceRepository.findByDatasetLocalResId(datasetId, localId, resId);
-        if (resource == null) {
+    public FTResource fetchFTResource(String datasetId, String localId, String resId)  throws ResourceDoesNotExistException {
+        // TODO investigate if we can combine original annopage and translation annopage in 1 query
+        //  (or maybe when lang is specified we can sent 2 requests in parallel)
+        Resource result = resourceRepository.findOriginalByResId(datasetId, localId, resId);
+        if (result == null) {
+            result = resourceRepository.findTranslationByResId(datasetId, localId, resId);
+            LOG.debug("No original Resource, TranslationResource = {}", result);
+        }
+
+        if (result == null) {
             throw new ResourceDoesNotExistException(String.format("/%s/%s/%s", datasetId, localId, resId));
         }
-        return generateFTResource(resource);
+        return generateFTResource(result);
     }
 
+    // = = [ get Annopage information ]= = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+    public SummaryManifest collectAnnoPageInfo(String datasetId, String localId) throws AnnoPageDoesNotExistException {
+        // 1) create SummaryManifest container for this EuropeanaID
+        SummaryManifest apInfoSummaryManifest = new SummaryManifest(datasetId, localId);
+
+        // 2) find all original AnnoPages and create a SummaryCanvas for each
+        List<AnnoPage> annoPages = annoPageRepository.findOrigPages(datasetId, localId);
+        if (annoPages == null || annoPages.size() == 0) {
+            throw new AnnoPageDoesNotExistException(datasetId + "/" + localId);
+        }
+        for (AnnoPage ap : annoPages) {
+            SummaryCanvas summaryCanvas = new SummaryCanvas(makeSummaryCanvasID(ap));
+
+            // add original SummaryAnnoPage to the SummaryCanvas
+            summaryCanvas.addAnnotation(new SummaryAnnoPage(makeLangAwareAnnoPageID(ap), ap.getLang()));
+
+            // add translated AnnotationLangPages (if any) to the SummaryCanvas
+            for (TranslationAnnoPage tap : annoPageRepository.findTranslatedPages(datasetId, localId, ap.getPgId())) {
+                summaryCanvas.addAnnotation(new SummaryAnnoPage(makeLangAwareAnnoPageID(tap), tap.getLang()));
+            }
+            // add SummaryCanvas to SummaryManifest
+            apInfoSummaryManifest.addCanvas(summaryCanvas);
+        }
+        return apInfoSummaryManifest;
+    }
+
+    private String makeSummaryCanvasID(AnnoPage ap){
+        return ftSettings.getAnnoPageBaseUrl() + ap.getDsId() + "/" + ap.getLcId() + FTDefinitions.CANVAS_PATH +"/" + ap.getPgId();
+    }
+
+    private String makeLangAwareAnnoPageID(AnnoPage ap){
+        StringBuilder result = new StringBuilder(100);
+        result.append(ftSettings.getAnnoPageBaseUrl())
+                .append(ap.getDsId())
+                .append("/")
+                .append(ap.getLcId())
+                .append(FTDefinitions.ANNOPAGE_PATH)
+                .append("/")
+                .append(ap.getPgId())
+                .append("?")
+                .append(FTDefinitions.LANGUAGE_PARAM)
+                .append(ap.getLang());
+        return result.toString();
+    }
 
     // = = [ check Document existence ]= = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
@@ -136,10 +214,22 @@ public class FTService {
      * @param datasetId Identifier of the dataset
      * @param localId   Identifier of the item
      * @param pageId    Identifier of the item's page
+     * @param lang      optional, in which language should the AnnoPage be
      * @return true if it exists, otherwise false
      */
-    public boolean doesAnnoPageExist(String datasetId, String localId, String pageId){
-        return annoPageRepository.existsByPageId(datasetId, localId, pageId);
+    public boolean doesAnnoPageExist(String datasetId, String localId, String pageId, String lang){
+        if (StringUtils.isEmpty(lang)) {
+            return annoPageRepository.existsOriginalByPageId(datasetId, localId, pageId);
+        }
+
+        // TODO investigate if we can combine original annopage and translation annopage in 1 query
+        //  (or maybe when lang is specified we can sent 2 requests in parallel)
+        boolean result = annoPageRepository.existsOriginalByPageIdLang(datasetId, localId, pageId, lang);
+        if (!result) {
+            result = annoPageRepository.existsTranslationByPageIdLang(datasetId, localId, pageId, lang);
+            LOG.debug("No original AnnoPage, TranslationAnnoPage exists = {}", result);
+        }
+        return result;
     }
 
     // = = [ generate JSON objects ] = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -161,6 +251,7 @@ public class FTService {
     /**
      * Generates an AnnotationPageV2 (IIIF V2 response type) object with the AnnoPage as input
      * @param annoPage AnnoPage input object
+     * @param derefResource boolean indicating whether or not to load and dereference the Resource
      * @return AnnotationPageV2
      */
     public AnnotationPageV2 generateAnnoPageV2(AnnoPage annoPage, boolean derefResource){

@@ -108,12 +108,12 @@ public class FTSearchServiceTest {
         );
 
         // default no AnnoPages are available for any record
-        given(fulltextRepo.doesAnnoPageExist(anyString(), anyString(), anyString())).willReturn(
+        given(fulltextRepo.doesAnnoPageExist(any(), any(), any(), any())).willReturn(
                 Boolean.FALSE
         );
         // except for 1 record
         given(fulltextRepo.doesAnnoPageExist(eq(RECORDID_HAS_RESULTS.getDatasetId()), eq(RECORDID_HAS_RESULTS.getLocalId()),
-                anyString())).willReturn(
+                anyString(), any())).willReturn(
                         Boolean.TRUE
         );
     }

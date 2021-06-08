@@ -30,7 +30,8 @@
 		<spring-boot.version>2.3.4.RELEASE</spring-boot.version>
 		<jackson.version>2.9.9</jackson.version>
 		<io-informatics.version>0.1.1</io-informatics.version>
-		<morphia.version>2.0.1</morphia.version>
+		<morphia.version>2.1.4</morphia.version>
+		<snappy.version>1.1.7.2</snappy.version>
 		<commons-lang3.version>3.9</commons-lang3.version>
 		<commons-io.version>2.4</commons-io.version>
 		<!-- Note that upgrading to a newer version of Junit Jupiter may not work with older IntelliJ versions (2019.2.1)
@@ -38,7 +39,6 @@
 		<junit-jupiter.version>5.6.0</junit-jupiter.version>
 		<mockito.version>3.7.0</mockito.version>
 		<unitils.version>3.4.6</unitils.version>
-		<snappy.version>1.1.7.2</snappy.version>
 		<swagger.version>3.0.0</swagger.version>
 		<api-commons.version>0.3.1</api-commons.version>
 	</properties>
@@ -54,11 +54,6 @@
                 <scope>import</scope>
             </dependency>
 
-			<dependency>
-				<groupId>dev.morphia.morphia</groupId>
-				<artifactId>morphia-core</artifactId>
-				<version>${morphia.version}</version>
-			</dependency>
         </dependencies>
     </dependencyManagement>
 </project>

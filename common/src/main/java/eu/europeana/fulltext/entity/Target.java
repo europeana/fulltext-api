@@ -15,6 +15,9 @@ public class Target {
     private Integer start;
     private Integer end;
 
+    /**
+     * Empty constructor required for serialisation
+     */
     public Target(){}
 
     public Target(Integer x, Integer y, Integer w, Integer h) {

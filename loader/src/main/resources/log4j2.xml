@@ -19,6 +19,8 @@
         <Logger name="logFile" level="INFO">
             <AppenderRef ref="fileLogger"/>
         </Logger>
-        <Logger name="eu.europeana.fulltext.loader" level="INFO"/>
+        <Logger name="eu.europeana.fulltext.loader" level="DEBUG"/>
+        <logger name="org.springframework.data.mongodb" level="TRACE"/>
+        <Logger name="dev.morphia" level="TRACE" />
     </Loggers>
 </Configuration>
