@@ -161,7 +161,7 @@ public class FTService {
         return generateFTResource(result);
     }
 
-    // = = [ get Annopage information ]= = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+    // = = [ collect summary information ]= = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
     public SummaryManifest collectAnnoPageInfo(String datasetId, String localId) throws AnnoPageDoesNotExistException {
         // 1) create SummaryManifest container for this EuropeanaID
@@ -177,6 +177,7 @@ public class FTService {
 
             // add original SummaryAnnoPage to the SummaryCanvas
             summaryCanvas.addAnnotation(new SummaryAnnoPage(makeLangAwareAnnoPageID(ap), ap.getLang()));
+            summaryCanvas.setOriginalLanguage(ap.getLang());
 
             // add translated AnnotationLangPages (if any) to the SummaryCanvas
             for (TranslationAnnoPage tap : annoPageRepository.findTranslatedPages(datasetId, localId, ap.getPgId())) {
