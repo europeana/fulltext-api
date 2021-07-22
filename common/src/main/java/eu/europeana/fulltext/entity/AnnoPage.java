@@ -33,6 +33,9 @@ public class AnnoPage {
     @Reference
     private Resource res;
 
+    @Transient
+    private List<TranslationAnnoPage> translations;
+
 
     /**
      * Empty constructor required for serialisation
@@ -58,6 +61,28 @@ public class AnnoPage {
         this.tgtId = tgtId;
         this.res = res;
         this.lang = lang;
+        init();
+    }
+
+    /**
+     * Create a new AnnoPage object + translations using the following parameters:
+     *
+     * @param dsId  String containing the dataset of this Fulltext SummaryManifest
+     * @param lcId  String containing the localId of this Fulltext SummaryManifest
+     * @param pgId  String containing the page number of this Fulltext SummaryManifest
+     * @param tgtId String containing the target ID of this Fulltext SummaryManifest
+     * @param lang  String containing the language code of this Fulltext SummaryManifest
+     * @param res   reference to the Resource linked to this Fulltext SummaryManifest
+     * @param translations List of fetched TranslationAnnoPages
+     */
+    public AnnoPage(String dsId, String lcId, String pgId, String tgtId, String lang, Resource res, List<TranslationAnnoPage> translations) {
+        this.dsId = dsId;
+        this.lcId = lcId;
+        this.pgId = pgId;
+        this.tgtId = tgtId;
+        this.res = res;
+        this.lang = lang;
+        this.translations = translations;
         init();
     }
 
@@ -132,5 +157,14 @@ public class AnnoPage {
 
     public String toString() {
         return "/" + this.dsId + "/" + this.getLcId() + "/" + this.getPgId();
+    }
+
+
+    public List<TranslationAnnoPage> getTranslations() {
+        return translations;
+    }
+
+    public void setTranslations(List<TranslationAnnoPage> translations) {
+        this.translations = translations;
     }
 }

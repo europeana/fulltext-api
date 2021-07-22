@@ -17,6 +17,7 @@ import eu.europeana.fulltext.api.service.exception.AnnoPageDoesNotExistException
 import eu.europeana.fulltext.api.service.exception.ResourceDoesNotExistException;
 import eu.europeana.fulltext.api.service.exception.SerializationException;
 import eu.europeana.fulltext.entity.AnnoPage;
+import eu.europeana.fulltext.entity.AnnoPageWithTranslations;
 import eu.europeana.fulltext.entity.Resource;
 import eu.europeana.fulltext.entity.TranslationAnnoPage;
 import eu.europeana.fulltext.repository.AnnoPageRepository;
@@ -167,26 +168,46 @@ public class FTService {
         // 1) create SummaryManifest container for this EuropeanaID
         SummaryManifest apInfoSummaryManifest = new SummaryManifest(datasetId, localId);
 
-        // 2) find all original AnnoPages and create a SummaryCanvas for each
-        List<AnnoPage> annoPages = annoPageRepository.findOrigPages(datasetId, localId);
-        if (annoPages == null || annoPages.size() == 0) {
+        List<AnnoPage> apListWithTranslations = annoPageRepository.findAnnoPagesWithTranslations(datasetId, localId);
+        if (apListWithTranslations == null || apListWithTranslations.isEmpty()) {
             throw new AnnoPageDoesNotExistException(datasetId + "/" + localId);
         }
-        for (AnnoPage ap : annoPages) {
-            SummaryCanvas summaryCanvas = new SummaryCanvas(makeSummaryCanvasID(ap));
 
-            // add original SummaryAnnoPage to the SummaryCanvas
-            summaryCanvas.addAnnotation(new SummaryAnnoPage(makeLangAwareAnnoPageID(ap), ap.getLang()));
+        for (AnnoPage apWt : apListWithTranslations){
+            SummaryCanvas summaryCanvas = new SummaryCanvas(makeSummaryCanvasID(apWt));
+            summaryCanvas.addAnnotation(new SummaryAnnoPage(makeLangAwareAnnoPageID(apWt), apWt.getLang()));
 
-            // add translated AnnotationLangPages (if any) to the SummaryCanvas
-            for (TranslationAnnoPage tap : annoPageRepository.findTranslatedPages(datasetId, localId, ap.getPgId())) {
+            for (TranslationAnnoPage tap : apWt.getTranslations()) {
                 summaryCanvas.addAnnotation(new SummaryAnnoPage(makeLangAwareAnnoPageID(tap), tap.getLang()));
             }
-            // modified value of last Anno Page will be added in the SummaryManifest
-            apInfoSummaryManifest.setModified(ap.getModified());
-            // add SummaryCanvas to SummaryManifest
+            apInfoSummaryManifest.setModified(apWt.getModified());
             apInfoSummaryManifest.addCanvas(summaryCanvas);
         }
+
+
+        // 2) find all original AnnoPages and create a SummaryCanvas for each
+
+//        List<AnnoPage> annoPages = annoPageRepository.findOrigPages(datasetId, localId);
+//        if (annoPages == null || annoPages.size() == 0) {
+//            throw new AnnoPageDoesNotExistException(datasetId + "/" + localId);
+//        }
+//        for (AnnoPage ap : annoPages) {
+//            SummaryCanvas summaryCanvas = new SummaryCanvas(makeSummaryCanvasID(ap));
+//
+//            // add original SummaryAnnoPage to the SummaryCanvas
+//            summaryCanvas.addAnnotation(new SummaryAnnoPage(makeLangAwareAnnoPageID(ap), ap.getLang()));
+//
+//            // add translated AnnotationLangPages (if any) to the SummaryCanvas
+//            for (TranslationAnnoPage tap : annoPageRepository.findTranslatedPages(datasetId, localId, ap.getPgId())) {
+//                summaryCanvas.addAnnotation(new SummaryAnnoPage(makeLangAwareAnnoPageID(tap), tap.getLang()));
+//            }
+//            // modified value of last Anno Page will be added in the SummaryManifest
+//            apInfoSummaryManifest.setModified(ap.getModified());
+//            // add SummaryCanvas to SummaryManifest
+//            apInfoSummaryManifest.addCanvas(summaryCanvas);
+//        }
+
+
         return apInfoSummaryManifest;
     }
 

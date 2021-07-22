@@ -3,11 +3,17 @@ package eu.europeana.fulltext.repository;
 import dev.morphia.Datastore;
 import dev.morphia.aggregation.experimental.Aggregation;
 import dev.morphia.aggregation.experimental.expressions.ArrayExpressions;
+import dev.morphia.aggregation.experimental.expressions.Expressions;
+import dev.morphia.aggregation.experimental.expressions.impls.LetExpression;
+import dev.morphia.aggregation.experimental.stages.Lookup;
+import dev.morphia.aggregation.experimental.stages.Match;
 import dev.morphia.aggregation.experimental.stages.Projection;
+import dev.morphia.aggregation.experimental.stages.Stage;
 import dev.morphia.mapping.lazy.proxy.ReferenceException;
 import dev.morphia.query.internal.MorphiaCursor;
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.entity.AnnoPage;
+import eu.europeana.fulltext.entity.AnnoPageWithTranslations;
 import eu.europeana.fulltext.entity.TranslationAnnoPage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,11 +23,11 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static dev.morphia.aggregation.experimental.expressions.ArrayExpressions.array;
 import static dev.morphia.aggregation.experimental.expressions.ArrayExpressions.filter;
 import static dev.morphia.aggregation.experimental.expressions.Expressions.field;
 import static dev.morphia.aggregation.experimental.expressions.Expressions.value;
-import static dev.morphia.query.experimental.filters.Filters.eq;
-import static dev.morphia.query.experimental.filters.Filters.in;
+import static dev.morphia.query.experimental.filters.Filters.*;
 import static eu.europeana.fulltext.util.MorphiaUtils.Fields.*;
 
 
@@ -340,4 +346,30 @@ public class AnnoPageRepository {
                         )
         );
     }
+
+    public List<AnnoPage> findAnnoPagesWithTranslations(String datasetId, String localId) {
+        Aggregation<AnnoPage> query = datastore.aggregate(AnnoPage.class)
+                                               .match(eq(DATASET_ID, datasetId), eq(LOCAL_ID, localId))
+                                               .lookup(Lookup.lookup(TranslationAnnoPage.class)
+                                                     .let("origDsId", value("$dsId"))
+                                                     .let("origLcId", value("$lcId"))
+                                                     .let("origPgId", value("$pgId"))
+                                                     .pipeline(Match.match(expr(Expressions.of()
+                                                           .field("$and",
+                                                                  array(Expressions
+                                                                        .of().field("$eq",
+                                                                               array(field("dsId"),
+                                                                                     value("$$origDsId"))),
+                                                                        Expressions
+                                                                        .of().field("$eq",
+                                                                               array(field("lcId"),
+                                                                                     value("$$origDsId"))),
+                                                                        Expressions
+                                                                        .of().field("$eq",
+                                                                               array(field("pgId"),
+                                                                                     value("$$origPgId"))))))))
+                                                     .as("translations"));
+        return query.execute(AnnoPage.class).toList();
+    }
+
 }

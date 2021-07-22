@@ -66,8 +66,8 @@ public class FTController {
     /**
      * Lists available AnnoPages for this record, including all translations
      *
-     * @param datasetId identifier of the AnnoPage's dataset
-     * @param localId   identifier of the AnnoPage's record
+     * @param  datasetId identifier of the AnnoPage's dataset
+     * @param  localId   identifier of the AnnoPage's record
      * @return result String containing requested info
      * @throws EuropeanaApiException when serialising to Json fails
      */
@@ -84,9 +84,9 @@ public class FTController {
         SummaryManifest apInfo = fts.collectAnnoPageInfo(datasetId, localId);
         ZonedDateTime modified = CacheUtils.dateToZonedUTC(apInfo.getModified());
         String eTag = generateETag(datasetId + localId ,
-                 modified,
-                fts.getSettings().getAppVersion(),
-                true);
+                                   modified,
+                                   fts.getSettings().getAppVersion(),
+                                   true);
         ResponseEntity<String> cached = CacheUtils.checkCached(request, modified, eTag);
         if (null != cached) {
             return cached;
