@@ -81,8 +81,8 @@ public class FTController {
     }
 
     private ResponseEntity<String> getAnnoPageInfo(String datasetId, String localId, HttpServletRequest request) throws EuropeanaApiException {
-        SummaryManifest apInfo = fts.collectAnnoPageInfo(datasetId, localId);
-        ZonedDateTime modified = CacheUtils.dateToZonedUTC(apInfo.getModified());
+        AnnoPage annoPage = fts.getSingleAnnoPage(datasetId, localId);
+        ZonedDateTime modified = CacheUtils.dateToZonedUTC(annoPage.getModified());
         String eTag = generateETag(datasetId + localId ,
                  modified,
                 fts.getSettings().getAppVersion(),
@@ -92,6 +92,7 @@ public class FTController {
             return cached;
         }
         HttpHeaders headers = CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
+        SummaryManifest apInfo = fts.collectAnnoPageInfo(datasetId, localId);
         return new ResponseEntity<>(fts.serialise(apInfo), headers, HttpStatus.OK);
     }
 

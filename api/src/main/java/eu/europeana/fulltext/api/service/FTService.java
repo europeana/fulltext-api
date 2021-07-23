@@ -163,6 +163,14 @@ public class FTService {
 
     // = = [ get Annopage information ]= = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
+    public AnnoPage getSingleAnnoPage(String datasetId, String localId) throws AnnoPageDoesNotExistException {
+        AnnoPage annoPage = annoPageRepository.findPage(datasetId, localId);
+        if (annoPage == null) {
+            throw new AnnoPageDoesNotExistException(datasetId + "/" + localId);
+        }
+        return annoPage;
+    }
+
     public SummaryManifest collectAnnoPageInfo(String datasetId, String localId) throws AnnoPageDoesNotExistException {
         // 1) create SummaryManifest container for this EuropeanaID
         SummaryManifest apInfoSummaryManifest = new SummaryManifest(datasetId, localId);
@@ -182,8 +190,6 @@ public class FTService {
             for (TranslationAnnoPage tap : annoPageRepository.findTranslatedPages(datasetId, localId, ap.getPgId())) {
                 summaryCanvas.addAnnotation(new SummaryAnnoPage(makeLangAwareAnnoPageID(tap), tap.getLang()));
             }
-            // modified value of last Anno Page will be added in the SummaryManifest
-            apInfoSummaryManifest.setModified(ap.getModified());
             // add SummaryCanvas to SummaryManifest
             apInfoSummaryManifest.addCanvas(summaryCanvas);
         }
