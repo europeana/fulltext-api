@@ -163,6 +163,14 @@ public class FTService {
 
     // = = [ collect summary information ]= = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
+    public AnnoPage getSingleAnnoPage(String datasetId, String localId) throws AnnoPageDoesNotExistException {
+        AnnoPage annoPage = annoPageRepository.findPage(datasetId, localId);
+        if (annoPage == null) {
+            throw new AnnoPageDoesNotExistException(datasetId + "/" + localId);
+        }
+        return annoPage;
+    }
+
     public SummaryManifest collectAnnoPageInfo(String datasetId, String localId) throws AnnoPageDoesNotExistException {
         // 1) create SummaryManifest container for this EuropeanaID
         SummaryManifest apInfoSummaryManifest = new SummaryManifest(datasetId, localId);
