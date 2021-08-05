@@ -9,7 +9,7 @@ import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_EDM_JSON
 /**
  * Created by luthien on 14/06/2018.
  */
-@JsonPropertyOrder({"context", "id", "type", "rights", "source", "language", "value"})
+@JsonPropertyOrder({"context", "id", "type", "PgRights", "source", "language", "value"})
 public class FTResource extends JsonLdIdType {
 
     private static final long serialVersionUID = -2460385486748326124L;
@@ -21,26 +21,26 @@ public class FTResource extends JsonLdIdType {
     private String source;
 
     @JsonProperty("edmRights")
-    private String rights;
+    private String PGRights;
 
 
     private FTResource(String id) {
         super(id, EDM_FULLTEXTRESOURCE_TYPE);
     }
 
-    public FTResource(String id, String language, String value, String rights) {
+    public FTResource(String id, String language, String value, String PGRights) {
         this(id);
         this.language   = language;
         this.value      = value;
-        this.rights     = rights;
+        this.PGRights     = PGRights;
     }
 
-    public FTResource(String id, String language, String value, String source, String rights) {
+    public FTResource(String id, String language, String value, String source, String PGRights) {
         this(id);
         this.language   = language;
         this.value      = value;
         this.source     = source;
-        this.rights     = rights;
+        this.PGRights     = PGRights;
     }
 
     public String getLanguage() {
@@ -67,5 +67,5 @@ public class FTResource extends JsonLdIdType {
         this.source = source;
     }
 
-    public String getRights() { return rights; }
+    public String getRights() { return PGRights; }
 }

@@ -137,7 +137,7 @@ public class XMLParserServiceTest {
     }
 
     /**
-     * Test if the rights are retrieved properly from an example xml file
+     * Test if the PgRights are retrieved properly from an example xml file
      */
     @Test
     public void testResourceRights() {

@@ -50,7 +50,7 @@ public class XMLParserService {
     private static final String FULLTEXTRESOURCE             = "FullTextResource";
     private static final String FULLTEXTRESOURCE_ABOUT       = "about";
     private static final String FULLTEXTRESOURCE_LANGUAGE    = "language";
-    private static final String FULLTEXTRESOURCE_RIGHTS      = "rights";
+    private static final String FULLTEXTRESOURCE_RIGHTS      = "PgRights";
     private static final String FULLTEXTRESOURCE_RIGHTS_TEXT = "resource";
     private static final String FULLTEXTRESOURCE_SOURCE      = "source";
     private static final String FULLTEXTRESOURCE_SOURCE_TEXT = "resource";
@@ -178,7 +178,7 @@ public class XMLParserService {
     }
 
     /**
-     * The edm:FullTextResource element contains a language, source, rights and a value element.
+     * The edm:FullTextResource element contains a language, source, PgRights and a value element.
      * It also has a rdf:about attribute from which we retrieve the resourceId
      *
      */
@@ -356,7 +356,7 @@ public class XMLParserService {
     }
 
     /**
-     * edm:rights is a field of a fulltextResource
+     * edm:PgRights is a field of a fulltextResource
      */
     private void parseResourceEdmRights(StartElement rightsElement, Resource res) {
         Attribute att = rightsElement.getAttributeByName(new QName(RDF_NAMESPACE, FULLTEXTRESOURCE_RIGHTS_TEXT));
@@ -603,7 +603,7 @@ public class XMLParserService {
 
     /**
      * Check if the minimal required resource information is present.
-     * Text, language, rights and source are (technically) optional
+     * Text, language, PgRights and source are (technically) optional
      */
     private void checkResourceComplete(Resource res, String file) throws LoaderException {
         if (StringUtils.isEmpty(res.getDsId())) {
