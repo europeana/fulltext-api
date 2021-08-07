@@ -1,4 +1,4 @@
-package eu.europeana.fulltext.pgentity;
+package eu.europeana.fulltext.api.pgentity;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -7,33 +7,33 @@ import java.util.Objects;
 /**
  * Created by luthien on 03/08/2021.
  */
-@Entity(name = "PgRights")
-@Table(name = "rights")
-public class PgRights {
+@Entity(name = "PgLocaldoc")
+@Table(name = "localdoc")
+public class PgLocaldoc {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @NotNull
     @Column(name = "value")
     private String value;
 
     /**
-     * Creates a Rights record
-     * @param value description
+     * creates an local identifier for a document (having multiple pages)
+     * @param value local identifier
      */
-    public PgRights(String value){
+    public PgLocaldoc(String value){
         this.value = value;
     }
 
-    public PgRights(){ }
+    public PgLocaldoc(){ }
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -41,16 +41,12 @@ public class PgRights {
         return value;
     }
 
-    public void setValue(String value) {
-        this.value = value;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        PgRights pgRights = (PgRights) o;
-        return getValue().equals(pgRights.getValue());
+        PgLocaldoc pgLocaldoc = (PgLocaldoc) o;
+        return getValue().equals(pgLocaldoc.getValue());
     }
 
     @Override

@@ -1,4 +1,4 @@
-package eu.europeana.fulltext.pgentity;
+package eu.europeana.fulltext.api.pgentity;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -16,10 +16,11 @@ import java.util.Objects;
 @Table(name = "annopage")
 public class PgAnnopage {
 
+    @Transient
     DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)

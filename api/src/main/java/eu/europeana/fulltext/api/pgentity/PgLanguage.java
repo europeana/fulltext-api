@@ -1,4 +1,4 @@
-package eu.europeana.fulltext.pgentity;
+package eu.europeana.fulltext.api.pgentity;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -12,7 +12,7 @@ import java.util.Objects;
 public class PgLanguage {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @NotNull
@@ -24,7 +24,7 @@ public class PgLanguage {
      * @param value language identifier
      */
     public PgLanguage(String value){
-        this.value = value;
+        this.value = ((null != value) ? value : "null");
     }
 
     public PgLanguage(){ }

@@ -1,7 +1,6 @@
-package eu.europeana.fulltext.pgentity;
+package eu.europeana.fulltext.api.pgentity;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.util.Objects;
 
 /**
@@ -12,7 +11,7 @@ import java.util.Objects;
 public class PgTarget {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -37,7 +36,7 @@ public class PgTarget {
      * @param start         start index of annotation in subtitle text
      * @param end           end index of annotation in subtitle text
      */
-    public PgTarget(PgAnnotation pgAnnotation, int start, int end){
+    public PgTarget(PgAnnotation pgAnnotation, Integer start, Integer end){
         this.pgAnnotation = pgAnnotation;
         this.xStart = start;
         this.yEnd = end;
@@ -51,7 +50,7 @@ public class PgTarget {
      * @param width         width of target area
      * @param height        height of target area
      */
-    public PgTarget(PgAnnotation pgAnnotation, int x, int y, int width, int height){
+    public PgTarget(PgAnnotation pgAnnotation, Integer x, Integer y, Integer width, Integer height){
         this(pgAnnotation, x, y);
         this.width = width;
         this.height = height;
@@ -141,9 +140,9 @@ public class PgTarget {
                + ", yEnd="
                + yEnd
                + ", width="
-               + width
+               + ((null != width) ? width : "null")
                + ", height="
-               + height
+               + ((null != height) ? height : "null")
                + '}';
     }
 }

@@ -1,6 +1,6 @@
-package eu.europeana.fulltext.pgrepository;
+package eu.europeana.fulltext.api.pgrepository;
 
-import eu.europeana.fulltext.pgentity.PgLanguage;
+import eu.europeana.fulltext.api.pgentity.PgLanguage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

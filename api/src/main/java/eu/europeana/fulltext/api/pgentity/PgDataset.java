@@ -1,4 +1,4 @@
-package eu.europeana.fulltext.pgentity;
+package eu.europeana.fulltext.api.pgentity;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -7,33 +7,33 @@ import java.util.Objects;
 /**
  * Created by luthien on 03/08/2021.
  */
-@Entity(name = "PgLocaldoc")
-@Table(name = "localdoc")
-public class PgLocaldoc {
+@Entity(name = "PgDataset")
+@Table(name = "dataset")
+public class PgDataset {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
     @NotNull
     @Column(name = "value")
     private String value;
 
     /**
-     * creates an local identifier for a document (having multiple pages)
-     * @param value local identifier
+     * creates an dataset identifier (having multiple local documents)
+     * @param value dataset identifier
      */
-    public PgLocaldoc(String value){
+    public PgDataset(String value){
         this.value = value;
     }
 
-    public PgLocaldoc(){ }
+    public PgDataset(){ }
 
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -41,12 +41,16 @@ public class PgLocaldoc {
         return value;
     }
 
+    public void setValue(String value) {
+        this.value = value;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        PgLocaldoc pgLocaldoc = (PgLocaldoc) o;
-        return getValue().equals(pgLocaldoc.getValue());
+        PgDataset pgDataset = (PgDataset) o;
+        return getValue().equals(pgDataset.getValue());
     }
 
     @Override

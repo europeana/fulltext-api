@@ -1,4 +1,4 @@
-package eu.europeana.fulltext.pgentity;
+package eu.europeana.fulltext.api.pgentity;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -7,12 +7,12 @@ import java.util.Objects;
 /**
  * Created by luthien on 03/08/2021.
  */
-@Entity(name = "PgDataset")
-@Table(name = "dataset")
-public class PgDataset {
+@Entity(name = "PgRights")
+@Table(name = "rights")
+public class PgRights {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @NotNull
@@ -20,14 +20,14 @@ public class PgDataset {
     private String value;
 
     /**
-     * creates an dataset identifier (having multiple local documents)
-     * @param value dataset identifier
+     * Creates a Rights record
+     * @param value description
      */
-    public PgDataset(String value){
-        this.value = value;
+    public PgRights(String value){
+        this.value = ((null != value) ? value : "null");
     }
 
-    public PgDataset(){ }
+    public PgRights(){ }
 
     public Integer getId() {
         return id;
@@ -49,8 +49,8 @@ public class PgDataset {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        PgDataset pgDataset = (PgDataset) o;
-        return getValue().equals(pgDataset.getValue());
+        PgRights pgRights = (PgRights) o;
+        return getValue().equals(pgRights.getValue());
     }
 
     @Override

@@ -1,4 +1,4 @@
-package eu.europeana.fulltext.pgentity;
+package eu.europeana.fulltext.api.pgentity;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -12,7 +12,7 @@ import java.util.Objects;
 public class PgResource {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -40,10 +40,11 @@ public class PgResource {
      * @param pgRights      Rights that apply to the resource
      * @param value         resource text
      */
-    public PgResource(PgLanguage pgLanguage, PgRights pgRights, String value){
+    public PgResource(PgLanguage pgLanguage, PgRights pgRights, String value, String source){
         this.pgLanguage = pgLanguage;
         this.pgRights = pgRights;
         this.value = value;
+        this.source = ((null != source) ? source : "null");
     }
 
     /**
@@ -53,8 +54,8 @@ public class PgResource {
      * @param original      if the resource is the original (as opposed to translated)
      * @param value         resource text
      */
-    public PgResource(PgLanguage pgLanguage, PgRights pgRights, boolean original, String value){
-        this(pgLanguage, pgRights, value);
+    public PgResource(PgLanguage pgLanguage, PgRights pgRights, boolean original, String value, String source){
+        this(pgLanguage, pgRights, value, source);
         this.original = original;
     }
 

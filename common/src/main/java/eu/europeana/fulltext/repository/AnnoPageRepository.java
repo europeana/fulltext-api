@@ -20,8 +20,8 @@ import java.util.stream.Collectors;
 import static dev.morphia.aggregation.experimental.expressions.ArrayExpressions.filter;
 import static dev.morphia.aggregation.experimental.expressions.Expressions.field;
 import static dev.morphia.aggregation.experimental.expressions.Expressions.value;
-import static dev.morphia.query.experimental.filters.Filters.eq;
-import static dev.morphia.query.experimental.filters.Filters.in;
+import static dev.morphia.query.experimental.filters.Filters.*;
+import static dev.morphia.query.experimental.filters.Filters.exists;
 import static eu.europeana.fulltext.util.MorphiaUtils.Fields.*;
 
 
@@ -339,5 +339,28 @@ public class AnnoPageRepository {
                                 ).as("annotation")
                         )
         );
+    }
+
+    /**
+     * Find and return AnnoPages that match the given parameter
+     * @param datasetId ID of the dataset
+     * @return List of AnnoPage objects
+     */
+    public List<AnnoPage> findAllPagesForDs(String datasetId) {
+        return datastore.find(AnnoPage.class).filter(
+                eq(DATASET_ID, datasetId)).iterator().toList();
+    }
+
+    public MorphiaCursor<AnnoPage> findByDatasetNoLang(String datasetId) {
+        return datastore.aggregate(AnnoPage.class).match(
+                eq(DATASET_ID, datasetId),
+                exists("lang").not())
+                        .execute(AnnoPage.class);
+    }
+
+    public MorphiaCursor<AnnoPage> findAllNoLang() {
+        return datastore.aggregate(AnnoPage.class).match(
+                exists("lang").not())
+                        .execute(AnnoPage.class);
     }
 }

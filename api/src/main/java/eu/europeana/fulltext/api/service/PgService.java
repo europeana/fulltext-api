@@ -1,11 +1,11 @@
 package eu.europeana.fulltext.api.service;
 
+import eu.europeana.fulltext.api.pgrepository.*;
+import eu.europeana.fulltext.api.pgentity.*;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Annotation;
 import eu.europeana.fulltext.entity.Resource;
-import eu.europeana.fulltext.pgentity.*;
-import eu.europeana.fulltext.pgrepository.*;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,50 +14,73 @@ import java.util.Optional;
 /**
  * Created by luthien on 05/08/2021.
  */
+@Service
 public class PgService {
 
-    @Autowired
-    private PgDatasetRepository  pgDatasetRepository;
-    @Autowired
-    private PgLocaldocRepository pgLocaldocRepository;
-    @Autowired
-    private PgLanguageRepository pgLanguageRepository;
-    @Autowired
-    private PgRightsRepository   pgRightsRepository;
-    @Autowired
-    private PgAnnotationRepository pgAnnotationRepository;
-    @Autowired
-    private PgResourceRepository   pgResourceRepository;
-    @Autowired
-    private PgAnnopageRepository   pgAnnopageRepository;
+    private final PgAnnopageRepository pgAnnopageRepository;
+    private final PgDatasetRepository  pgDatasetRepository;
+    private final PgLocaldocRepository pgLocaldocRepository;
+    private final PgLanguageRepository   pgLanguageRepository;
+    private final PgRightsRepository     pgRightsRepository;
+    private       PgAnnotationRepository pgAnnotationRepository;
+    private       PgResourceRepository pgResourceRepository;
+
+
+    /*
+     * Constructs an FTService object with autowired dependencies
+     */
+    public PgService(
+            PgDatasetRepository pgDatasetRepository,
+            PgLocaldocRepository pgLocaldocRepository,
+            PgLanguageRepository pgLanguageRepository,
+            PgRightsRepository pgRightsRepository,
+            PgAnnotationRepository pgAnnotationRepository,
+            PgResourceRepository pgResourceRepository,
+            PgAnnopageRepository pgAnnopageRepository) {
+        this.pgDatasetRepository = pgDatasetRepository;
+        this.pgLocaldocRepository = pgLocaldocRepository;
+        this.pgLanguageRepository = pgLanguageRepository;
+        this.pgRightsRepository = pgRightsRepository;
+        this.pgAnnotationRepository = pgAnnotationRepository;
+        this.pgResourceRepository = pgResourceRepository;
+        this.pgAnnopageRepository = pgAnnopageRepository;
+    }
 
     /**
      * Persist Annopage in PostgreSQL
-     * @param  resource input data
-     * @param  annoPage input data
+     *
+     * @param annoPage input data
      */
-    public void saveFTRecord(Resource resource, AnnoPage annoPage){
+    public void saveFTRecord(AnnoPage annoPage) {
         List<PgAnnotation> pgAnnotationList = new ArrayList<>();
+        Resource resource = annoPage.getRes();
 
         PgResource pgResource = new PgResource(addOrGetLanguage(resource.getLang()),
                                                addOrGetRights(resource.getRights()),
                                                true,
+                                               resource.getValue(),
                                                resource.getSource());
 
         PgAnnopage pgAnnopage = new PgAnnopage(addOrGetDataset(annoPage.getDsId()),
                                                addOrGetLocaldoc(annoPage.getLcId()),
                                                annoPage.getPgId());
 
-        for (Annotation annotation : annoPage.getAns()){
-            pgAnnotationList.add(new PgAnnotation(pgAnnopage,
-                                                  annotation.getDcType(),
-                                                  annotation.getFrom(),
-                                                  annotation.getTo()));
+        for (Annotation annotation : annoPage.getAns()) {
+            if (annotation.isTopLevel()){
+                pgAnnotationList.add(new PgAnnotation(pgAnnopage,
+                                                  annotation.getDcType()));
+            } else {
+                pgAnnotationList.add(new PgAnnotation(pgAnnopage,
+                                                      annotation.getDcType(),
+                                                      annotation.getFrom(),
+                                                      annotation.getTo()));
+            }
         }
         pgAnnopage.setTargetUrl(annoPage.getTgtId());
         pgAnnopage.setPgAnnotations(pgAnnotationList);
         pgAnnopage.setDateModified(annoPage.getModified());
         pgAnnopage.setPgResource(pgResource);
+        pgResourceRepository.save(pgResource);
         pgAnnopageRepository.save(pgAnnopage);
     }
 

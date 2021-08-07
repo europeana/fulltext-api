@@ -1,4 +1,4 @@
-package eu.europeana.fulltext.pgentity;
+package eu.europeana.fulltext.api.pgentity;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -14,7 +14,7 @@ import java.util.Objects;
 public class PgAnnotation {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -25,13 +25,11 @@ public class PgAnnotation {
     @Column(name = "dc_type")
     private String dcType;
 
-    @NotNull
     @Column(name = "from_index")
-    private int fromIndex;
+    private Integer fromIndex;
 
-    @NotNull
     @Column(name = "to_index")
-    private int toIndex;
+    private Integer toIndex;
 
     @OneToMany(
             mappedBy = "pgAnnotation",
@@ -46,13 +44,22 @@ public class PgAnnotation {
      * @param fromIndex     from where the Annotation applies (in character position (textual) or milliseconds (video)
      * @param toIndex       to where the Annotation applies (in character position (textual) or milliseconds (video)
      */
-    public PgAnnotation(PgAnnopage pgAnnopage, char dcType, int fromIndex, int toIndex) {
+    public PgAnnotation(PgAnnopage pgAnnopage, char dcType, Integer fromIndex, Integer toIndex) {
         this.pgAnnopage = pgAnnopage;
         this.dcType = Character.toString(dcType);
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
     }
 
+    /**
+     * creates a top level Annotation object without indexes
+     * @param pgAnnopage    the annotation page this Annotation is part of
+     * @param dcType        type of the Annotation (word, block, page, etc.)
+     */
+    public PgAnnotation(PgAnnopage pgAnnopage, char dcType) {
+        this.pgAnnopage = pgAnnopage;
+        this.dcType = Character.toString(dcType);
+    }
     public PgAnnotation(){ }
 
     public Long getId() {
@@ -79,19 +86,19 @@ public class PgAnnotation {
         this.dcType = dcType;
     }
 
-    public int getFromIndex() {
+    public Integer getFromIndex() {
         return fromIndex;
     }
 
-    public void setFromIndex(int fromIndex) {
+    public void setFromIndex(Integer fromIndex) {
         this.fromIndex = fromIndex;
     }
 
-    public int getToIndex() {
+    public Integer getToIndex() {
         return toIndex;
     }
 
-    public void setToIndex(int toIndex) {
+    public void setToIndex(Integer toIndex) {
         this.toIndex = toIndex;
     }
 
@@ -108,15 +115,24 @@ public class PgAnnotation {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PgAnnotation that = (PgAnnotation) o;
-        return getFromIndex() == that.getFromIndex()
-               && getToIndex() == that.getToIndex()
-               && getPgAnnopage().getId().equals(that.getPgAnnopage().getId())
-               && getDcType().equals(that.getDcType());
+        if (null != getFromIndex() || null != getToIndex()){
+            return getFromIndex() == that.getFromIndex()
+                   && getToIndex() == that.getToIndex()
+                   && getPgAnnopage().getId().equals(that.getPgAnnopage().getId())
+                   && getDcType().equals(that.getDcType());
+        } else {
+            return getPgAnnopage().getId().equals(that.getPgAnnopage().getId())
+                   && getDcType().equals(that.getDcType());
+        }
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getPgAnnopage().getId(), getDcType(), getFromIndex(), getToIndex());
+        if (null != getFromIndex() || null != getToIndex()){
+            return Objects.hash(getPgAnnopage().getId(), getDcType(), getFromIndex(), getToIndex());
+        } else {
+            return Objects.hash(getPgAnnopage().getId(), getDcType());
+        }
     }
 
     @Override
@@ -131,9 +147,9 @@ public class PgAnnotation {
                + dcType
                + '\''
                + ", fromIndex="
-               + fromIndex
+               + ((null != fromIndex) ? fromIndex : "null")
                + ", toIndex="
-               + toIndex
+               + ((null != toIndex) ? toIndex : "null")
                + '}';
     }
 }

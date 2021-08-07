@@ -30,8 +30,6 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- *
- *
  * @author Lúthien
  * Created on 27-02-2018
  */
@@ -45,16 +43,19 @@ public class FTService {
     private final AnnoPageRepository annoPageRepository;
     private final FTSettings         ftSettings;
 
+    private PgService pgs;
+
     private final ObjectMapper mapper;
 
     /*
      * Constructs an FTService object with autowired dependencies
      */
-    public FTService(ResourceRepository resourceRepository, AnnoPageRepository annoPageRepository, FTSettings ftSettings, ObjectMapper mapper) {
+    public FTService(ResourceRepository resourceRepository, AnnoPageRepository annoPageRepository, FTSettings ftSettings, ObjectMapper mapper, PgService pgs) {
         this.resourceRepository = resourceRepository;
         this.annoPageRepository = annoPageRepository;
         this.ftSettings = ftSettings;
         this.mapper = mapper;
+        this.pgs = pgs;
     }
 
     /**
@@ -208,6 +209,27 @@ public class FTService {
                     .append(ap.getLang());
         }
         return result.toString();
+    }
+
+    // = = [ persist data to Postgres DB ]= = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+    public String persistDocsToPostgres(String datasetId, String localId) {
+
+        List<AnnoPage> annoPages;
+
+        if ("ALL".equalsIgnoreCase(localId)) {
+            annoPages = annoPageRepository.findAllPagesForDs(datasetId);
+        } else{
+            annoPages = annoPageRepository.findOrigPages(datasetId, localId);
+        }
+
+        if (annoPages.isEmpty()) {
+            return "No annopages found for " + datasetId + "/" + localId;
+        }
+        for (AnnoPage ap : annoPages) {
+            pgs.saveFTRecord(ap);
+        }
+        return "Annopages for: " + datasetId + "/" + localId + " saved to PostgreSQL";
     }
 
     // = = [ check Document existence ]= = = = = = = = = = = = = = = = = = = = = = = = = = = = = =

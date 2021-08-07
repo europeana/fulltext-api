@@ -2,7 +2,6 @@ package eu.europeana.fulltext.api.config;
 
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoClient;
-import com.zaxxer.hikari.HikariDataSource;
 import dev.morphia.Datastore;
 import dev.morphia.Morphia;
 import org.apache.logging.log4j.LogManager;
@@ -14,6 +13,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.util.StringUtils;
+import javax.sql.DataSource;
 
 import static eu.europeana.fulltext.util.MorphiaUtils.MAPPER_OPTIONS;
 
@@ -41,12 +41,11 @@ public class DataSourceConfig {
         return Morphia.createDatastore(mongoClient, database, MAPPER_OPTIONS);
     }
 
-    @Bean
+
+    @Bean(name="customDataSource")
     @ConfigurationProperties("spring.datasource")
-    public HikariDataSource dataSource() {
-        return DataSourceBuilder.create().type(HikariDataSource.class).build();
+    public DataSource customDataSource() {
+        return DataSourceBuilder.create().build();
     }
-
-
 
 }

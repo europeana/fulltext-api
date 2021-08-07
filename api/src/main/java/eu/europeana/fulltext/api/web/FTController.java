@@ -8,15 +8,18 @@ import eu.europeana.fulltext.api.model.FTResource;
 import eu.europeana.fulltext.api.service.CacheUtils;
 import eu.europeana.fulltext.api.service.ControllerUtils;
 import eu.europeana.fulltext.api.service.FTService;
+import eu.europeana.fulltext.api.service.exception.AnnoPageDoesNotExistException;
 import eu.europeana.fulltext.api.service.exception.SerializationException;
 import eu.europeana.fulltext.entity.AnnoPage;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
@@ -471,5 +474,25 @@ public class FTController {
         String response = "The version of this API is: " + fts.getSettings().getAppVersion();
         return new ResponseEntity<>(fts.serialise(response), HttpStatus.I_AM_A_TEAPOT);
     }
+
+
+    /**
+     * For testing using relational storage for Fulltext
+     *
+     * Adds the documents in the specified dataset & localid to the PostgreSQL instance specified in Postgresql
+     * connection properties. This is an experiment born from persisting issues we have with MongoDB storage, for
+     * now a personal project by me (luthien).
+     * @param  datasetId identifier of the dataset
+     * @param  localId   identifier of the localDocument
+     * @return string describing processing results
+     */
+    @ApiIgnore
+    @GetMapping(value = "/postgres/{datasetId}/{localId}/", produces = MediaType.TEXT_PLAIN_VALUE)
+    public String langfield(@PathVariable(value = "datasetId") String datasetId,
+            @PathVariable(value = "localId") String localId) {
+
+        return fts.persistDocsToPostgres(datasetId, localId);
+    }
+
 
 }
