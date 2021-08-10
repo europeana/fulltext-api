@@ -107,6 +107,12 @@
             <version>${zaxxer.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>net.ttddyy</groupId>
+            <artifactId>datasource-proxy</artifactId>
+            <version>1.7</version>
+        </dependency>
+
         <!-- for search -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

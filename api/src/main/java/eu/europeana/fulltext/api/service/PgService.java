@@ -5,11 +5,15 @@ import eu.europeana.fulltext.api.pgentity.*;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Annotation;
 import eu.europeana.fulltext.entity.Resource;
+import eu.europeana.fulltext.entity.Target;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+
 
 /**
  * Created by luthien on 05/08/2021.
@@ -17,30 +21,20 @@ import java.util.Optional;
 @Service
 public class PgService {
 
-    private final PgAnnopageRepository pgAnnopageRepository;
-    private final PgDatasetRepository  pgDatasetRepository;
-    private final PgLocaldocRepository pgLocaldocRepository;
-    private final PgLanguageRepository   pgLanguageRepository;
-    private final PgRightsRepository     pgRightsRepository;
+    private static final Logger LOG = LogManager.getLogger(PgService.class);
+
+    private final PgAnnopageRepository   pgAnnopageRepository;
     private       PgAnnotationRepository pgAnnotationRepository;
-    private       PgResourceRepository pgResourceRepository;
+    private       PgResourceRepository   pgResourceRepository;
 
 
     /*
      * Constructs an FTService object with autowired dependencies
      */
     public PgService(
-            PgDatasetRepository pgDatasetRepository,
-            PgLocaldocRepository pgLocaldocRepository,
-            PgLanguageRepository pgLanguageRepository,
-            PgRightsRepository pgRightsRepository,
             PgAnnotationRepository pgAnnotationRepository,
             PgResourceRepository pgResourceRepository,
             PgAnnopageRepository pgAnnopageRepository) {
-        this.pgDatasetRepository = pgDatasetRepository;
-        this.pgLocaldocRepository = pgLocaldocRepository;
-        this.pgLanguageRepository = pgLanguageRepository;
-        this.pgRightsRepository = pgRightsRepository;
         this.pgAnnotationRepository = pgAnnotationRepository;
         this.pgResourceRepository = pgResourceRepository;
         this.pgAnnopageRepository = pgAnnopageRepository;
@@ -51,57 +45,58 @@ public class PgService {
      *
      * @param annoPage input data
      */
+    @Transactional
     public void saveFTRecord(AnnoPage annoPage) {
         List<PgAnnotation> pgAnnotationList = new ArrayList<>();
-        Resource resource = annoPage.getRes();
+        Resource           resource         = annoPage.getRes();
 
-        PgResource pgResource = new PgResource(addOrGetLanguage(resource.getLang()),
-                                               addOrGetRights(resource.getRights()),
+        LOG.info("Processing dsId: {}, lcId: {}, pgId: {}", annoPage.getDsId(), annoPage.getLcId(), annoPage.getPgId());
+
+        PgResource pgResource = new PgResource(resource.getLang(),
+                                               resource.getRights(),
                                                true,
                                                resource.getValue(),
                                                resource.getSource());
 
-        PgAnnopage pgAnnopage = new PgAnnopage(addOrGetDataset(annoPage.getDsId()),
-                                               addOrGetLocaldoc(annoPage.getLcId()),
-                                               annoPage.getPgId());
+        PgAnnopage pgAnnopage = new PgAnnopage(Integer.parseInt(annoPage.getDsId()),
+                                               annoPage.getLcId(),
+                                               Integer.parseInt(annoPage.getPgId()),
+                                               annoPage.getTgtId(),
+                                               pgResource,
+                                               annoPage.getModified());
 
         for (Annotation annotation : annoPage.getAns()) {
-            if (annotation.isTopLevel()){
-                pgAnnotationList.add(new PgAnnotation(pgAnnopage,
-                                                  annotation.getDcType()));
+            if (annotation.isTopLevel()) {
+                pgAnnotationList.add(new PgAnnotation(pgAnnopage, annotation.getDcType()));
             } else {
-                pgAnnotationList.add(new PgAnnotation(pgAnnopage,
-                                                      annotation.getDcType(),
-                                                      annotation.getFrom(),
-                                                      annotation.getTo()));
+                pgAnnotationList.add(makeAnnotationWithTargets(pgAnnopage, annotation));
             }
         }
-        pgAnnopage.setTargetUrl(annoPage.getTgtId());
+
         pgAnnopage.setPgAnnotations(pgAnnotationList);
-        pgAnnopage.setDateModified(annoPage.getModified());
-        pgAnnopage.setPgResource(pgResource);
         pgResourceRepository.save(pgResource);
         pgAnnopageRepository.save(pgAnnopage);
     }
 
-    private PgDataset addOrGetDataset(String value) {
-        Optional<PgDataset> optPgDataset = pgDatasetRepository.findByValue(value);
-        return optPgDataset.orElseGet(() -> pgDatasetRepository.save(new PgDataset(value)));
-    }
-
-    private PgLocaldoc addOrGetLocaldoc(String value) {
-        Optional<PgLocaldoc> optPgLocaldoc = pgLocaldocRepository.findByValue(value);
-        return optPgLocaldoc.orElseGet(() -> pgLocaldocRepository.save(new PgLocaldoc(value)));
-    }
-
-    private PgLanguage addOrGetLanguage(String value) {
-        Optional<PgLanguage> optPgLanguage = pgLanguageRepository.findByValue(value);
-        return optPgLanguage.orElseGet(() -> pgLanguageRepository.save(new PgLanguage(value)));
-    }
-
-    private PgRights addOrGetRights(String value) {
-        Optional<PgRights> optPgRights = pgRightsRepository.findByValue(value);
-        return optPgRights.orElseGet(() -> pgRightsRepository.save(new PgRights(value)));
+    private PgAnnotation makeAnnotationWithTargets(PgAnnopage pgAnnopage, Annotation annotation) {
+        PgAnnotation pgAnnotation = new PgAnnotation(pgAnnopage,
+                                                     annotation.getDcType(),
+                                                     annotation.getFrom(),
+                                                     annotation.getTo());
+        List<PgTarget> pgTargetList = new ArrayList<>();
+        for (Target target : annotation.getTgs()) {
+            if (annotation.isMedia()) {
+                pgTargetList.add(new PgTarget(pgAnnotation, target.getStart(), target.getEnd()));
+            } else {
+                pgTargetList.add(new PgTarget(pgAnnotation,
+                                              target.getX(),
+                                              target.getY(),
+                                              target.getW(),
+                                              target.getH()));
+            }
+        }
+        pgAnnotation.setPgTargets(pgTargetList);
+        return pgAnnotation;
     }
 
 }

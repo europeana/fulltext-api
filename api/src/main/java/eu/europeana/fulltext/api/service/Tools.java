@@ -9,7 +9,7 @@ public class Tools {
 
 
     public static String nvl(String input){
-        return StringUtils.isEmpty(input) ? "" : input;
+        return StringUtils.isEmpty(input) ? "null" : input;
     }
 
 }

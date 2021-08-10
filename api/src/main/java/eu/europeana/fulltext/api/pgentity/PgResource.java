@@ -4,6 +4,8 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.Objects;
 
+import static eu.europeana.fulltext.api.service.Tools.nvl;
+
 /**
  * Created by luthien on 03/08/2021.
  */
@@ -12,16 +14,15 @@ import java.util.Objects;
 public class PgResource {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "resource_id_gen")
+    @SequenceGenerator(name = "resource_id_gen", sequenceName = "resource_id_seq", allocationSize = 50)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "lang_id", referencedColumnName = "id")
-    private PgLanguage pgLanguage;
+    @NotNull
+    private String language;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "rights_id", referencedColumnName = "id")
-    private PgRights pgRights;
+    @NotNull
+    private String rights;
 
     @Column(name = "original")
     private boolean original;
@@ -36,30 +37,32 @@ public class PgResource {
 
     /**
      * Creates a Fulltext Resource
-     * @param pgLanguage    language the resource is in
-     * @param pgRights      Rights that apply to the resource
-     * @param value         resource text
+     *
+     * @param language language the resource is in
+     * @param rights   Rights that apply to the resource
+     * @param value    resource text
      */
-    public PgResource(PgLanguage pgLanguage, PgRights pgRights, String value, String source){
-        this.pgLanguage = pgLanguage;
-        this.pgRights = pgRights;
+    public PgResource(String language, String rights, String value, String source) {
+        this.language = language;
+        this.rights = nvl(rights);
         this.value = value;
-        this.source = ((null != source) ? source : "null");
+        this.source = nvl(source);
     }
 
     /**
      * Creates a Fulltext Resource
-     * @param pgLanguage    language the resource is in
-     * @param pgRights      Rights that apply to the resource
-     * @param original      if the resource is the original (as opposed to translated)
-     * @param value         resource text
+     *
+     * @param rights   language the resource is in
+     * @param rights   Rights that apply to the resource
+     * @param original if the resource is the original (as opposed to translated)
+     * @param value    resource text
      */
-    public PgResource(PgLanguage pgLanguage, PgRights pgRights, boolean original, String value, String source){
-        this(pgLanguage, pgRights, value, source);
+    public PgResource(String language, String rights, boolean original, String value, String source) {
+        this(language, rights, value, source);
         this.original = original;
     }
 
-    public PgResource(){ }
+    public PgResource() { }
 
     public Long getId() {
         return id;
@@ -69,20 +72,20 @@ public class PgResource {
         this.id = id;
     }
 
-    public PgLanguage getPgLanguage() {
-        return pgLanguage;
+    public String getLanguage() {
+        return language;
     }
 
-    public void setPgLanguage(PgLanguage pgLanguage) {
-        this.pgLanguage = pgLanguage;
+    public void setLanguage(String language) {
+        this.language = language;
     }
 
-    public PgRights getPgRights() {
-        return pgRights;
+    public String getRights() {
+        return rights;
     }
 
-    public void setPgRights(PgRights pgRights) {
-        this.pgRights = pgRights;
+    public void setRights(String rights) {
+        this.rights = rights;
     }
 
     public boolean isOriginal() {
@@ -115,24 +118,24 @@ public class PgResource {
         if (o == null || getClass() != o.getClass()) return false;
         PgResource that = (PgResource) o;
         return isOriginal() == that.isOriginal()
-               && getPgLanguage().getId().equals(that.getPgLanguage().getId())
-               && getPgRights().getId().equals(that.getPgRights().getId())
+               && language.equalsIgnoreCase(that.getLanguage())
+               && rights.equalsIgnoreCase(that.getRights())
                && getValue().equals(that.getValue())
                && getSource().equals(that.getSource());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getPgLanguage().getId(), getPgRights().getId(), isOriginal(), getValue(), getSource());
+        return Objects.hash(language, rights, isOriginal(), getValue(), getSource());
     }
 
     @Override
     public String toString() {
         return "PgResource{"
                + "pgLanguage="
-               + pgLanguage.getValue()
+               + language
                + ", pgRights="
-               + pgRights.getValue()
+               + rights
                + ", original="
                + original
                + ", value='"

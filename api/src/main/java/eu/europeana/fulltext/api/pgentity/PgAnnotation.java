@@ -14,7 +14,8 @@ import java.util.Objects;
 public class PgAnnotation {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "annotation_id_gen")
+    @SequenceGenerator(name="annotation_id_gen", sequenceName = "annotation_id_seq", allocationSize=1000)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -60,6 +61,7 @@ public class PgAnnotation {
         this.pgAnnopage = pgAnnopage;
         this.dcType = Character.toString(dcType);
     }
+
     public PgAnnotation(){ }
 
     public Long getId() {
@@ -110,6 +112,17 @@ public class PgAnnotation {
         this.pgTargets = pgTargets;
     }
 
+    public void addPgTarget(PgTarget pgTarget){
+        pgTargets.add(pgTarget);
+        pgTarget.setPgAnnotation(this);
+    }
+
+    public void removePgTarget(PgTarget pgTarget){
+        pgTargets.remove(pgTarget);
+        pgTarget.setPgAnnotation(null);
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -139,10 +152,10 @@ public class PgAnnotation {
     public String toString() {
         return "PgAnnotation{"
                + "pgAnnopage="
-               + pgAnnopage.getPgDataset().getValue() + "/"
-               + pgAnnopage.getPgLocaldoc().getValue() + "/"
+               + pgAnnopage.getDataset() + "/"
+               + pgAnnopage.getLocaldoc() + "/"
                + pgAnnopage.getPage() + "/lang="
-               + pgAnnopage.getPgResource().getPgLanguage().getValue()
+               + pgAnnopage.getPgResource().getLanguage()
                + ", dcType='"
                + dcType
                + '\''

@@ -20,16 +20,15 @@ public class PgAnnopage {
     DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "annopage_id_gen")
+    @SequenceGenerator(name="annopage_id_gen", sequenceName = "annopage_id_seq", allocationSize=50)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "dataset_id", referencedColumnName = "id")
-    private PgDataset pgDataset;
+    @NotNull
+    private Integer dataset;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "local_id", referencedColumnName = "id")
-    private PgLocaldoc pgLocaldoc;
+    @NotNull
+    private String localdoc;
 
     @NotNull
     @Column(name = "page")
@@ -53,32 +52,47 @@ public class PgAnnopage {
 
     /**
      * creates an Annopage object
-     * @param pgDataset     dataset identifier
-     * @param pgLocaldoc    local doc identifier
+     * @param dataset       dataset identifier
+     * @param localdoc      local doc identifier
      * @param page          page number
+     * @param targetUrl     base URL of annotation Targets for this Annopage
+     * @param dateModified  date modified
      */
-    public PgAnnopage(PgDataset pgDataset, PgLocaldoc pgLocaldoc, int page) {
-        this.pgDataset = pgDataset;
-        this.pgLocaldoc = pgLocaldoc;
+    public PgAnnopage(Integer dataset, String localdoc, int page, String targetUrl, Date dateModified) {
+        this.dataset = dataset;
+        this.localdoc = localdoc;
         this.page = page;
-    }
-
-    public PgAnnopage(PgDataset pgDataset, PgLocaldoc pgLocaldoc, String page) {
-        this.pgDataset = pgDataset;
-        this.pgLocaldoc = pgLocaldoc;
-        this.page = Integer.parseInt(page);
+        this.targetUrl = targetUrl;
+        this.dateModified = dateModified;
     }
 
     /**
      * creates an Annopage object plus related resource
-     * @param pgDataset     dataset identifier
-     * @param pgLocaldoc    local doc identifier
+     * @param dataset       dataset identifier
+     * @param localdoc      local doc identifier
      * @param page          page number
+     * @param targetUrl     base URL of annotation Targets for this Annopage
      * @param pgResource    resource object
+     * @param dateModified  date modified
      */
-    public PgAnnopage(PgDataset pgDataset, PgLocaldoc pgLocaldoc, int page, PgResource pgResource) {
-        this(pgDataset, pgLocaldoc, page);
+    public PgAnnopage(Integer dataset, String localdoc, int page, String targetUrl, PgResource pgResource, Date dateModified) {
+        this(dataset, localdoc, page, targetUrl, dateModified);
         this.pgResource = pgResource;
+    }
+
+    /**
+     * creates an Annopage object plus related resource and Annotations
+     * @param dataset       dataset identifier
+     * @param localdoc      local doc identifier
+     * @param page          page number
+     * @param targetUrl     base URL of annotation Targets for this Annopage
+     * @param pgResource    resource object
+     * @param dateModified  date modified
+     * @param pgAnnotations List of annotations
+     */
+    public PgAnnopage(Integer dataset, String localdoc, int page, String targetUrl, PgResource pgResource, Date dateModified, List<PgAnnotation> pgAnnotations) {
+        this(dataset, localdoc, page, targetUrl, pgResource, dateModified);
+        this.pgAnnotations = pgAnnotations;
     }
 
     public PgAnnopage(){ }
@@ -91,20 +105,20 @@ public class PgAnnopage {
         this.id = id;
     }
 
-    public PgDataset getPgDataset() {
-        return pgDataset;
+    public Integer getDataset() {
+        return dataset;
     }
 
-    public void setPgDataset(PgDataset pgDataset) {
-        this.pgDataset = pgDataset;
+    public void setDataset(Integer dataset) {
+        this.dataset = dataset;
     }
 
-    public PgLocaldoc getPgLocaldoc() {
-        return pgLocaldoc;
+    public String getLocaldoc() {
+        return localdoc;
     }
 
-    public void setPgLocaldoc(PgLocaldoc pgLocaldoc) {
-        this.pgLocaldoc = pgLocaldoc;
+    public void setLocaldoc(String localdoc) {
+        this.localdoc = localdoc;
     }
 
     public int getPage() {
@@ -139,6 +153,16 @@ public class PgAnnopage {
         this.pgAnnotations = pgAnnotations;
     }
 
+    public void addPgAnnotation(PgAnnotation pgAnnotation){
+        pgAnnotations.add(pgAnnotation);
+        pgAnnotation.setPgAnnopage(this);
+    }
+
+    public void removePgAnnotation(PgAnnotation pgAnnotation){
+        pgAnnotations.remove(pgAnnotation);
+        pgAnnotation.setPgAnnopage(null);
+    }
+
     public Date getDateModified() {
         return dateModified;
     }
@@ -150,14 +174,16 @@ public class PgAnnopage {
     @Override
     public String toString() {
         return "PgAnnopage{"
-               + "pgDataset="
-               + pgDataset.getValue()
-               + ", pgLocaldoc="
-               + pgLocaldoc.getValue()
+               + "dataset="
+               + dataset
+               + ", localdoc="
+               + localdoc
                + ", page="
                + page
+               + ", targetUrl="
+               + targetUrl
                + ", language="
-               + pgResource.getPgLanguage().getValue()
+               + pgResource.getLanguage()
                + ", dateModified="
                + dateFormat.format(dateModified)
                + '}';
@@ -168,14 +194,15 @@ public class PgAnnopage {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PgAnnopage that = (PgAnnopage) o;
-        return getPage() == that.getPage()
-               && getPgDataset().getId().equals(that.getPgDataset().getId())
-               && getPgLocaldoc().getId().equals(that.getPgLocaldoc().getId())
-               && getPgResource().getPgLanguage().getValue().equals(that.getPgResource().getPgLanguage().getValue());
+        return dataset.equals(that.dataset)
+               && localdoc.equalsIgnoreCase(that.localdoc)
+               && getPage() == that.getPage()
+               && targetUrl.equalsIgnoreCase(that.targetUrl)
+               && getPgResource().getLanguage().equalsIgnoreCase(that.getPgResource().getLanguage());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getPgDataset().getId(), getPgLocaldoc().getId(), getPage(), getPgResource().getPgLanguage().getValue());
+        return Objects.hash(dataset, localdoc, getPage(), getTargetUrl(), getPgResource().getLanguage());
     }
 }

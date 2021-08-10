@@ -11,7 +11,8 @@ import java.util.Objects;
 public class PgTarget {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "target_id_gen")
+    @SequenceGenerator(name="target_id_gen", sequenceName = "target_id_seq", allocationSize=1000)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)

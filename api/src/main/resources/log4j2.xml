@@ -17,6 +17,7 @@
         <Root level="INFO">
             <AppenderRef ref="Console"/>
         </Root>
+        <logger name="org.hibernate.SQL" level="debug"/>
         <logger name="eu.europeana.fulltext.api" level="INFO"/>
 <!--        <logger name="dev.morphia" level="TRACE"/>-->
 <!--        <logger name="org.mongodb.driver" level="DEBUG"/>-->
