@@ -14,8 +14,8 @@
          xml:base="http://data.europeana.eu/annotation/9200396/BibliographicResource_3000118435009">
 
 <edm:FullTextResource rdf:about="&text;">
-	<dc:PGLanguage>fr</dc:PGLanguage>
-	<edm:PGRights rdf:resource="http://creativecommons.org/licenses/by-nc-sa/4.0/"/>
+	<dc:language>fr</dc:language>
+	<edm:rights rdf:resource="http://creativecommons.org/licenses/by-nc-sa/4.0/"/>
 	<dc:source rdf:resource="http://data.europeana.eu/annotation/9200396/BibliographicResource_3000118435009"/>
 	<rdf:value>LA CLEF DU CABINET&#xA;DES PRINCES&#xA;DE L’EUROPE,&#xA;Ou Recueil Hiftorique 8c Politique IÙS les Matières du tems.&#xA;SEPTEMBRE&#xA;A LUXEMBOURG, Chez André’ Chevalier , Imprimeur de Sa Majefté Impériale &amp; Catholique  , 6c Marchand Libraire.&#xA;M. DCC. XXIV.&#xA;Avec Privilège de Sa Sacrée Majefté lmperialt &amp; Catholique , Çft Approbation dn Gemmifl/iire üxaminattur^</rdf:value>
 </edm:FullTextResource>

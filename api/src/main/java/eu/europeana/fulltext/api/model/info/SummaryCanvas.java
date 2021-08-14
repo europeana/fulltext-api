@@ -14,8 +14,6 @@ public class SummaryCanvas extends JsonLdIdType {
 
     private static final long serialVersionUID = 7066577659030844718L;
 
-    private String originalLanguage;
-
     private List<SummaryAnnoPage> annotations;
 
     /**
@@ -43,13 +41,5 @@ public class SummaryCanvas extends JsonLdIdType {
 
     public void setAnnotations(List<SummaryAnnoPage> annotations) {
         this.annotations = new ArrayList<>(annotations);
-    }
-
-    public String getOriginalLanguage() {
-        return originalLanguage;
-    }
-
-    public void setOriginalLanguage(String originalLanguage) {
-        this.originalLanguage = originalLanguage;
     }
 }

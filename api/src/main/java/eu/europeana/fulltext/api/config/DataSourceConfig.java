@@ -12,11 +12,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 import javax.sql.DataSource;
-
-import java.lang.reflect.Method;
 
 import static eu.europeana.fulltext.util.MorphiaUtils.MAPPER_OPTIONS;
 

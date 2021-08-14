@@ -32,7 +32,7 @@ Licence.
 transmitting, or otherwise making available, online or offline, copies of the Work or providing access to its essential
 functionalities at the disposal of any other natural or legal person.
 
-## 2. Scope of the PGRights granted by the Licence
+## 2. Scope of the rights granted by the Licence
 The Licensor hereby grants You a worldwide, royalty-free, non-exclusive, sublicensable licence to do the following, for
 the duration of copyright vested in the Original Work:
 * use the Work in any circumstance and for all usage,
@@ -42,13 +42,13 @@ the duration of copyright vested in the Original Work:
 and perform publicly, as the case may be, the Work,
 * distribute the Work or copies thereof,
 * lend and rent the Work or copies thereof,
-* sublicense PGRights in the Work or copies thereof.
-Those PGRights can be exercised on any media, supports and formats, whether now known or later invented, as far as the
+* sublicense rights in the Work or copies thereof.
+Those rights can be exercised on any media, supports and formats, whether now known or later invented, as far as the
 applicable law permits so.
-In the countries where moral PGRights apply, the Licensor waives his right to exercise his moral right to the extent allowed
-by law in order to make effective the licence of the economic PGRights here above listed.
-The Licensor grants to the Licensee royalty-free, non-exclusive usage PGRights to any patents held by the Licensor, to the
-extent necessary to make use of the PGRights granted on the Work under this Licence.
+In the countries where moral rights apply, the Licensor waives his right to exercise his moral right to the extent allowed
+by law in order to make effective the licence of the economic rights here above listed.
+The Licensor grants to the Licensee royalty-free, non-exclusive usage rights to any patents held by the Licensor, to the
+extent necessary to make use of the rights granted on the Work under this Licence.
 
 ## 3. Communication of the Source Code
 The Licensor may provide the Work either in its Source Code form, or as Executable Code. If the Work is provided as
@@ -59,11 +59,11 @@ distribute or communicate the Work.
 
 ## 4. Limitations on copyright
 Nothing in this Licence is intended to deprive the Licensee of the benefits from any exception or limitation to the
-exclusive PGRights of the PGRights owners in the Work, of the exhaustion of those PGRights or of other applicable limitations
+exclusive rights of the rights owners in the Work, of the exhaustion of those rights or of other applicable limitations
 thereto.
 
 ## 5. Obligations of the Licensee
-The grant of the PGRights mentioned above is subject to some restrictions and obligations imposed on the Licensee. Those
+The grant of the rights mentioned above is subject to some restrictions and obligations imposed on the Licensee. Those
 obligations are the following:
 
 **Attribution right**: The Licensee shall keep intact all copyright, patent or trademarks notices and all notices that refer to
@@ -103,9 +103,9 @@ The Work is a work in progress, which is continuously improved by numerous Contr
 and may therefore contain defects or *bugs* inherent to this type of development.
 For the above reason, the Work is provided under the Licence on an *as is* basis and without warranties of any kind
 concerning the Work, including without limitation merchantability, fitness for a particular purpose, absence of defects or
-errors, accuracy, non-infringement of intellectual property PGRights other than copyright as stated in Article 6 of this
+errors, accuracy, non-infringement of intellectual property rights other than copyright as stated in Article 6 of this
 Licence.
-This disclaimer of warranty is an essential part of the Licence and a condition for the grant of any PGRights to the Work.
+This disclaimer of warranty is an essential part of the Licence and a condition for the grant of any rights to the Work.
 
 ## 8. Disclaimer of Liability
 Except in the cases of wilful misconduct or damages directly caused to natural persons, the Licensor will in no event be
@@ -126,7 +126,7 @@ The provisions of this Licence can be accepted by clicking on an icon *I agree* 
 displaying the text of this Licence or by affirming consent in any other similar way, in accordance with the rules of
 applicable law. Clicking on that icon indicates your clear and irrevocable acceptance of this Licence and all of its terms
 and conditions.
-Similarly, you irrevocably accept this Licence and all of its terms and conditions by exercising any PGRights granted to You
+Similarly, you irrevocably accept this Licence and all of its terms and conditions by exercising any rights granted to You
 by Article 2 of this Licence, such as the use of the Work, the creation by You of a Derivative Work or the Distribution
 or Communication by You of the Work or copies thereof.
 
@@ -137,7 +137,7 @@ must at least provide to the public the information requested by the applicable 
 and the way it may be accessible, concluded, stored and reproduced by the Licensee.
 
 ## 12. Termination of the Licence
-The Licence and the PGRights granted hereunder will terminate automatically upon any breach by the Licensee of the terms
+The Licence and the rights granted hereunder will terminate automatically upon any breach by the Licensee of the terms
 of the Licence.
 Such a termination will not terminate the licences of any person who has received the Work from the Licensee under
 the Licence, provided such persons remain in full compliance with the Licence.
@@ -149,7 +149,7 @@ If any provision of the Licence is invalid or unenforceable under applicable law
 enforceability of the Licence as a whole. Such provision will be construed or reformed so as necessary to make it valid
 and enforceable.
 The European Commission may publish other linguistic versions or new versions of this Licence or updated versions of
-the Appendix, so far this is required and reasonable, without reducing the scope of the PGRights granted by the Licence.
+the Appendix, so far this is required and reasonable, without reducing the scope of the rights granted by the Licence.
 New versions of the Licence will be published with a unique version number.
 All linguistic versions of this Licence, approved by the European Commission, have identical value. Parties can take
 advantage of the linguistic version of their choice.
@@ -184,6 +184,6 @@ a European Union Member State.
 * European Union Public Licence (EUPL) v. 1.1, v. 1.2
 * Québec Free and Open-Source Licence — Reciprocity (LiLiQ-R) or Strong Reciprocity (LiLiQ-R+).
 The European Commission may update this Appendix to later versions of the above licences without producing
-a new version of the EUPL, as long as they provide the PGRights granted in Article 2 of this Licence and protect the
+a new version of the EUPL, as long as they provide the rights granted in Article 2 of this Licence and protect the
 covered Source Code from exclusive appropriation.
 All other changes or additions to this Appendix require the production of a new EUPL version.

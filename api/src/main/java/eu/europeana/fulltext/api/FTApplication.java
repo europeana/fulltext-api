@@ -9,6 +9,7 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
@@ -24,14 +25,12 @@ import java.util.Collections;
  * @author Lúthien
  * Created on 27-02-2018
  */
-//@EnableJpaRepositories(basePackages = "eu.europeana.fulltext.api.pgrepository")
+@EnableJpaRepositories(basePackages = "eu.europeana.fulltext.api.pgrepository")
 @SpringBootApplication(scanBasePackages = {
         "eu.europeana.fulltext.api",
         "eu.europeana.fulltext.search",
         "eu.europeana.fulltext.repository"})
 @PropertySource(value = "classpath:build.properties")
-//@ComponentScan("eu.europeana.fulltext.api.pgrepository")
-//@EntityScan("eu.europeana.fulltext.api.pgentity.*")
 public class FTApplication extends SpringBootServletInitializer {
 
     public static final int THOUSAND = 1000;
@@ -59,23 +58,6 @@ public class FTApplication extends SpringBootServletInitializer {
     }
 
     /**
-     * Socks proxy settings have to be loaded before anything else, so we check the property files for its settings
-     *
-     * @throws IOException if properties file cannot be read
-     */
-    private static void injectSocksProxySettings() throws IOException {
-        SocksProxyConfigInjector socksConfig = new SocksProxyConfigInjector("fulltext.properties");
-        try {
-            socksConfig.addProperties("fulltext.user.properties");
-        } catch (IOException e) {
-            // user.properties may not be available so only show warning
-            LogManager.getLogger(FTApplication.class)
-                      .warn("Cannot read fulltext.user.properties file. Reason: ", e.getMessage());
-        }
-        socksConfig.inject();
-    }
-
-    /**
      * This method is called when starting a 'traditional' war deployment (e.g. in Docker of Cloud Foundry)
      *
      * @param servletContext
@@ -94,6 +76,22 @@ public class FTApplication extends SpringBootServletInitializer {
         } catch (IOException e) {
             throw new ServletException("Error reading properties", e);
         }
+    }
+
+    /**
+     * Socks proxy settings have to be loaded before anything else, so we check the property files for its settings
+     *
+     * @throws IOException if properties file cannot be read
+     */
+    private static void injectSocksProxySettings() throws IOException {
+        SocksProxyConfigInjector socksConfig = new SocksProxyConfigInjector("fulltext.properties");
+        try {
+            socksConfig.addProperties("fulltext.user.properties");
+        } catch (IOException e) {
+            // user.properties may not be available so only show warning
+            LogManager.getLogger(FTApplication.class).warn("Cannot read fulltext.user.properties file. Reason: ", e.getMessage());
+        }
+        socksConfig.inject();
     }
 
     /**

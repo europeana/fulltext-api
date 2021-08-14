@@ -1,10 +1,14 @@
 package eu.europeana.fulltext.api.pgentity;
 
+import eu.europeana.fulltext.AnnotationType;
+
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import eu.europeana.fulltext.AnnotationType;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Created by luthien on 03/08/2021.
@@ -122,6 +126,13 @@ public class PgAnnotation {
         pgTarget.setPgAnnotation(null);
     }
 
+    public boolean isMedia() {
+        return StringUtils.containsAny(dcType, AnnotationType.MEDIA.getAbbreviation(), AnnotationType.CAPTION.getAbbreviation());
+    }
+
+    public boolean isTopLevel() {
+        return StringUtils.containsAny(dcType, AnnotationType.MEDIA.getAbbreviation(), AnnotationType.PAGE.getAbbreviation());
+    }
 
     @Override
     public boolean equals(Object o) {

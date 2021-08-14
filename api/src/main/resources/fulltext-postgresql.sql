@@ -41,7 +41,7 @@ CREATE TABLE fulltext.annopage (
                                    CONSTRAINT annopage_un UNIQUE (dataset, localdoc, page),
                                    CONSTRAINT annopage_resource_fk FOREIGN KEY (res_id) REFERENCES fulltext.resource(id)
 );
-CREATE INDEX annopage_dataset_id_idx ON fulltext.annopage USING btree (dataset, localdoc, page);
+CREATE INDEX annopage_ds_lc_pg_idx ON fulltext.annopage USING btree (dataset, localdoc, page);
 CREATE INDEX annopage_ds_lcl_idx ON fulltext.annopage USING btree (dataset, localdoc);
 CREATE INDEX annopage_ds_lcl_pg_rsid_idx ON fulltext.annopage USING btree (dataset, localdoc, page, res_id);
 CREATE INDEX annopage_lcl_idx ON fulltext.annopage USING btree (localdoc);
@@ -96,6 +96,29 @@ CREATE TABLE fulltext.target (
 
 ALTER TABLE fulltext.target OWNER TO europeana;
 GRANT ALL ON TABLE fulltext.target TO europeana;
+
+-- fulltext.v_annopages source
+
+CREATE OR REPLACE VIEW fulltext.v_annopages
+AS SELECT a.id,
+          a.dataset,
+          a.localdoc,
+          a.page,
+          r.language,
+          r.rights,
+          r.original,
+          r.value,
+          r.source,
+          a.date_modified,
+          a.target_url,
+          a.id AS res_id
+   FROM fulltext.annopage a
+            JOIN fulltext.resource r ON a.res_id = r.id;
+
+-- Permissions
+
+ALTER TABLE fulltext.v_annopages OWNER TO europeana;
+GRANT ALL ON TABLE fulltext.v_annopages TO europeana;
 
 -- fulltext.annopage_id_seq definition
 

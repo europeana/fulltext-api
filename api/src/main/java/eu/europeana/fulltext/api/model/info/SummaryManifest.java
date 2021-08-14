@@ -1,7 +1,5 @@
 package eu.europeana.fulltext.api.model.info;
 
-
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 

@@ -152,7 +152,7 @@ public final class CacheUtils {
             headers.add("Last-Modified", modified);
         }
         headers.add("Allow", ALLOWED);
-        headers.add("Cache-Control", CACHECONTROL);
+//        headers.add("Cache-Control", CACHECONTROL);
         headers.add("Vary", ACCEPT);
         return headers;
     }

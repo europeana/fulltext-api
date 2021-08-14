@@ -4,7 +4,6 @@ import dev.morphia.Datastore;
 import dev.morphia.aggregation.experimental.Aggregation;
 import dev.morphia.aggregation.experimental.expressions.ArrayExpressions;
 import dev.morphia.aggregation.experimental.stages.Projection;
-import dev.morphia.mapping.lazy.proxy.ReferenceException;
 import dev.morphia.query.internal.MorphiaCursor;
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.entity.AnnoPage;
@@ -75,7 +74,7 @@ public class AnnoPageRepository {
     }
 
     /**
-     * Find and return AnnoPages that match the given parameters using DBCollection.count().
+     * Find and return AnnoPages that match the given parameters.
      * @param datasetId ID of the dataset
      * @param localId   ID of the parent of the Annopage object
      * @return List of AnnoPage objects
@@ -85,6 +84,18 @@ public class AnnoPageRepository {
         return datastore.find(AnnoPage.class).filter(
                 eq(DATASET_ID, datasetId),
                 eq(LOCAL_ID, localId)).iterator().toList();
+    }
+
+    /**
+     * Find and return single AnnoPage that match the given parameters.
+     * @param datasetId ID of the dataset
+     * @param localId   ID of the parent of the Annopage object
+     * @return AnnoPage
+     */
+    public AnnoPage findPage(String datasetId, String localId) {
+        return datastore.find(AnnoPage.class).filter(
+                eq(DATASET_ID, datasetId),
+                eq(LOCAL_ID, localId)).first();
     }
 
     /**

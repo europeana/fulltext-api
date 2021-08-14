@@ -5,6 +5,7 @@ import dev.morphia.query.internal.MorphiaCursor;
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.api.config.FTDefinitions;
 import eu.europeana.fulltext.api.config.FTSettings;
+import eu.europeana.fulltext.api.model.AnnotationWrapper;
 import eu.europeana.fulltext.api.model.info.SummaryAnnoPage;
 import eu.europeana.fulltext.api.model.info.SummaryCanvas;
 import eu.europeana.fulltext.api.model.info.SummaryManifest;
@@ -13,6 +14,7 @@ import eu.europeana.fulltext.api.model.v2.AnnotationPageV2;
 import eu.europeana.fulltext.api.model.v2.AnnotationV2;
 import eu.europeana.fulltext.api.model.v3.AnnotationPageV3;
 import eu.europeana.fulltext.api.model.v3.AnnotationV3;
+import eu.europeana.fulltext.api.pgentity.PgAPView;
 import eu.europeana.fulltext.api.service.exception.AnnoPageDoesNotExistException;
 import eu.europeana.fulltext.api.service.exception.ResourceDoesNotExistException;
 import eu.europeana.fulltext.api.service.exception.SerializationException;
@@ -43,19 +45,16 @@ public class FTService {
     private final AnnoPageRepository annoPageRepository;
     private final FTSettings         ftSettings;
 
-    private PgService pgs;
-
     private final ObjectMapper mapper;
 
     /*
      * Constructs an FTService object with autowired dependencies
      */
-    public FTService(ResourceRepository resourceRepository, AnnoPageRepository annoPageRepository, FTSettings ftSettings, ObjectMapper mapper, PgService pgs) {
+    public FTService(ResourceRepository resourceRepository, AnnoPageRepository annoPageRepository, FTSettings ftSettings, ObjectMapper mapper) {
         this.resourceRepository = resourceRepository;
         this.annoPageRepository = annoPageRepository;
         this.ftSettings = ftSettings;
         this.mapper = mapper;
-        this.pgs = pgs;
     }
 
     /**
@@ -162,7 +161,15 @@ public class FTService {
         return generateFTResource(result);
     }
 
-    // = = [ collect summary information ]= = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+    // = = [ get Annopage information ]= = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+    public AnnoPage getSingleAnnoPage(String datasetId, String localId) throws AnnoPageDoesNotExistException {
+        AnnoPage annoPage = annoPageRepository.findPage(datasetId, localId);
+        if (annoPage == null) {
+            throw new AnnoPageDoesNotExistException(datasetId + "/" + localId);
+        }
+        return annoPage;
+    }
 
     public SummaryManifest collectAnnoPageInfo(String datasetId, String localId) throws AnnoPageDoesNotExistException {
         // 1) create SummaryManifest container for this EuropeanaID
@@ -178,7 +185,6 @@ public class FTService {
 
             // add original SummaryAnnoPage to the SummaryCanvas
             summaryCanvas.addAnnotation(new SummaryAnnoPage(makeLangAwareAnnoPageID(ap), ap.getLang()));
-            summaryCanvas.setOriginalLanguage(ap.getLang());
 
             // add translated AnnotationLangPages (if any) to the SummaryCanvas
             for (TranslationAnnoPage tap : annoPageRepository.findTranslatedPages(datasetId, localId, ap.getPgId())) {
@@ -209,27 +215,6 @@ public class FTService {
                     .append(ap.getLang());
         }
         return result.toString();
-    }
-
-    // = = [ persist data to Postgres DB ]= = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-
-    public String persistDocsToPostgres(String datasetId, String localId) {
-
-        List<AnnoPage> annoPages;
-
-        if ("ALL".equalsIgnoreCase(localId)) {
-            annoPages = annoPageRepository.findAllPagesForDs(datasetId);
-        } else{
-            annoPages = annoPageRepository.findOrigPages(datasetId, localId);
-        }
-
-        if (annoPages.isEmpty()) {
-            return "No annopages found for " + datasetId + "/" + localId;
-        }
-        for (AnnoPage ap : annoPages) {
-            pgs.saveFTRecord(ap);
-        }
-        return "Annopages for: " + datasetId + "/" + localId + " saved to PostgreSQL";
     }
 
     // = = [ check Document existence ]= = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -345,8 +330,4 @@ public class FTService {
             throw new SerializationException("Error serialising data: " + e.getMessage(), e);
         }
     }
-
-    // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-
-
 }

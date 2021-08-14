@@ -138,12 +138,10 @@ public class PgResource {
                + rights
                + ", original="
                + original
-               + ", value='"
+               + ", value="
                + value
-               + '\''
-               + ", source='"
+               + ", source="
                + source
-               + '\''
                + '}';
     }
 }
