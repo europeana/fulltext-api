@@ -1,6 +1,5 @@
 package eu.europeana.fulltext.api.model.v3;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import eu.europeana.fulltext.api.model.AnnotationWrapper;
@@ -20,7 +19,7 @@ public class AnnotationPageV3 extends JsonLdIdType implements Serializable, Anno
 
     @JsonProperty("@context")
     private String[] context = new String[]{MEDIA_TYPE_IIIF_V3, MEDIA_TYPE_EDM_JSONLD};
-    private String lang;
+    private String language;
     private AnnotationV3[] items;
 
     public AnnotationPageV3(String id) {
@@ -37,12 +36,12 @@ public class AnnotationPageV3 extends JsonLdIdType implements Serializable, Anno
         this.context = context;
     }
 
-    public String getLang() {
-        return lang;
+    public String getLanguage() {
+        return language;
     }
 
-    public void setLang(String lang){
-        this.lang = lang;
+    public void setLanguage(String language){
+        this.language = language;
     }
 
     public AnnotationV3[] getItems() {

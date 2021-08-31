@@ -179,7 +179,7 @@ public class TestUtils {
 
     private static AnnotationPageV2 createAnnotationPageV2(String pageId, String lang, AnnotationV2[] resources){
         AnnotationPageV2 anp = new AnnotationPageV2(getAnnopageIdUrl(pageId));
-        anp.setLang(lang);
+        anp.setLanguage(lang);
         anp.setResources(resources);
         return anp;
     }
@@ -208,7 +208,7 @@ public class TestUtils {
 
     private static AnnotationPageV3 createAnnotationPageV3(String pageId, String lang, AnnotationV3[] items){
         AnnotationPageV3 anp = new AnnotationPageV3(getAnnopageIdUrl(pageId));
-        anp.setLang(lang);
+        anp.setLanguage(lang);
         anp.setItems(items);
         return anp;
     }
