@@ -19,6 +19,7 @@ public class RequestUtils {
     public static final String  CONTENT_TYPE           = "Content-Type";
 
     public static final String  PROFILE_TEXT           = "text";
+    public static final String  PROFILE_DEBUG          = "debug";
 
     public static final String REQUEST_VERSION_2 = "2";
     public static final String REQUEST_VERSION_3 = "3";

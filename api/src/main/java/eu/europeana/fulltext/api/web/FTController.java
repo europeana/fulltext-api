@@ -8,6 +8,7 @@ import eu.europeana.fulltext.api.model.FTResource;
 import eu.europeana.fulltext.api.service.CacheUtils;
 import eu.europeana.fulltext.api.service.ControllerUtils;
 import eu.europeana.fulltext.api.service.FTService;
+import eu.europeana.fulltext.api.service.exception.InvalidRequestParamException;
 import eu.europeana.fulltext.api.service.exception.SerializationException;
 import eu.europeana.fulltext.entity.AnnoPage;
 import io.swagger.annotations.Api;
@@ -156,7 +157,7 @@ public class FTController {
             String pageId,
             String lang,
             String versionParam,
-            String profile,
+            String profileParam,
             String textGranularity,
             HttpServletRequest request,
             boolean isJson) throws EuropeanaApiException {
@@ -184,10 +185,20 @@ public class FTController {
         headers = CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
         addContentTypeToResponseHeader(headers, requestVersion, isJson);
 
+        // Now profile can be profile=text OR
+        // profile=text,debug OR profile=debug (for error stack trace purpose)
+        // validate profiles
+        List<String> profiles = Arrays.asList(StringUtils.split(profileParam, ","));
+        for(String val : profiles) {
+            if (!StringUtils.equals(val, PROFILE_TEXT) && !StringUtils.equals(val, PROFILE_DEBUG)) {
+                throw new InvalidRequestParamException("profile", val);
+            }
+        }
+
         if ("3".equalsIgnoreCase(requestVersion)) {
-            annotationPage = fts.generateAnnoPageV3(annoPage, StringUtils.equalsAnyIgnoreCase(profile, PROFILE_TEXT));
+            annotationPage = fts.generateAnnoPageV3(annoPage, profiles.contains(PROFILE_TEXT));
         } else {
-            annotationPage = fts.generateAnnoPageV2(annoPage, StringUtils.equalsAnyIgnoreCase(profile, PROFILE_TEXT));
+            annotationPage = fts.generateAnnoPageV2(annoPage, profiles.contains(PROFILE_TEXT));
         }
 
         if (isJson) {
