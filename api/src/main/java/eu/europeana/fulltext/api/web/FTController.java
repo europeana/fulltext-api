@@ -188,10 +188,13 @@ public class FTController {
         // Now profile can be profile=text OR
         // profile=text,debug OR profile=debug (for error stack trace purpose)
         // validate profiles
-        List<String> profiles = Arrays.asList(StringUtils.split(profileParam, ","));
-        for(String val : profiles) {
-            if (!StringUtils.equals(val, PROFILE_TEXT) && !StringUtils.equals(val, PROFILE_DEBUG)) {
-                throw new InvalidRequestParamException("profile", val);
+        List<String> profiles = new ArrayList<>();
+        if (StringUtils.isNotEmpty(profileParam)) {
+            profiles = Arrays.asList(StringUtils.split(profileParam, ","));
+            for(String val : profiles) {
+                if (!StringUtils.equals(val, PROFILE_TEXT) && !StringUtils.equals(val, PROFILE_DEBUG)) {
+                    throw new InvalidRequestParamException("profile", val);
+                }
             }
         }
 
