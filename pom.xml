@@ -40,7 +40,7 @@
 		<mockito.version>3.7.0</mockito.version>
 		<unitils.version>3.4.6</unitils.version>
 		<swagger.version>3.0.0</swagger.version>
-		<api-commons.version>0.3.8-SNAPSHOT</api-commons.version>
+		<api-commons.version>0.3.8</api-commons.version>
 	</properties>
 
     <dependencyManagement>
