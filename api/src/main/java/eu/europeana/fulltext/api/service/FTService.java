@@ -17,7 +17,6 @@ import eu.europeana.fulltext.api.service.exception.AnnoPageDoesNotExistException
 import eu.europeana.fulltext.api.service.exception.ResourceDoesNotExistException;
 import eu.europeana.fulltext.api.service.exception.SerializationException;
 import eu.europeana.fulltext.entity.AnnoPage;
-import eu.europeana.fulltext.entity.AnnoPageWithTranslations;
 import eu.europeana.fulltext.entity.Resource;
 import eu.europeana.fulltext.entity.TranslationAnnoPage;
 import eu.europeana.fulltext.repository.AnnoPageRepository;
@@ -29,6 +28,7 @@ import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.*;
 
 /**
  *
@@ -51,7 +51,11 @@ public class FTService {
     /*
      * Constructs an FTService object with autowired dependencies
      */
-    public FTService(ResourceRepository resourceRepository, AnnoPageRepository annoPageRepository, FTSettings ftSettings, ObjectMapper mapper) {
+    public FTService(
+            ResourceRepository resourceRepository,
+            AnnoPageRepository annoPageRepository,
+            FTSettings ftSettings,
+            ObjectMapper mapper) {
         this.resourceRepository = resourceRepository;
         this.annoPageRepository = annoPageRepository;
         this.ftSettings = ftSettings;
@@ -164,49 +168,60 @@ public class FTService {
 
     // = = [ get Annopage information ]= = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
-    public SummaryManifest collectAnnoPageInfo(String datasetId, String localId) throws AnnoPageDoesNotExistException {
+    public SummaryManifest collectAnnoPageInfo(String datasetId, String localId) throws AnnoPageDoesNotExistException,
+                                                                                        ExecutionException,
+                                                                                        InterruptedException {
+
         // 1) create SummaryManifest container for this EuropeanaID
         SummaryManifest apInfoSummaryManifest = new SummaryManifest(datasetId, localId);
 
-        List<AnnoPage> apListWithTranslations = annoPageRepository.findAnnoPagesWithTranslations(datasetId, localId);
-        if (apListWithTranslations == null || apListWithTranslations.isEmpty()) {
-            throw new AnnoPageDoesNotExistException(datasetId + "/" + localId);
-        }
+        // 2) create two threads: one to fetch the original pages, another for the translations
+        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
 
-        for (AnnoPage apWt : apListWithTranslations){
-            SummaryCanvas summaryCanvas = new SummaryCanvas(makeSummaryCanvasID(apWt));
-            summaryCanvas.addAnnotation(new SummaryAnnoPage(makeLangAwareAnnoPageID(apWt), apWt.getLang()));
+        Callable<List<AnnoPage>> apCallable = () -> {
+            LOG.debug("Original AnnoPage query started");
+            return annoPageRepository.findOrigPages(datasetId, localId);
+        };
+        Future<List<AnnoPage>> futureAps = executor.submit(apCallable);
 
-            for (TranslationAnnoPage tap : apWt.getTranslations()) {
-                summaryCanvas.addAnnotation(new SummaryAnnoPage(makeLangAwareAnnoPageID(tap), tap.getLang()));
+        Callable<List<TranslationAnnoPage>> tapCallable = () -> {
+            LOG.debug("Translated AnnoPage query started");
+            return annoPageRepository.findAllTranslatedPages(datasetId, localId);
+        };
+        Future<List<TranslationAnnoPage>> futureTaps = executor.submit(tapCallable);
+
+        List<AnnoPage> annoPages = futureAps.get();
+        List<TranslationAnnoPage>translationAnnoPages = futureTaps.get();
+
+        // fetch the original pages
+//        AnnoPageQueryTask origApTask = new AnnoPageQueryTask("origApTask");
+//        LOG.debug("Original AnnoPage query started");
+//        executor.execute(origApTask);
+//        annoPages = origApTask.findOrigPages(annoPageRepository, datasetId, localId);
+
+        // fetch the translations
+//        AnnoPageQueryTask translatedApTask = new AnnoPageQueryTask("translatedApTask");
+//        LOG.debug("Translated AnnoPage query started");
+//        executor.execute(translatedApTask);
+//        translationAnnoPages = translatedApTask.findAllTranslatedPages(annoPageRepository, datasetId, localId);
+
+        // when done, stop the threads
+        executor.shutdown();
+
+        // go through the original pages and add those to the summaryCanvas
+        for (AnnoPage ap : annoPages){
+            SummaryCanvas summaryCanvas = new SummaryCanvas(makeSummaryCanvasID(ap));
+            summaryCanvas.addAnnotation(new SummaryAnnoPage(makeLangAwareAnnoPageID(ap), ap.getLang()));
+
+            // go through the translated pages; if the pagenumber matches that of the original page, add to the canvas
+            for (TranslationAnnoPage tap : translationAnnoPages) {
+                if (tap.getPgId().equalsIgnoreCase(ap.getPgId())){
+                    summaryCanvas.addAnnotation(new SummaryAnnoPage(makeLangAwareAnnoPageID(tap), tap.getLang()));
+                }
             }
-            apInfoSummaryManifest.setModified(apWt.getModified());
+            apInfoSummaryManifest.setModified(ap.getModified());
             apInfoSummaryManifest.addCanvas(summaryCanvas);
         }
-
-
-        // 2) find all original AnnoPages and create a SummaryCanvas for each
-
-//        List<AnnoPage> annoPages = annoPageRepository.findOrigPages(datasetId, localId);
-//        if (annoPages == null || annoPages.size() == 0) {
-//            throw new AnnoPageDoesNotExistException(datasetId + "/" + localId);
-//        }
-//        for (AnnoPage ap : annoPages) {
-//            SummaryCanvas summaryCanvas = new SummaryCanvas(makeSummaryCanvasID(ap));
-//
-//            // add original SummaryAnnoPage to the SummaryCanvas
-//            summaryCanvas.addAnnotation(new SummaryAnnoPage(makeLangAwareAnnoPageID(ap), ap.getLang()));
-//
-//            // add translated AnnotationLangPages (if any) to the SummaryCanvas
-//            for (TranslationAnnoPage tap : annoPageRepository.findTranslatedPages(datasetId, localId, ap.getPgId())) {
-//                summaryCanvas.addAnnotation(new SummaryAnnoPage(makeLangAwareAnnoPageID(tap), tap.getLang()));
-//            }
-//            // modified value of last Anno Page will be added in the SummaryManifest
-//            apInfoSummaryManifest.setModified(ap.getModified());
-//            // add SummaryCanvas to SummaryManifest
-//            apInfoSummaryManifest.addCanvas(summaryCanvas);
-//        }
-
 
         return apInfoSummaryManifest;
     }

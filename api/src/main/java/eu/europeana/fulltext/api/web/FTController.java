@@ -24,6 +24,7 @@ import springfox.documentation.annotations.ApiIgnore;
 import javax.servlet.http.HttpServletRequest;
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 
 import static eu.europeana.fulltext.RequestUtils.*;
@@ -81,7 +82,12 @@ public class FTController {
     }
 
     private ResponseEntity<String> getAnnoPageInfo(String datasetId, String localId, HttpServletRequest request) throws EuropeanaApiException {
-        SummaryManifest apInfo = fts.collectAnnoPageInfo(datasetId, localId);
+        SummaryManifest apInfo = null;
+        try {
+            apInfo = fts.collectAnnoPageInfo(datasetId, localId);
+        } catch (ExecutionException | InterruptedException e) {
+            throw new EuropeanaApiException("Exception occurred while retrieving AnnoPage info", e);
+        }
         ZonedDateTime modified = CacheUtils.dateToZonedUTC(apInfo.getModified());
         String eTag = generateETag(datasetId + localId ,
                                    modified,

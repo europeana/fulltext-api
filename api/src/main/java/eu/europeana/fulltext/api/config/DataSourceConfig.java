@@ -1,5 +1,6 @@
 package eu.europeana.fulltext.api.config;
 
+import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoClient;
 import dev.morphia.Datastore;

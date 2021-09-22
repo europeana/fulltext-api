@@ -4,16 +4,12 @@ import dev.morphia.Datastore;
 import dev.morphia.aggregation.experimental.Aggregation;
 import dev.morphia.aggregation.experimental.expressions.ArrayExpressions;
 import dev.morphia.aggregation.experimental.expressions.Expressions;
-import dev.morphia.aggregation.experimental.expressions.impls.LetExpression;
 import dev.morphia.aggregation.experimental.stages.Lookup;
 import dev.morphia.aggregation.experimental.stages.Match;
 import dev.morphia.aggregation.experimental.stages.Projection;
-import dev.morphia.aggregation.experimental.stages.Stage;
-import dev.morphia.mapping.lazy.proxy.ReferenceException;
 import dev.morphia.query.internal.MorphiaCursor;
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.entity.AnnoPage;
-import eu.europeana.fulltext.entity.AnnoPageWithTranslations;
 import eu.europeana.fulltext.entity.TranslationAnnoPage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,6 +25,8 @@ import static dev.morphia.aggregation.experimental.expressions.Expressions.field
 import static dev.morphia.aggregation.experimental.expressions.Expressions.value;
 import static dev.morphia.query.experimental.filters.Filters.*;
 import static eu.europeana.fulltext.util.MorphiaUtils.Fields.*;
+
+//import org.bson.Document;
 
 
 /**
@@ -69,28 +67,28 @@ public class AnnoPageRepository {
 
     /**
      * Check if any AnnoPages exist that match the given parameters using DBCollection.count().
+     *
      * @param datasetId ID of the dataset
      * @param localId   ID of the parent of the Annopage object
      * @return true if yes, otherwise false
      */
     public long existForEuropeanaId(String datasetId, String localId, Class claph) {
-        return datastore.find(claph).filter(
-                eq(DATASET_ID, datasetId),
-                eq(LOCAL_ID, localId)
-        ).count();
+        return datastore.find(claph).filter(eq(DATASET_ID, datasetId), eq(LOCAL_ID, localId)).count();
     }
 
     /**
      * Find and return AnnoPages that match the given parameters using DBCollection.count().
+     *
      * @param datasetId ID of the dataset
      * @param localId   ID of the parent of the Annopage object
      * @return List of AnnoPage objects
      */
     public List<AnnoPage> findOrigPages(String datasetId, String localId) {
         //TODO instead of loading the AnnoPage + Resource, we should load have the option to only the AnnoPage
-        return datastore.find(AnnoPage.class).filter(
-                eq(DATASET_ID, datasetId),
-                eq(LOCAL_ID, localId)).iterator().toList();
+        return datastore.find(AnnoPage.class)
+                        .filter(eq(DATASET_ID, datasetId), eq(LOCAL_ID, localId))
+                        .iterator()
+                        .toList();
     }
 
     /**
@@ -104,29 +102,43 @@ public class AnnoPageRepository {
      */
     public List<TranslationAnnoPage> findTranslatedPages(String datasetId, String localId, String pageId) {
         // TODO instead of loading the AnnoPage + Resource, we should load only the AnnoPage
+        return datastore.find(TranslationAnnoPage.class)
+                        .filter(eq(DATASET_ID, datasetId), eq(LOCAL_ID, localId), eq(PAGE_ID, pageId))
+                        .iterator()
+                        .toList();
+    }
+
+    /**
+     * Find and return all TranslationAnnoPages for a given datasetId & localId
+     *
+     * @param datasetId ID of the dataset
+     * @param localId   ID of the parent of the TranslationAnnopage object
+     * @return List of TranslationAnnopage objects
+     */
+    public List<TranslationAnnoPage> findAllTranslatedPages(String datasetId, String localId) {
+        // TODO instead of loading the AnnoPage + Resource, we should load only the AnnoPage
         return datastore.find(TranslationAnnoPage.class).filter(
-                    eq(DATASET_ID, datasetId),
-                    eq(LOCAL_ID, localId),
-                    eq(PAGE_ID, pageId)).iterator().toList();
+                eq(DATASET_ID, datasetId),
+                eq(LOCAL_ID, localId)).iterator().toList();
     }
 
     /**
      * Check if an original AnnoPage exists that matches the given parameters using DBCollection.count().
+     *
      * @param datasetId ID of the dataset
      * @param localId   ID of the parent of the Annopage object
      * @param pageId    index (page number) of the Annopage object
      * @return true if yes, otherwise false
      */
     public boolean existsOriginalByPageId(String datasetId, String localId, String pageId) {
-        return datastore.find(AnnoPage.class).filter(
-                eq(DATASET_ID, datasetId),
-                eq(LOCAL_ID, localId),
-                eq(PAGE_ID, pageId)
-        ).count() > 0;
+        return datastore.find(AnnoPage.class)
+                        .filter(eq(DATASET_ID, datasetId), eq(LOCAL_ID, localId), eq(PAGE_ID, pageId))
+                        .count() > 0;
     }
 
     /**
      * Check if an original AnnoPage exists that matches the given parameters using DBCollection.count().
+     *
      * @param datasetId ID of the dataset
      * @param localId   ID of the parent of the Annopage object
      * @param pageId    index (page number) of the Annopage object
@@ -139,6 +151,7 @@ public class AnnoPageRepository {
 
     /**
      * Check if a TranslationAnnoPage exists that matches the given parameters using DBCollection.count().
+     *
      * @param datasetId ID of the dataset
      * @param localId   ID of the parent of the Annopage object
      * @param pageId    index (page number) of the Annopage object
@@ -150,16 +163,17 @@ public class AnnoPageRepository {
     }
 
     private boolean existsByPageIdLang(String datasetId, String localId, String pageId, String lang, Class clazz) {
-        return datastore.find(clazz).filter(
-                eq(DATASET_ID, datasetId),
-                eq(LOCAL_ID, localId),
-                eq(PAGE_ID, pageId),
-                eq(LANGUAGE, lang)
-        ).count() > 0;
+        return datastore.find(clazz)
+                        .filter(eq(DATASET_ID, datasetId),
+                                eq(LOCAL_ID, localId),
+                                eq(PAGE_ID, pageId),
+                                eq(LANGUAGE, lang))
+                        .count() > 0;
     }
 
     /**
      * Check if an AnnoPage exists that contains an Annotation that matches the given parameters
+     *
      * @param datasetId ID of the dataset
      * @param localId   ID of the parent of the Annopage object
      * @param annoId    ID of the annotation
@@ -168,12 +182,8 @@ public class AnnoPageRepository {
     // TODO april 2020: Method is unused, remove?
     public boolean existsWithAnnoId(String datasetId, String localId, String annoId) {
         return datastore.find(AnnoPage.class)
-                .filter(
-                        eq(DATASET_ID, datasetId),
-                        eq(LOCAL_ID, localId),
-                        eq(ANNOTATIONS_ID, annoId)
-                )
-                .count() > 0;
+                        .filter(eq(DATASET_ID, datasetId), eq(LOCAL_ID, localId), eq(ANNOTATIONS_ID, annoId))
+                        .count() > 0;
     }
 
     /**
@@ -184,82 +194,94 @@ public class AnnoPageRepository {
      * db.getCollection("AnnoPage").aggregate(
      * {$match: {"dsId": <datasetId>, "lcId": <localId>, "pgId": <pageId>}},
      * {$project: {
-     *   "dsId": "$dsId",
-     *   "lcId":"$lcId",
-     *   "pgId": "$pgId",
-     *   "tgtId": "$tgtId",
-     *   "res": "$res",
-     *   "className": "$className",
-     *   "modified": "$modified",
-     *   "ans": {
-     *                 $filter: {
-     *                   input: "$ans",
-     *                   as: "annotation",
-     *                   cond: { $in: [ '$$annotation.dcType', [<textGranValues>] ] }
-     *                 }
-     *             }
+     * "dsId": "$dsId",
+     * "lcId":"$lcId",
+     * "pgId": "$pgId",
+     * "tgtId": "$tgtId",
+     * "res": "$res",
+     * "className": "$className",
+     * "modified": "$modified",
+     * "ans": {
+     * $filter: {
+     * input: "$ans",
+     * as: "annotation",
+     * cond: { $in: [ '$$annotation.dcType', [<textGranValues>] ] }
+     * }
+     * }
      * })
      *
-     * @param datasetId      ID of the dataset
-     * @param localId        ID of the parent of the Annopage object
-     * @param pageId         index (page number) of the Annopage object
-     * @param annoTypes      dcType values to filter annotations with
+     * @param datasetId ID of the dataset
+     * @param localId   ID of the parent of the Annopage object
+     * @param pageId    index (page number) of the Annopage object
+     * @param annoTypes dcType values to filter annotations with
      * @return AnnoPage
      */
-    public AnnoPage findOriginalByPageId(String datasetId, String localId, String pageId, List<AnnotationType> annoTypes) {
-        Aggregation<AnnoPage> query = datastore.aggregate(AnnoPage.class).match(
-                eq(DATASET_ID, datasetId),
-                eq(LOCAL_ID, localId),
-                eq(PAGE_ID, pageId)
-        );
+    public AnnoPage findOriginalByPageId(
+            String datasetId,
+            String localId,
+            String pageId,
+            List<AnnotationType> annoTypes) {
+        Aggregation<AnnoPage> query = datastore.aggregate(AnnoPage.class)
+                                               .match(eq(DATASET_ID, datasetId),
+                                                      eq(LOCAL_ID, localId),
+                                                      eq(PAGE_ID, pageId));
         query = filterTextGranularity(query, annoTypes);
         return query.execute(AnnoPage.class).tryNext();
     }
 
     /**
      * Find and return an original AnnoPage that matches the given parameters.
-     * @param datasetId  ID of the dataset
-     * @param localId    ID of the parent of the Annopage object
-     * @param pageId     index (page number) of the Annopage object
-     * @param lang       language
-     * @param annoTypes  dcType values to filter annotations with
+     *
+     * @param datasetId ID of the dataset
+     * @param localId   ID of the parent of the Annopage object
+     * @param pageId    index (page number) of the Annopage object
+     * @param lang      language
+     * @param annoTypes dcType values to filter annotations with
      * @return AnnoPage
      */
-    public AnnoPage findOriginalByPageIdLang(String datasetId, String localId, String pageId, List<AnnotationType> annoTypes,
-                                             String lang) {
-        Aggregation<AnnoPage> query = datastore.aggregate(AnnoPage.class).match(
-                eq(DATASET_ID, datasetId),
-                eq(LOCAL_ID, localId),
-                eq(PAGE_ID, pageId),
-                eq(LANGUAGE, lang)
-        );
+    public AnnoPage findOriginalByPageIdLang(
+            String datasetId,
+            String localId,
+            String pageId,
+            List<AnnotationType> annoTypes,
+            String lang) {
+        Aggregation<AnnoPage> query = datastore.aggregate(AnnoPage.class)
+                                               .match(eq(DATASET_ID, datasetId),
+                                                      eq(LOCAL_ID, localId),
+                                                      eq(PAGE_ID, pageId),
+                                                      eq(LANGUAGE, lang));
         query = filterTextGranularity(query, annoTypes);
         return query.execute(AnnoPage.class).tryNext();
     }
 
     /**
      * Find and return a Translation AnnoPage that matches the given parameters.
-     * @param datasetId  ID of the dataset
-     * @param localId    ID of the parent of the Annopage object
-     * @param pageId     index (page number) of the Annopage object
-     * @param lang       language
-     * @param annoTypes  dcType values to filter annotations with
+     *
+     * @param datasetId ID of the dataset
+     * @param localId   ID of the parent of the Annopage object
+     * @param pageId    index (page number) of the Annopage object
+     * @param lang      language
+     * @param annoTypes dcType values to filter annotations with
      * @return AnnoPage
      */
-    public TranslationAnnoPage findTranslationByPageIdLang(String datasetId, String localId, String pageId,
-                                                           List<AnnotationType> annoTypes, String lang) {
-        Aggregation<TranslationAnnoPage> query = datastore.aggregate(TranslationAnnoPage.class).match(
-                eq(DATASET_ID, datasetId),
-                eq(LOCAL_ID, localId),
-                eq(PAGE_ID, pageId),
-                eq(LANGUAGE, lang)
-        );
+    public TranslationAnnoPage findTranslationByPageIdLang(
+            String datasetId,
+            String localId,
+            String pageId,
+            List<AnnotationType> annoTypes,
+            String lang) {
+        Aggregation<TranslationAnnoPage> query = datastore.aggregate(TranslationAnnoPage.class)
+                                                          .match(eq(DATASET_ID, datasetId),
+                                                                 eq(LOCAL_ID, localId),
+                                                                 eq(PAGE_ID, pageId),
+                                                                 eq(LANGUAGE, lang));
         query = filterTextGranularity(query, annoTypes);
         return query.execute(TranslationAnnoPage.class).tryNext();
     }
 
     /**
      * Find and return original AnnoPage that contains an annotation that matches the given parameters
+     *
      * @param datasetId ID of the dataset
      * @param localId   ID of the parent of the Annopage object
      * @param annoId    ID of the annotation
@@ -271,6 +293,7 @@ public class AnnoPageRepository {
 
     /**
      * Find and return a Translation AnnoPage that contains an annotation that matches the given parameters
+     *
      * @param datasetId ID of the dataset
      * @param localId   ID of the parent of the Annopage object
      * @param annoId    ID of the annotation
@@ -281,44 +304,45 @@ public class AnnoPageRepository {
     }
 
     private AnnoPage findAnnotationById(String datasetId, String localId, String annoId, Class clazz) {
-        return (AnnoPage) datastore.find(clazz).filter(
-                eq(DATASET_ID, datasetId),
-                eq(LOCAL_ID, localId),
-                eq(ANNOTATIONS_ID, annoId))
-                .first();
+        return (AnnoPage) datastore.find(clazz)
+                                   .filter(eq(DATASET_ID, datasetId), eq(LOCAL_ID, localId), eq(ANNOTATIONS_ID, annoId))
+                                   .first();
     }
 
     /**
      * Find and return original AnnoPages that contains an annotation that matches the given parameters.
-     *
+     * <p>
      * Returns a {@link MorphiaCursor} that can be iterated on to obtain matching AnnoPages.
      * The cursor must be closed after iteration is completed.
-     *
+     * <p>
      * The Cursor returned by this method must be closed
+     *
      * @param datasetId ID of the dataset
      * @param localId   ID of the parent of the Annopage object
      * @param imageIds  ID of the image
      * @param annoTypes type of annotations that should be retrieve, if null or empty all annotations of that
-     *                        annopage will be retrieved
+     *                  annopage will be retrieved
      * @return MorphiaCursor containing AnnoPage entries.
      */
-    public MorphiaCursor<AnnoPage> findByImageId(String datasetId, String localId, List<String> imageIds,
-                                                 List<AnnotationType> annoTypes) {
-        Aggregation<AnnoPage> query = datastore.aggregate(AnnoPage.class).match(
-                eq(DATASET_ID, datasetId),
-                eq(LOCAL_ID, localId),
-                in(IMAGE_ID, imageIds)
-        );
+    public MorphiaCursor<AnnoPage> findByImageId(
+            String datasetId,
+            String localId,
+            List<String> imageIds,
+            List<AnnotationType> annoTypes) {
+        Aggregation<AnnoPage> query = datastore.aggregate(AnnoPage.class)
+                                               .match(eq(DATASET_ID, datasetId),
+                                                      eq(LOCAL_ID, localId),
+                                                      in(IMAGE_ID, imageIds));
         query = filterTextGranularity(query, annoTypes);
         return query.execute(AnnoPage.class);
     }
 
 
-
     /**
      * Creates an AnnoPage aggregation query to return only matching annotation types.
+     *
      * @param annoPageQuery aggregation query
-     * @param annoTypes list containing text granularity values to match
+     * @param annoTypes     list containing text granularity values to match
      * @return Updated aggregation query
      */
     private Aggregation filterTextGranularity(Aggregation annoPageQuery, List<AnnotationType> annoTypes) {
@@ -327,48 +351,86 @@ public class AnnoPageRepository {
         }
 
         // ans.dcType stored as first letter of text granularity value in uppercase. ie. WORD -> 'W'
-        List<String> dcTypes = annoTypes.stream().map(s -> String.valueOf(s.getAbbreviation())).collect(Collectors.toUnmodifiableList());
+        List<String> dcTypes = annoTypes.stream()
+                                        .map(s -> String.valueOf(s.getAbbreviation()))
+                                        .collect(Collectors.toUnmodifiableList());
 
         // _id implicitly included in projection
-        return annoPageQuery.project(
-                Projection.of()
-                        .include(DATASET_ID)
-                        .include(LOCAL_ID)
-                        .include(PAGE_ID)
-                        .include(RESOURCE)
-                        .include(CLASSNAME)
-                        .include(IMAGE_ID)
-                        .include(MODIFIED)
-                        .include(ANNOTATIONS,
-                                filter(field(ANNOTATIONS),
-                                        ArrayExpressions.in(value("$$annotation.dcType"), value(dcTypes))
-                                ).as("annotation")
-                        )
-        );
+        return annoPageQuery.project(Projection.of()
+                                               .include(DATASET_ID)
+                                               .include(LOCAL_ID)
+                                               .include(PAGE_ID)
+                                               .include(RESOURCE)
+                                               .include(CLASSNAME)
+                                               .include(IMAGE_ID)
+                                               .include(MODIFIED)
+                                               .include(ANNOTATIONS,
+                                                        filter(field(ANNOTATIONS),
+                                                               ArrayExpressions.in(value("$$annotation.dcType"),
+                                                                                   value(dcTypes))).as("annotation")));
     }
+
+//    public List<AnnoPage> findAllAnnoPagesNative(String datasetId, String localId) {
+//
+//        DBObject query = BasicDBObjectBuilder.start()
+//                              .add("albums",
+//                              new BasicDBObject("$elemMatch",
+//                              new BasicDBObject("$and", new BasicDBObject[] {
+//                                        new BasicDBObject("albumId", albumDto.getAlbumId()),
+//                                        new BasicDBObject("album",
+//                                        new BasicDBObject("$exists", false))})))
+//          .get();
+//
+//        Artist result = datastore.createQuery(Artist.class, query).get();
+//
+//
+//
+//        Document query = new Document()
+//                .append("albums",
+//                        new Document("$elemMatch",
+//                                     new Document("$and", new Document[] {
+//                                             new Document("albumId", albumDto.getAlbumId()),
+//                                             new Document("album",
+//                                                          new Document("$exists", false))})));
+//
+//        Artist result = datastore.createQuery(Artist.class, query).get();
+//
+//
+//
+//        return query.execute(AnnoPage.class).toList();
+//
+//
+//        BasicDBObject parse = BasicDBObject.parse(
+//                "{location:{$near:{$geometry:{type: 'Point', coordinates: [" +
+//                location[0] + "," +
+//                location[1] + "]}, $maxDistance: " +
+//                maxDistance + "}}}");
+//        Query<LabDataDTO> query = ((AdvancedDatastore) MorphiaHandler.getStore()).createQuery(LabDataDTO.class, new Document(parse));
 
     public List<AnnoPage> findAnnoPagesWithTranslations(String datasetId, String localId) {
         Aggregation<AnnoPage> query = datastore.aggregate(AnnoPage.class)
                                                .match(eq(DATASET_ID, datasetId), eq(LOCAL_ID, localId))
                                                .lookup(Lookup.lookup(TranslationAnnoPage.class)
-                                                     .let("origDsId", value("$dsId"))
-                                                     .let("origLcId", value("$lcId"))
-                                                     .let("origPgId", value("$pgId"))
-                                                     .pipeline(Match.match(expr(Expressions.of()
-                                                           .field("$and",
-                                                                  array(Expressions
-                                                                        .of().field("$eq",
-                                                                               array(field("dsId"),
-                                                                                     value("$$origDsId"))),
-                                                                        Expressions
-                                                                        .of().field("$eq",
-                                                                               array(field("lcId"),
-                                                                                     value("$$origDsId"))),
-                                                                        Expressions
-                                                                        .of().field("$eq",
-                                                                               array(field("pgId"),
-                                                                                     value("$$origPgId"))))))))
-                                                     .as("translations"));
+                                                             .let("origDsId", value("$dsId"))
+                                                             .let("origLcId", value("$lcId"))
+                                                             .let("origPgId", value("$pgId"))
+                                                             .pipeline(Match.match(expr(Expressions.of().field("$and",
+                                                                                                          array(Expressions.of()
+                                                                                                                           .field("$eq",
+                                                                                                                                  array(field(
+                                                                                                                                                "dsId"),
+                                                                                                                                        value("$$origDsId"))),
+                                                                                                                Expressions.of()
+                                                                                                                           .field("$eq",
+                                                                                                                                  array(field(
+                                                                                                                                                "lcId"),
+                                                                                                                                        value("$$origDsId"))),
+                                                                                                                Expressions.of()
+                                                                                                                           .field("$eq",
+                                                                                                                                  array(field(
+                                                                                                                                                "pgId"),
+                                                                                                                                        value("$$origPgId"))))))))
+                                                             .as("translations"));
         return query.execute(AnnoPage.class).toList();
     }
 
