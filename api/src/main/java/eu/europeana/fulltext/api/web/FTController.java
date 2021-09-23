@@ -25,6 +25,7 @@ import springfox.documentation.annotations.ApiIgnore;
 import javax.servlet.http.HttpServletRequest;
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 
 import static eu.europeana.fulltext.RequestUtils.*;
@@ -77,11 +78,13 @@ public class FTController {
     public ResponseEntity<String> annoPageInfo(
             @PathVariable String datasetId,
             @PathVariable String localId,
+            @RequestParam(value = "multithreaded", required = false) String multi,
             HttpServletRequest request) throws EuropeanaApiException {
-       return getAnnoPageInfo(datasetId, localId, request);
+        boolean isMt = (StringUtils.isNotBlank(multi) && StringUtils.containsIgnoreCase(multi, "y"));
+        return getAnnoPageInfo(datasetId, localId, isMt, request);
     }
 
-    private ResponseEntity<String> getAnnoPageInfo(String datasetId, String localId, HttpServletRequest request) throws EuropeanaApiException {
+    private ResponseEntity<String> getAnnoPageInfo(String datasetId, String localId, boolean isMt, HttpServletRequest request) throws EuropeanaApiException {
         AnnoPage annoPage = fts.getSingleAnnoPage(datasetId, localId);
         ZonedDateTime modified = CacheUtils.dateToZonedUTC(annoPage.getModified());
         String eTag = generateETag(datasetId + localId ,
@@ -93,7 +96,18 @@ public class FTController {
             return cached;
         }
         HttpHeaders headers = CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
-        SummaryManifest apInfo = fts.collectAnnoPageInfo(datasetId, localId);
+
+        SummaryManifest apInfo;
+        if (isMt){
+            apInfo = fts.collectAnnoPageInfo(datasetId, localId);
+        } else {
+            try {
+                apInfo = fts.collectAnnoPageInfoMT(datasetId, localId);
+            } catch (ExecutionException | InterruptedException e) {
+                throw new EuropeanaApiException("error occured during multithreaded retrieval of AnnoPages", e);
+            }
+        }
+
         return new ResponseEntity<>(fts.serialise(apInfo), headers, HttpStatus.OK);
     }
 

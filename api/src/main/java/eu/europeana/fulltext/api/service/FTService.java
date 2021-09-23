@@ -28,6 +28,7 @@ import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.*;
 
 /**
  *
@@ -172,6 +173,7 @@ public class FTService {
     }
 
     public SummaryManifest collectAnnoPageInfo(String datasetId, String localId) throws AnnoPageDoesNotExistException {
+
         // 1) create SummaryManifest container for this EuropeanaID
         SummaryManifest apInfoSummaryManifest = new SummaryManifest(datasetId, localId);
 
@@ -195,6 +197,55 @@ public class FTService {
             apInfoSummaryManifest.addCanvas(summaryCanvas);
         }
         return apInfoSummaryManifest;
+    }
+
+    public SummaryManifest collectAnnoPageInfoMT(String datasetId, String localId) throws AnnoPageDoesNotExistException,
+                                                                                          ExecutionException,
+                                                                                          InterruptedException {
+
+        // 1) create SummaryManifest container for this EuropeanaID
+        SummaryManifest apInfoSummaryManifest = new SummaryManifest(datasetId, localId);
+
+        // 2) create two threads: one to fetch the original pages, another for the translations
+        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
+
+        Callable<List<AnnoPage>> apCallable = () -> {
+            LOG.debug("Original AnnoPage query started");
+            return annoPageRepository.findOrigPages(datasetId, localId);
+        };
+        Future<List<AnnoPage>> futureAps = executor.submit(apCallable);
+
+        Callable<List<TranslationAnnoPage>> tapCallable = () -> {
+            LOG.debug("Translated AnnoPage query started");
+            return annoPageRepository.findTranslatedPages(datasetId, localId, "1");
+        };
+        Future<List<TranslationAnnoPage>> futureTaps = executor.submit(tapCallable);
+
+        List<AnnoPage> annoPages = futureAps.get();
+        List<TranslationAnnoPage>translationAnnoPages = futureTaps.get();
+
+        // 3) when done, stop the threads
+        executor.shutdown();
+
+
+        // 4) go through the original pages and add those to the summaryCanvas
+        for (AnnoPage ap : annoPages){
+            SummaryCanvas summaryCanvas = new SummaryCanvas(makeSummaryCanvasID(ap));
+            summaryCanvas.addAnnotation(new SummaryAnnoPage(makeLangAwareAnnoPageID(ap), ap.getLang()));
+
+            // go through the translated pages; if the pagenumber matches that of the original page, add to the canvas
+            for (TranslationAnnoPage tap : translationAnnoPages) {
+                if (tap.getPgId().equalsIgnoreCase(ap.getPgId())){
+                    summaryCanvas.addAnnotation(new SummaryAnnoPage(makeLangAwareAnnoPageID(tap), tap.getLang()));
+                }
+            }
+            apInfoSummaryManifest.setModified(ap.getModified());
+            apInfoSummaryManifest.addCanvas(summaryCanvas);
+        }
+
+        // 5) rejoice and bask in the warm glow of the realisation of having done a great job
+        return apInfoSummaryManifest;
+
     }
 
     private String makeSummaryCanvasID(AnnoPage ap){

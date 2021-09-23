@@ -109,11 +109,24 @@ public class AnnoPageRepository {
      * @return List of TranslationAnnopage objects
      */
     public List<TranslationAnnoPage> findTranslatedPages(String datasetId, String localId, String pageId) {
-        // TODO instead of loading the AnnoPage + Resource, we should load only the AnnoPage
         return datastore.find(TranslationAnnoPage.class).filter(
                     eq(DATASET_ID, datasetId),
                     eq(LOCAL_ID, localId),
                     eq(PAGE_ID, pageId)).iterator().toList();
+    }
+
+    /**
+     * Find and return TranslationAnnoPages that match the given datasetId and localId
+     * The Morphia ReferenceException is thrown if there is no matching TranslationResource document found;
+     *
+     * @param datasetId ID of the dataset
+     * @param localId   ID of the parent of the TranslationAnnopage object
+     * @return List of TranslationAnnopage objects
+     */
+    public List<TranslationAnnoPage> findAllTranslatedPages(String datasetId, String localId) {
+        return datastore.find(TranslationAnnoPage.class).filter(
+                eq(DATASET_ID, datasetId),
+                eq(LOCAL_ID, localId)).iterator().toList();
     }
 
     /**
