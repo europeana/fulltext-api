@@ -20,9 +20,9 @@ import java.util.Date;
 import java.util.Objects;
 
 /**
- * Created by luthien on 16/10/2018, copied from IIIF Api's CacheUtils utility class to facilitate handling
- * If-Modified-Since, If-None-Match and If-Match request caching
- * @author Patrick Ehlert
+ * @author luthien on 16/10/2018 (copied from IIIF Api's CacheUtils utility class to facilitate handling
+ * If-Modified-Since, If-None-Match and If-Match request caching)
+ * changes by @author Patrick Ehlert
  */
 public final class CacheUtils {
 
@@ -34,7 +34,6 @@ public final class CacheUtils {
     private static final String  ALLOWED         = "GET, HEAD";
     private static final String  ALLOWHEADERS    = "If-Match, If-None-Match, If-Modified-Since";
     private static final String  EXPOSEHEADERS   = "Allow, ETag, Last-Modified, Link";
-    private static final String  CACHECONTROL    = "no-cache";
     private static final String  ACCEPT          = "Accept";
 
     private CacheUtils() {
@@ -152,7 +151,6 @@ public final class CacheUtils {
             headers.add("Last-Modified", modified);
         }
         headers.add("Allow", ALLOWED);
-        headers.add("Cache-Control", CACHECONTROL);
         headers.add("Vary", ACCEPT);
         return headers;
     }
