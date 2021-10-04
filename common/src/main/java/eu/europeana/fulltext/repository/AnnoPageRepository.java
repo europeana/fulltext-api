@@ -1,10 +1,11 @@
 package eu.europeana.fulltext.repository;
 
+import com.mongodb.client.AggregateIterable;
+import com.mongodb.client.MongoCursor;
 import dev.morphia.Datastore;
 import dev.morphia.aggregation.experimental.Aggregation;
 import dev.morphia.aggregation.experimental.expressions.ArrayExpressions;
 import dev.morphia.aggregation.experimental.stages.Projection;
-import dev.morphia.mapping.lazy.proxy.ReferenceException;
 import dev.morphia.query.internal.MorphiaCursor;
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.entity.AnnoPage;
@@ -14,7 +15,11 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.time.Duration;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static dev.morphia.aggregation.experimental.expressions.ArrayExpressions.filter;
@@ -23,6 +28,10 @@ import static dev.morphia.aggregation.experimental.expressions.Expressions.value
 import static dev.morphia.query.experimental.filters.Filters.eq;
 import static dev.morphia.query.experimental.filters.Filters.in;
 import static eu.europeana.fulltext.util.MorphiaUtils.Fields.*;
+
+import org.bson.Document;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 
 
 /**
@@ -351,5 +360,119 @@ public class AnnoPageRepository {
                                 ).as("annotation")
                         )
         );
+    }
+
+    /**
+     * Creates a query which merges the AnnoPage with TranslationAnnoPage
+     * based on datasetId and localId
+     *
+     * Query :
+     *  collection.aggregate(Arrays.asList(new Document("$match",new Document("dsId", dsId).append("lcId", lcId)),
+     *          new Document("$lookup",new Document("from", "TranslationAnnoPage")
+     *           .append("let",new Document("origDsId", "$dsId")
+     *                        .append("origLcId", "$lcId")
+     *                        .append("origPgId", "$pgId"))
+     *           .append("pipeline", Arrays.asList(new Document("$match",
+     *                               new Document("$expr",
+     *                               new Document("$and", Arrays.asList(new Document("$eq", Arrays.asList("$dsId", "$$origDsId")),
+     *                                                                 new Document("$eq", Arrays.asList("$lcId", "$$origLcId")),
+     *                                                                 new Document("$eq", Arrays.asList("$pgId", "$$origPgId")))))),
+     *                               new Document("$project",new Document("dsId", 1L)
+     *                                              .append("_id", 1L)
+     *                                              .append("ldId", 1L)
+     *                                              .append("pgId", 1L)
+     *                                              .append("lang", 1L)
+     *                                               .append("modified", 1L)
+     *                                         )))
+     *                               .append("as", "translations"))));
+     * @param dsId
+     * @param lcId
+     */
+    public void testLookUpMerge(String dsId, String lcId) {
+
+        long start = System.currentTimeMillis();
+        MongoDatabase database = datastore.getDatabase();
+        MongoCollection<Document> collection = database.getCollection("AnnoPage");
+
+        Map<String, Boolean> projectionFields = new HashMap<>();
+        projectionFields.put(DATASET_ID, true);
+        projectionFields.put(LOCAL_ID, true);
+        projectionFields.put(PAGE_ID, true);
+        projectionFields.put(LANGUAGE, true);
+        projectionFields.put(MODIFIED, true);
+
+        MongoCursor<Document> cursor =  collection.aggregate(Arrays.asList(createMatchFilter(dsId, lcId), getLookupPipeline(projectionFields))).iterator();
+
+        System.out.println("Time taken to retrieve the documents :: " +(System.currentTimeMillis() - start));
+        if(cursor != null) {
+            while(cursor.hasNext()) {
+                Document object = cursor.next();
+                System.out.println( "Annopage : { dsid : " + object.get(DATASET_ID) + ",  lcid : " +object.get(LOCAL_ID) + ",  pageId : " +object.get(PAGE_ID) + ", modified :"+ object.get(MODIFIED) + "}");
+                System.out.println( "Translation : " + object.get(TRANSLATIONS).toString());
+            }
+        }
+        System.out.println("Total Time taken by the method :: " + (System.currentTimeMillis() - start));
+    }
+
+    /**
+     * Creates a $match filter for datasetId and localId
+     * @param dataSetId
+     * @param localId
+     * @return
+     */
+    private Document createMatchFilter(String dataSetId, String localId){
+        return new Document(MONGO_MATCH, new Document(DATASET_ID, dataSetId)
+                        .append(LOCAL_ID, localId));
+    }
+
+
+    /**
+     * Creates  the $lookup filter for the aggregation pipeline
+     * from 'TranslationAnnoPage' collection
+     * @param projectionFields
+     * @return
+     */
+    private Document getLookupPipeline(Map<String, Boolean> projectionFields) {
+        return new Document(MONGO_LOOKUP,
+                new Document(MONGO_FROM, "TranslationAnnoPage")
+                        .append(MONGO_LET,
+                                new Document("origDsId", MONGO_DATASET_ID)
+                                        .append("origLcId", MONGO_LOCAL_ID)
+                                        .append("origPgId", MONGO_PAGE_ID))
+                        .append(MONGO_PIPELINE, getPipeLineForFromCollection(projectionFields))
+                        .append(MONGO_AS, TRANSLATIONS));
+    }
+
+
+    private List<Document> getPipeLineForFromCollection(Map<String, Boolean> projectionFields) {
+        Document matchExprePipeline = new Document(MONGO_MATCH,
+                new Document(MONGO_EXPRESSION,
+                        new Document(MONGO_AND, Arrays.asList(new Document(MONGO_EQUALS, Arrays.asList(MONGO_DATASET_ID, "$$origDsId")),
+                                new Document(MONGO_EQUALS, Arrays.asList(MONGO_LOCAL_ID, "$$origLcId")),
+                                new Document(MONGO_EQUALS, Arrays.asList(MONGO_PAGE_ID, "$$origPgId"))))));
+
+        Document projection = getProjectionFields(projectionFields);
+        if (projection != null) {
+            return Arrays.asList(matchExprePipeline, getProjectionFields(projectionFields));
+        } else {
+            return Arrays.asList(matchExprePipeline);
+        }
+    }
+
+    /**
+     * Returns the Projection fields with inclusion and exclusion values
+     * @param projectionFields
+     * @return
+     */
+    private Document getProjectionFields(Map<String, Boolean> projectionFields) {
+        if (!projectionFields.isEmpty()) {
+            Document d = new Document();
+            for (Map.Entry<String, Boolean> entry : projectionFields.entrySet()) {
+                long inclusion = entry.getValue() ? 1L : 0L;
+                d.append(entry.getKey(), inclusion);
+            }
+            return new Document(MONGO_PROJECT, d);
+        }
+        return null;
     }
 }

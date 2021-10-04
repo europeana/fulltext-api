@@ -81,6 +81,8 @@ public class FTService {
         AnnoPage result;
         if (StringUtils.isEmpty(lang)) {
             result = annoPageRepository.findOriginalByPageId(datasetId, localId, pageId, textGranValues);
+            // testing
+            annoPageRepository.testLookUpMerge(datasetId,localId);
             if (result == null) {
                 throw new AnnoPageDoesNotExistException(String.format("/%s/%s/annopage/%s", datasetId, localId, pageId));
             }
