@@ -403,7 +403,7 @@ public class AnnoPageRepository {
 
         MongoCursor<Document> cursor =  collection.aggregate(Arrays.asList(createMatchFilter(dsId, lcId), getLookupPipeline(projectionFields))).iterator();
 
-        System.out.println("Time taken to retrieve the documents :: " +(System.currentTimeMillis() - start));
+        LOG.info("Time taken to retrieve the documents {} ms" ,(System.currentTimeMillis() - start));
         if(cursor != null) {
             while(cursor.hasNext()) {
                 Document object = cursor.next();
@@ -411,7 +411,7 @@ public class AnnoPageRepository {
                 System.out.println( "Translation : " + object.get(TRANSLATIONS).toString());
             }
         }
-        System.out.println("Total Time taken by the method :: " + (System.currentTimeMillis() - start));
+        LOG.info("Total Time taken by the method {} ms ", (System.currentTimeMillis() - start));
     }
 
     /**
