@@ -453,7 +453,7 @@ public class AnnoPageRepository {
 
         Document projection = getProjectionFields(projectionFields);
         if (projection != null) {
-            return Arrays.asList(matchExprePipeline, getProjectionFields(projectionFields));
+            return Arrays.asList(matchExprePipeline, projection);
         } else {
             return Arrays.asList(matchExprePipeline);
         }
