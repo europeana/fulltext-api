@@ -44,16 +44,10 @@ public final class MorphiaUtils {
         public static final String MONGO_LET ="let";
         public static final String MONGO_AS ="as";
         public static final String MONGO_PIPELINE ="pipeline";
-
-
-
         public static final String MONGO_DATASET_ID = "$" +DATASET_ID;
         public static final String MONGO_LOCAL_ID = "$" +LOCAL_ID;
         public static final String MONGO_PAGE_ID = "$" + PAGE_ID;
-
         public static final String TRANSLATIONS = "translations";
-
-
 
         public static final String ANNOTATIONS_DCTYPE = ANNOTATIONS + ".dcType";
         public static final String ANNOTATIONS_ID = ANNOTATIONS + ".anId";

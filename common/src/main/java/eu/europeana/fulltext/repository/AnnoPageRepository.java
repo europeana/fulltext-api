@@ -1,6 +1,5 @@
 package eu.europeana.fulltext.repository;
 
-import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoCursor;
 import dev.morphia.Datastore;
 import dev.morphia.aggregation.experimental.Aggregation;
@@ -15,7 +14,6 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -367,24 +365,29 @@ public class AnnoPageRepository {
      * based on datasetId and localId
      *
      * Query :
-     *  collection.aggregate(Arrays.asList(new Document("$match",new Document("dsId", dsId).append("lcId", lcId)),
-     *          new Document("$lookup",new Document("from", "TranslationAnnoPage")
-     *           .append("let",new Document("origDsId", "$dsId")
-     *                        .append("origLcId", "$lcId")
-     *                        .append("origPgId", "$pgId"))
-     *           .append("pipeline", Arrays.asList(new Document("$match",
-     *                               new Document("$expr",
-     *                               new Document("$and", Arrays.asList(new Document("$eq", Arrays.asList("$dsId", "$$origDsId")),
-     *                                                                 new Document("$eq", Arrays.asList("$lcId", "$$origLcId")),
-     *                                                                 new Document("$eq", Arrays.asList("$pgId", "$$origPgId")))))),
-     *                               new Document("$project",new Document("dsId", 1L)
-     *                                              .append("_id", 1L)
-     *                                              .append("ldId", 1L)
-     *                                              .append("pgId", 1L)
-     *                                              .append("lang", 1L)
-     *                                               .append("modified", 1L)
-     *                                         )))
-     *                               .append("as", "translations"))));
+     *  db.getCollection("AnnoPage").aggregate(
+     *  [{$match: {
+     *   dsId:<dsId>, lcId :<lcId>}},
+     *   {$lookup: {
+     *            from: "TranslationAnnoPage",
+     *            let: { origDsId: "$dsId", origLcId: "$lcId", origPgId: "$pgId" },
+     *            pipeline: [
+     *               { $match:
+     *                  { $expr:
+     *                     { $and:
+     *                        [
+     *                          { $eq: [ "$dsId",  "$$origDsId" ] },
+     *                          { $eq: [ "$lcId",  "$$origLcId" ] },
+     *                          { $eq: [ "$pgId",  "$$origPgId" ] }
+     *                        ]
+     *                     }
+     *                  }
+     *               },
+     *               { $project: { dsId: 1, lcid: 1, lang:1, modified: 1 } }
+     *            ],
+     *            as: "translations"
+     *          }}])
+     *
      * @param dsId
      * @param lcId
      */
@@ -407,8 +410,9 @@ public class AnnoPageRepository {
         if(cursor != null) {
             while(cursor.hasNext()) {
                 Document object = cursor.next();
-                System.out.println( "Annopage : { dsid : " + object.get(DATASET_ID) + ",  lcid : " +object.get(LOCAL_ID) + ",  pageId : " +object.get(PAGE_ID) + ", modified :"+ object.get(MODIFIED) + "}");
-                System.out.println( "Translation : " + object.get(TRANSLATIONS).toString());
+                List<Document> translations = (List<Document>) object.get(TRANSLATIONS);
+                LOG.info("AnnoPage with dataset ID {} and LocalID {} contains {} Translations ", object.get(DATASET_ID) , object.get(LOCAL_ID), translations.size() );
+                LOG.info("Translations : {} ", translations);
             }
         }
         LOG.info("Total Time taken by the method {} ms ", (System.currentTimeMillis() - start));
@@ -424,7 +428,6 @@ public class AnnoPageRepository {
         return new Document(MONGO_MATCH, new Document(DATASET_ID, dataSetId)
                         .append(LOCAL_ID, localId));
     }
-
 
     /**
      * Creates  the $lookup filter for the aggregation pipeline
@@ -442,7 +445,6 @@ public class AnnoPageRepository {
                         .append(MONGO_PIPELINE, getPipeLineForFromCollection(projectionFields))
                         .append(MONGO_AS, TRANSLATIONS));
     }
-
 
     private List<Document> getPipeLineForFromCollection(Map<String, Boolean> projectionFields) {
         Document matchExprePipeline = new Document(MONGO_MATCH,
