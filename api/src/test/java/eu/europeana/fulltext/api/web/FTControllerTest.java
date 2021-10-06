@@ -64,7 +64,7 @@ public class FTControllerTest {
     private static final String HEADER_CONTENTTYPE = "Content-Type";
 
     private static final String VALUE_ALLOW = "GET, HEAD";
-    private static final String VALUE_CACHECONTROL = "no-cache";
+    private static final String VALUE_CACHECONTROL = "public, max-age=";
     private static final String VALUE_VARY = "Accept";
 
     private static final String HEADER_IFNONEMATCH = "If-None-Match";
