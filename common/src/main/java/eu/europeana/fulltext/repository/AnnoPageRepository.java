@@ -14,10 +14,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static dev.morphia.aggregation.experimental.expressions.ArrayExpressions.filter;
@@ -416,6 +413,37 @@ public class AnnoPageRepository {
             }
         }
         LOG.info("Total Time taken by the method {} ms ", (System.currentTimeMillis() - start));
+    }
+
+    public List<Document> testLookUpMerge2(String dsId, String lcId) {
+        List<Document> annoPagesWithTranslations = new ArrayList<>();
+
+        long start = System.currentTimeMillis();
+        MongoDatabase database = datastore.getDatabase();
+        MongoCollection<Document> collection = database.getCollection("AnnoPage");
+
+        Map<String, Boolean> projectionFields = new HashMap<>();
+        projectionFields.put(DATASET_ID, true);
+        projectionFields.put(LOCAL_ID, true);
+        projectionFields.put(PAGE_ID, true);
+        projectionFields.put(LANGUAGE, true);
+        projectionFields.put(MODIFIED, true);
+
+        MongoCursor<Document> cursor =  collection.aggregate(Arrays.asList(createMatchFilter(dsId, lcId), getLookupPipeline(projectionFields))).iterator();
+
+        LOG.info("Time taken to retrieve the documents {} ms" ,(System.currentTimeMillis() - start));
+        while(cursor.hasNext()) {
+            Document apWt = cursor.next();
+            annoPagesWithTranslations.add(apWt);
+            LOG.info("AnnoPage with dsId {}, lcId {}, pgId{} has {} Translations ",
+                     apWt.get(DATASET_ID),
+                     apWt.get(LOCAL_ID),
+                     apWt.get(PAGE_ID),
+                     ((List<?>) apWt.get(TRANSLATIONS)).size());
+        }
+        LOG.info("AnnoPages with Translations : {} ", annoPagesWithTranslations);
+        LOG.info("Total Time taken by the method {} ms ", (System.currentTimeMillis() - start));
+        return annoPagesWithTranslations;
     }
 
     /**

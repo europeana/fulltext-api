@@ -23,6 +23,7 @@ import eu.europeana.fulltext.repository.AnnoPageRepository;
 import eu.europeana.fulltext.repository.ResourceRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bson.Document;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -198,6 +199,19 @@ public class FTService {
         }
         return apInfoSummaryManifest;
     }
+
+    public SummaryManifest collectApAndTranslationInfo(String datasetId, String localId) throws AnnoPageDoesNotExistException {
+        // 1) create SummaryManifest container for this EuropeanaID
+        SummaryManifest apInfoSummaryManifest = new SummaryManifest(datasetId, localId);
+
+        // 2)
+        List<Document> annoPagesAndTranslations = annoPageRepository.testLookUpMerge2(datasetId, localId);
+
+
+        return apInfoSummaryManifest;
+    }
+
+
 
     private String makeSummaryCanvasID(AnnoPage ap){
         return ftSettings.getAnnoPageBaseUrl() + ap.getDsId() + "/" + ap.getLcId() + FTDefinitions.CANVAS_PATH +"/" + ap.getPgId();

@@ -93,7 +93,8 @@ public class FTController {
             return cached;
         }
         HttpHeaders headers = CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
-        SummaryManifest apInfo = fts.collectAnnoPageInfo(datasetId, localId);
+//        SummaryManifest apInfo = fts.collectAnnoPageInfo(datasetId, localId);
+        SummaryManifest apInfo = fts.collectApAndTranslationInfo(datasetId, localId);
         return new ResponseEntity<>(fts.serialise(apInfo), headers, HttpStatus.OK);
     }
 
