@@ -1,5 +1,6 @@
 package eu.europeana.fulltext.repository;
 
+import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoCursor;
 import dev.morphia.Datastore;
 import dev.morphia.aggregation.experimental.Aggregation;
@@ -13,6 +14,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import java.util.Arrays;
+import org.bson.Document;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -23,10 +28,6 @@ import static dev.morphia.aggregation.experimental.expressions.Expressions.value
 import static dev.morphia.query.experimental.filters.Filters.eq;
 import static dev.morphia.query.experimental.filters.Filters.in;
 import static eu.europeana.fulltext.util.MorphiaUtils.Fields.*;
-
-import org.bson.Document;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
 
 
 /**
@@ -57,7 +58,7 @@ public class AnnoPageRepository {
         return count(TranslationAnnoPage.class);
     }
 
-    private long count(Class clazz) {
+    private long count(Class<? extends AnnoPage> clazz) {
         // TODO investigate why this query is so slow and fix
         LOG.warn(
             "Repository count is temporarily disabled because of bad performance with large collections");
@@ -105,9 +106,8 @@ public class AnnoPageRepository {
     }
 
     /**
-     * Find and return TranslationAnnoPages that match the given parameters using
-     * DBCollection.count(). The Morphia ReferenceException is thrown if there is no matching
-     * TranslationResource document found;
+     * Find and return TranslationAnnoPages that match the given parameters using DBCollection.count(). The Morphia
+     * ReferenceException is thrown if there is no matching TranslationResource document found;
      *
      * @param datasetId ID of the dataset
      * @param localId   ID of the parent of the TranslationAnnopage object
@@ -123,8 +123,7 @@ public class AnnoPageRepository {
     }
 
     /**
-     * Check if an original AnnoPage exists that matches the given parameters using
-     * DBCollection.count().
+     * Check if an original AnnoPage exists that matches the given parameters using DBCollection.count().
      *
      * @param datasetId ID of the dataset
      * @param localId   ID of the parent of the Annopage object
@@ -138,8 +137,7 @@ public class AnnoPageRepository {
     }
 
     /**
-     * Check if an original AnnoPage exists that matches the given parameters using
-     * DBCollection.count().
+     * Check if an original AnnoPage exists that matches the given parameters using DBCollection.count().
      *
      * @param datasetId ID of the dataset
      * @param localId   ID of the parent of the Annopage object
@@ -153,8 +151,7 @@ public class AnnoPageRepository {
     }
 
     /**
-     * Check if a TranslationAnnoPage exists that matches the given parameters using
-     * DBCollection.count().
+     * Check if a TranslationAnnoPage exists that matches the given parameters using DBCollection.count().
      *
      * @param datasetId ID of the dataset
      * @param localId   ID of the parent of the Annopage object
@@ -191,14 +188,13 @@ public class AnnoPageRepository {
     }
 
     /**
-     * Find and return an original AnnoPage that matches the given parameters. Only annotations that
-     * match the specified text granularity values are retrieved from the data store.
+     * Find and return an original AnnoPage that matches the given parameters. Only annotations that match the specified
+     * text granularity values are retrieved from the data store.
      * <p>
-     * The mongodb query implemented by this method is: db.getCollection("AnnoPage").aggregate(
-     * {$match: {"dsId": <datasetId>, "lcId": <localId>, "pgId": <pageId>}}, {$project: { "dsId":
-     * "$dsId", "lcId":"$lcId", "pgId": "$pgId", "tgtId": "$tgtId", "res": "$res", "className":
-     * "$className", "modified": "$modified", "ans": { $filter: { input: "$ans", as: "annotation",
-     * cond: { $in: [ '$$annotation.dcType', [<textGranValues>] ] } } } })
+     * The mongodb query implemented by this method is: db.getCollection("AnnoPage").aggregate( {$match: {"dsId":
+     * <datasetId>, "lcId": <localId>, "pgId": <pageId>}}, {$project: { "dsId": "$dsId", "lcId":"$lcId", "pgId":
+     * "$pgId", "tgtId": "$tgtId", "res": "$res", "className": "$className", "modified": "$modified", "ans": { $filter:
+     * { input: "$ans", as: "annotation", cond: { $in: [ '$$annotation.dcType', [<textGranValues>] ] } } } })
      *
      * @param datasetId ID of the dataset
      * @param localId   ID of the parent of the Annopage object
@@ -265,8 +261,7 @@ public class AnnoPageRepository {
     }
 
     /**
-     * Find and return original AnnoPage that contains an annotation that matches the given
-     * parameters
+     * Find and return original AnnoPage that contains an annotation that matches the given parameters
      *
      * @param datasetId ID of the dataset
      * @param localId   ID of the parent of the Annopage object
@@ -278,8 +273,7 @@ public class AnnoPageRepository {
     }
 
     /**
-     * Find and return a Translation AnnoPage that contains an annotation that matches the given
-     * parameters
+     * Find and return a Translation AnnoPage that contains an annotation that matches the given parameters
      *
      * @param datasetId ID of the dataset
      * @param localId   ID of the parent of the Annopage object
@@ -300,19 +294,18 @@ public class AnnoPageRepository {
     }
 
     /**
-     * Find and return original AnnoPages that contains an annotation that matches the given
-     * parameters.
+     * Find and return original AnnoPages that contains an annotation that matches the given parameters.
      * <p>
-     * Returns a {@link MorphiaCursor} that can be iterated on to obtain matching AnnoPages. The
-     * cursor must be closed after iteration is completed.
+     * Returns a {@link MorphiaCursor} that can be iterated on to obtain matching AnnoPages. The cursor must be closed
+     * after iteration is completed.
      * <p>
      * The Cursor returned by this method must be closed
      *
      * @param datasetId ID of the dataset
      * @param localId   ID of the parent of the Annopage object
      * @param imageIds  ID of the image
-     * @param annoTypes type of annotations that should be retrieve, if null or empty all
-     *                  annotations of that annopage will be retrieved
+     * @param annoTypes type of annotations that should be retrieve, if null or empty all annotations of that annopage
+     *                  will be retrieved
      * @return MorphiaCursor containing AnnoPage entries.
      */
     public MorphiaCursor<AnnoPage> findByImageId(
@@ -360,14 +353,12 @@ public class AnnoPageRepository {
     }
 
     /**
-     * Creates a query which merges the AnnoPage with TranslationAnnoPage based on datasetId and
-     * localId
+     * Creates a query which merges the AnnoPage with TranslationAnnoPage based on datasetId and localId
      * <p>
-     * Query : db.getCollection("AnnoPage").aggregate( [{$match: { dsId:<dsId>, lcId :<lcId>}},
-     * {$lookup: { from: "TranslationAnnoPage", let: { origDsId: "$dsId", origLcId: "$lcId",
-     * origPgId: "$pgId" }, pipeline: [ { $match: { $expr: { $and: [ { $eq: [ "$dsId",  "$$origDsId"
-     * ] }, { $eq: [ "$lcId",  "$$origLcId" ] }, { $eq: [ "$pgId",  "$$origPgId" ] } ] } } }, {
-     * $project: { dsId: 1, lcid: 1, lang:1, modified: 1 } } ], as: "translations" }}])
+     * Query : db.getCollection("AnnoPage").aggregate( [{$match: { dsId:<dsId>, lcId :<lcId>}}, {$lookup: { from:
+     * "TranslationAnnoPage", let: { origDsId: "$dsId", origLcId: "$lcId", origPgId: "$pgId" }, pipeline: [ { $match: {
+     * $expr: { $and: [ { $eq: [ "$dsId",  "$$origDsId" ] }, { $eq: [ "$lcId",  "$$origLcId" ] }, { $eq: [ "$pgId",
+     * "$$origPgId" ] } ] } } }, { $project: { dsId: 1, lcid: 1, lang:1, modified: 1 } } ], as: "translations" }}])
      *
      * @param dsId
      * @param lcId
@@ -412,23 +403,26 @@ public class AnnoPageRepository {
         MongoDatabase database = datastore.getDatabase();
         MongoCollection<Document> collection = database.getCollection("AnnoPage");
 
-        Map<String, Boolean> projectionFields = new HashMap<>();
-//        projectionFields.put(ANNOTATIONS, true);
-        projectionFields.put(LANGUAGE, true);
-        projectionFields.put(MODIFIED, true);
+        Map<String, Boolean> projectionTapFields = new HashMap<>();
+        projectionTapFields.put(DOC_ID, false);
+        projectionTapFields.put(LANGUAGE, true);
+        projectionTapFields.put(MODIFIED, true);
+        Map<String, Boolean> projectionApFields = new HashMap<>();
+        projectionTapFields.put(DOC_ID, false);
+        projectionApFields.put(DATASET_ID, true);
+        projectionApFields.put(LOCAL_ID, true);
+        projectionApFields.put(PAGE_ID, true);
+        projectionApFields.put(LANGUAGE, true);
+        projectionApFields.put(MODIFIED, true);
+        projectionApFields.put(TRANSLATIONS, true);
 
-        for (Document apWt : collection.aggregate(
-            Arrays.asList(createMatchFilter(dsId, lcId),
-                getLookupPipeline(projectionFields)))) {
+        for (Document apWt : collection.aggregate(Arrays.asList(
+                                                    createMatchFilter(dsId, lcId),
+                                                    getLookupPipeline(projectionTapFields),
+                                                    getProjectionFields(projectionApFields)
+                                                 ))){
             annoPagesWithTranslations.add(apWt);
-//            LOG.info("AnnoPage with dsId {}, lcId {}, pgId{} has {} Translations ",
-//                apWt.get(DATASET_ID),
-//                apWt.get(LOCAL_ID),
-//                apWt.get(PAGE_ID),
-//                ((List<?>) apWt.get(TRANSLATIONS)).size());
         }
-//        LOG.info("AnnoPages with Translations : {} ", annoPagesWithTranslations);
-//        LOG.info("Total Time taken by the method {} ms ", (System.currentTimeMillis() - start));
         return annoPagesWithTranslations;
     }
 
@@ -445,29 +439,29 @@ public class AnnoPageRepository {
     }
 
     /**
-     * Creates  the $lookup filter for the aggregation pipeline from 'TranslationAnnoPage'
-     * collection
+     * Creates  the $lookup filter for the aggregation pipeline from 'TranslationAnnoPage' collection
      *
      * @param projectionFields
      * @return
      */
     private Document getLookupPipeline(Map<String, Boolean> projectionFields) {
-        return  new Document(MONGO_LOOKUP,
-                new Document(MONGO_FROM, "TranslationAnnoPage")
-                    .append(MONGO_LET, new Document("origDsId", MONGO_DATASET_ID)
-                                            .append("origLcId", MONGO_LOCAL_ID)
-                                            .append("origPgId", MONGO_PAGE_ID))
-                    .append(MONGO_PIPELINE, getPipeLineForFromCollection(projectionFields))
-                    .append(MONGO_AS, TRANSLATIONS));
+        return new Document(MONGO_LOOKUP,
+            new Document(MONGO_FROM, "TranslationAnnoPage")
+                .append(MONGO_LET, new Document("origDsId", MONGO_DATASET_ID)
+                    .append("origLcId", MONGO_LOCAL_ID)
+                    .append("origPgId", MONGO_PAGE_ID))
+                .append(MONGO_PIPELINE, getPipeLineForFromCollection(projectionFields))
+                .append(MONGO_AS, TRANSLATIONS));
     }
 
     private List<Document> getPipeLineForFromCollection(Map<String, Boolean> projectionFields) {
         Document matchExprePipeline = new Document(MONGO_MATCH,
             new Document(MONGO_EXPRESSION,
                 new Document(MONGO_AND,
-                    Arrays.asList(new Document(MONGO_EQUALS, Arrays.asList(MONGO_DATASET_ID, "$$origDsId")),
-                                  new Document(MONGO_EQUALS, Arrays.asList(MONGO_LOCAL_ID,   "$$origLcId")),
-                                  new Document(MONGO_EQUALS, Arrays.asList(MONGO_PAGE_ID,    "$$origPgId"))))));
+                    Arrays.asList(
+                        new Document(MONGO_EQUALS, Arrays.asList(MONGO_DATASET_ID, "$$origDsId")),
+                        new Document(MONGO_EQUALS, Arrays.asList(MONGO_LOCAL_ID, "$$origLcId")),
+                        new Document(MONGO_EQUALS, Arrays.asList(MONGO_PAGE_ID, "$$origPgId"))))));
 
         Document projection = getProjectionFields(projectionFields);
         if (projection != null) {

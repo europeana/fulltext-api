@@ -74,11 +74,12 @@ public class FTController {
     public ResponseEntity<String> annoPageInfo(
         @PathVariable String datasetId,
         @PathVariable String localId,
+        @RequestParam(value = "aggregated", required = false) String agg,
         HttpServletRequest request) throws EuropeanaApiException {
-        return getAnnoPageInfo(datasetId, localId, request);
+        return getAnnoPageInfo(datasetId, localId, agg, request);
     }
 
-    private ResponseEntity<String> getAnnoPageInfo(String datasetId, String localId, HttpServletRequest request)
+    private ResponseEntity<String> getAnnoPageInfo(String datasetId, String localId, String agg, HttpServletRequest request)
         throws EuropeanaApiException {
         AnnoPage annoPage = fts.getSingleAnnoPage(datasetId, localId);
         ZonedDateTime modified = CacheUtils.dateToZonedUTC(annoPage.getModified());
@@ -91,8 +92,12 @@ public class FTController {
             return cached;
         }
         HttpHeaders headers = CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
-//        SummaryManifest apInfo = fts.collectAnnoPageInfo(datasetId, localId);
-        SummaryManifest apInfo = fts.collectApAndTranslationInfo(datasetId, localId);
+        SummaryManifest apInfo;
+        if (StringUtils.equalsIgnoreCase(agg, "true")){
+            apInfo = fts.collectApAndTranslationInfo(datasetId, localId);
+        } else {
+            apInfo = fts.collectAnnoPageInfo(datasetId, localId);
+        }
         return new ResponseEntity<>(fts.serialise(apInfo), headers, HttpStatus.OK);
     }
 

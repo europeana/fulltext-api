@@ -214,10 +214,7 @@ public class FTService {
     }
 
     public SummaryManifest collectApAndTranslationInfo(String datasetId, String localId) {
-        // 1) create SummaryManifest container for this EuropeanaID
         SummaryManifest apInfoSummaryManifest = new SummaryManifest(datasetId, localId);
-
-        // 2)
         List<Document> annoPagesAndTranslations = annoPageRepository.getAnnoPageAndTranslations(datasetId, localId);
 
         for (Document apWt : annoPagesAndTranslations){
