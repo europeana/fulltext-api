@@ -55,6 +55,9 @@ public class FTController {
 
     private static final Logger LOG = LogManager.getLogger(FTController.class);
 
+    // true: use aggregated summary query
+    private static final boolean USE_AGGREGATION = false;
+
     private FTService fts;
 
     public FTController(FTService ftService) {
@@ -74,12 +77,11 @@ public class FTController {
     public ResponseEntity<String> annoPageInfo(
         @PathVariable String datasetId,
         @PathVariable String localId,
-        @RequestParam(value = "aggregated", required = false) String agg,
         HttpServletRequest request) throws EuropeanaApiException {
-        return getAnnoPageInfo(datasetId, localId, agg, request);
+        return getAnnoPageInfo(datasetId, localId, request);
     }
 
-    private ResponseEntity<String> getAnnoPageInfo(String datasetId, String localId, String agg, HttpServletRequest request)
+    private ResponseEntity<String> getAnnoPageInfo(String datasetId, String localId, HttpServletRequest request)
         throws EuropeanaApiException {
         AnnoPage annoPage = fts.getSingleAnnoPage(datasetId, localId);
         ZonedDateTime modified = CacheUtils.dateToZonedUTC(annoPage.getModified());
@@ -89,13 +91,16 @@ public class FTController {
             true);
         ResponseEntity<String> cached = CacheUtils.checkCached(request, modified, eTag);
         if (null != cached) {
+            LOG.info("Returning cached object for {}, {}", datasetId, localId);
             return cached;
         }
         HttpHeaders headers = CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
         SummaryManifest apInfo;
-        if (StringUtils.equalsIgnoreCase(agg, "true")){
+        if (USE_AGGREGATION){
+            LOG.info("Use aggregated summary query");
             apInfo = fts.collectApAndTranslationInfo(datasetId, localId);
         } else {
+            LOG.info("Use regular summary query");
             apInfo = fts.collectAnnoPageInfo(datasetId, localId);
         }
         return new ResponseEntity<>(fts.serialise(apInfo), headers, HttpStatus.OK);

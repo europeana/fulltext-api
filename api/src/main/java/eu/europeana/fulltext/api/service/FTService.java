@@ -25,6 +25,8 @@ import eu.europeana.fulltext.entity.Resource;
 import eu.europeana.fulltext.entity.TranslationAnnoPage;
 import eu.europeana.fulltext.repository.AnnoPageRepository;
 import eu.europeana.fulltext.repository.ResourceRepository;
+import java.time.Duration;
+import java.time.Instant;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bson.Document;
@@ -41,6 +43,8 @@ import java.util.List;
 public class FTService {
 
     private static final String GENERATED_IN = "Generated in {} ms ";
+    private static final String FETCHED_SEPARATE = "Originals fetched in {} ms, translations in {} ms";
+    private static final String FETCHED_AGGREGATED = "Originals with translations fetched in {} ms";
     private static final Logger LOG = LogManager.getLogger(FTService.class);
 
     private final ResourceRepository resourceRepository;
@@ -188,6 +192,7 @@ public class FTService {
     }
 
     public SummaryManifest collectAnnoPageInfo(String datasetId, String localId) throws AnnoPageDoesNotExistException {
+        Instant start = Instant.now();
         // 1) create SummaryManifest container for this EuropeanaID
         SummaryManifest apInfoSummaryManifest = new SummaryManifest(datasetId, localId);
 
@@ -196,6 +201,7 @@ public class FTService {
         if (annoPages == null || annoPages.size() == 0) {
             throw new AnnoPageDoesNotExistException(datasetId + "/" + localId);
         }
+        Instant originalFinished = Instant.now();
         for (AnnoPage ap : annoPages) {
             SummaryCanvas summaryCanvas = new SummaryCanvas(makeSummaryCanvasID(ap));
 
@@ -210,12 +216,17 @@ public class FTService {
             // add SummaryCanvas to SummaryManifest
             apInfoSummaryManifest.addCanvas(summaryCanvas);
         }
+        Instant translatedFinished = Instant.now();
+        LOG.info(FETCHED_SEPARATE,  Duration.between(start, originalFinished).toMillis(), Duration.between(originalFinished, translatedFinished).toMillis());
         return apInfoSummaryManifest;
     }
 
     public SummaryManifest collectApAndTranslationInfo(String datasetId, String localId) {
+        Instant start = Instant.now();
         SummaryManifest apInfoSummaryManifest = new SummaryManifest(datasetId, localId);
         List<Document> annoPagesAndTranslations = annoPageRepository.getAnnoPageAndTranslations(datasetId, localId);
+        Instant finish = Instant.now();
+        LOG.info(FETCHED_AGGREGATED,  Duration.between(start, finish).toMillis());
 
         for (Document apWt : annoPagesAndTranslations){
             SummaryCanvas summaryCanvas = new SummaryCanvas(makeSummaryCanvasID(datasetId, localId, apWt.get(PAGE_ID).toString()));
