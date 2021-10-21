@@ -113,21 +113,39 @@ public class FTService {
         return result;
     }
 
+    public AnnoPage fetchAnnoPageML(String datasetId, String localId, String pageId, List<AnnotationType> textGranValues,
+                                  String lang) throws AnnoPageDoesNotExistException {
+        AnnoPage result;
+        if (StringUtils.isEmpty(lang)) {
+            result = annoPageRepository.findOriginalByPageId(datasetId, localId, pageId, textGranValues);
+        } else {
+            result = annoPageRepository.getAnnoPageOrTranslationByLang(datasetId, localId, pageId, textGranValues, lang);
+        }
+
+        if (result == null) {
+            throw new AnnoPageDoesNotExistException(String.format("/%s/%s/annopage/%s", datasetId, localId, pageId),
+                                                    lang);
+        }
+        return result;
+    }
+
+
+
     /**
-     * Retrieve a cursor to AnnoPages with the provided datasetId, localId and imageIds. If the annotationType is
+     * Retrieve a cursor to AnnoPages with the provided datasetId, localId and targetIds. If the annotationType is
      * specified the returned AnnoPages will only contain annotations of that type. If annotationType is null or empty
      * then all annotations of that type will be returned. The cursor must be closed when the caller is done!
      *
      * @param datasetId ID of the dataset
      * @param localId   ID of the parent of the Annopage object
-     * @param imageIds  IDs of the images
+     * @param targetIds  IDs of the targets (images)
      * @param annoTypes type of annotations that should be retrieved, if null or empty all annotations of that annopage
      *                  will be retrieved
      * @return MorphiaCursor containing AnnoPage entries.
      */
-    public MorphiaCursor<AnnoPage> fetchAnnoPageFromImageId(String datasetId, String localId, List<String> imageIds,
+    public MorphiaCursor<AnnoPage> fetchAnnoPageFromTargetId(String datasetId, String localId, List<String> targetIds,
         List<AnnotationType> annoTypes) {
-        return annoPageRepository.findByImageId(datasetId, localId, imageIds, annoTypes);
+        return annoPageRepository.findByTargetId(datasetId, localId, targetIds, annoTypes);
     }
 
 
@@ -191,42 +209,12 @@ public class FTService {
         return annoPage;
     }
 
-    public SummaryManifest collectAnnoPageInfo(String datasetId, String localId) throws AnnoPageDoesNotExistException {
-        Instant start = Instant.now();
-        // 1) create SummaryManifest container for this EuropeanaID
-        SummaryManifest apInfoSummaryManifest = new SummaryManifest(datasetId, localId);
-
-        // 2) find all original AnnoPages and create a SummaryCanvas for each
-        List<AnnoPage> annoPages = annoPageRepository.findOrigPages(datasetId, localId);
-        if (annoPages == null || annoPages.size() == 0) {
-            throw new AnnoPageDoesNotExistException(datasetId + "/" + localId);
-        }
-        Instant originalFinished = Instant.now();
-        for (AnnoPage ap : annoPages) {
-            SummaryCanvas summaryCanvas = new SummaryCanvas(makeSummaryCanvasID(ap));
-
-            // add original SummaryAnnoPage to the SummaryCanvas
-            summaryCanvas.addAnnotation(new SummaryAnnoPage(makeLangAwareAnnoPageID(ap), ap.getLang()));
-            summaryCanvas.setOriginalLanguage(ap.getLang());
-
-            // add translated AnnotationLangPages (if any) to the SummaryCanvas
-            for (TranslationAnnoPage tap : annoPageRepository.findTranslatedPages(datasetId, localId, ap.getPgId())) {
-                summaryCanvas.addAnnotation(new SummaryAnnoPage(makeLangAwareAnnoPageID(tap), tap.getLang()));
-            }
-            // add SummaryCanvas to SummaryManifest
-            apInfoSummaryManifest.addCanvas(summaryCanvas);
-        }
-        Instant translatedFinished = Instant.now();
-        LOG.info(FETCHED_SEPARATE,  Duration.between(start, originalFinished).toMillis(), Duration.between(originalFinished, translatedFinished).toMillis());
-        return apInfoSummaryManifest;
-    }
-
     public SummaryManifest collectApAndTranslationInfo(String datasetId, String localId) {
         Instant start = Instant.now();
         SummaryManifest apInfoSummaryManifest = new SummaryManifest(datasetId, localId);
         List<Document> annoPagesAndTranslations = annoPageRepository.getAnnoPageAndTranslations(datasetId, localId);
         Instant finish = Instant.now();
-        LOG.info(FETCHED_AGGREGATED,  Duration.between(start, finish).toMillis());
+        LOG.debug(FETCHED_AGGREGATED,  Duration.between(start, finish).toMillis());
 
         for (Document apWt : annoPagesAndTranslations){
             SummaryCanvas summaryCanvas = new SummaryCanvas(makeSummaryCanvasID(datasetId, localId, apWt.get(PAGE_ID).toString()));

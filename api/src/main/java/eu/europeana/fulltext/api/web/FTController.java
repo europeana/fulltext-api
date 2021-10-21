@@ -55,9 +55,6 @@ public class FTController {
 
     private static final Logger LOG = LogManager.getLogger(FTController.class);
 
-    // true: use aggregated summary query
-    private static final boolean USE_AGGREGATION = false;
-
     private FTService fts;
 
     public FTController(FTService ftService) {
@@ -95,14 +92,8 @@ public class FTController {
             return cached;
         }
         HttpHeaders headers = CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
-        SummaryManifest apInfo;
-        if (USE_AGGREGATION){
-            LOG.info("Use aggregated summary query");
-            apInfo = fts.collectApAndTranslationInfo(datasetId, localId);
-        } else {
-            LOG.info("Use regular summary query");
-            apInfo = fts.collectAnnoPageInfo(datasetId, localId);
-        }
+        SummaryManifest apInfo = fts.collectApAndTranslationInfo(datasetId, localId);
+
         return new ResponseEntity<>(fts.serialise(apInfo), headers, HttpStatus.OK);
     }
 
@@ -180,7 +171,8 @@ public class FTController {
 
         List<AnnotationType> textGranValues = ControllerUtils.validateTextGranularity(textGranularity,
             ALLOWED_ANNOTATION_TYPES);
-        AnnoPage annoPage = fts.fetchAnnoPage(datasetId, localId, pageId, textGranValues, lang);
+//        AnnoPage annoPage = fts.fetchAnnoPage(datasetId, localId, pageId, textGranValues, lang);
+        AnnoPage annoPage = fts.fetchAnnoPageML(datasetId, localId, pageId, textGranValues, lang);
         ZonedDateTime modified = CacheUtils.dateToZonedUTC(annoPage.getModified());
         String eTag = generateETag(datasetId + localId + pageId,
             modified,

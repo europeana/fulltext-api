@@ -25,32 +25,40 @@ public final class MorphiaUtils {
     // Collection field names
     public static final class Fields {
 
-        public static final String DOC_ID      = "_id";
-        public static final String DATASET_ID  = "dsId";
-        public static final String LOCAL_ID    = "lcId";
-        public static final String PAGE_ID     = "pgId";
-        public static final String IMAGE_ID    = "tgtId";
-        public static final String LANGUAGE    = "lang";
-        public static final String CLASSNAME   = "className";
-        public static final String ANNOTATIONS = "ans";
-        public static final String RESOURCE    = "res";
-        public static final String MODIFIED    = "modified";
+        public static final String ANNOTATION   = "annotation";
+        public static final String ANNOTATIONS  = "ans";
+        public static final String CLASSNAME    = "className";
+        public static final String DATASET_ID   = "dsId";
+        public static final String DOC_ID       = "_id";
+        public static final String LANGUAGE     = "lang";
+        public static final String LOCAL_ID     = "lcId";
+        public static final String MODIFIED     = "modified";
+        public static final String PAGE_ID      = "pgId";
+        public static final String RESOURCE     = "res";
+        public static final String TARGET_ID    = "tgtId";
+        public static final String TRANSLATIONS = "translations";
 
         //Mongo Fields
-        public static final String MONGO_MATCH      = "$match";
-        public static final String MONGO_PROJECT    = "$project";
-        public static final String MONGO_EXPRESSION = "$expr";
-        public static final String MONGO_AND        = "$and";
-        public static final String MONGO_EQUALS     = "$eq";
-        public static final String MONGO_LOOKUP     = "$lookup";
-        public static final String MONGO_FROM       = "from";
-        public static final String MONGO_LET        = "let";
-        public static final String MONGO_AS         = "as";
-        public static final String MONGO_PIPELINE   = "pipeline";
-        public static final String MONGO_DATASET_ID = "$" + DATASET_ID;
-        public static final String MONGO_LOCAL_ID   = "$" + LOCAL_ID;
-        public static final String MONGO_PAGE_ID    = "$" + PAGE_ID;
-        public static final String TRANSLATIONS     = "translations";
+        public static final String MONGO_AND         = "$and";
+        public static final String MONGO_ANNOTATIONS = "$" + ANNOTATIONS;
+        public static final String MONGO_AS          = "as";
+        public static final String MONGO_COLLECTION  = "coll";
+        public static final String MONGO_CONDITION   = "cond";
+        public static final String MONGO_DATASET_ID  = "$" + DATASET_ID;
+        public static final String MONGO_EQUALS      = "$eq";
+        public static final String MONGO_EXPRESSION  = "$expr";
+        public static final String MONGO_FILTER      = "$filter";
+        public static final String MONGO_FROM        = "from";
+        public static final String MONGO_IN          = "$in";
+        public static final String MONGO_INPUT       = "input";
+        public static final String MONGO_LET         = "let";
+        public static final String MONGO_LOCAL_ID    = "$" + LOCAL_ID;
+        public static final String MONGO_LOOKUP      = "$lookup";
+        public static final String MONGO_MATCH       = "$match";
+        public static final String MONGO_PAGE_ID     = "$" + PAGE_ID;
+        public static final String MONGO_PIPELINE    = "pipeline";
+        public static final String MONGO_PROJECT     = "$project";
+        public static final String MONGO_UNIONWITH   = "$unionWith";
 
         public static final String ANNOTATIONS_DCTYPE = ANNOTATIONS + ".dcType";
         public static final String ANNOTATIONS_ID     = ANNOTATIONS + ".anId";

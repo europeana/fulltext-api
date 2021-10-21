@@ -9,6 +9,8 @@ import dev.morphia.aggregation.experimental.stages.Projection;
 import dev.morphia.query.internal.MorphiaCursor;
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.entity.AnnoPage;
+import eu.europeana.fulltext.entity.Annotation;
+import eu.europeana.fulltext.entity.Resource;
 import eu.europeana.fulltext.entity.TranslationAnnoPage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -299,21 +301,21 @@ public class AnnoPageRepository {
      * Returns a {@link MorphiaCursor} that can be iterated on to obtain matching AnnoPages. The cursor must be closed
      * after iteration is completed.
      * <p>
-     * The Cursor returned by this method must be closed
+     * The cursor returned by this method must be closed
      *
      * @param datasetId ID of the dataset
      * @param localId   ID of the parent of the Annopage object
-     * @param imageIds  ID of the image
-     * @param annoTypes type of annotations that should be retrieve, if null or empty all annotations of that annopage
+     * @param targetIds IDs of the target(s) / image(s)
+     * @param annoTypes type of annotations that should be retrieved, if null or empty all annotations of that annopage
      *                  will be retrieved
      * @return MorphiaCursor containing AnnoPage entries.
      */
-    public MorphiaCursor<AnnoPage> findByImageId(
-        String datasetId, String localId, List<String> imageIds, List<AnnotationType> annoTypes) {
+    public MorphiaCursor<AnnoPage> findByTargetId(
+        String datasetId, String localId, List<String> targetIds, List<AnnotationType> annoTypes) {
         Aggregation<AnnoPage> query = datastore.aggregate(AnnoPage.class)
             .match(eq(DATASET_ID, datasetId),
                 eq(LOCAL_ID, localId),
-                in(IMAGE_ID, imageIds));
+                in(TARGET_ID, targetIds));
         query = filterTextGranularity(query, annoTypes);
         return query.execute(AnnoPage.class);
     }
@@ -344,7 +346,7 @@ public class AnnoPageRepository {
             .include(PAGE_ID)
             .include(RESOURCE)
             .include(CLASSNAME)
-            .include(IMAGE_ID)
+            .include(TARGET_ID)
             .include(MODIFIED)
             .include(ANNOTATIONS,
                 filter(field(ANNOTATIONS),
@@ -397,6 +399,54 @@ public class AnnoPageRepository {
         LOG.info("Total Time taken by the method {} ms ", (System.currentTimeMillis() - start));
     }
 
+
+    public AnnoPage getAnnoPageOrTranslationByLang(
+        String dsId,
+        String lcId,
+        String pgId,
+        List<AnnotationType> annoTypes,
+        String lang) {
+
+        LOG.info("getAnnoPageOrTranslationByLang 1");
+        List<Document>            annoPageOrTranslationByLang = new ArrayList<>();
+        MongoDatabase             database                    = datastore.getDatabase();
+        MongoCollection<Document> collection                  = database.getCollection("AnnoPage");
+        LOG.info("getAnnoPageOrTranslationByLang 2");
+
+        if (annoTypes.isEmpty()) {
+            for (Document apWt : collection.aggregate(Arrays.asList(
+                createMatchFilter(dsId, lcId, pgId, lang),
+                getUnionPipeline(dsId, lcId, pgId, lang)))) {
+                LOG.info("getAnnoPageOrTranslationByLang for loop");
+                annoPageOrTranslationByLang.add(apWt);
+            }
+        } else {
+            for (Document apWt : collection.aggregate(Arrays.asList(
+                createMatchFilter(dsId, lcId, pgId, lang),
+                getUnionPipeline(dsId, lcId, pgId, lang),
+                getFilteredProjection(annoTypes)))) {
+                LOG.info("getAnnoPageOrTranslationByLang for loop");
+                annoPageOrTranslationByLang.add(apWt);
+            }
+        }
+        return firstDocumentToAnnoPage(annoPageOrTranslationByLang, dsId, lcId, pgId, lang);
+    }
+
+    private AnnoPage firstDocumentToAnnoPage(List<Document> documents, String dsId, String lcId, String pgId, String lang){
+        LOG.info("firstDocumentToAnnoPage 1");
+        Document apDoc = documents.get(0);
+        AnnoPage annoPage = new AnnoPage(dsId,
+                                         lcId,
+                                         pgId,
+                                         apDoc.get(TARGET_ID).toString(),
+                                         lang,
+                                         (Resource) apDoc.get(RESOURCE));
+        LOG.info("firstDocumentToAnnoPage 2");
+        annoPage.setAns((List<Annotation>) apDoc.get(ANNOTATIONS));
+        return annoPage;
+    }
+
+
     public List<Document> getAnnoPageAndTranslations(String dsId, String lcId) {
         List<Document> annoPagesWithTranslations = new ArrayList<>();
 
@@ -426,24 +476,17 @@ public class AnnoPageRepository {
         return annoPagesWithTranslations;
     }
 
-    /**
-     * Creates a $match filter for datasetId and localId
-     *
-     * @param dataSetId
-     * @param localId
-     * @return
-     */
     private Document createMatchFilter(String dataSetId, String localId) {
         return new Document(MONGO_MATCH,
             new Document(DATASET_ID, dataSetId).append(LOCAL_ID, localId));
     }
 
-    /**
-     * Creates  the $lookup filter for the aggregation pipeline from 'TranslationAnnoPage' collection
-     *
-     * @param projectionFields
-     * @return
-     */
+    private Document createMatchFilter(String dataSetId, String localId, String pageId, String lang) {
+        LOG.info("createMatchFilter 1");
+        return new Document(MONGO_MATCH,
+            new Document(DATASET_ID, dataSetId).append(LOCAL_ID, localId).append(PAGE_ID, pageId).append(LANGUAGE, lang));
+    }
+
     private Document getLookupPipeline(Map<String, Boolean> projectionFields) {
         return new Document(MONGO_LOOKUP,
             new Document(MONGO_FROM, "TranslationAnnoPage")
@@ -452,6 +495,18 @@ public class AnnoPageRepository {
                     .append("origPgId", MONGO_PAGE_ID))
                 .append(MONGO_PIPELINE, getPipeLineForFromCollection(projectionFields))
                 .append(MONGO_AS, TRANSLATIONS));
+    }
+
+    private Document getUnionPipeline(String dataSetId, String localId, String pageId, String lang) {
+        LOG.info("getUnionPipeline 1");
+        return new Document(MONGO_UNIONWITH,
+            new Document(MONGO_COLLECTION, "TranslationAnnoPage")
+                .append(MONGO_PIPELINE, Arrays.asList(new Document(MONGO_MATCH,
+                    new Document(MONGO_EXPRESSION,
+                        new Document(MONGO_AND, Arrays.asList(new Document(MONGO_EQUALS, Arrays.asList(DATASET_ID, dataSetId)),
+                            new Document(MONGO_EQUALS, Arrays.asList(LOCAL_ID, localId)),
+                            new Document(MONGO_EQUALS, Arrays.asList(PAGE_ID, pageId)),
+                            new Document(MONGO_EQUALS, Arrays.asList(LANGUAGE, lang)))))))));
     }
 
     private List<Document> getPipeLineForFromCollection(Map<String, Boolean> projectionFields) {
@@ -471,12 +526,29 @@ public class AnnoPageRepository {
         }
     }
 
-    /**
-     * Returns the Projection fields with inclusion and exclusion values
-     *
-     * @param projectionFields
-     * @return
-     */
+    private Document getFilteredProjection(List<AnnotationType> annoTypes){
+        LOG.info("getFilteredProjection 1");
+        // ans.dcType stored as first letter of text granularity value in uppercase. ie. WORD -> 'W'
+        List<String> dcTypes = annoTypes.stream()
+                                        .map(s -> String.valueOf(s.getAbbreviation()))
+                                        .collect(Collectors.toUnmodifiableList());
+
+        return new Document(MONGO_PROJECT,
+            new Document(DATASET_ID, 1L)
+                .append(LOCAL_ID, 1L)
+                .append(PAGE_ID, 1L)
+                .append(TARGET_ID, 1L)
+                .append(LANGUAGE, 1L)
+                .append(ANNOTATIONS,
+                    new Document(MONGO_FILTER,
+                        new Document(MONGO_INPUT, MONGO_ANNOTATIONS)
+                            .append(MONGO_AS, ANNOTATION)
+                            .append(MONGO_CONDITION,
+                                new Document(MONGO_IN, Arrays.asList("$$annotation.dcType", dcTypes)))))
+                .append(MODIFIED, 1L)
+                .append(RESOURCE, 1L));
+    }
+
     private Document getProjectionFields(Map<String, Boolean> projectionFields) {
         if (!projectionFields.isEmpty()) {
             Document d = new Document();
