@@ -354,98 +354,6 @@ public class AnnoPageRepository {
                         value(dcTypes))).as("annotation")));
     }
 
-    /**
-     * Creates a query which merges the AnnoPage with TranslationAnnoPage based on datasetId and localId
-     * <p>
-     * Query : db.getCollection("AnnoPage").aggregate( [{$match: { dsId:<dsId>, lcId :<lcId>}}, {$lookup: { from:
-     * "TranslationAnnoPage", let: { origDsId: "$dsId", origLcId: "$lcId", origPgId: "$pgId" }, pipeline: [ { $match: {
-     * $expr: { $and: [ { $eq: [ "$dsId",  "$$origDsId" ] }, { $eq: [ "$lcId",  "$$origLcId" ] }, { $eq: [ "$pgId",
-     * "$$origPgId" ] } ] } } }, { $project: { dsId: 1, lcid: 1, lang:1, modified: 1 } } ], as: "translations" }}])
-     *
-     * @param dsId
-     * @param lcId
-     */
-    public void testLookUpMerge(String dsId, String lcId) {
-
-        long start = System.currentTimeMillis();
-        MongoDatabase database = datastore.getDatabase();
-        MongoCollection<Document> collection = database.getCollection("AnnoPage");
-
-        Map<String, Boolean> projectionFields = new HashMap<>();
-        projectionFields.put(DATASET_ID, true);
-        projectionFields.put(LOCAL_ID, true);
-        projectionFields.put(PAGE_ID, true);
-        projectionFields.put(LANGUAGE, true);
-        projectionFields.put(MODIFIED, true);
-
-        MongoCursor<Document> cursor = collection.aggregate(
-                Arrays.asList(createMatchFilter(dsId, lcId),
-                    getLookupPipeline(projectionFields)))
-            .iterator();
-
-        LOG.info("Time taken to retrieve the documents {} ms",
-            (System.currentTimeMillis() - start));
-        if (cursor != null) {
-            while (cursor.hasNext()) {
-                Document object = cursor.next();
-                List<Document> translations = (List<Document>) object.get(TRANSLATIONS);
-                LOG.info("AnnoPage with dataset ID {} and LocalID {} contains {} Translations ",
-                    object.get(DATASET_ID),
-                    object.get(LOCAL_ID),
-                    translations.size());
-                LOG.info("Translations : {} ", translations);
-            }
-        }
-        LOG.info("Total Time taken by the method {} ms ", (System.currentTimeMillis() - start));
-    }
-
-
-    public AnnoPage getAnnoPageOrTranslationByLang(
-        String dsId,
-        String lcId,
-        String pgId,
-        List<AnnotationType> annoTypes,
-        String lang) {
-
-        LOG.info("getAnnoPageOrTranslationByLang 1");
-        List<Document>            annoPageOrTranslationByLang = new ArrayList<>();
-        MongoDatabase             database                    = datastore.getDatabase();
-        MongoCollection<Document> collection                  = database.getCollection("AnnoPage");
-        LOG.info("getAnnoPageOrTranslationByLang 2");
-
-        if (annoTypes.isEmpty()) {
-            for (Document apWt : collection.aggregate(Arrays.asList(
-                createMatchFilter(dsId, lcId, pgId, lang),
-                getUnionPipeline(dsId, lcId, pgId, lang)))) {
-                LOG.info("getAnnoPageOrTranslationByLang for loop");
-                annoPageOrTranslationByLang.add(apWt);
-            }
-        } else {
-            for (Document apWt : collection.aggregate(Arrays.asList(
-                createMatchFilter(dsId, lcId, pgId, lang),
-                getUnionPipeline(dsId, lcId, pgId, lang),
-                getFilteredProjection(annoTypes)))) {
-                LOG.info("getAnnoPageOrTranslationByLang for loop");
-                annoPageOrTranslationByLang.add(apWt);
-            }
-        }
-        return firstDocumentToAnnoPage(annoPageOrTranslationByLang, dsId, lcId, pgId, lang);
-    }
-
-    private AnnoPage firstDocumentToAnnoPage(List<Document> documents, String dsId, String lcId, String pgId, String lang){
-        LOG.info("firstDocumentToAnnoPage 1");
-        Document apDoc = documents.get(0);
-        AnnoPage annoPage = new AnnoPage(dsId,
-                                         lcId,
-                                         pgId,
-                                         apDoc.get(TARGET_ID).toString(),
-                                         lang,
-                                         (Resource) apDoc.get(RESOURCE));
-        LOG.info("firstDocumentToAnnoPage 2");
-        annoPage.setAns((List<Annotation>) apDoc.get(ANNOTATIONS));
-        return annoPage;
-    }
-
 
     public List<Document> getAnnoPageAndTranslations(String dsId, String lcId) {
         List<Document> annoPagesWithTranslations = new ArrayList<>();
@@ -481,12 +389,6 @@ public class AnnoPageRepository {
             new Document(DATASET_ID, dataSetId).append(LOCAL_ID, localId));
     }
 
-    private Document createMatchFilter(String dataSetId, String localId, String pageId, String lang) {
-        LOG.info("createMatchFilter 1");
-        return new Document(MONGO_MATCH,
-            new Document(DATASET_ID, dataSetId).append(LOCAL_ID, localId).append(PAGE_ID, pageId).append(LANGUAGE, lang));
-    }
-
     private Document getLookupPipeline(Map<String, Boolean> projectionFields) {
         return new Document(MONGO_LOOKUP,
             new Document(MONGO_FROM, "TranslationAnnoPage")
@@ -495,18 +397,6 @@ public class AnnoPageRepository {
                     .append("origPgId", MONGO_PAGE_ID))
                 .append(MONGO_PIPELINE, getPipeLineForFromCollection(projectionFields))
                 .append(MONGO_AS, TRANSLATIONS));
-    }
-
-    private Document getUnionPipeline(String dataSetId, String localId, String pageId, String lang) {
-        LOG.info("getUnionPipeline 1");
-        return new Document(MONGO_UNIONWITH,
-            new Document(MONGO_COLLECTION, "TranslationAnnoPage")
-                .append(MONGO_PIPELINE, Arrays.asList(new Document(MONGO_MATCH,
-                    new Document(MONGO_EXPRESSION,
-                        new Document(MONGO_AND, Arrays.asList(new Document(MONGO_EQUALS, Arrays.asList(DATASET_ID, dataSetId)),
-                            new Document(MONGO_EQUALS, Arrays.asList(LOCAL_ID, localId)),
-                            new Document(MONGO_EQUALS, Arrays.asList(PAGE_ID, pageId)),
-                            new Document(MONGO_EQUALS, Arrays.asList(LANGUAGE, lang)))))))));
     }
 
     private List<Document> getPipeLineForFromCollection(Map<String, Boolean> projectionFields) {
@@ -524,29 +414,6 @@ public class AnnoPageRepository {
         } else {
             return Arrays.asList(matchExprePipeline);
         }
-    }
-
-    private Document getFilteredProjection(List<AnnotationType> annoTypes){
-        LOG.info("getFilteredProjection 1");
-        // ans.dcType stored as first letter of text granularity value in uppercase. ie. WORD -> 'W'
-        List<String> dcTypes = annoTypes.stream()
-                                        .map(s -> String.valueOf(s.getAbbreviation()))
-                                        .collect(Collectors.toUnmodifiableList());
-
-        return new Document(MONGO_PROJECT,
-            new Document(DATASET_ID, 1L)
-                .append(LOCAL_ID, 1L)
-                .append(PAGE_ID, 1L)
-                .append(TARGET_ID, 1L)
-                .append(LANGUAGE, 1L)
-                .append(ANNOTATIONS,
-                    new Document(MONGO_FILTER,
-                        new Document(MONGO_INPUT, MONGO_ANNOTATIONS)
-                            .append(MONGO_AS, ANNOTATION)
-                            .append(MONGO_CONDITION,
-                                new Document(MONGO_IN, Arrays.asList("$$annotation.dcType", dcTypes)))))
-                .append(MODIFIED, 1L)
-                .append(RESOURCE, 1L));
     }
 
     private Document getProjectionFields(Map<String, Boolean> projectionFields) {

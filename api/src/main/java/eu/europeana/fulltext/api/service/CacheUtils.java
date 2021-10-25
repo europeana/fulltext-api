@@ -35,6 +35,7 @@ public final class CacheUtils {
     private static final String  ALLOWHEADERS    = "If-Match, If-None-Match, If-Modified-Since";
     private static final String  EXPOSEHEADERS   = "Allow, ETag, Last-Modified, Link";
     private static final String  ACCEPT          = "Accept";
+    private static final String  MAX_AGE_600     = "600";
 
     private CacheUtils() {
         // empty constructor to prevent initialization
@@ -142,7 +143,6 @@ public final class CacheUtils {
             headers.add("Access-Control-Allow-Methods", ALLOWED);
             headers.add("Access-Control-Allow-Headers", ALLOWHEADERS);
             headers.add("Access-Control-Expose-Headers", EXPOSEHEADERS);
-            headers.add("Access-Control-Max-Age", "600");
         }
         if (StringUtils.isNotBlank(eTag)) {
             headers.add("ETag", eTag);
@@ -150,6 +150,7 @@ public final class CacheUtils {
         if (StringUtils.isNotBlank(modified)) {
             headers.add("Last-Modified", modified);
         }
+        headers.add("Access-Control-Max-Age", MAX_AGE_600);
         headers.add("Allow", ALLOWED);
         headers.add("Vary", ACCEPT);
         return headers;

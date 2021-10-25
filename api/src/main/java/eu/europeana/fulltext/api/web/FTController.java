@@ -55,7 +55,7 @@ public class FTController {
 
     private static final Logger LOG = LogManager.getLogger(FTController.class);
 
-    private FTService fts;
+    private final FTService fts;
 
     public FTController(FTService ftService) {
         this.fts = ftService;
@@ -171,8 +171,7 @@ public class FTController {
 
         List<AnnotationType> textGranValues = ControllerUtils.validateTextGranularity(textGranularity,
             ALLOWED_ANNOTATION_TYPES);
-//        AnnoPage annoPage = fts.fetchAnnoPage(datasetId, localId, pageId, textGranValues, lang);
-        AnnoPage annoPage = fts.fetchAnnoPageML(datasetId, localId, pageId, textGranValues, lang);
+        AnnoPage annoPage = fts.fetchAnnoPage(datasetId, localId, pageId, textGranValues, lang);
         ZonedDateTime modified = CacheUtils.dateToZonedUTC(annoPage.getModified());
         String eTag = generateETag(datasetId + localId + pageId,
             modified,

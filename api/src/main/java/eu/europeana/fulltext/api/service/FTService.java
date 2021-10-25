@@ -90,8 +90,6 @@ public class FTService {
         AnnoPage result;
         if (StringUtils.isEmpty(lang)) {
             result = annoPageRepository.findOriginalByPageId(datasetId, localId, pageId, textGranValues);
-            // testing
-            annoPageRepository.testLookUpMerge(datasetId, localId);
             if (result == null) {
                 throw new AnnoPageDoesNotExistException(
                     String.format("/%s/%s/annopage/%s", datasetId, localId, pageId));
@@ -112,23 +110,6 @@ public class FTService {
         }
         return result;
     }
-
-    public AnnoPage fetchAnnoPageML(String datasetId, String localId, String pageId, List<AnnotationType> textGranValues,
-                                  String lang) throws AnnoPageDoesNotExistException {
-        AnnoPage result;
-        if (StringUtils.isEmpty(lang)) {
-            result = annoPageRepository.findOriginalByPageId(datasetId, localId, pageId, textGranValues);
-        } else {
-            result = annoPageRepository.getAnnoPageOrTranslationByLang(datasetId, localId, pageId, textGranValues, lang);
-        }
-
-        if (result == null) {
-            throw new AnnoPageDoesNotExistException(String.format("/%s/%s/annopage/%s", datasetId, localId, pageId),
-                                                    lang);
-        }
-        return result;
-    }
-
 
 
     /**
@@ -240,7 +221,7 @@ public class FTService {
         return apInfoSummaryManifest;
     }
 
-
+    @Deprecated
     private String makeSummaryCanvasID(AnnoPage ap) {
         return ftSettings.getAnnoPageBaseUrl() + ap.getDsId() + "/" + ap.getLcId() + FTDefinitions.CANVAS_PATH + "/"
             + ap.getPgId();
@@ -250,6 +231,7 @@ public class FTService {
         return ftSettings.getAnnoPageBaseUrl() + dsId + "/" + lcId + FTDefinitions.CANVAS_PATH + "/" + pgId;
     }
 
+    @Deprecated
     private String makeLangAwareAnnoPageID(AnnoPage ap) {
         StringBuilder result = new StringBuilder(100);
         result.append(ftSettings.getAnnoPageBaseUrl())

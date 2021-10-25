@@ -60,11 +60,13 @@ public class FTControllerTest {
     private static final String HEADER_LASTMODIFIED = "Last-Modified";
     private static final String HEADER_ALLOW = "Allow";
     private static final String HEADER_CACHECONTROL = "Cache-Control";
+    private static final String HEADER_MAX_AGE = "Access-Control-Max-Age";
     private static final String HEADER_VARY = "Vary";
     private static final String HEADER_CONTENTTYPE = "Content-Type";
 
     private static final String VALUE_ALLOW = "GET, HEAD";
     private static final String VALUE_CACHECONTROL = "no-cache";
+    private static final String VALUE_MAX_AGE = "600";
     private static final String VALUE_VARY = "Accept";
 
     private static final String HEADER_IFNONEMATCH = "If-None-Match";
@@ -360,7 +362,7 @@ public class FTControllerTest {
                 .andExpect(header().string(HEADER_ETAG, containsString(v2ETag)))
                 .andExpect(header().string(HEADER_LASTMODIFIED, containsString(LASTMODIFIED_GMT)))
                 .andExpect(header().string(HEADER_ALLOW, containsString(VALUE_ALLOW)))
-                .andExpect(header().string(HEADER_CACHECONTROL, containsString(VALUE_CACHECONTROL)))
+                .andExpect(header().string(HEADER_MAX_AGE, containsString(VALUE_MAX_AGE)))
                 .andExpect(header().stringValues(HEADER_VARY, hasItems(containsString(VALUE_VARY))))
                 .andExpect(content().string(""))
                 .andExpect(status().isNotModified())
@@ -391,7 +393,7 @@ public class FTControllerTest {
                 .andExpect(header().string(HEADER_ETAG, containsString(v3ETag)))
                 .andExpect(header().string(HEADER_LASTMODIFIED, containsString(LASTMODIFIED_GMT)))
                 .andExpect(header().string(HEADER_ALLOW, containsString(VALUE_ALLOW)))
-                .andExpect(header().string(HEADER_CACHECONTROL, containsString(VALUE_CACHECONTROL)))
+                .andExpect(header().string(HEADER_MAX_AGE, containsString(VALUE_MAX_AGE)))
                 .andExpect(header().stringValues(HEADER_VARY, hasItems(containsString(VALUE_VARY))))
                 .andExpect(content().json(JSONLD_ANP_V3_OUTPUT))
                 .andExpect(status().isOk())
@@ -419,7 +421,7 @@ public class FTControllerTest {
                 .andExpect(header().string(HEADER_ETAG, containsString(v2ETag)))
                 .andExpect(header().string(HEADER_LASTMODIFIED, containsString(LASTMODIFIED_GMT)))
                 .andExpect(header().string(HEADER_ALLOW, containsString(VALUE_ALLOW)))
-                .andExpect(header().string(HEADER_CACHECONTROL, containsString(VALUE_CACHECONTROL)))
+                .andExpect(header().string(HEADER_MAX_AGE, containsString(VALUE_MAX_AGE)))
                 .andExpect(header().stringValues(HEADER_VARY, hasItems(containsString(VALUE_VARY))))
                 .andExpect(content().json(JSONLD_ANP_V2_OUTPUT))
                 .andExpect(status().isOk())
@@ -446,7 +448,7 @@ public class FTControllerTest {
                 .andExpect(header().string(HEADER_ETAG, nullValue()))
                 .andExpect(header().string(HEADER_LASTMODIFIED, nullValue()))
                 .andExpect(header().string(HEADER_ALLOW, nullValue()))
-                .andExpect(header().string(HEADER_CACHECONTROL, nullValue()))
+                .andExpect(header().string(HEADER_MAX_AGE, nullValue()))
                 .andExpect(defaultVaryValues())
                 .andExpect(content().string(""))
                 .andExpect(status().isPreconditionFailed())
@@ -466,7 +468,7 @@ public class FTControllerTest {
                 .andExpect(header().string(HEADER_ETAG, containsString(dikkertjeDapV2ETag)))
                 .andExpect(header().string(HEADER_LASTMODIFIED, containsString(LASTMODIFIED_GMT)))
                 .andExpect(header().string(HEADER_ALLOW, containsString(VALUE_ALLOW)))
-                .andExpect(header().string(HEADER_CACHECONTROL, containsString(VALUE_CACHECONTROL)))
+                .andExpect(header().string(HEADER_MAX_AGE, containsString(VALUE_MAX_AGE)))
                 .andExpect(header().stringValues(HEADER_VARY, hasItems(containsString(VALUE_VARY))))
                 .andExpect(content().string(""))
                 .andExpect(status().isNotModified())
@@ -497,7 +499,7 @@ public class FTControllerTest {
                 .andExpect(header().string(HEADER_ETAG, containsString(littleSillyPetV3ETag)))
                 .andExpect(header().string(HEADER_LASTMODIFIED, containsString(LASTMODIFIED_GMT)))
                 .andExpect(header().string(HEADER_ALLOW, containsString(VALUE_ALLOW)))
-                .andExpect(header().string(HEADER_CACHECONTROL, containsString(VALUE_CACHECONTROL)))
+                .andExpect(header().string(HEADER_MAX_AGE, containsString(VALUE_MAX_AGE)))
                 .andExpect(header().stringValues(HEADER_VARY, hasItems(containsString(VALUE_VARY))))
                 .andExpect(content().json(JSONLD_ANN_V3_1_OUTPUT))
                 .andExpect(status().isOk())
@@ -517,7 +519,7 @@ public class FTControllerTest {
                 .andExpect(header().string(HEADER_ETAG, containsString(dikkertjeDapV2ETag)))
                 .andExpect(header().string(HEADER_LASTMODIFIED, containsString(LASTMODIFIED_GMT)))
                 .andExpect(header().string(HEADER_ALLOW, containsString(VALUE_ALLOW)))
-                .andExpect(header().string(HEADER_CACHECONTROL, containsString(VALUE_CACHECONTROL)))
+                .andExpect(header().string(HEADER_MAX_AGE, containsString(VALUE_MAX_AGE)))
                 .andExpect(header().stringValues(HEADER_VARY, hasItems(containsString(VALUE_VARY))))
                 .andExpect(content().json(JSONLD_ANN_V2_1_OUTPUT))
                 .andExpect(status().isOk())
@@ -546,7 +548,6 @@ public class FTControllerTest {
                 .andExpect(header().string(HEADER_ETAG, nullValue()))
                 .andExpect(header().string(HEADER_LASTMODIFIED, nullValue()))
                 .andExpect(header().string(HEADER_ALLOW, nullValue()))
-                .andExpect(header().string(HEADER_CACHECONTROL, nullValue()))
                 .andExpect(defaultVaryValues())
                 .andExpect(content().string(""))
                 .andExpect(status().isPreconditionFailed())
@@ -599,7 +600,7 @@ public class FTControllerTest {
                 .andExpect(header().string(HEADER_ETAG, containsString(dieKuckeBackenWollteETag)))
                 .andExpect(header().string(HEADER_LASTMODIFIED, containsString(BEGINNINGOFTIME)))
                 .andExpect(header().string(HEADER_ALLOW, containsString(VALUE_ALLOW)))
-                .andExpect(header().string(HEADER_CACHECONTROL, containsString(VALUE_CACHECONTROL)))
+                .andExpect(header().string(HEADER_MAX_AGE, containsString(VALUE_MAX_AGE)))
                 .andExpect(header().stringValues(HEADER_VARY, hasItems(containsString(VALUE_VARY))))
                 .andExpect(content().string(""))
                 .andExpect(status().isNotModified())
@@ -629,7 +630,7 @@ public class FTControllerTest {
                 .andExpect(header().string(HEADER_ETAG, containsString(dieKuckeBackenWollteETag)))
                 .andExpect(header().string(HEADER_LASTMODIFIED, containsString(BEGINNINGOFTIME)))
                 .andExpect(header().string(HEADER_ALLOW, containsString(VALUE_ALLOW)))
-                .andExpect(header().string(HEADER_CACHECONTROL, containsString(VALUE_CACHECONTROL)))
+                .andExpect(header().string(HEADER_MAX_AGE, containsString(VALUE_MAX_AGE)))
                 .andExpect(header().stringValues(HEADER_VARY, hasItems(containsString(VALUE_VARY))))
                 .andExpect(content().json(JSON_RES_1_OUTPUT))
                 .andExpect(status().isOk())
@@ -659,7 +660,7 @@ public class FTControllerTest {
                 .andExpect(header().string(HEADER_ETAG, containsString(dieKuckeBackenWollteETag)))
                 .andExpect(header().string(HEADER_LASTMODIFIED, containsString(BEGINNINGOFTIME)))
                 .andExpect(header().string(HEADER_ALLOW, containsString(VALUE_ALLOW)))
-                .andExpect(header().string(HEADER_CACHECONTROL, containsString(VALUE_CACHECONTROL)))
+                .andExpect(header().string(HEADER_MAX_AGE, containsString(VALUE_MAX_AGE)))
                 .andExpect(header().stringValues(HEADER_VARY, hasItems(containsString(VALUE_VARY))))
                 .andExpect(content().json(JSON_RES_1_OUTPUT))
                 .andExpect(status().isOk())
@@ -686,7 +687,6 @@ public class FTControllerTest {
                 .andExpect(header().string(HEADER_ETAG, nullValue()))
                 .andExpect(header().string(HEADER_LASTMODIFIED, nullValue()))
                 .andExpect(header().string(HEADER_ALLOW, nullValue()))
-                .andExpect(header().string(HEADER_CACHECONTROL, nullValue()))
                 .andExpect(defaultVaryValues())
                 .andExpect(content().string(""))
                 .andExpect(status().isPreconditionFailed())
@@ -706,7 +706,7 @@ public class FTControllerTest {
                 .andExpect(header().string(HEADER_ETAG, containsString(dieKuckeBackenWollteETag)))
                 .andExpect(header().string(HEADER_LASTMODIFIED, containsString(BEGINNINGOFTIME)))
                 .andExpect(header().string(HEADER_ALLOW, containsString(VALUE_ALLOW)))
-                .andExpect(header().string(HEADER_CACHECONTROL, containsString(VALUE_CACHECONTROL)))
+                .andExpect(header().string(HEADER_MAX_AGE, containsString(VALUE_MAX_AGE)))
                 .andExpect(header().stringValues(HEADER_VARY, hasItems(containsString(VALUE_VARY))))
                 .andExpect(content().json(JSON_RES_1_OUTPUT))
                 .andExpect(status().isOk())
@@ -719,7 +719,6 @@ public class FTControllerTest {
                 .andExpect(header().string(HEADER_ETAG, nullValue()))
                 .andExpect(header().string(HEADER_LASTMODIFIED, nullValue()))
                 .andExpect(header().string(HEADER_ALLOW, nullValue()))
-                .andExpect(header().string(HEADER_CACHECONTROL, nullValue()))
                 .andExpect(defaultVaryValues())
                 .andExpect(content().string(""))
                 .andExpect(status().isNotModified())
