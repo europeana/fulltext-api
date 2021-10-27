@@ -57,7 +57,7 @@ public final class EDM2IIIFMapping {
 
     static AnnotationPageV2 getAnnotationPageV2(AnnoPage annoPage, boolean derefResource){
         AnnotationPageV2 annPage = new AnnotationPageV2(getAnnoPageIdUrl(annoPage));
-        annPage.setLang(annoPage.getLang());
+        annPage.setLanguage(annoPage.getLang());
         annPage.setResources(getAnnotationV2Array(annoPage, derefResource));
         return annPage;
     }
@@ -115,7 +115,7 @@ public final class EDM2IIIFMapping {
 
     static AnnotationPageV3 getAnnotationPageV3(AnnoPage annoPage, boolean derefResource){
         AnnotationPageV3 annPage = new AnnotationPageV3(getAnnoPageIdUrl(annoPage));
-        annPage.setLang(annoPage.getLang());
+        annPage.setLanguage(annoPage.getLang());
         annPage.setItems(getAnnotationV3Array(annoPage, derefResource));
         return annPage;
     }
