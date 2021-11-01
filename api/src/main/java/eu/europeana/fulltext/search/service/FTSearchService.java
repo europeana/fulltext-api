@@ -97,7 +97,7 @@ public class FTSearchService {
                 .collect(Collectors.groupingBy(SolrHit::getImageId));
 
         long start = System.currentTimeMillis();
-        try (MorphiaCursor<AnnoPage> annoPageCursor = fulltextRepo.fetchAnnoPageFromImageId(europeanaId.getDatasetId(),
+        try (MorphiaCursor<AnnoPage> annoPageCursor = fulltextRepo.fetchAnnoPageFromTargetId(europeanaId.getDatasetId(),
                 europeanaId.getLocalId(), new ArrayList<>(solrHitsByImageId.keySet()), annoTypes)) {
             if (annoPageCursor == null || !annoPageCursor.hasNext()) {
                 LOG.debug("No results from Mongo");

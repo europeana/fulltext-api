@@ -35,30 +35,27 @@ import static eu.europeana.fulltext.api.service.CacheUtils.generateSimpleETag;
 /**
  * Rest controller that handles fulltext annotation page (annopage)- annotation- & resource requests
  *
- * @author Lúthien
- * Created on 27-02-2018
- * Note that the eTag for the Fulltext response is created from a concatenation of:
- * - datasetId + localId + pageId / AnnoId;
- * - modified date (toString()) of the fetched document (not for the resource)
- * - the requested IIIF version (2 or 3) (not for the resource); and the
- * - Fulltext API version as defined in the pom.xml
+ * @author Lúthien Created on 27-02-2018 Note that the eTag for the Fulltext response is created from a concatenation
+ * of: - datasetId + localId + pageId / AnnoId; - modified date (toString()) of the fetched document (not for the
+ * resource) - the requested IIIF version (2 or 3) (not for the resource); and the - Fulltext API version as defined in
+ * the pom.xml
  */
 @RestController
 @Api(tags = {"Full-text item"},
-     description = "Retrieve a page with annotations, an individual annotation or a full-text")
+    description = "Retrieve a page with annotations, an individual annotation or a full-text")
 @RequestMapping("/presentation")
 public class FTController {
 
     private static final Set<AnnotationType> ALLOWED_ANNOTATION_TYPES = EnumSet.of(AnnotationType.PAGE,
-                                                                                   AnnotationType.BLOCK,
-                                                                                   AnnotationType.LINE,
-                                                                                   AnnotationType.WORD,
-                                                                                   AnnotationType.MEDIA,
-                                                                                   AnnotationType.CAPTION);
+        AnnotationType.BLOCK,
+        AnnotationType.LINE,
+        AnnotationType.WORD,
+        AnnotationType.MEDIA,
+        AnnotationType.CAPTION);
 
     private static final Logger LOG = LogManager.getLogger(FTController.class);
 
-    private FTService fts;
+    private final FTService fts;
 
     public FTController(FTService ftService) {
         this.fts = ftService;
@@ -75,25 +72,28 @@ public class FTController {
     @ApiOperation(value = "Lists available Annotation Pages for a given EuropeanaID (dataset + localID), including translations")
     @GetMapping(value = "/{datasetId}/{localId}/annopage", headers = ACCEPT_JSON)
     public ResponseEntity<String> annoPageInfo(
-            @PathVariable String datasetId,
-            @PathVariable String localId,
-            HttpServletRequest request) throws EuropeanaApiException {
-       return getAnnoPageInfo(datasetId, localId, request);
+        @PathVariable String datasetId,
+        @PathVariable String localId,
+        HttpServletRequest request) throws EuropeanaApiException {
+        return getAnnoPageInfo(datasetId, localId, request);
     }
 
-    private ResponseEntity<String> getAnnoPageInfo(String datasetId, String localId, HttpServletRequest request) throws EuropeanaApiException {
+    private ResponseEntity<String> getAnnoPageInfo(String datasetId, String localId, HttpServletRequest request)
+        throws EuropeanaApiException {
         AnnoPage annoPage = fts.getSingleAnnoPage(datasetId, localId);
         ZonedDateTime modified = CacheUtils.dateToZonedUTC(annoPage.getModified());
-        String eTag = generateETag(datasetId + localId ,
-                 modified,
-                fts.getSettings().getAppVersion(),
-                true);
+        String eTag = generateETag(datasetId + localId,
+            modified,
+            fts.getSettings().getAppVersion(),
+            true);
         ResponseEntity<String> cached = CacheUtils.checkCached(request, modified, eTag);
         if (null != cached) {
+            LOG.info("Returning cached object for {}, {}", datasetId, localId);
             return cached;
         }
         HttpHeaders headers = CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
-        SummaryManifest apInfo = fts.collectAnnoPageInfo(datasetId, localId);
+        SummaryManifest apInfo = fts.collectApAndTranslationInfo(datasetId, localId);
+
         return new ResponseEntity<>(fts.serialise(apInfo), headers, HttpStatus.OK);
     }
 
@@ -113,14 +113,14 @@ public class FTController {
     @ApiOperation(value = "Retrieve a page with annotations")
     @GetMapping(value = "/{datasetId}/{localId}/annopage/{pageId}", headers = ACCEPT_JSON)
     public ResponseEntity<String> annoPageJson(
-            @PathVariable String datasetId,
-            @PathVariable String localId,
-            @PathVariable String pageId,
-            @RequestParam(value = "lang", required = false) String lang,
-            @RequestParam(value = "format", required = false) String versionParam,
-            @RequestParam(value = "profile", required = false) String profile,
-            @RequestParam(value = "textGranularity", required = false) String textGranularity,
-            HttpServletRequest request) throws EuropeanaApiException {
+        @PathVariable String datasetId,
+        @PathVariable String localId,
+        @PathVariable String pageId,
+        @RequestParam(value = "lang", required = false) String lang,
+        @RequestParam(value = "format", required = false) String versionParam,
+        @RequestParam(value = "profile", required = false) String profile,
+        @RequestParam(value = "textGranularity", required = false) String textGranularity,
+        HttpServletRequest request) throws EuropeanaApiException {
         return annoPage(datasetId, localId, pageId, lang, versionParam, profile, textGranularity, request, true);
     }
 
@@ -140,43 +140,43 @@ public class FTController {
     @ApiOperation(value = "Retrieve a page with annotations")
     @GetMapping(value = "/{datasetId}/{localId}/annopage/{pageId}", headers = ACCEPT_JSONLD)
     public ResponseEntity<String> annoPageJsonLd(
-            @PathVariable String datasetId,
-            @PathVariable String localId,
-            @PathVariable String pageId,
-            @RequestParam(value = "lang", required = false) String lang,
-            @RequestParam(value = "format", required = false) String versionParam,
-            @RequestParam(value = "profile", required = false) String profile,
-            @RequestParam(value = "textGranularity", required = false) String textGranularity,
-            HttpServletRequest request) throws EuropeanaApiException {
+        @PathVariable String datasetId,
+        @PathVariable String localId,
+        @PathVariable String pageId,
+        @RequestParam(value = "lang", required = false) String lang,
+        @RequestParam(value = "format", required = false) String versionParam,
+        @RequestParam(value = "profile", required = false) String profile,
+        @RequestParam(value = "textGranularity", required = false) String textGranularity,
+        HttpServletRequest request) throws EuropeanaApiException {
         return annoPage(datasetId, localId, pageId, lang, versionParam, profile, textGranularity, request, false);
     }
 
     private ResponseEntity<String> annoPage(
-            String datasetId,
-            String localId,
-            String pageId,
-            String lang,
-            String versionParam,
-            String profileParam,
-            String textGranularity,
-            HttpServletRequest request,
-            boolean isJson) throws EuropeanaApiException {
+        String datasetId,
+        String localId,
+        String pageId,
+        String lang,
+        String versionParam,
+        String profileParam,
+        String textGranularity,
+        HttpServletRequest request,
+        boolean isJson) throws EuropeanaApiException {
         LOG.debug("Retrieve Annopage: {}/{}/{} with language {}", datasetId, localId, pageId, lang);
         String requestVersion = getRequestVersion(request, versionParam);
         if (ACCEPT_VERSION_INVALID.equals(requestVersion)) {
             return new ResponseEntity<>(ACCEPT_VERSION_INVALID, HttpStatus.NOT_ACCEPTABLE);
         }
         AnnotationWrapper annotationPage;
-        HttpHeaders       headers;
+        HttpHeaders headers;
 
         List<AnnotationType> textGranValues = ControllerUtils.validateTextGranularity(textGranularity,
-                                                                                      ALLOWED_ANNOTATION_TYPES);
-        AnnoPage      annoPage = fts.fetchAnnoPage(datasetId, localId, pageId, textGranValues, lang);
+            ALLOWED_ANNOTATION_TYPES);
+        AnnoPage annoPage = fts.fetchAnnoPage(datasetId, localId, pageId, textGranValues, lang);
         ZonedDateTime modified = CacheUtils.dateToZonedUTC(annoPage.getModified());
         String eTag = generateETag(datasetId + localId + pageId,
-                                   modified,
-                                   requestVersion + fts.getSettings().getAppVersion(),
-                                   true);
+            modified,
+            requestVersion + fts.getSettings().getAppVersion(),
+            true);
         ResponseEntity<String> cached = CacheUtils.checkCached(request, modified, eTag);
         if (null != cached) {
             return cached;
@@ -191,7 +191,7 @@ public class FTController {
         List<String> profiles = new ArrayList<>();
         if (StringUtils.isNotEmpty(profileParam)) {
             profiles = Arrays.asList(StringUtils.split(profileParam, ","));
-            for(String val : profiles) {
+            for (String val : profiles) {
                 if (!StringUtils.equals(val, PROFILE_TEXT) && !StringUtils.equals(val, PROFILE_DEBUG)) {
                     throw new InvalidRequestParamException("profile", val);
                 }
@@ -222,15 +222,15 @@ public class FTController {
      */
     @ApiOperation(value = "Check if a page with annotations exists")
     @RequestMapping(value = {"/{datasetId}/{localId}/annopage/{pageId}"},
-                    method = RequestMethod.HEAD,
-                    headers = ACCEPT_JSON)
+        method = RequestMethod.HEAD,
+        headers = ACCEPT_JSON)
     public ResponseEntity annoPageHeadExistsJson(
-            @PathVariable String datasetId,
-            @PathVariable String localId,
-            @PathVariable String pageId,
-            @RequestParam(value = "lang", required = false) String lang,
-            @RequestParam(value = "format", required = false) String versionParam,
-            HttpServletRequest request) {
+        @PathVariable String datasetId,
+        @PathVariable String localId,
+        @PathVariable String pageId,
+        @RequestParam(value = "lang", required = false) String lang,
+        @RequestParam(value = "format", required = false) String versionParam,
+        HttpServletRequest request) {
         return getAnnoPageHead(datasetId, localId, pageId, lang, versionParam, true, request);
     }
 
@@ -246,26 +246,26 @@ public class FTController {
      */
     @ApiOperation(value = "Check if a page with annotations exists")
     @RequestMapping(value = {"/{datasetId}/{localId}/annopage/{pageId}"},
-                    method = RequestMethod.HEAD,
-                    headers = ACCEPT_JSONLD)
+        method = RequestMethod.HEAD,
+        headers = ACCEPT_JSONLD)
     public ResponseEntity annoPageHeadExistsJsonld(
-            @PathVariable String datasetId,
-            @PathVariable String localId,
-            @PathVariable String pageId,
-            @RequestParam(value = "lang", required = false) String lang,
-            @RequestParam(value = "format", required = false) String versionParam,
-            HttpServletRequest request) {
+        @PathVariable String datasetId,
+        @PathVariable String localId,
+        @PathVariable String pageId,
+        @RequestParam(value = "lang", required = false) String lang,
+        @RequestParam(value = "format", required = false) String versionParam,
+        HttpServletRequest request) {
         return getAnnoPageHead(datasetId, localId, pageId, lang, versionParam, false, request);
     }
 
     private ResponseEntity getAnnoPageHead(
-            String datasetId,
-            String localId,
-            String pageId,
-            String lang,
-            String versionParam,
-            boolean isJson,
-            HttpServletRequest request) {
+        String datasetId,
+        String localId,
+        String pageId,
+        String lang,
+        String versionParam,
+        boolean isJson,
+        HttpServletRequest request) {
         String requestVersion = getRequestVersion(request, versionParam);
         if (ACCEPT_VERSION_INVALID.equals(requestVersion)) {
             return new ResponseEntity(ACCEPT_VERSION_INVALID, HttpStatus.NOT_ACCEPTABLE);
@@ -292,11 +292,11 @@ public class FTController {
     @ApiOperation(value = "Retrieve a single annotation")
     @GetMapping(value = "/{datasetId}/{localId}/anno/{annoID}", headers = ACCEPT_JSON)
     public ResponseEntity<String> annotationJson(
-            @PathVariable String datasetId,
-            @PathVariable String localId,
-            @PathVariable String annoID,
-            @RequestParam(value = "format", required = false) String versionParam,
-            HttpServletRequest request) throws EuropeanaApiException {
+        @PathVariable String datasetId,
+        @PathVariable String localId,
+        @PathVariable String annoID,
+        @RequestParam(value = "format", required = false) String versionParam,
+        HttpServletRequest request) throws EuropeanaApiException {
         return annotation(datasetId, localId, annoID, versionParam, request, true);
     }
 
@@ -313,35 +313,35 @@ public class FTController {
     @ApiOperation(value = "Retrieve a single annotation")
     @GetMapping(value = "/{datasetId}/{localId}/anno/{annoID}", headers = ACCEPT_JSONLD)
     public ResponseEntity<String> annotationJsonLd(
-            @PathVariable String datasetId,
-            @PathVariable String localId,
-            @PathVariable String annoID,
-            @RequestParam(value = "format", required = false) String versionParam,
-            HttpServletRequest request) throws EuropeanaApiException {
+        @PathVariable String datasetId,
+        @PathVariable String localId,
+        @PathVariable String annoID,
+        @RequestParam(value = "format", required = false) String versionParam,
+        HttpServletRequest request) throws EuropeanaApiException {
         return annotation(datasetId, localId, annoID, versionParam, request, false);
     }
 
     private ResponseEntity<String> annotation(
-            String datasetId,
-            String localId,
-            String annoID,
-            String versionParam,
-            HttpServletRequest request,
-            boolean isJson) throws EuropeanaApiException {
+        String datasetId,
+        String localId,
+        String annoID,
+        String versionParam,
+        HttpServletRequest request,
+        boolean isJson) throws EuropeanaApiException {
         LOG.debug("Retrieve Annotation: {}/{}/{}", datasetId, localId, annoID);
         String requestVersion = getRequestVersion(request, versionParam);
         if (ACCEPT_VERSION_INVALID.equals(requestVersion)) {
             return new ResponseEntity<>(ACCEPT_VERSION_INVALID, HttpStatus.NOT_ACCEPTABLE);
         }
 
-        HttpHeaders       headers;
+        HttpHeaders headers;
         AnnotationWrapper annotation;
-        AnnoPage          annoPage = fts.fetchAPAnnotation(datasetId, localId, annoID);
-        ZonedDateTime     modified = CacheUtils.dateToZonedUTC(annoPage.getModified());
+        AnnoPage annoPage = fts.fetchAPAnnotation(datasetId, localId, annoID);
+        ZonedDateTime modified = CacheUtils.dateToZonedUTC(annoPage.getModified());
         String eTag = generateETag(datasetId + localId + annoID,
-                                   modified,
-                                   requestVersion + fts.getSettings().getAppVersion(),
-                                   true);
+            modified,
+            requestVersion + fts.getSettings().getAppVersion(),
+            true);
         ResponseEntity<String> cached = CacheUtils.checkCached(request, modified, eTag);
         if (cached != null) {
             return cached;
@@ -373,13 +373,13 @@ public class FTController {
      */
     @ApiOperation(value = "Retrieve a full-text")
     @GetMapping(value = "/{datasetId}/{localId}/{resId}",
-                headers = ACCEPT_JSONLD,
-                produces = MEDIA_TYPE_JSONLD + ';' + UTF_8)
+        headers = ACCEPT_JSONLD,
+        produces = MEDIA_TYPE_JSONLD + ';' + UTF_8)
     public ResponseEntity<String> resourceJsonLd(
-            @PathVariable String datasetId,
-            @PathVariable String localId,
-            @PathVariable String resId,
-            HttpServletRequest request) throws EuropeanaApiException {
+        @PathVariable String datasetId,
+        @PathVariable String localId,
+        @PathVariable String resId,
+        HttpServletRequest request) throws EuropeanaApiException {
         return resource(datasetId, localId, resId, request, false);
     }
 
@@ -394,31 +394,31 @@ public class FTController {
      */
     @ApiOperation(value = "Retrieve a full-text")
     @GetMapping(value = "/{datasetId}/{localId}/{resId}",
-                headers = ACCEPT_JSON,
-                produces = MEDIA_TYPE_JSON + ';' + UTF_8)
+        headers = ACCEPT_JSON,
+        produces = MEDIA_TYPE_JSON + ';' + UTF_8)
     public ResponseEntity<String> resourceJson(
-            @PathVariable String datasetId,
-            @PathVariable String localId,
-            @PathVariable String resId,
-            HttpServletRequest request) throws EuropeanaApiException {
+        @PathVariable String datasetId,
+        @PathVariable String localId,
+        @PathVariable String resId,
+        HttpServletRequest request) throws EuropeanaApiException {
         return resource(datasetId, localId, resId, request, true);
     }
 
     private ResponseEntity<String> resource(
-            String datasetId, String localId, String resId, HttpServletRequest request, boolean isJson) throws
-                                                                                                        EuropeanaApiException {
+        String datasetId, String localId, String resId, HttpServletRequest request, boolean isJson) throws
+        EuropeanaApiException {
         LOG.debug("Retrieve Resource: {}/{}/{}", datasetId, localId, resId);
         HttpHeaders headers;
-        FTResource  resource;
+        FTResource resource;
 
         resource = fts.fetchFTResource(datasetId, localId, resId);
         ZonedDateTime modified = CacheUtils.januarificator();
         String eTag = generateSimpleETag(datasetId
-                                         + localId
-                                         + resId
-                                         + resource.getLanguage()
-                                         + resource.getValue()
-                                         + fts.getSettings().getAppVersion(), true);
+            + localId
+            + resId
+            + resource.getLanguage()
+            + resource.getValue()
+            + fts.getSettings().getAppVersion(), true);
         ResponseEntity<String> cached = CacheUtils.checkCached(request, modified, eTag);
         if (cached != null) {
             return cached;
@@ -426,7 +426,6 @@ public class FTController {
 
         headers = CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
         headers.add(CONTENT_TYPE, (isJson ? MEDIA_TYPE_JSON : MEDIA_TYPE_JSONLD) + ";" + UTF_8);
-
 
         if (isJson) {
             resource.setContext(null);
@@ -453,8 +452,8 @@ public class FTController {
     }
 
     /**
-     * Retrieve the requested version from the accept header, or if not present from the format parameter. If nothing
-     * is specified then 2 is returned as default
+     * Retrieve the requested version from the accept header, or if not present from the format parameter. If nothing is
+     * specified then 2 is returned as default
      *
      * @return either version 2, 3 or ACCEPT_INVALID
      */
@@ -471,7 +470,7 @@ public class FTController {
                     result = "2";
                 } else {
                     result
-                            = ACCEPT_VERSION_INVALID; // in case a Profile is found that matches neither version => HTTP 406
+                        = ACCEPT_VERSION_INVALID; // in case a Profile is found that matches neither version => HTTP 406
                 }
             }
         }

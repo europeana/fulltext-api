@@ -174,7 +174,7 @@ public class FTSearchServiceTest {
         given(morphiaCursor.next())
                 .willReturn(filteredAnnoPages.get(0))
                 .willReturn(filteredAnnoPages.get(1));
-        given(fulltextRepo.fetchAnnoPageFromImageId(eq(RECORDID_HAS_RESULTS.getDatasetId()), eq(RECORDID_HAS_RESULTS.getLocalId()),
+        given(fulltextRepo.fetchAnnoPageFromTargetId(eq(RECORDID_HAS_RESULTS.getDatasetId()), eq(RECORDID_HAS_RESULTS.getLocalId()),
                 any(), any())).willReturn(
                 morphiaCursor
         );
