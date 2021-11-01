@@ -34,6 +34,8 @@ public final class CacheUtils {
     private static final String  ALLOWED         = "GET, HEAD";
     private static final String  ALLOWHEADERS    = "If-Match, If-None-Match, If-Modified-Since";
     private static final String  EXPOSEHEADERS   = "Allow, ETag, Last-Modified, Link";
+    private static final String  CACHE_CONTROL   = "public, max-age=";
+    private static final String  DEFAULT_MAX_AGE = "86400"; // 1 day
     private static final String  ACCEPT          = "Accept";
     private static final String  MAX_AGE_600     = "600";
 
@@ -137,7 +139,19 @@ public final class CacheUtils {
      * @param modified      optional, if not null then a Last-Modified header is added
      * @return HttpServletResponse
      */
-    public static HttpHeaders generateHeaders(HttpServletRequest request, String eTag, String modified){
+    public static HttpHeaders generateHeaders(HttpServletRequest request, String eTag, String modified) {
+        return generateHeaders(request, eTag, modified, null);
+    }
+
+    /**
+     * Generate the default headers for sending a response with caching
+     * @param request       required to determine whether the 'Origin' request header is set
+     * @param eTag          optional, if not null then an ETag header is added
+     * @param modified      optional, if not null then a Last-Modified header is added
+     * @param maxAge        optional, if null DEFAULT_MAX_AGE set in the Cache-Control header
+     * @return HttpServletResponse
+     */
+    public static HttpHeaders generateHeaders(HttpServletRequest request, String eTag, String modified, Integer maxAge) {
         HttpHeaders headers = new HttpHeaders();
         if (StringUtils.isNotBlank(request.getHeader("Origin"))){
             headers.add("Access-Control-Allow-Methods", ALLOWED);
@@ -152,6 +166,7 @@ public final class CacheUtils {
         }
         headers.add("Access-Control-Max-Age", MAX_AGE_600);
         headers.add("Allow", ALLOWED);
+        headers.add("Cache-Control", CACHE_CONTROL + (maxAge == null ? DEFAULT_MAX_AGE : maxAge));
         headers.add("Vary", ACCEPT);
         return headers;
     }
