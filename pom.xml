@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
     <parent>
-		<groupId>eu.europeana</groupId>
+        <groupId>eu.europeana</groupId>
         <artifactId>europeana-parent-pom</artifactId>
         <version>2.2</version>
     </parent>
@@ -15,33 +16,36 @@
     <name>Europeana Newspapers Fulltext</name>
     <description>Europeana Newspapers Fulltext API &amp; Loader (Spring Boot applications)</description>
 
-	<modules>
-		<module>common</module>
-		<module>api</module>
-		<module>loader</module>
-	</modules>
+    <modules>
+        <module>common</module>
+        <module>api</module>
+        <module>loader</module>
+    </modules>
 
-	<properties>
-		<java.version>11</java.version>
-		<maven.compiler.release>${java.version}</maven.compiler.release>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <properties>
+        <java.version>11</java.version>
+        <maven.compiler.release>${java.version}</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-		<spring-boot.version>2.3.4.RELEASE</spring-boot.version>
-		<jackson.version>2.9.9</jackson.version>
-		<io-informatics.version>0.1.1</io-informatics.version>
-		<morphia.version>2.1.4</morphia.version>
-		<snappy.version>1.1.7.2</snappy.version>
-		<commons-lang3.version>3.9</commons-lang3.version>
-		<commons-io.version>2.4</commons-io.version>
-		<!-- Note that upgrading to a newer version of Junit Jupiter may not work with older IntelliJ versions (2019.2.1)
-		     However for Maven verify goal a newer Jupiter version is no problem-->
-		<junit-jupiter.version>5.6.0</junit-jupiter.version>
-		<mockito.version>3.7.0</mockito.version>
-		<unitils.version>3.4.6</unitils.version>
-		<swagger.version>3.0.0</swagger.version>
-		<api-commons.version>0.3.8</api-commons.version>
-	</properties>
+        <api-commons.version>0.3.8</api-commons.version>
+
+        <spring-boot.version>2.4.13</spring-boot.version>
+        <jackson.version>2.9.9</jackson.version>
+        <io-informatics.version>0.1.1</io-informatics.version>
+        <morphia.version>2.1.4</morphia.version>
+        <snappy.version>1.1.7.2</snappy.version>
+        <commons-lang3.version>3.9</commons-lang3.version>
+        <commons-io.version>2.4</commons-io.version>
+        <log4j2.version>2.17.0</log4j2.version>
+        <!-- Note that upgrading to a newer version of Junit Jupiter may not work with older IntelliJ versions (2019.2.1)
+             However for Maven verify goal a newer Jupiter version is no problem-->
+        <junit-jupiter.version>5.6.0</junit-jupiter.version>
+        <mockito.version>3.7.0</mockito.version>
+        <unitils.version>3.4.6</unitils.version>
+        <swagger.version>3.0.0</swagger.version>
+
+    </properties>
 
     <dependencyManagement>
         <dependencies>
@@ -56,4 +60,37 @@
 
         </dependencies>
     </dependencyManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <!-- This will be active when running the verify or install goal
+                     To skip (e.g. during debugging) use 'mvn clean package')-->
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <version>6.5.0</version>
+                <configuration>
+                    <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
+                    <failBuildOnCVSS>7</failBuildOnCVSS>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Tmp added to see compilation errors after upgrading dependencies, see
+            https://stackoverflow.com/questions/62583298/exception-in-thread-main-java-lang-assertionerror-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <forceJavacCompilerUse>true</forceJavacCompilerUse>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
