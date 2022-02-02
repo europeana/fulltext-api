@@ -13,4 +13,12 @@ public class TranslationAnnoPage extends AnnoPage {
     @Reference
     private TranslationResource res;
 
+    @Override
+    public TranslationResource getRes() {
+        return res;
+    }
+
+    public void setRes(TranslationResource res) {
+        this.res = res;
+    }
 }
