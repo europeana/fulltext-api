@@ -23,6 +23,7 @@ public class AnnotationPageV2 extends JsonLdId implements Serializable, Annotati
     @JsonProperty("@type")
     private String type = "sc:AnnotationList";
     private String language;
+    private String source;
     private AnnotationV2[] resources;
 
     public AnnotationPageV2(String id) {
@@ -53,5 +54,13 @@ public class AnnotationPageV2 extends JsonLdId implements Serializable, Annotati
 
     public void setResources(AnnotationV2[] resources) {
         this.resources = resources;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
     }
 }
