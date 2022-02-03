@@ -51,6 +51,26 @@
             </exclusions>
         </dependency>
 
+        <!-- Including non-vulnerable tomcat dependency.
+        spring-boot-starter-tomcat Includes version 9.0.56, which is vulnerable See : CVE-2022-23181
+        All tomcat components specifically added to override spring-boot-starter-tomcat -->
+        <dependency>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-core</artifactId>
+            <version>9.0.58</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-websocket</artifactId>
+            <version>9.0.58</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-el</artifactId>
+            <version>9.0.58</version>
+            <scope>compile</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-log4j2</artifactId>
@@ -87,6 +107,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-solr</artifactId>
+            <version>2.4.13</version>
             <!-- TODO replace spring-boot-started-data-solr with something else (solrj?) because it's deprecated
               See also https://spring.io/blog/2020/04/07/spring-data-for-apache-solr-discontinued -->
         </dependency>
@@ -97,7 +118,6 @@
             <artifactId>solr-solrj</artifactId>
             <version>8.11.1</version>
         </dependency>
-
 
         <!-- for serializing -->
         <dependency>

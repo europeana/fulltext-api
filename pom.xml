@@ -29,8 +29,9 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <api-commons.version>0.3.8</api-commons.version>
-
-        <spring-boot.version>2.4.13</spring-boot.version>
+        <!-- upgraded to 2.5.9 as 2.6.x is not compatible with swagger (springfox-swagger-ui)-->
+        <!-- org.apache.tomcat.embed version 9.0.56 is included uptill 2.6.3 which is vulnerable. See : CVE-2022-23181  -->
+        <spring-boot.version>2.5.9</spring-boot.version>
         <jackson.version>2.9.9</jackson.version>
         <io-informatics.version>0.1.1</io-informatics.version>
         <morphia.version>2.1.4</morphia.version>
