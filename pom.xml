@@ -45,6 +45,7 @@
         <mockito.version>3.7.0</mockito.version>
         <unitils.version>3.4.6</unitils.version>
         <swagger.version>3.0.0</swagger.version>
+        <tomcat.version>9.0.58</tomcat.version>
 
     </properties>
 
@@ -73,6 +74,9 @@
                 <configuration>
                     <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
                     <failBuildOnCVSS>7</failBuildOnCVSS>
+                    <suppressionFiles>
+                        <suppressionFile>owasp-suppress.xml</suppressionFile>
+                    </suppressionFiles>
                 </configuration>
                 <executions>
                     <execution>
