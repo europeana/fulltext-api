@@ -29,6 +29,8 @@ public class AnnoPage {
     private List<Annotation> ans;
     private Date             modified;
     private String           lang;
+    @Indexed
+    private String           source;
 
     @Reference
     private Resource res;
@@ -128,6 +130,14 @@ public class AnnoPage {
 
     public void setLang(String lang) {
         this.lang = lang;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
     }
 
     public String toString() {
