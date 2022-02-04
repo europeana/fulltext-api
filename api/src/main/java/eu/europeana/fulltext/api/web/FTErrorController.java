@@ -29,10 +29,4 @@ public class FTErrorController extends AbstractErrorController {
     public Map<String, Object> error(final HttpServletRequest request) {
         return this.getErrorAttributes(request, ErrorAttributeOptions.defaults());
     }
-
-    @Override
-    public String getErrorPath() {
-        return "/error";
-    }
-
 }
