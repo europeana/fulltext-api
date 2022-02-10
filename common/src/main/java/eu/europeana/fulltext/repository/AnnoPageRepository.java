@@ -1,7 +1,5 @@
 package eu.europeana.fulltext.repository;
 
-import com.mongodb.client.AggregateIterable;
-import com.mongodb.client.MongoCursor;
 import dev.morphia.Datastore;
 import dev.morphia.aggregation.experimental.Aggregation;
 import dev.morphia.aggregation.experimental.expressions.ArrayExpressions;
@@ -9,9 +7,8 @@ import dev.morphia.aggregation.experimental.stages.Projection;
 import dev.morphia.query.internal.MorphiaCursor;
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.entity.AnnoPage;
-import eu.europeana.fulltext.entity.Annotation;
-import eu.europeana.fulltext.entity.Resource;
 import eu.europeana.fulltext.entity.TranslationAnnoPage;
+import eu.europeana.fulltext.util.MorphiaUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -249,17 +246,39 @@ public class AnnoPageRepository {
     public TranslationAnnoPage findTranslationByPageIdLang(
         String datasetId, String localId, String pageId, List<AnnotationType> annoTypes,
         String lang) {
-        Aggregation<TranslationAnnoPage> query = datastore.aggregate(TranslationAnnoPage.class)
-            .match(eq(DATASET_ID,
-                    datasetId),
-                eq(LOCAL_ID,
-                    localId),
-                eq(PAGE_ID,
-                    pageId),
-                eq(LANGUAGE,
-                    lang));
-        query = filterTextGranularity(query, annoTypes);
-        return query.execute(TranslationAnnoPage.class).tryNext();
+        List<Document> aggregatePipeLine = MorphiaUtils.getAggregatePipelineForTranslation(datasetId, localId, pageId, lang);
+        // add the filter projection based on Text Granularity values
+        if (!annoTypes.isEmpty()) {
+            aggregatePipeLine.add(filterOnTextGranularity(annoTypes));
+        }
+        // as for translation lang parameter is passed, only one AnnoPage will be returned
+        Document result = datastore
+                .getDatabase()
+                .getCollection(TranslationAnnoPage.class.getSimpleName())
+                .aggregate(aggregatePipeLine)
+                .iterator()
+                .tryNext();
+        return MorphiaUtils.processMongoDocument(result, datasetId, localId, pageId, lang);
+        }
+
+    /**
+     * Gets the filter projection based on DcTypes values for annotations
+     * @param annoType
+     * @return
+     */
+    private Document filterOnTextGranularity(List<AnnotationType> annoType) {
+        return new Document(DATASET_ID, 1L)
+                .append(LOCAL_ID, 1L)
+                .append(PAGE_ID, 1L)
+                .append(RESOURCE, 1L)
+                .append(TARGET_ID, 1L)
+                .append(MODIFIED, 1L)
+                .append(ANNOTATIONS,
+                        new Document(MONGO_FILTER,
+                                new Document(MONGO_INPUT, MONGO_ANNOTATIONS)
+                                        .append(MONGO_AS, ANNOTATIONS)
+                                        .append(MONGO_CONDITION,
+                                                new Document(MONGO_IN, Arrays.asList(MONGO_FILTER_ANS_DCTYPE, getDcTypes(annoType))))));
     }
 
     /**
@@ -334,11 +353,7 @@ public class AnnoPageRepository {
             return annoPageQuery;
         }
 
-        // ans.dcType stored as first letter of text granularity value in uppercase. ie. WORD -> 'W'
-        List<String> dcTypes = annoTypes.stream()
-            .map(s -> String.valueOf(s.getAbbreviation()))
-            .collect(Collectors.toUnmodifiableList());
-
+        List<String> dcTypes = getDcTypes(annoTypes);
         // _id implicitly included in projection
         return annoPageQuery.project(Projection.of()
             .include(DATASET_ID)
@@ -352,6 +367,18 @@ public class AnnoPageRepository {
                 filter(field(ANNOTATIONS),
                     ArrayExpressions.in(value("$$annotation.dcType"),
                         value(dcTypes))).as("annotation")));
+    }
+
+    /**
+     * Gets the List of annoTypes in letters
+     * ans.dcType stored as first letter of text granularity value in uppercase. ie. WORD -> 'W'
+     * @param annoTypes
+     * @return
+     */
+    private List<String> getDcTypes(List<AnnotationType> annoTypes) {
+        return annoTypes.stream()
+                .map(s -> String.valueOf(s.getAbbreviation()))
+                .collect(Collectors.toUnmodifiableList());
     }
 
 
