@@ -1,4 +1,4 @@
-package eu.europeana.fulltext.api.service.exception;
+package eu.europeana.fulltext.exception;
 
 import eu.europeana.api.commons.error.EuropeanaApiException;
 import org.springframework.http.HttpStatus;

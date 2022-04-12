@@ -1,12 +1,22 @@
 package eu.europeana.fulltext.api.config;
 
+import static eu.europeana.fulltext.util.GeneralUtils.testProfileNotActive;
+
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.api.service.ControllerUtils;
 import eu.europeana.fulltext.search.exception.InvalidParameterException;
 import eu.europeana.fulltext.search.web.FTSearchController;
-import io.micrometer.core.instrument.util.StringUtils;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -14,21 +24,15 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
-
 /**
  * Contains settings from fulltext.properties and fulltext.user.properties files
  * @author Lúthien
  * Created on 31/05/2018
  */
 @Configuration
-@Component
 @PropertySource("classpath:fulltext.properties")
 @PropertySource(value = "classpath:fulltext.user.properties", ignoreResourceNotFound = true)
-public class FTSettings {
+public class FTSettings implements InitializingBean {
 
     private static final Logger LOG = LogManager.getLogger(FTSettings.class);
 
@@ -47,12 +51,144 @@ public class FTSettings {
     private String searchTextGranularity;
     private List<AnnotationType> defaultSearchTextGranularity;
 
+
+    @Value("${spring.profiles.active:}")
+    private String activeProfileString;
+
+
+    @Value("${auth.enabled}")
+    private boolean authEnabled;
+
+    @Value("${europeana.apikey.jwttoken.signaturekey}")
+    private String apiKeyPublicKey;
+
+    @Value("${authorization.api.name}")
+    private String authorizationApiName;
+
+    @Value("${europeana.apikey.serviceurl}")
+    private String apiKeyUrl;
+
+    @Value("${mongo.connectionUrl}")
+    private String mongoConnectionUrl;
+
+    @Value("${mongo.fulltext.database}")
+    private String fulltextDatabase;
+
+    @Value("${mongo.fulltext.ensureIndices: false}")
+    private boolean ensureFulltextIndices;
+
+    @Value("${mongo.batch.database}")
+    private String batchDatabase;
+
+    @Value("${annotations.serviceurl}")
+    private String annotationsApiUrl;
+
+    @Value("${annotations.id.hosts}")
+    private String annotationIdHostsPattern;
+
+    @Value("${annotations.wskey}")
+    private String annotationsApiKey;
+
+    @Value("${batch.annotations.pageSize: 50}")
+    private int annotationItemsPageSize;
+
+    @Value("${batch.executor.corePool: 5}")
+    private int batchCorePoolSize;
+
+    @Value("${batch.step.skipLimit: 10}")
+    private int batchSkipLimit;
+
+    @Value("${batch.executor.maxPool: 10}")
+    private int batchMaxPoolSize;
+
+    @Value("${batch.step.executor.queueSize: 5}")
+    private int batchQueueSize;
+
+    @Value("${batch.step.throttleLimit: 5}")
+    private int annoSyncThrottleLimit;
+
+    @Value("${batch.scheduling.annoSync.initialDelaySeconds}")
+    private int annoSyncInitialDelay;
+
+    @Value("${batch.scheduling.annoSync.intervalSeconds}")
+    private int annoSyncInterval;
     @Autowired
     private Environment environment;
 
+    public boolean isAuthEnabled() {
+        return authEnabled;
+    }
 
-    @PostConstruct
-    private void init() throws InvalidParameterException {
+    public String getAuthorizationApiName() {
+        return authorizationApiName;
+    }
+
+    public String getApiKeyPublicKey() {
+        return apiKeyPublicKey;
+    }
+
+    public String getApiKeyUrl() {
+        return apiKeyUrl;
+    }
+
+    public String getBatchDatabase() {
+        return batchDatabase;
+    }
+
+    public String getMongoConnectionUrl() {
+        return mongoConnectionUrl;
+    }
+
+    public String getFulltextDatabase() {
+        return fulltextDatabase;
+    }
+
+    public boolean ensureFulltextIndices() {
+        return ensureFulltextIndices;
+    }
+
+    public String getAnnotationsApiKey() {
+        return annotationsApiKey;
+    }
+
+    public String getAnnotationsApiUrl() {
+        return annotationsApiUrl;
+    }
+
+    public int getAnnotationItemsPageSize() {
+        return annotationItemsPageSize;
+    }
+
+    public int getBatchCorePoolSize() {
+        return batchCorePoolSize;
+    }
+
+    public int getBatchMaxPoolSize() {
+        return batchMaxPoolSize;
+    }
+
+    public int getBatchQueueSize() {
+        return batchQueueSize;
+    }
+
+    public int getAnnoSyncInitialDelay() {
+        return annoSyncInitialDelay;
+    }
+
+    public int getAnnoSyncInterval() {
+        return annoSyncInterval;
+    }
+
+    public int getAnnoSyncThrottleLimit() {
+        return annoSyncThrottleLimit;
+    }
+
+    public String getAnnotationIdHostsPattern() {
+        return annotationIdHostsPattern;
+    }
+
+
+    private void setupTextGranularity() throws InvalidParameterException {
         if (StringUtils.isBlank(searchTextGranularity)) {
             LOG.info("No default text granularity for search found in configuration files");
             defaultSearchTextGranularity = Arrays.asList(AnnotationType.BLOCK, AnnotationType.LINE, AnnotationType.WORD);
@@ -103,5 +239,41 @@ public class FTSettings {
 
     public List<AnnotationType> getDefaultSearchTextGranularity() {
         return Collections.unmodifiableList(defaultSearchTextGranularity);
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        if (testProfileNotActive(activeProfileString)) {
+            validateRequiredSettings();
+        }
+
+        setupTextGranularity();
+    }
+
+    private void validateRequiredSettings() {
+        List<String> missingProps = new ArrayList<>();
+        // validate required settings
+        if (StringUtils.isEmpty(annotationsApiKey)) {
+            missingProps.add("annotations.wskey");
+        }
+
+        if (StringUtils.isEmpty(apiKeyPublicKey)) {
+            missingProps.add("europeana.apikey.jwttoken.signaturekey");
+        }
+
+        if (StringUtils.isEmpty(apiKeyUrl)) {
+            missingProps.add("europeana.apikey.serviceurl");
+        }
+
+        if (StringUtils.isEmpty(annotationsApiUrl)) {
+            missingProps.add("annotations.serviceurl");
+        }
+
+        if (!missingProps.isEmpty()) {
+            throw new IllegalStateException(
+                String.format(
+                    "The following config properties are not set: %s",
+                    String.join("\n", missingProps)));
+        }
     }
 }

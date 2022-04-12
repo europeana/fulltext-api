@@ -3,7 +3,9 @@ package eu.europeana.fulltext.api;
 import eu.europeana.fulltext.api.web.SocksProxyConfigInjector;
 import org.apache.logging.log4j.LogManager;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.PropertySource;
@@ -22,7 +24,11 @@ import java.util.Collections;
  * @author Lúthien
  * Created on 27-02-2018
  */
-@SpringBootApplication(scanBasePackages = {"eu.europeana.fulltext.api", "eu.europeana.fulltext.search", "eu.europeana.fulltext.repository"})
+@SpringBootApplication(scanBasePackages = "eu.europeana.fulltext", exclude = {
+    // Disabled as we're using our own auth mechanism
+    SecurityAutoConfiguration.class,
+    ManagementWebSecurityAutoConfiguration.class,
+})
 @PropertySource(value = "classpath:build.properties")
 public class FTApplication extends SpringBootServletInitializer {
 

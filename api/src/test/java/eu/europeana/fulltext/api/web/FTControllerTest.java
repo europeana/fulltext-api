@@ -1,18 +1,25 @@
 package eu.europeana.fulltext.api.web;
 
 
+import eu.europeana.fulltext.api.FTApplication;
 import eu.europeana.fulltext.api.config.FTSettings;
 import eu.europeana.fulltext.api.service.CacheUtils;
 import eu.europeana.fulltext.api.service.FTService;
-import eu.europeana.fulltext.api.service.exception.AnnoPageDoesNotExistException;
-import eu.europeana.fulltext.api.service.exception.ResourceDoesNotExistException;
-import eu.europeana.fulltext.api.service.exception.SerializationException;
+import eu.europeana.fulltext.exception.AnnoPageDoesNotExistException;
+import eu.europeana.fulltext.exception.ResourceDoesNotExistException;
+import eu.europeana.fulltext.exception.SerializationException;
+import eu.europeana.fulltext.search.web.FTSearchController;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultMatcher;
 
@@ -31,15 +38,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * Test the application's controller
  *
- * @author Lúthien
- * Created on 28-02-2018
- * TODO add tests for If-Modified-Since header and the CORS headers
+ * @author Lúthien Created on 28-02-2018 TODO add tests for If-Modified-Since header and the CORS
+ *     headers
  */
-
-@WebMvcTest(FTController.class)
-//@AutoConfigureMockMvc
+@WebMvcTest(
+    value = FTController.class,
+    // disable security for this test
+    excludeAutoConfiguration = {
+      SecurityAutoConfiguration.class,
+      ManagementWebSecurityAutoConfiguration.class
+    })
 public class FTControllerTest {
-
 
     private static final String JSONLD_ANP_V2_OUTPUT = "{AnnotationPage_V2 : JSONLD}";
     private static final String JSONLD_ANP_V3_OUTPUT = "{AnnotationPage_V3 : JSONLD}";

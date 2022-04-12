@@ -1,6 +1,7 @@
 package eu.europeana.fulltext.util;
 
 import dev.morphia.DeleteOptions;
+import dev.morphia.UpdateOptions;
 import dev.morphia.mapping.DiscriminatorFunction;
 import dev.morphia.mapping.MapperOptions;
 import dev.morphia.mapping.NamingStrategy;
@@ -24,8 +25,18 @@ public final class MorphiaUtils {
                                                                     .fieldNaming(NamingStrategy.identity())
                                                                     .build();
 
+    public static final String SET_ON_INSERT = "$setOnInsert";
+    public static final String SET = "$set";
+    public static final String TRANSLATION_RESOURCE_COL = TranslationResource.class.getSimpleName();
+
+
     // Morphia deletes the first matching document by default. This is required for deleting all matches.
     public static final DeleteOptions MULTI_DELETE_OPTS = new DeleteOptions().multi(true);
+
+    // Indicates that an update query should be executed as an "upsert",
+    // ie. creates new records if they do not already exist, or updates them if they do.
+    public static final UpdateOptions UPSERT_OPTS = new UpdateOptions().upsert(true);
+
 
 
     private MorphiaUtils() {

@@ -1,0 +1,326 @@
+{
+  "@context": "http://www.europeana.eu/schemas/context/collection.jsonld",
+  "dsId": "08604",
+  "lcId": "EAAE870171E24F05A64CE364D750631A",
+  "pgId": "c6a68",
+  "tgtId": "https://www.filmportal.de/sites/default/files/video/Salem06_x264.mp4",
+  "ans": [
+    {
+      "anId": "ab0e5e7c161f5c744a9e3e3aa568907e",
+      "dcType": "M",
+      "media": true,
+      "topLevel": true
+    },
+    {
+      "anId": "942fd85f5a2f3772aa028e229c8cd17b",
+      "dcType": "C",
+      "from": 0,
+      "to": 22,
+      "tgs": [
+        {
+          "start": 0,
+          "end": 3000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "0a01dd62f6b218c0a93183d49d7c844a",
+      "dcType": "C",
+      "from": 23,
+      "to": 47,
+      "tgs": [
+        {
+          "start": 3982,
+          "end": 8000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "ec973abe5f00f15d2f6df4cc92309409",
+      "dcType": "C",
+      "from": 48,
+      "to": 56,
+      "tgs": [
+        {
+          "start": 8000,
+          "end": 9000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "5c4898b96c7bb954f812ba2247dfc0c8",
+      "dcType": "C",
+      "from": 57,
+      "to": 110,
+      "tgs": [
+        {
+          "start": 9012,
+          "end": 13000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "1d4a712c77343972545451aaa9c1fc18",
+      "dcType": "C",
+      "from": 111,
+      "to": 173,
+      "tgs": [
+        {
+          "start": 19000,
+          "end": 23000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "d78d22c46c5bdedb83f83566ebd16c19",
+      "dcType": "C",
+      "from": 174,
+      "to": 221,
+      "tgs": [
+        {
+          "start": 23500,
+          "end": 25400
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "7f409d6fff1ab4363af4c935f728eed5",
+      "dcType": "C",
+      "from": 222,
+      "to": 252,
+      "tgs": [
+        {
+          "start": 26400,
+          "end": 29100
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "55a6d5a8d9c8883ef81f43c7cae32445",
+      "dcType": "C",
+      "from": 253,
+      "to": 281,
+      "tgs": [
+        {
+          "start": 32000,
+          "end": 34000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "40337f7a7ebd58409dc7e086eb39fe5c",
+      "dcType": "C",
+      "from": 282,
+      "to": 314,
+      "tgs": [
+        {
+          "start": 40700,
+          "end": 42000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "f70c01092d9bf26a841827dfe32e6fc5",
+      "dcType": "C",
+      "from": 315,
+      "to": 367,
+      "tgs": [
+        {
+          "start": 71000,
+          "end": 74197
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "09eecf233cbea7772ae2630c09f896f9",
+      "dcType": "C",
+      "from": 368,
+      "to": 399,
+      "tgs": [
+        {
+          "start": 75000,
+          "end": 78000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "9bd92d986dff8b329771bc5520d0c124",
+      "dcType": "C",
+      "from": 400,
+      "to": 440,
+      "tgs": [
+        {
+          "start": 78000,
+          "end": 80000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "f03eab2ff1ab5f92c00909c22328c912",
+      "dcType": "C",
+      "from": 441,
+      "to": 499,
+      "tgs": [
+        {
+          "start": 88424,
+          "end": 92000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "5c3122f1f76a8076ffae58f1327808fc",
+      "dcType": "C",
+      "from": 500,
+      "to": 524,
+      "tgs": [
+        {
+          "start": 101825,
+          "end": 104000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "a15d4cde25fddd544eb195d7d552b1d2",
+      "dcType": "C",
+      "from": 525,
+      "to": 560,
+      "tgs": [
+        {
+          "start": 105500,
+          "end": 108500
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "35d703a1d1d5c928297a8b51ac8cf645",
+      "dcType": "C",
+      "from": 561,
+      "to": 610,
+      "tgs": [
+        {
+          "start": 116000,
+          "end": 120000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "fd1197dad32946533bb791e07b1d953c",
+      "dcType": "C",
+      "from": 611,
+      "to": 625,
+      "tgs": [
+        {
+          "start": 124700,
+          "end": 125962
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "fdb2cb8d98a89088a56aee09ffcae10a",
+      "dcType": "C",
+      "from": 626,
+      "to": 639,
+      "tgs": [
+        {
+          "start": 127000,
+          "end": 128268
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "e911664105d1f030c51c08573bbafd7d",
+      "dcType": "C",
+      "from": 640,
+      "to": 672,
+      "tgs": [
+        {
+          "start": 130000,
+          "end": 133000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "21f246c4cf5d828d69b0ef4bf181bfdd",
+      "dcType": "C",
+      "from": 673,
+      "to": 729,
+      "tgs": [
+        {
+          "start": 133150,
+          "end": 138000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "23d5765bbaed7e9148fa9ac7bc2d11b2",
+      "dcType": "C",
+      "from": 730,
+      "to": 754,
+      "tgs": [
+        {
+          "start": 141000,
+          "end": 146000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "3faf9340be0559138fc0921757f5185c",
+      "dcType": "C",
+      "from": 755,
+      "to": 783,
+      "tgs": [
+        {
+          "start": 149485,
+          "end": 152485
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    }
+  ],
+  "modified": "2022-04-12T15:04:07.696+0100",
+  "lang": "es",
+  "source": "http://test-annotation-host/annotation/53707"
+}

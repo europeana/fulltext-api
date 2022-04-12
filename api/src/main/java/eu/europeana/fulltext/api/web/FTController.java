@@ -8,8 +8,8 @@ import eu.europeana.fulltext.api.model.FTResource;
 import eu.europeana.fulltext.api.service.CacheUtils;
 import eu.europeana.fulltext.api.service.ControllerUtils;
 import eu.europeana.fulltext.api.service.FTService;
-import eu.europeana.fulltext.api.service.exception.InvalidRequestParamException;
-import eu.europeana.fulltext.api.service.exception.SerializationException;
+import eu.europeana.fulltext.exception.InvalidRequestParamException;
+import eu.europeana.fulltext.exception.SerializationException;
 import eu.europeana.fulltext.entity.AnnoPage;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -27,7 +27,7 @@ import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.regex.Matcher;
 
-import static eu.europeana.fulltext.RequestUtils.*;
+import static eu.europeana.fulltext.util.RequestUtils.*;
 import static eu.europeana.fulltext.api.config.FTDefinitions.*;
 import static eu.europeana.fulltext.api.service.CacheUtils.generateETag;
 import static eu.europeana.fulltext.api.service.CacheUtils.generateSimpleETag;
@@ -43,7 +43,6 @@ import static eu.europeana.fulltext.api.service.CacheUtils.generateSimpleETag;
 @RestController
 @Api(tags = {"Full-text item"},
     description = "Retrieve a page with annotations, an individual annotation or a full-text")
-@RequestMapping("/presentation")
 public class FTController {
 
     private static final Set<AnnotationType> ALLOWED_ANNOTATION_TYPES = EnumSet.of(AnnotationType.PAGE,
@@ -70,7 +69,7 @@ public class FTController {
      * @throws EuropeanaApiException when serialising to Json fails
      */
     @ApiOperation(value = "Lists available Annotation Pages for a given EuropeanaID (dataset + localID), including translations")
-    @GetMapping(value = "/{datasetId}/{localId}/annopage", headers = ACCEPT_JSON)
+    @GetMapping(value = "/presentation/{datasetId}/{localId}/annopage", headers = ACCEPT_JSON)
     public ResponseEntity<String> annoPageInfo(
         @PathVariable String datasetId,
         @PathVariable String localId,
@@ -111,7 +110,7 @@ public class FTController {
      * @throws EuropeanaApiException when serialising to Json fails or an invalid parameter value is provided
      */
     @ApiOperation(value = "Retrieve a page with annotations")
-    @GetMapping(value = "/{datasetId}/{localId}/annopage/{pageId}", headers = ACCEPT_JSON)
+    @GetMapping(value = "/presentation/{datasetId}/{localId}/annopage/{pageId}", headers = ACCEPT_JSON)
     public ResponseEntity<String> annoPageJson(
         @PathVariable String datasetId,
         @PathVariable String localId,
@@ -138,7 +137,7 @@ public class FTController {
      * @throws EuropeanaApiException when serialising to JsonLd fails or an invalid parameter value is provided
      */
     @ApiOperation(value = "Retrieve a page with annotations")
-    @GetMapping(value = "/{datasetId}/{localId}/annopage/{pageId}", headers = ACCEPT_JSONLD)
+    @GetMapping(value = "/presentation/{datasetId}/{localId}/annopage/{pageId}", headers = ACCEPT_JSONLD)
     public ResponseEntity<String> annoPageJsonLd(
         @PathVariable String datasetId,
         @PathVariable String localId,
@@ -221,7 +220,7 @@ public class FTController {
      * @return ResponseEntity
      */
     @ApiOperation(value = "Check if a page with annotations exists")
-    @RequestMapping(value = {"/{datasetId}/{localId}/annopage/{pageId}"},
+    @RequestMapping(value = {"/presentation/{datasetId}/{localId}/annopage/{pageId}"},
         method = RequestMethod.HEAD,
         headers = ACCEPT_JSON)
     public ResponseEntity annoPageHeadExistsJson(
@@ -245,7 +244,7 @@ public class FTController {
      * @return ResponseEntity
      */
     @ApiOperation(value = "Check if a page with annotations exists")
-    @RequestMapping(value = {"/{datasetId}/{localId}/annopage/{pageId}"},
+    @RequestMapping(value = {"/presentation/{datasetId}/{localId}/annopage/{pageId}"},
         method = RequestMethod.HEAD,
         headers = ACCEPT_JSONLD)
     public ResponseEntity annoPageHeadExistsJsonld(
@@ -290,7 +289,7 @@ public class FTController {
      * @throws EuropeanaApiException when serialising to Json fails
      */
     @ApiOperation(value = "Retrieve a single annotation")
-    @GetMapping(value = "/{datasetId}/{localId}/anno/{annoID}", headers = ACCEPT_JSON)
+    @GetMapping(value = "/presentation/{datasetId}/{localId}/anno/{annoID}", headers = ACCEPT_JSON)
     public ResponseEntity<String> annotationJson(
         @PathVariable String datasetId,
         @PathVariable String localId,
@@ -311,7 +310,7 @@ public class FTController {
      * @throws EuropeanaApiException when serialising to JsonLd fails
      */
     @ApiOperation(value = "Retrieve a single annotation")
-    @GetMapping(value = "/{datasetId}/{localId}/anno/{annoID}", headers = ACCEPT_JSONLD)
+    @GetMapping(value = "/presentation/{datasetId}/{localId}/anno/{annoID}", headers = ACCEPT_JSONLD)
     public ResponseEntity<String> annotationJsonLd(
         @PathVariable String datasetId,
         @PathVariable String localId,
@@ -372,7 +371,7 @@ public class FTController {
      * @throws EuropeanaApiException when serialising to JsonLd fails
      */
     @ApiOperation(value = "Retrieve a full-text")
-    @GetMapping(value = "/{datasetId}/{localId}/{resId}",
+    @GetMapping(value = "/presentation/{datasetId}/{localId}/{resId}",
         headers = ACCEPT_JSONLD,
         produces = MEDIA_TYPE_JSONLD + ';' + UTF_8)
     public ResponseEntity<String> resourceJsonLd(
@@ -393,7 +392,7 @@ public class FTController {
      * @throws EuropeanaApiException when serialising to Json fails
      */
     @ApiOperation(value = "Retrieve a full-text")
-    @GetMapping(value = "/{datasetId}/{localId}/{resId}",
+    @GetMapping(value = "/presentation/{datasetId}/{localId}/{resId}",
         headers = ACCEPT_JSON,
         produces = MEDIA_TYPE_JSON + ';' + UTF_8)
     public ResponseEntity<String> resourceJson(
@@ -494,7 +493,7 @@ public class FTController {
      * @throws SerializationException when serialising to a String fails
      */
     @ApiIgnore
-    @GetMapping(value = "/showversion")
+    @GetMapping(value = "/presentation/showversion")
     public ResponseEntity<String> showVersion() throws SerializationException {
         String response = "The version of this API is: " + fts.getSettings().getAppVersion();
         return new ResponseEntity<>(fts.serialise(response), HttpStatus.I_AM_A_TEAPOT);

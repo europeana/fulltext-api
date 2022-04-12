@@ -1,0 +1,179 @@
+{
+  "@context": "http://www.europeana.eu/schemas/context/collection.jsonld",
+  "dsId": "08609",
+  "lcId": "3d5f4386_bbca_41eb_98a6_0651d7c8a8e1",
+  "pgId": "1",
+  "tgtId": "http://repozytorium.fn.org.pl/?q=node/8333",
+  "ans": [
+    {
+      "anId": "39d6581242bcceff218caba4aa43cb3a",
+      "dcType": "M",
+      "media": true,
+      "topLevel": true
+    },
+    {
+      "anId": "aba36459eb19f29d964e03b5828fc2b8",
+      "dcType": "C",
+      "from": 0,
+      "to": 74,
+      "tgs": [
+        {
+          "start": 2088,
+          "end": 5088
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "141cc3033a95259cb0a0d35a376bd2a0",
+      "dcType": "C",
+      "from": 75,
+      "to": 107,
+      "tgs": [
+        {
+          "start": 5509,
+          "end": 7500
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "af2c641f261c11ef687a50a4cbeef355",
+      "dcType": "C",
+      "from": 108,
+      "to": 177,
+      "tgs": [
+        {
+          "start": 7699,
+          "end": 10699
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "1e809dee40909f30bbbc3a8a06bb9c6d",
+      "dcType": "C",
+      "from": 178,
+      "to": 231,
+      "tgs": [
+        {
+          "start": 10951,
+          "end": 13951
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "af0805de252eada1065f28c386ecb668",
+      "dcType": "C",
+      "from": 232,
+      "to": 309,
+      "tgs": [
+        {
+          "start": 14957,
+          "end": 18500
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "965753661f51aec45bd5e0249ea3765f",
+      "dcType": "C",
+      "from": 310,
+      "to": 376,
+      "tgs": [
+        {
+          "start": 18963,
+          "end": 23000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "2b6039da50ad6d1ebfacfb9e6205ef1c",
+      "dcType": "C",
+      "from": 377,
+      "to": 438,
+      "tgs": [
+        {
+          "start": 23279,
+          "end": 26279
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "15156335b8125efb4f75c8624b9bd7cc",
+      "dcType": "C",
+      "from": 439,
+      "to": 499,
+      "tgs": [
+        {
+          "start": 26671,
+          "end": 30500
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "ed8c0b4da61f35a9e590f54df5ebe4d5",
+      "dcType": "C",
+      "from": 500,
+      "to": 572,
+      "tgs": [
+        {
+          "start": 30997,
+          "end": 34500
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "38ad93fab3abbddbb77bc92f51ef03bf",
+      "dcType": "C",
+      "from": 573,
+      "to": 651,
+      "tgs": [
+        {
+          "start": 34921,
+          "end": 38500
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "59ab942394d9d03bf38648ea6acb3b77",
+      "dcType": "C",
+      "from": 652,
+      "to": 715,
+      "tgs": [
+        {
+          "start": 39000,
+          "end": 42000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    }
+  ],
+  "modified": "2022-04-12T15:04:07.696+0100",
+  "lang": "de",
+  "res": {
+    "id": "f3b6f52c837b2aba5af162f5a435649e",
+    "dsId": "08609",
+    "lcId": "3d5f4386_bbca_41eb_98a6_0651d7c8a8e1",
+    "lang": "de",
+    "value": "Der bekannte Teilnehmer der polnischen\nPolarexpedition auf die Bäreninsel,\nIngenieur Stanisław Centkiewicz,\nschickt uns eine Serie der Filmaufnahmen\naus seiner letzten Reise zu,\nan Bord eines Walfängers\nunter den Meeren der Arktis.\nDie Flottille dieser Schiffe geht\nwährend des sog. Polarsommers auf die Jagd,\nder sich in diesen Breiten\nnicht von unserem Winter unterscheidet.\nAußer den Walen jagen\ndie Schiffe auf Seehunde und Wallrosse,\nderen Rudel sommerliche Ruhepausen\nauf Eisschollen einlegen.\nDie Häute der gejagten Tiere bilden\neine kostbare Beute der Jagdschiffe,\nund ersetzen das Risiko der Expedition,\ndie dem Kampf mit der arktischen Welle\nund der Gefahr der Verschließung\nwegen des Eises verbunden ist.",
+    "rights": "http://rightsstatements.org/vocab/InC/1.0/"
+  }
+}

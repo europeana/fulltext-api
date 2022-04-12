@@ -10,6 +10,7 @@ import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 
 import java.util.Collections;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import static springfox.documentation.builders.RequestHandlerSelectors.basePackage;
 
@@ -18,6 +19,7 @@ import static springfox.documentation.builders.RequestHandlerSelectors.basePacka
  * <hostname/v3/api-docs. Swagger UI is available at <hostname>/swagger-ui/
  */
 @Configuration
+@EnableSwagger2
 public class SwaggerConfig {
 
     private final BuildInfo buildInfo;

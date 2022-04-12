@@ -1,15 +1,28 @@
 package eu.europeana.fulltext.repository;
 
+import com.mongodb.bulk.BulkWriteResult;
+import com.mongodb.client.model.UpdateOneModel;
+import com.mongodb.client.model.WriteModel;
 import dev.morphia.Datastore;
 import eu.europeana.fulltext.entity.Resource;
+import eu.europeana.fulltext.entity.TranslationAnnoPage;
 import eu.europeana.fulltext.entity.TranslationResource;
+import eu.europeana.fulltext.exception.DatabaseQueryException;
+import eu.europeana.fulltext.util.MorphiaUtils;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import static dev.morphia.query.experimental.filters.Filters.eq;
 import static eu.europeana.fulltext.util.MorphiaUtils.Fields.*;
+import static eu.europeana.fulltext.util.MorphiaUtils.SET;
+import static eu.europeana.fulltext.util.MorphiaUtils.SET_ON_INSERT;
+import static eu.europeana.fulltext.util.MorphiaUtils.UPSERT_OPTS;
 
 
 /**
@@ -72,11 +85,9 @@ public class ResourceRepository {
         return count(TranslationResource.class);
     }
 
-    private long count(Class clazz) {
-        LOG.warn("Repository count is temporarily disabled because of bad performance with large collections");
-        //return datastore.createQuery(clazz).count();
-        return 0;
-    }
+  private long count(Class clazz) {
+    return datastore.getMapper().getCollection(clazz).countDocuments();
+  }
 
     /**
      * Find an original Resource that matches the given parameters
@@ -110,4 +121,69 @@ public class ResourceRepository {
                 .first();
     }
 
+    /**
+     * Saves a Resource to the database
+     *
+     * @param resource Translation Resource object to save
+     * @return the saved resource document
+     */
+    public TranslationResource saveResource(TranslationResource resource) {
+        return datastore.save(resource);
+    }
+
+    public long deleteResources(String datasetId, String localId) {
+        return datastore
+            .find(TranslationResource.class)
+            .filter(eq(DATASET_ID, datasetId), eq(LOCAL_ID, localId))
+            .delete(MorphiaUtils.MULTI_DELETE_OPTS)
+            .getDeletedCount();
+    }
+
+    public long deleteResource(String datasetId, String localId, String lang) {
+        return datastore
+            .find(TranslationResource.class)
+            .filter(eq(DATASET_ID, datasetId), eq(LOCAL_ID, localId), eq(LANGUAGE, lang))
+            .delete()
+            .getDeletedCount();
+    }
+
+    /** Only for tests */
+    public void deleteAll() {
+        datastore.find(TranslationResource.class).delete(MorphiaUtils.MULTI_DELETE_OPTS);
+    }
+
+    public BulkWriteResult upsertFromAnnoPage(List<? extends TranslationAnnoPage> annoPageList)
+        throws DatabaseQueryException {
+        List<WriteModel<TranslationResource>> resourceUpdates = new ArrayList<>();
+        for (TranslationAnnoPage annoPage : annoPageList) {
+            TranslationResource res = annoPage.getRes();
+            if (res == null) {
+                // all AnnoPages should have a resource
+                throw new DatabaseQueryException("res is null for " + annoPage);
+            }
+
+            resourceUpdates.add(
+                new UpdateOneModel<>(
+                    new Document(
+                        // filter
+                        Map.of(
+                            DATASET_ID, res.getDsId(), LOCAL_ID, res.getLcId(), LANGUAGE, res.getLang())),
+                    // update doc
+                    new Document(
+                        SET,
+                        new Document(DATASET_ID, res.getDsId())
+                            .append(LOCAL_ID, res.getLcId())
+                            .append(LANGUAGE, res.getLang())
+                            .append(VALUE, res.getValue())
+                            .append(RIGHTS, res.getRights()))
+                        // only create _id for new records
+                        .append(SET_ON_INSERT, new Document("_id", res.getId())),
+                    UPSERT_OPTS));
+        }
+
+        return datastore
+            .getMapper()
+            .getCollection(TranslationResource.class)
+            .bulkWrite(resourceUpdates);
+    }
 }

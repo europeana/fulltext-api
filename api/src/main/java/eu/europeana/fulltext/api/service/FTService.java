@@ -1,10 +1,13 @@
 package eu.europeana.fulltext.api.service;
 
+import static eu.europeana.fulltext.util.GeneralUtils.getAnnoPageToString;
 import static eu.europeana.fulltext.util.MorphiaUtils.Fields.LANGUAGE;
 import static eu.europeana.fulltext.util.MorphiaUtils.Fields.PAGE_ID;
 import static eu.europeana.fulltext.util.MorphiaUtils.Fields.TRANSLATIONS;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.bulk.BulkWriteResult;
+import com.mongodb.client.result.UpdateResult;
 import dev.morphia.query.internal.MorphiaCursor;
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.api.config.FTDefinitions;
@@ -17,19 +20,24 @@ import eu.europeana.fulltext.api.model.v2.AnnotationPageV2;
 import eu.europeana.fulltext.api.model.v2.AnnotationV2;
 import eu.europeana.fulltext.api.model.v3.AnnotationPageV3;
 import eu.europeana.fulltext.api.model.v3.AnnotationV3;
-import eu.europeana.fulltext.api.service.exception.AnnoPageDoesNotExistException;
-import eu.europeana.fulltext.api.service.exception.ResourceDoesNotExistException;
-import eu.europeana.fulltext.api.service.exception.SerializationException;
+import eu.europeana.fulltext.entity.TranslationAnnoPage;
+import eu.europeana.fulltext.exception.AnnoPageDoesNotExistException;
+import eu.europeana.fulltext.exception.DatabaseQueryException;
+import eu.europeana.fulltext.exception.ResourceDoesNotExistException;
+import eu.europeana.fulltext.exception.SerializationException;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Resource;
-import eu.europeana.fulltext.entity.TranslationAnnoPage;
+import eu.europeana.fulltext.exception.SubtitleConversionException;
 import eu.europeana.fulltext.repository.AnnoPageRepository;
 import eu.europeana.fulltext.repository.ResourceRepository;
+import eu.europeana.fulltext.subtitles.AnnotationPreview;
+import eu.europeana.fulltext.util.GeneralUtils;
 import java.time.Duration;
 import java.time.Instant;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bson.Document;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -49,17 +57,24 @@ public class FTService {
 
     private final ResourceRepository resourceRepository;
     private final AnnoPageRepository annoPageRepository;
+    private final SubtitleService subtitleService;
     private final FTSettings ftSettings;
 
     private final ObjectMapper mapper;
+
+
+    @Value("${spring.profiles.active:}")
+    private String activeProfileString;
 
     /*
      * Constructs an FTService object with autowired dependencies
      */
     public FTService(ResourceRepository resourceRepository, AnnoPageRepository annoPageRepository,
-        FTSettings ftSettings, ObjectMapper mapper) {
+        SubtitleService subtitleService, FTSettings ftSettings,
+        ObjectMapper mapper) {
         this.resourceRepository = resourceRepository;
         this.annoPageRepository = annoPageRepository;
+        this.subtitleService = subtitleService;
         this.ftSettings = ftSettings;
         this.mapper = mapper;
     }
@@ -278,7 +293,7 @@ public class FTService {
      * @return true if it exists, otherwise false
      */
     public boolean doesAnnoPageExist(String datasetId, String localId, String pageId, String lang) {
-        if (StringUtils.isEmpty(lang)) {
+        if (!StringUtils.hasLength(lang)) {
             return annoPageRepository.existsOriginalByPageId(datasetId, localId, pageId);
         }
 
@@ -290,6 +305,12 @@ public class FTService {
             LOG.debug("No original AnnoPage, TranslationAnnoPage exists = {}", result);
         }
         return result;
+    }
+
+    /** Checks if a TranslationAnnoPage exists with the specified dsId, lcId, pgId and lang */
+    public boolean doesTranslationExist(
+        String datasetId, String localId, String pageId, String lang) {
+        return annoPageRepository.existsTranslationByPageIdLang(datasetId, localId, pageId, lang);
     }
 
     // = = [ generate JSON objects ] = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -370,6 +391,108 @@ public class FTService {
         return result;
     }
 
+    /**
+     * Saves the given TranslationAnnoPage in the database.
+     *
+     * @param annoPage AnnoPage to save
+     */
+    public void saveAnnoPage(TranslationAnnoPage annoPage) {
+        annoPageRepository.saveAnnoPage(annoPage);
+        if (annoPage.getRes() != null) {
+            resourceRepository.saveResource(annoPage.getRes());
+        }
+        LOG.info("Saved annoPage to database - {} ", annoPage);
+    }
+
+  public TranslationAnnoPage updateAnnoPage(
+      AnnotationPreview annotationPreview, TranslationAnnoPage existingAnnoPage)
+      throws SubtitleConversionException {
+    TranslationAnnoPage annoPage = getAnnoPageToUpdate(annotationPreview, existingAnnoPage);
+    resourceRepository.saveResource(annoPage.getRes());
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Updated Resource in db : id={}", annoPage.getRes().getId());
+    }
+
+    if (subtitleService.isAnnoPageUpdateRequired(annotationPreview)) {
+      UpdateResult results = annoPageRepository.updateAnnoPage(annoPage);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug(
+            "Updated annoPage in db : dsId={}, lcId={}, pgId={}, lang={}, matched={}, modified={}",
+            annoPage.getDsId(),
+            annoPage.getLcId(),
+            annoPage.getPgId(),
+            annoPage.getLang(),
+            results.getMatchedCount(),
+            results.getModifiedCount());
+      }
+    }
+    return annoPage;
+  }
+
+    /**
+     * Deletes AnnoPage with the specified dsId, lcId, pgId and lang values. Can delete max 1 record.
+     */
+    public void deleteAnnoPages(String datasetId, String localId, String pageId, String lang) {
+        long resourceCount = resourceRepository.deleteResource(datasetId, localId, lang);
+        long annoPageCount = annoPageRepository.deleteAnnoPage(datasetId, localId, pageId, lang);
+        LOG.info(
+            "AnnoPage and Resource with datasetId={}, localId={}, pageId={}, lang={} are deleted. resourceCount={}, annoPageCount={}",
+            datasetId,
+            localId,
+            pageId,
+            lang,
+            resourceCount,
+            annoPageCount);
+    }
+
+    /** Deletes AnnoPage(s) with the specified dsId, lcId and pgId. Could delete multiple records */
+    public void deleteAnnoPages(String datasetId, String localId, String pageId) {
+        long resourceCount = resourceRepository.deleteResources(datasetId, localId);
+        long annoPageCount = annoPageRepository.deleteAnnoPages(datasetId, localId, pageId);
+        LOG.info(
+            "{} AnnoPage and {} Resource with datasetId={}, localId={}, pageId={} are deleted",
+            annoPageCount,
+            resourceCount,
+            datasetId,
+            localId,
+            pageId);
+    }
+
+    private TranslationAnnoPage getAnnoPageToUpdate(
+        AnnotationPreview annotationPreview, TranslationAnnoPage existingAnnoPage)
+        throws SubtitleConversionException {
+        TranslationAnnoPage annoPageTobeUpdated = null;
+        // if there is no subtitles ie; content was empty, only update rights in the resource
+        if (annotationPreview.getSubtitleItems().isEmpty()) {
+            annoPageTobeUpdated = existingAnnoPage;
+            annoPageTobeUpdated.getRes().setRights(annotationPreview.getRights());
+            // if new source value is present, add the value in annoPage
+            if (org.apache.commons.lang3.StringUtils.isNotEmpty(annotationPreview.getSource())) {
+                annoPageTobeUpdated.setSource(annotationPreview.getSource());
+            }
+        } else { // process the subtitle list and update annotations in AnnoPage. Also, rights and value
+            // in Resource
+            annoPageTobeUpdated = subtitleService.createAnnoPage(annotationPreview);
+            if (org.apache.commons.lang3.StringUtils.isEmpty(annoPageTobeUpdated.getSource())
+                && org.apache.commons.lang3.StringUtils.isNotEmpty(existingAnnoPage.getSource())) {
+                annoPageTobeUpdated.setSource(existingAnnoPage.getSource());
+            }
+        }
+        return annoPageTobeUpdated;
+    }
+
+    /**
+     * Gets TranslationAnnoPage with the specified source. Only identifying properties (ie. dsId,
+     * lcId, pgId, tgId, lang) are populated.
+     *
+     * @param source source to query for
+     * @return TranslationAnnoPage
+     */
+    public TranslationAnnoPage getShellAnnoPageBySource(String source) {
+        return annoPageRepository.getAnnoPageWithSource(source, false);
+    }
+
+
     // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
     /**
@@ -387,5 +510,113 @@ public class FTService {
         }
     }
 
+    /**
+     * Deletes TranslationAnnoPage(s) with the specified source
+     *
+     * @param sources sources to query
+     * @return number of deleted documents
+     */
+    public long deleteAnnoPagesWithSources(List<? extends String> sources) {
+        long count = annoPageRepository.deleteAnnoPagesWithSources(sources);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Deleted {} AnnoPages for sources {}", count, sources);
+        }
 
+        return count;
+    }
+
+    public void upsertAnnoPage(List<? extends TranslationAnnoPage> annoPageList)
+        throws DatabaseQueryException {
+        BulkWriteResult resourceWriteResult = resourceRepository.upsertFromAnnoPage(annoPageList);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(
+                "Saved resources to db: matched={}, modified={}, inserted={}",
+                resourceWriteResult.getMatchedCount(),
+                resourceWriteResult.getModifiedCount(),
+                resourceWriteResult.getInsertedCount());
+        }
+
+        BulkWriteResult annoPageWriteResult = annoPageRepository.upsert(annoPageList);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(
+                "Saved annoPages to db: matched={}, modified={}, inserted={}, annoPages={}",
+                annoPageWriteResult.getMatchedCount(),
+                annoPageWriteResult.getModifiedCount(),
+                annoPageWriteResult.getInsertedCount(),
+                getAnnoPageToString(annoPageList));
+        }
+    }
+
+    /**
+     * Checks if a TranslationAnnoPage exists with the specified field combination. Uses targetId
+     * instead of pageId
+     */
+    public boolean annoPageExistsByTgtId(
+        String datasetId, String localId, String targetId, String lang) {
+        return annoPageRepository.annoPageExistsByTgtId(datasetId, localId, targetId, lang);
+    }
+
+    /** Creates an AnnoPage from the AnnotationPreview object, saving it in the database */
+    public TranslationAnnoPage createAndSaveAnnoPage(AnnotationPreview annotationPreview)
+        throws SubtitleConversionException {
+        TranslationAnnoPage annoPage = subtitleService.createAnnoPage(annotationPreview);
+        resourceRepository.saveResource(annoPage.getRes());
+        return annoPageRepository.saveAnnoPage(annoPage);
+    }
+
+    /**
+     * Retrieves the AnnoPage with the specified dcId, lcId, pgId and lang
+     *
+     * @return AnnoPage or null if none found
+     */
+    public TranslationAnnoPage getAnnoPageByPgId(
+        String datasetId, String localId, String pgId, String lang) {
+        return annoPageRepository.findTranslationByPageIdLang(datasetId, localId, pgId, List.of(), lang);
+    }
+
+    /**
+     * Drops the TranslationAnnoPage and TranslationResource collections. Can only be successfully
+     * invoked from tests
+     */
+    public void dropCollections() {
+        if (GeneralUtils.testProfileNotActive(activeProfileString)) {
+            throw new IllegalStateException(
+                String.format(
+                    "Attempting to drop collections outside testing. activeProfiles=%s",
+                    activeProfileString));
+        }
+        annoPageRepository.deleteAll();
+        resourceRepository.deleteAll();
+    }
+
+    public long countTranslationAnnoPage() {
+        if (GeneralUtils.testProfileNotActive(activeProfileString)) {
+            LOG.warn(
+                "Repository count is temporarily disabled because of bad performance with large collections");
+            return 0;
+        }
+
+        return annoPageRepository.countTranslation();
+    }
+
+    public long countResource() {
+        if (GeneralUtils.testProfileNotActive(activeProfileString)) {
+            LOG.warn(
+                "Repository count is temporarily disabled because of bad performance with large collections");
+            return 0;
+        }
+
+        return resourceRepository.countTranslation();
+    }
+
+
+    public void deleteAll() {
+        if (GeneralUtils.testProfileNotActive(activeProfileString)) {
+            LOG.warn(
+                "Attempting to delete repository from non-test code...");
+            return;
+        }
+        annoPageRepository.deleteAll();
+        resourceRepository.deleteAll();
+    }
 }

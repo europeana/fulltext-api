@@ -1,4 +1,4 @@
-package eu.europeana.fulltext;
+package eu.europeana.fulltext.util;
 
 import org.apache.commons.lang3.StringUtils;
 

@@ -12,6 +12,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
@@ -28,13 +30,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /**
  * Test the application's controller
- * @author Patrick Ehlert
- * Created on 12-01-2019
+ *
+ * @author Patrick Ehlert Created on 12-01-2019
  */
-
 @RunWith(SpringJUnit4ClassRunner.class)
 @TestPropertySource("classpath:loader-test.properties")
-@WebMvcTest(LoaderController.class)
+@WebMvcTest(
+    value = LoaderController.class,
+    // disable security for this test
+    excludeAutoConfiguration = {
+      SecurityAutoConfiguration.class,
+      ManagementWebSecurityAutoConfiguration.class
+    })
 public class LoaderControllerTest {
 
     private static final String ZIP_PROCESSED_OK = "Finished ok";

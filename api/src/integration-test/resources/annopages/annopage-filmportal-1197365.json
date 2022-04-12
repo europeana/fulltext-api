@@ -1,0 +1,263 @@
+{
+  "@context": "http://www.europeana.eu/schemas/context/collection.jsonld",
+  "dsId": "08604",
+  "lcId": "FDE2205EEE384218A8D986E5138F9691",
+  "pgId": "1",
+  "tgtId": "https://www.filmportal.de/node/1197365",
+  "ans": [
+    {
+      "anId": "74bf1a14bca989bc0ed025d26daf0070",
+      "dcType": "M",
+      "media": true,
+      "topLevel": true
+    },
+    {
+      "anId": "85410fc9e1227359a36ec4b82f225edb",
+      "dcType": "C",
+      "from": 0,
+      "to": 28,
+      "tgs": [
+        {
+          "start": 6792,
+          "end": 9000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "445f91b360d6e0acb1525430d3b6ffad",
+      "dcType": "C",
+      "from": 29,
+      "to": 65,
+      "tgs": [
+        {
+          "start": 9058,
+          "end": 11000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "c125215eb9f60b2112bcfe972e1b1076",
+      "dcType": "C",
+      "from": 66,
+      "to": 89,
+      "tgs": [
+        {
+          "start": 11000,
+          "end": 13524
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "d6e6a95f96170c3978cb2daf65a0d278",
+      "dcType": "C",
+      "from": 90,
+      "to": 104,
+      "tgs": [
+        {
+          "start": 14069,
+          "end": 16000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "f91c9ee2ae8aede5ce5cb65af9874c8d",
+      "dcType": "C",
+      "from": 105,
+      "to": 142,
+      "tgs": [
+        {
+          "start": 16470,
+          "end": 19000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "db6fbe9575752e50c6ccfe3e0b5cf784",
+      "dcType": "C",
+      "from": 143,
+      "to": 220,
+      "tgs": [
+        {
+          "start": 19197,
+          "end": 24000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "d7665aac173d1dd6842ffe79485fec65",
+      "dcType": "C",
+      "from": 221,
+      "to": 238,
+      "tgs": [
+        {
+          "start": 24332,
+          "end": 27000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "25658fe9bec01e26a3e9398fefce5ca6",
+      "dcType": "C",
+      "from": 239,
+      "to": 270,
+      "tgs": [
+        {
+          "start": 27000,
+          "end": 29000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "b5ab35d637fcb5edb75d7737e050df74",
+      "dcType": "C",
+      "from": 271,
+      "to": 339,
+      "tgs": [
+        {
+          "start": 30000,
+          "end": 33000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "bd5fceea6036b59a3d3c4c423c637e6b",
+      "dcType": "C",
+      "from": 340,
+      "to": 402,
+      "tgs": [
+        {
+          "start": 33368,
+          "end": 38000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "4998cc9a126c6386e4fc5e92224ccfc6",
+      "dcType": "C",
+      "from": 403,
+      "to": 438,
+      "tgs": [
+        {
+          "start": 40072,
+          "end": 44000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "f264f95a753b2c2c32a45d5985d7fe18",
+      "dcType": "C",
+      "from": 439,
+      "to": 485,
+      "tgs": [
+        {
+          "start": 44128,
+          "end": 47128
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "411fa2a71c4c294d42f29a7c96563271",
+      "dcType": "C",
+      "from": 486,
+      "to": 582,
+      "tgs": [
+        {
+          "start": 49336,
+          "end": 55000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "3e8ad927176090d9718c5930ed994317",
+      "dcType": "C",
+      "from": 583,
+      "to": 640,
+      "tgs": [
+        {
+          "start": 55069,
+          "end": 60000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "8a10341409970fda39fcae4233399e79",
+      "dcType": "C",
+      "from": 641,
+      "to": 710,
+      "tgs": [
+        {
+          "start": 60538,
+          "end": 66000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "f086b132ad50a7c9d282f8435009cb30",
+      "dcType": "C",
+      "from": 711,
+      "to": 775,
+      "tgs": [
+        {
+          "start": 67861,
+          "end": 70861
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "db34fa9f0e5318667b6509d27b8311d5",
+      "dcType": "C",
+      "from": 776,
+      "to": 850,
+      "tgs": [
+        {
+          "start": 70947,
+          "end": 75000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    }
+  ],
+  "modified": "2022-04-12T15:04:07.696+0100",
+  "lang": "nl",
+  "res": {
+    "id": "70b6cf05fd3e226b98fb4eed0ed99226",
+    "dsId": "08604",
+    "lcId": "FDE2205EEE384218A8D986E5138F9691",
+    "lang": "nl",
+    "value": "Twee nieuwe auto's van Ford.\nTwee auto's als een prachtig geheel.\nNieuw, groter, sneller.\nTaunus 17m V4.\nGroter dan ooit.\nZuinig zoals altijd.\nFord bouwt hem groter en sneller\nmet de recordlevensduur van een Marathon V4.\n1,5 en 1,7 liter.\nMet nieuwe remwegbeveiliging...\nMet schijfremmen aan de voorkant\nen een aangenaam ventilatiesysteem.\nTaunus 17m: duurzaam, betrouwbaar, grotendeels onderhoudsvrij.\nDe nieuwe 6 cylinder, Taunus 20m V6\nDe grote 6 cylinder voor minder dan 8000 Mark.\nFord geeft aan de fascinerende gestroomlijnde vorm\nde kracht en de souplesse van een Tornado V6.\nU kunt moeiteloos 150 km/h rijden.\nEn met de TS 165 km/h.\nTaunus 20m. Met de verbluffende elegantie van een grote 2 liter auto.\nHet beste laat u de nieuwe grote modellen voor zichzelf spreken.\nBij de Ford-handelaar kunt u ze bekijken, een proefrit maken en beslissen.\nFord.",
+    "rights": "http://creativecommons.org/licenses/by-sa/4.0/"
+  }
+}

@@ -1,17 +1,30 @@
 package eu.europeana.fulltext.repository;
 
+import com.mongodb.DBRef;
+import com.mongodb.bulk.BulkWriteResult;
+import com.mongodb.client.model.UpdateOneModel;
+import com.mongodb.client.model.WriteModel;
+import com.mongodb.client.result.UpdateResult;
 import dev.morphia.Datastore;
+import dev.morphia.UpdateOptions;
 import dev.morphia.aggregation.experimental.Aggregation;
 import dev.morphia.aggregation.experimental.expressions.ArrayExpressions;
 import dev.morphia.aggregation.experimental.stages.Projection;
+import dev.morphia.query.FindOptions;
+import dev.morphia.query.experimental.filters.Filter;
 import dev.morphia.query.internal.MorphiaCursor;
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.TranslationAnnoPage;
+import eu.europeana.fulltext.entity.TranslationResource;
+import eu.europeana.fulltext.exception.DatabaseQueryException;
 import eu.europeana.fulltext.util.MorphiaUtils;
+import java.time.Instant;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 import java.util.Arrays;
 import org.bson.Document;
@@ -27,6 +40,10 @@ import static dev.morphia.aggregation.experimental.expressions.Expressions.value
 import static dev.morphia.query.experimental.filters.Filters.eq;
 import static dev.morphia.query.experimental.filters.Filters.in;
 import static eu.europeana.fulltext.util.MorphiaUtils.Fields.*;
+import static eu.europeana.fulltext.util.MorphiaUtils.SET;
+import static eu.europeana.fulltext.util.MorphiaUtils.SET_ON_INSERT;
+import static eu.europeana.fulltext.util.MorphiaUtils.TRANSLATION_RESOURCE_COL;
+import static eu.europeana.fulltext.util.MorphiaUtils.UPSERT_OPTS;
 
 
 /**
@@ -58,11 +75,7 @@ public class AnnoPageRepository {
     }
 
     private long count(Class<? extends AnnoPage> clazz) {
-        // TODO investigate why this query is so slow and fix
-        LOG.warn(
-            "Repository count is temporarily disabled because of bad performance with large collections");
-        //return datastore.createQuery(clazz).count();
-        return 0;
+        return datastore.getMapper().getCollection(clazz).countDocuments();
     }
 
     /**
@@ -164,11 +177,16 @@ public class AnnoPageRepository {
     }
 
     private boolean existsByPageIdLang(String datasetId, String localId, String pageId, String lang,
-        Class clazz) {
-        return datastore.find(clazz).filter(eq(DATASET_ID, datasetId),
-            eq(LOCAL_ID, localId),
-            eq(PAGE_ID, pageId),
-            eq(LANGUAGE, lang)).count() > 0;
+        Class<? extends AnnoPage> clazz) {
+        List<Filter> filter =
+            new ArrayList<>(
+                Arrays.asList(eq(DATASET_ID, datasetId), eq(LOCAL_ID, localId), eq(PAGE_ID, pageId)));
+
+        if (StringUtils.isNotEmpty(lang)) {
+            filter.add(eq(LANGUAGE, lang));
+        }
+        return datastore.find(clazz).filter(filter.toArray(new Filter[0])).count()
+            > 0L;
     }
 
     /**
@@ -340,6 +358,53 @@ public class AnnoPageRepository {
     }
 
 
+    public UpdateResult updateAnnoPage(TranslationAnnoPage annoPage) {
+        MongoCollection<TranslationAnnoPage> collection =
+            datastore.getMapper().getCollection(TranslationAnnoPage.class);
+        return collection.updateOne(
+            new Document(
+                Map.of(
+                    DATASET_ID,
+                    annoPage.getDsId(),
+                    LOCAL_ID,
+                    annoPage.getLcId(),
+                    PAGE_ID,
+                    annoPage.getPgId(),
+                    LANGUAGE,
+                    annoPage.getLang())),
+            new Document(
+                "$set",
+                new Document(ANNOTATIONS, annoPage.getAns())
+                    .append(MODIFIED, annoPage.getModified())
+                    .append(SOURCE, annoPage.getSource())));
+    }
+
+    /**
+     * Saves an TranslationAnnoPage to the database
+     *
+     * @param annoPage TranslationAnnoPage object to save
+     * @return the saved TranslationAnnoPage document
+     */
+    public TranslationAnnoPage saveAnnoPage(TranslationAnnoPage annoPage) {
+        return datastore.save(annoPage);
+    }
+
+    public BulkWriteResult upsert(List<? extends TranslationAnnoPage> annoPageList)
+        throws DatabaseQueryException {
+        MongoCollection<TranslationAnnoPage> annoPageCollection =
+            datastore.getMapper().getCollection(TranslationAnnoPage.class);
+
+        List<WriteModel<TranslationAnnoPage>> annoPageUpdates = new ArrayList<>();
+
+        Instant now = Instant.now();
+
+        for (TranslationAnnoPage annoPage : annoPageList) {
+            annoPageUpdates.add(createAnnoPageUpdate(now, annoPage));
+        }
+
+        return annoPageCollection.bulkWrite(annoPageUpdates);
+    }
+
     /**
      * Creates an AnnoPage aggregation query to return only matching annotation types.
      *
@@ -411,6 +476,19 @@ public class AnnoPageRepository {
         return annoPagesWithTranslations;
     }
 
+    public boolean annoPageExistsByTgtId(
+        String datasetId, String localId, String targetId, String lang) {
+        return datastore
+            .find(TranslationAnnoPage.class)
+            .filter(
+                eq(DATASET_ID, datasetId),
+                eq(LOCAL_ID, localId),
+                eq(LANGUAGE, lang),
+                eq(TARGET_ID, targetId))
+            .count()
+            > 0L;
+    }
+
     private Document createMatchFilter(String dataSetId, String localId) {
         return new Document(MONGO_MATCH,
             new Document(DATASET_ID, dataSetId).append(LOCAL_ID, localId));
@@ -453,5 +531,99 @@ public class AnnoPageRepository {
             return new Document(MONGO_PROJECT, d);
         }
         return null;
+    }
+
+    private UpdateOneModel<TranslationAnnoPage> createAnnoPageUpdate(
+        Instant now, TranslationAnnoPage annoPage) throws DatabaseQueryException {
+
+        TranslationResource res = annoPage.getRes();
+
+        if (res == null) {
+            // all AnnoPages should have a resource
+            throw new DatabaseQueryException("res is null for " + annoPage);
+        }
+
+        Document updateDoc =
+            new Document(DATASET_ID, annoPage.getDsId())
+                .append(LOCAL_ID, annoPage.getLcId())
+                .append(PAGE_ID, annoPage.getPgId())
+                .append(TARGET_ID, annoPage.getTgtId())
+                .append(ANNOTATIONS, annoPage.getAns())
+                .append(MODIFIED, now)
+                .append(LANGUAGE, annoPage.getLang());
+
+        // source isn't always set. Prevent null from being saved in db
+        if (annoPage.getSource() != null) {
+            updateDoc.append(SOURCE, annoPage.getSource());
+        }
+
+        return new UpdateOneModel<>(
+            new Document(
+                // filter
+                Map.of(
+                    DATASET_ID,
+                    annoPage.getDsId(),
+                    LOCAL_ID,
+                    annoPage.getLcId(),
+                    LANGUAGE,
+                    annoPage.getLang(),
+                    PAGE_ID,
+                    annoPage.getPgId())),
+            new Document(SET, updateDoc)
+                // Only link resource for new documents. Resource ref should not change otherwise
+                .append(
+                    SET_ON_INSERT,
+                    new Document(RESOURCE, new DBRef(TRANSLATION_RESOURCE_COL, res.getId()))),
+            UPSERT_OPTS);
+    }
+
+    public long deleteAnnoPage(String datasetId, String localId, String pageId, String lang) {
+        return datastore
+            .find(TranslationAnnoPage.class)
+            .filter(
+                eq(DATASET_ID, datasetId),
+                eq(LOCAL_ID, localId),
+                eq(PAGE_ID, pageId),
+                eq(LANGUAGE, lang))
+            .delete()
+            .getDeletedCount();
+    }
+
+    public long deleteAnnoPages(String datasetId, String localId, String pageId) {
+        return datastore
+            .find(TranslationAnnoPage.class)
+            .filter(eq(DATASET_ID, datasetId), eq(LOCAL_ID, localId), eq(PAGE_ID, pageId))
+            .delete(MorphiaUtils.MULTI_DELETE_OPTS)
+            .getDeletedCount();
+    }
+
+    public TranslationAnnoPage getAnnoPageWithSource(String source, boolean fetchFullDoc) {
+        FindOptions findOptions = new FindOptions().limit(1);
+
+        if (!fetchFullDoc) {
+            findOptions =
+                findOptions
+                    .projection()
+                    .include(DATASET_ID, LOCAL_ID, PAGE_ID, TARGET_ID, LANGUAGE, SOURCE);
+        }
+
+        return datastore
+            .find(TranslationAnnoPage.class)
+            .filter(eq(SOURCE, source))
+            .iterator(findOptions)
+            .tryNext();
+    }
+
+    public long deleteAnnoPagesWithSources(List<? extends String> sources) {
+        return datastore
+            .find(TranslationAnnoPage.class)
+            .filter(in(SOURCE, sources))
+            .delete(MorphiaUtils.MULTI_DELETE_OPTS)
+            .getDeletedCount();
+    }
+
+    /** Only for tests */
+    public void deleteAll() {
+        datastore.find(TranslationAnnoPage.class).delete(MorphiaUtils.MULTI_DELETE_OPTS);
     }
 }

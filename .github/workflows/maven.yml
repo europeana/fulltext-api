@@ -1,0 +1,32 @@
+# This workflow will build a Java project with Maven
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
+
+name: Build and Run Tests
+
+on: push
+
+jobs:
+  build:
+
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up JDK 11
+      uses: actions/setup-java@v1
+      with:
+        java-version: 11
+    - name: maven-settings-xml-action
+      uses: whelk-io/maven-settings-xml-action@v14
+      # see: https://github.com/europeana/europeana-parent-pom/blob/master/settings.xml       
+      with:
+        repositories: '[{ "id": "europeana-libs-release", "url": "https://artifactory.eanadev.org/artifactory/libs-release"}, { "id": "europeana-libs-snapshot", "url": "https://artifactory.eanadev.org/artifactory/libs-snapshot", "snapshots": { "enabled": "true" }}]'
+        plugin_repositories: '[{ "id": "europeana-plugins-release", "url": "https://artifactory.eanadev.org/artifactory/plugins-release" }, { "id": "europeana-plugins-snapshot", "url": "https://artifactory.eanadev.org/artifactory/plugins-snapshot", "snapshots": { "enabled": "true" }}]'  
+    - name: Cache Maven packages
+      uses: actions/cache@v2
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+    - name: Build with Maven
+      run: mvn -B verify --file pom.xml

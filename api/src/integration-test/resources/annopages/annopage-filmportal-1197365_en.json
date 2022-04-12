@@ -1,0 +1,39 @@
+{
+  "@context": "http://www.europeana.eu/schemas/context/collection.jsonld",
+  "dsId": "08604",
+  "lcId": "FDE2205EEE384218A8D986E5138F9691",
+  "pgId": "1",
+  "tgtId": "https://www.filmportal.de/node/1197365",
+  "ans": [
+    {
+      "anId": "74bf1a14bca989bc0ed025d26daf0070",
+      "dcType": "M",
+      "media": true,
+      "topLevel": true
+    },
+    {
+      "anId": "85410fc9e1227359a36ec4b82f225edb",
+      "dcType": "C",
+      "from": 0,
+      "to": 28,
+      "tgs": [
+        {
+          "start": 6792,
+          "end": 9000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    }
+  ],
+  "modified": "2022-04-12T15:04:07.696+0100",
+  "lang": "en",
+  "res": {
+    "id": "d35846dd2dae5fa324a89763b46408ac",
+    "dsId": "08604",
+    "lcId": "FDE2205EEE384218A8D986E5138F9691",
+    "lang": "en",
+    "value": "English.\ntesting multiple delete.",
+    "rights": "http://creativecommons.org/licenses/by-sa/4.0/"
+  }
+}

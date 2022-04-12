@@ -23,8 +23,8 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
-import static eu.europeana.fulltext.RequestUtils.ACCEPT_VERSION_INVALID;
-import static eu.europeana.fulltext.RequestUtils.getRequestVersion;
+import static eu.europeana.fulltext.util.RequestUtils.ACCEPT_VERSION_INVALID;
+import static eu.europeana.fulltext.util.RequestUtils.getRequestVersion;
 
 /**
  * Rest controller that handles search requests
