@@ -53,6 +53,9 @@ public class FTSearchControllerTest {
 
     @BeforeEach
     public void setUp() throws Exception {
+        // enable search for this test
+        when(ftSettings.isSolrEnabled()).thenReturn(true);
+
         SearchResultV2 testResultV2 = new SearchResultV2(TEST_SEARCH_ID, false);
         SearchResultV3 testResultV3 = new SearchResultV3(TEST_SEARCH_ID, false);
 

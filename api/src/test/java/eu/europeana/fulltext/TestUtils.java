@@ -74,9 +74,9 @@ public class TestUtils {
     public static AnnoPage   anp_1;
 
     public static Date lastModifiedDate = Date.from(LocalDate.of(2015 , Month.FEBRUARY , 23)
-                                                      .atStartOfDay(ZoneId.systemDefault()).toInstant());
+                                                      .atStartOfDay(ZoneId.of("UTC+1")).toInstant());
     public static Date theDayBefore = Date.from(LocalDate.of(2015 , Month.FEBRUARY , 22)
-                                                      .atStartOfDay(ZoneId.systemDefault()).toInstant());
+                                                      .atStartOfDay(ZoneId.of("UTC+1")).toInstant());
 
     static{
         // default prepare the AnnotationPages

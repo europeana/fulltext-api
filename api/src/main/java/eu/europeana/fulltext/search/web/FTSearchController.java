@@ -6,6 +6,7 @@ import eu.europeana.fulltext.api.config.FTSettings;
 import eu.europeana.fulltext.api.service.ControllerUtils;
 import eu.europeana.fulltext.search.config.SearchConfig;
 import eu.europeana.fulltext.search.exception.InvalidParameterException;
+import eu.europeana.fulltext.search.exception.SearchDisabledException;
 import eu.europeana.fulltext.search.model.query.EuropeanaId;
 import eu.europeana.fulltext.search.model.response.SearchResult;
 import eu.europeana.fulltext.search.service.FTSearchService;
@@ -42,8 +43,8 @@ public class FTSearchController {
 
     private static final Logger LOG = LogManager.getLogger(FTSearchController.class);
 
-    private FTSearchService searchService;
-    private FTSettings settings;
+    private final FTSearchService searchService;
+    private final FTSettings settings;
 
     public FTSearchController(FTSearchService searchService, FTSettings settings) {
         this.searchService = searchService;
@@ -71,6 +72,10 @@ public class FTSearchController {
                                     @RequestParam(value = "format", required = false) String versionParam,
                                     @RequestParam(required = false) String debug,
                                     HttpServletRequest request) throws EuropeanaApiException {
+
+        if(!settings.isSolrEnabled()){
+            throw new SearchDisabledException();
+        }
 
         String requestVersion = getRequestVersion(request, versionParam);
         if (ACCEPT_VERSION_INVALID.equals(requestVersion)){

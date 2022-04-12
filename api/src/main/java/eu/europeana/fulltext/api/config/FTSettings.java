@@ -112,8 +112,14 @@ public class FTSettings implements InitializingBean {
 
     @Value("${batch.scheduling.annoSync.intervalSeconds}")
     private int annoSyncInterval;
+
+    @Value("${spring.data.solr.repositories.enabled}")
+    private boolean solrEnabled;
+
     @Autowired
     private Environment environment;
+
+
 
     public boolean isAuthEnabled() {
         return authEnabled;
@@ -275,5 +281,9 @@ public class FTSettings implements InitializingBean {
                     "The following config properties are not set: %s",
                     String.join("\n", missingProps)));
         }
+    }
+
+    public boolean isSolrEnabled() {
+        return solrEnabled;
     }
 }
