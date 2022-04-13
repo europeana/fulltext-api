@@ -25,7 +25,7 @@ public abstract class BaseIntegrationTest {
   @DynamicPropertySource
   static void setProperties(DynamicPropertyRegistry registry) {
     registry.add("auth.enabled", () -> "false");
-    registry.add("batch.scheduling.enabled", () -> "false");
+    registry.add("annosync.enabled", () -> "false");
     registry.add("mongo.connectionUrl", MONGO_CONTAINER::getConnectionUrl);
     registry.add("mongo.fulltext.database", MONGO_CONTAINER::getFulltextDb);
     registry.add("mongo.batch.database", MONGO_CONTAINER::getBatchDb);

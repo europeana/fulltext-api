@@ -22,7 +22,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Component;
 
 /**
  * Contains settings from fulltext.properties and fulltext.user.properties files
@@ -107,14 +106,17 @@ public class FTSettings implements InitializingBean {
     @Value("${batch.step.throttleLimit: 5}")
     private int annoSyncThrottleLimit;
 
-    @Value("${batch.scheduling.annoSync.initialDelaySeconds}")
+    @Value("${annosync.initialDelaySeconds}")
     private int annoSyncInitialDelay;
 
-    @Value("${batch.scheduling.annoSync.intervalSeconds}")
+    @Value("${annosync.intervalSeconds}")
     private int annoSyncInterval;
 
     @Value("${spring.data.solr.repositories.enabled}")
     private boolean solrEnabled;
+
+    @Value("${annosync.enabled}")
+    private boolean annoSyncEnabled;
 
     @Autowired
     private Environment environment;
@@ -285,5 +287,9 @@ public class FTSettings implements InitializingBean {
 
     public boolean isSolrEnabled() {
         return solrEnabled;
+    }
+
+    public boolean isAnnoSyncEnabled() {
+        return annoSyncEnabled;
     }
 }
