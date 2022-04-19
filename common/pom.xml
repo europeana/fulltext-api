@@ -59,11 +59,6 @@
             <version>${log4j2.version}</version>
         </dependency>
 
-        <!-- Read/write data to MongoDB -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-mongodb</artifactId>
-        </dependency>
         <!-- Compression for mongo driver-->
         <dependency>
             <groupId>org.xerial.snappy</groupId>
@@ -75,6 +70,12 @@
             <groupId>dev.morphia.morphia</groupId>
             <artifactId>morphia-core</artifactId>
             <version>${morphia.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongodb-driver-sync</artifactId>
+            <version>${mongo-driver.version}</version>
         </dependency>
 
     </dependencies>
