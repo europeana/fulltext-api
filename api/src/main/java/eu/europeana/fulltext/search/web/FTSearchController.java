@@ -24,8 +24,8 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
-import static eu.europeana.fulltext.util.RequestUtils.ACCEPT_VERSION_INVALID;
-import static eu.europeana.fulltext.util.RequestUtils.getRequestVersion;
+import static eu.europeana.fulltext.util.HttpUtils.ACCEPT_VERSION_INVALID;
+import static eu.europeana.fulltext.util.HttpUtils.getRequestVersion;
 
 /**
  * Rest controller that handles search requests

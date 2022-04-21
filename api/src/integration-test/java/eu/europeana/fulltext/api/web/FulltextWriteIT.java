@@ -1,22 +1,24 @@
 package eu.europeana.fulltext.api.web;
 
 import static eu.europeana.fulltext.AppConstants.CONTENT_TYPE_VTT;
-import static eu.europeana.fulltext.api.IntegrationTestUtils.*;
+import static eu.europeana.fulltext.api.IntegrationTestUtils.ANNOPAGE_FILMPORTAL_1197365_JSON;
+import static eu.europeana.fulltext.api.IntegrationTestUtils.SUBTITLE_VTT;
+import static eu.europeana.fulltext.api.IntegrationTestUtils.loadFile;
+import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.europeana.fulltext.WebConstants;
-import eu.europeana.fulltext.api.service.FTService;
-import eu.europeana.fulltext.entity.TranslationAnnoPage;
 import eu.europeana.fulltext.api.BaseIntegrationTest;
 import eu.europeana.fulltext.api.IntegrationTestUtils;
-import eu.europeana.fulltext.repository.AnnoPageRepository;
-import eu.europeana.fulltext.repository.ResourceRepository;
+import eu.europeana.fulltext.api.service.FTService;
+import eu.europeana.fulltext.entity.TranslationAnnoPage;
 import eu.europeana.fulltext.util.GeneralUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,12 +26,13 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class FulltextWriteControllerIT extends BaseIntegrationTest {
+class FulltextWriteIT extends BaseIntegrationTest {
   @Autowired private WebApplicationContext webApplicationContext;
   @Autowired private FTService ftService;
   @Autowired ObjectMapper mapper;
@@ -49,25 +52,26 @@ class FulltextWriteControllerIT extends BaseIntegrationTest {
   void fulltextSubmissionShouldBeSuccessful() throws Exception {
     String requestBody = IntegrationTestUtils.loadFile(SUBTITLE_VTT);
 
-    String result =
-        mockMvc
-            .perform(
-                post("/presentation/08604/FDE2205EEE384218A8D986E5138F9691/annopage")
-                    .param(
-                        WebConstants.REQUEST_VALUE_MEDIA, "https://www.filmportal.de/node/1197365")
-                    .param(WebConstants.REQUEST_VALUE_LANG, "nl")
-                    .param(
-                        WebConstants.REQUEST_VALUE_RIGHTS,
-                        "http://creativecommons.org/licenses/by-sa/4.0/")
-                    .accept(MediaType.APPLICATION_JSON)
-                    .contentType(CONTENT_TYPE_VTT)
-                    .content(requestBody))
-            .andExpect(status().isOk())
-            .andReturn()
-            .getResponse()
-            .getContentAsString();
-
-    Assertions.assertNotNull(result);
+    String mediaUrl = "https://www.filmportal.de/node/1197365";
+    mockMvc
+        .perform(
+            post("/presentation/08604/FDE2205EEE384218A8D986E5138F9691/annopage")
+                .param(WebConstants.REQUEST_VALUE_MEDIA, mediaUrl)
+                .param(WebConstants.REQUEST_VALUE_LANG, "nl")
+                .param(
+                    WebConstants.REQUEST_VALUE_RIGHTS,
+                    "http://creativecommons.org/licenses/by-sa/4.0/")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(CONTENT_TYPE_VTT)
+                .content(requestBody))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath(
+                "$.@id",
+                endsWith(
+                    "/08604/FDE2205EEE384218A8D986E5138F9691/annopage/"
+                        + GeneralUtils.derivePageId(mediaUrl))))
+        .andExpect(jsonPath("$.language", is("nl")));
   }
 
   @Test
@@ -77,22 +81,26 @@ class FulltextWriteControllerIT extends BaseIntegrationTest {
         mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), TranslationAnnoPage.class);
     ftService.saveAnnoPage(annoPage);
 
-    String result =
+        String updatedRights = annoPage.getRes().getRights() + "updated";
         mockMvc
             .perform(
                 put(GeneralUtils.getAnnoPageUrl(annoPage))
                     .param(WebConstants.REQUEST_VALUE_LANG, annoPage.getLang())
                     .param(
                         WebConstants.REQUEST_VALUE_RIGHTS,
-                        annoPage.getRes().getRights() + "updated")
+                        updatedRights)
                     .param(WebConstants.REQUEST_VALUE_SOURCE, "https:annotation/source/value")
                     .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andReturn()
-            .getResponse()
-            .getContentAsString();
 
-    Assertions.assertNotNull(result);
+            .andExpect(status().isOk())
+            .andExpect(
+                jsonPath(
+                    "$.@id",
+                    endsWith(
+                        GeneralUtils.getAnnoPageUrl(annoPage))))
+            .andExpect(jsonPath("$.language", is(annoPage.getLang())))
+            // rights should have been updated
+            .andExpect(jsonPath("$.resources[0].resource.rights", is(updatedRights)));
   }
 
   @Test
@@ -114,8 +122,7 @@ class FulltextWriteControllerIT extends BaseIntegrationTest {
         mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), TranslationAnnoPage.class);
     ftService.saveAnnoPage(annoPage);
     mockMvc
-        .perform(
-            delete(GeneralUtils.getAnnoPageUrl(annoPage)).accept(MediaType.APPLICATION_JSON))
+        .perform(delete(GeneralUtils.getAnnoPageUrl(annoPage)).accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isNoContent());
   }
 
