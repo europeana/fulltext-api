@@ -347,7 +347,7 @@ public class AnnoPageRepository {
      * @param annoTypes     list containing text granularity values to match
      * @return Updated aggregation query
      */
-    private Aggregation filterTextGranularity(Aggregation annoPageQuery,
+    private Aggregation<AnnoPage> filterTextGranularity(Aggregation<AnnoPage> annoPageQuery,
         List<AnnotationType> annoTypes) {
         if (annoTypes.isEmpty()) {
             return annoPageQuery;
@@ -355,7 +355,7 @@ public class AnnoPageRepository {
 
         List<String> dcTypes = getDcTypes(annoTypes);
         // _id implicitly included in projection
-        return annoPageQuery.project(Projection.of()
+        return annoPageQuery.project(Projection.project()
             .include(DATASET_ID)
             .include(LOCAL_ID)
             .include(PAGE_ID)
