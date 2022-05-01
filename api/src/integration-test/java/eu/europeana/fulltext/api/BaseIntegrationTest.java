@@ -26,7 +26,9 @@ public abstract class BaseIntegrationTest {
   static void setProperties(DynamicPropertyRegistry registry) {
     registry.add("auth.enabled", () -> "false");
     registry.add("annosync.enabled", () -> "false");
-    registry.add("mongo.connectionUrl", MONGO_CONTAINER::getConnectionUrl);
+    registry.add(
+        // add compressor, so we can detect issues during integration tests
+        "mongo.connectionUrl", () -> MONGO_CONTAINER.getConnectionUrl() + "?compressors=snappy");
     registry.add("mongo.fulltext.database", MONGO_CONTAINER::getFulltextDb);
     registry.add("mongo.batch.database", MONGO_CONTAINER::getBatchDb);
     // remove annotationId domain restriction for tests

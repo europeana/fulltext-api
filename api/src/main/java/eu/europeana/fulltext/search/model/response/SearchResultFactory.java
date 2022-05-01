@@ -3,7 +3,7 @@ package eu.europeana.fulltext.search.model.response;
 import eu.europeana.fulltext.search.model.response.v2.SearchResultV2;
 import eu.europeana.fulltext.search.model.response.v3.SearchResultV3;
 
-import static eu.europeana.fulltext.util.RequestUtils.REQUEST_VERSION_3;
+import static eu.europeana.fulltext.util.HttpUtils.REQUEST_VERSION_3;
 
 
 public class SearchResultFactory {

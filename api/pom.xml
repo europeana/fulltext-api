@@ -225,15 +225,6 @@
         <dependency>
             <groupId>eu.europeana.api.commons</groupId>
             <artifactId>commons-web</artifactId>
-            <version>${api-commons.version}</version>
-            <exclusions>
-                <!-- exclude Swagger dependency as it clashes with version in project
-                 TODO: remove Swagger from api-commons -->
-                <exclusion>
-                    <groupId>io.springfox</groupId>
-                    <artifactId>springfox-swagger2</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <!-- Test stuff -->
