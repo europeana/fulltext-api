@@ -6,11 +6,12 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.springframework.http.HttpHeaders;
 
 import static eu.europeana.fulltext.api.config.FTDefinitions.*;
 import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_JSONLD;
 
-public class RequestUtils {
+public class HttpUtils {
     public static final Pattern ACCEPT_PROFILE_PATTERN = Pattern.compile("profile=\"(.*?)\"");
     public static final String  ACCEPT                 = "Accept";
     public static final String  ACCEPT_JSON            = "Accept=" + MEDIA_TYPE_JSON;
@@ -58,5 +59,23 @@ public class RequestUtils {
         }
         return result;
     }
+
+    public static void addContentTypeToResponseHeader(HttpHeaders headers, String version, boolean isJson) {
+        if ("3".equalsIgnoreCase(version)) {
+            if (isJson) {
+                headers.add(CONTENT_TYPE, MEDIA_TYPE_IIIF_JSON_V3);
+            } else {
+                headers.add(CONTENT_TYPE, MEDIA_TYPE_IIIF_JSONLD_V3);
+            }
+        } else {
+            if (isJson) {
+                headers.add(CONTENT_TYPE, MEDIA_TYPE_IIIF_JSON_V2);
+            } else {
+                headers.add(CONTENT_TYPE, MEDIA_TYPE_IIIF_JSONLD_V2);
+            }
+        }
+    }
+
+
 
 }

@@ -2,6 +2,7 @@ package eu.europeana.fulltext.api.web;
 
 import static eu.europeana.fulltext.api.IntegrationTestUtils.ANNOPAGE_FILMPORTAL_SALEM06_JSON;
 import static eu.europeana.fulltext.api.IntegrationTestUtils.loadFileAndReplaceServerUrl;
+import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -126,11 +127,8 @@ class AnnoSyncIT extends BaseIntegrationTest {
                 .param(WebConstants.REQUEST_VALUE_SOURCE, annotationId)
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isAccepted())
-        .andExpect(jsonPath("$.dsId", is("08604")))
-        .andExpect(jsonPath("$.lcId", is("node_1680982")))
-        .andExpect(jsonPath("$.tgtId", is(expectedTgtId)))
-        .andExpect(jsonPath("$.lang", is("es")))
-        .andExpect(jsonPath("$.pgId", is(GeneralUtils.derivePageId(expectedTgtId))));
+        .andExpect(jsonPath("$.@id", endsWith("/08604/node_1680982/annopage/" + GeneralUtils.derivePageId(expectedTgtId))))
+        .andExpect(jsonPath("$.language", is("es")));
   }
 
   @Test

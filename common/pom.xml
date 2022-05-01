@@ -36,19 +36,6 @@
         <dependency>
             <groupId>eu.europeana.api.commons</groupId>
             <artifactId>commons-error</artifactId>
-            <version>${api-commons.version}</version>
-            <exclusions>
-                <!-- Transitive dependency from commons-definitions. Mongo version there
-                 clashes with fulltext version -->
-                <exclusion>
-                    <groupId>org.mongodb</groupId>
-                    <artifactId>mongo-java-driver</artifactId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>commons-collections</artifactId>
-                    <groupId>commons-collections</groupId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>

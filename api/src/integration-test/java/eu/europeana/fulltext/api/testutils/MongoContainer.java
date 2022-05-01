@@ -55,7 +55,7 @@ public class MongoContainer extends GenericContainer<MongoContainer> {
       throw new IllegalStateException("MongoDBContainer should be started first");
     } else {
       return String.format(
-          "mongodb://%s:%s@%s:%d",
+          "mongodb://%s:%s@%s:%d/",
           adminUsername, adminPassword, this.getContainerIpAddress(), this.getMappedPort(27017));
     }
   }

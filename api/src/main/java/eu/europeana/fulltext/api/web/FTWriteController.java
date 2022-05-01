@@ -3,15 +3,22 @@ package eu.europeana.fulltext.api.web;
 import static eu.europeana.fulltext.WebConstants.MOTIVATION_SUBTITLING;
 import static eu.europeana.fulltext.WebConstants.REQUEST_VALUE_SOURCE;
 import static eu.europeana.fulltext.util.GeneralUtils.isValidAnnotationId;
+import static eu.europeana.fulltext.util.HttpUtils.REQUEST_VERSION_2;
+import static eu.europeana.fulltext.util.HttpUtils.addContentTypeToResponseHeader;
 
 import com.dotsub.converter.model.SubtitleItem;
 import eu.europeana.api.commons.error.EuropeanaApiException;
+import eu.europeana.api.commons.service.authorization.AuthorizationService;
+import eu.europeana.api.commons.web.controller.BaseRestController;
 import eu.europeana.api.commons.web.exception.ApplicationAuthenticationException;
 import eu.europeana.api.commons.web.http.HttpHeaders;
 import eu.europeana.api.commons.web.model.vocabulary.Operations;
+import eu.europeana.api.commons.web.service.AbstractRequestPathMethodService;
 import eu.europeana.fulltext.WebConstants;
 import eu.europeana.fulltext.api.config.FTSettings;
+import eu.europeana.fulltext.api.model.AnnotationWrapper;
 import eu.europeana.fulltext.api.service.AnnotationApiRestService;
+import eu.europeana.fulltext.api.service.CacheUtils;
 import eu.europeana.fulltext.api.service.FTService;
 import eu.europeana.fulltext.api.service.SubtitleService;
 import eu.europeana.fulltext.entity.AnnoPage;
@@ -20,6 +27,7 @@ import eu.europeana.fulltext.exception.AnnoPageDoesNotExistException;
 import eu.europeana.fulltext.exception.InvalidFormatException;
 import eu.europeana.fulltext.exception.InvalidUriException;
 import eu.europeana.fulltext.exception.MediaTypeNotSupportedException;
+import eu.europeana.fulltext.exception.SerializationException;
 import eu.europeana.fulltext.exception.SubtitleParsingException;
 import eu.europeana.fulltext.exception.UnsupportedAnnotationException;
 import eu.europeana.fulltext.subtitles.AnnotationPreview;
@@ -31,9 +39,8 @@ import eu.europeana.fulltext.subtitles.external.AnnotationItem;
 import eu.europeana.fulltext.util.GeneralUtils;
 import io.swagger.annotations.ApiOperation;
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -59,7 +66,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 @RestController
 @Validated
-public class FTWriteController extends BaseRest {
+public class FTWriteController extends BaseRestController {
 
   private final FTSettings appSettings;
   private final SubtitleService subtitleService;
@@ -68,13 +75,18 @@ public class FTWriteController extends BaseRest {
   private final FTService ftService;
   private final Predicate<String> annotationIdPattern;
 
+  private final AuthorizationService ftAuthorizationService;
+  private final AbstractRequestPathMethodService requestPathMethodService;
+
   private static final Logger LOG = LogManager.getLogger(FTWriteController.class);
 
   public FTWriteController(
       FTSettings appSettings,
       SubtitleService subtitleHandlerService,
       AnnotationApiRestService annotationsApiRestService,
-      FTService ftService) {
+      FTService ftService,
+      AuthorizationService ftAuthorizationService,
+      AbstractRequestPathMethodService requestPathMethodService) {
     this.appSettings = appSettings;
     this.subtitleService = subtitleHandlerService;
     this.annotationsApiRestService = annotationsApiRestService;
@@ -84,6 +96,13 @@ public class FTWriteController extends BaseRest {
                 String.format(
                     GeneralUtils.ANNOTATION_ID_REGEX, appSettings.getAnnotationIdHostsPattern()))
             .asMatchPredicate();
+    this.ftAuthorizationService = ftAuthorizationService;
+    this.requestPathMethodService = requestPathMethodService;
+  }
+
+  @Override
+  protected AuthorizationService getAuthorizationService() {
+    return ftAuthorizationService;
   }
 
   @ApiOperation(value = "Propagate and synchronise with Annotations API")
@@ -92,7 +111,7 @@ public class FTWriteController extends BaseRest {
       produces = {HttpHeaders.CONTENT_TYPE_JSONLD, MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<String> syncAnnotations(
       @RequestParam(value = REQUEST_VALUE_SOURCE) String source, HttpServletRequest request)
-      throws ApplicationAuthenticationException, EuropeanaApiException, IOException {
+      throws ApplicationAuthenticationException, EuropeanaApiException {
     if (appSettings.isAuthEnabled()) {
       verifyWriteAccess(Operations.UPDATE, request);
     }
@@ -115,7 +134,9 @@ public class FTWriteController extends BaseRest {
           new DeleteAnnoSyncResponse(
               source, count > 0 ? Status.DELETED.getValue() : Status.NOOP.getValue(), annoPage);
 
-      return generateResponse(request, serializeResponse(response), HttpStatus.ACCEPTED);
+      return ResponseEntity.status(HttpStatus.ACCEPTED)
+          .header(HttpHeaders.ALLOW, getMethodsForRequestPattern(request, requestPathMethodService))
+          .body(ftService.serialise(response));
     }
 
     AnnotationItem item = itemOptional.get();
@@ -136,7 +157,7 @@ public class FTWriteController extends BaseRest {
     // could be an update.
     ftService.upsertAnnoPage(List.of(annoPage));
 
-    return generateResponse(request, serializeJsonLd(annoPage), HttpStatus.ACCEPTED);
+    return generateResponse(request, annoPage, HttpStatus.ACCEPTED);
   }
 
   @ApiOperation(
@@ -158,27 +179,11 @@ public class FTWriteController extends BaseRest {
       @RequestParam(value = WebConstants.REQUEST_VALUE_SOURCE, required = false) String source,
       @RequestBody String content,
       HttpServletRequest request)
-      throws ApplicationAuthenticationException, EuropeanaApiException, IOException,
-          URISyntaxException {
+      throws ApplicationAuthenticationException, EuropeanaApiException {
 
     if (appSettings.isAuthEnabled()) {
       verifyWriteAccess(Operations.CREATE, request);
     }
-    return addNewFulltext(
-        datasetId, localId, media, lang, originalLang, rights, source, content, request);
-  }
-
-  private ResponseEntity<String> addNewFulltext(
-      String datasetId,
-      String localId,
-      String media,
-      String lang,
-      boolean originalLang,
-      String rights,
-      String source,
-      String content,
-      HttpServletRequest request)
-      throws EuropeanaApiException, IOException {
     /*
      * Check if there is a fulltext annotation page associated with the combination of DATASET_ID,
      * LOCAL_ID and the media URL, if so then return a HTTP 301 with the URL of the Annotation Page
@@ -215,7 +220,7 @@ public class FTWriteController extends BaseRest {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Created new AnnoPage {}", savedAnnoPage);
     }
-    return generateResponse(request, serializeJsonLd(savedAnnoPage), HttpStatus.OK);
+    return generateResponse(request, savedAnnoPage, HttpStatus.OK);
   }
 
   @ApiOperation(value = "Replaces existing fulltext for a media resource with a new document")
@@ -236,36 +241,21 @@ public class FTWriteController extends BaseRest {
       @RequestParam(value = WebConstants.REQUEST_VALUE_SOURCE, required = false) String source,
       @RequestBody(required = false) String content,
       HttpServletRequest request)
-      throws ApplicationAuthenticationException, EuropeanaApiException, IOException {
+      throws ApplicationAuthenticationException, EuropeanaApiException {
 
     if (appSettings.isAuthEnabled()) {
       verifyWriteAccess(Operations.UPDATE, request);
     }
-    return replaceExistingFullText(
-        datasetId, localId, pageId, lang, originalLang, rights, source, content, request);
-  }
-
-  private ResponseEntity<String> replaceExistingFullText(
-      String datasetId,
-      String localId,
-      String pgId,
-      String lang,
-      boolean originalLang,
-      String rights,
-      String source,
-      String content,
-      HttpServletRequest request)
-      throws IOException, EuropeanaApiException {
     /*
      * Check if there is a fulltext annotation page associated with the combination of DATASET_ID,
      * LOCAL_ID and the PAGE_ID and LANG, if not then return a HTTP 404
      */
-    TranslationAnnoPage annoPage = ftService.getAnnoPageByPgId(datasetId, localId, pgId, lang);
+    TranslationAnnoPage annoPage = ftService.getAnnoPageByPgId(datasetId, localId, pageId, lang);
 
     if (annoPage == null) {
       throw new AnnoPageDoesNotExistException(
           "Annotation page does not exist for "
-              + GeneralUtils.getTranslationAnnoPageUrl(datasetId, localId, pgId, lang));
+              + GeneralUtils.getTranslationAnnoPageUrl(datasetId, localId, pageId, lang));
     }
     // determine type
     SubtitleType type = null;
@@ -291,7 +281,7 @@ public class FTWriteController extends BaseRest {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Replaced AnnoPage {}", updatedAnnoPage);
     }
-    return generateResponse(request, serializeJsonLd(updatedAnnoPage), HttpStatus.OK);
+    return generateResponse(request, updatedAnnoPage, HttpStatus.OK);
   }
 
   @ApiOperation(value = "Deletes the full-text associated to a media resource\n")
@@ -309,12 +299,6 @@ public class FTWriteController extends BaseRest {
     if (appSettings.isAuthEnabled()) {
       verifyWriteAccess(Operations.DELETE, request);
     }
-    return deleteAnnoPage(datasetId, localId, pageId, lang, request);
-  }
-
-  private ResponseEntity<String> deleteAnnoPage(
-      String datasetId, String localId, String pageId, String lang, HttpServletRequest request)
-      throws AnnoPageDoesNotExistException {
     /*
      * Check if there is a fulltext annotation page associated with the combination of DATASET_ID,
      * LOCAL_ID and the PAGE_ID and LANG (if provided), if not then return a HTTP 404
@@ -367,5 +351,40 @@ public class FTWriteController extends BaseRest {
         .setMedia(media)
         .setSource(source)
         .build();
+  }
+
+  protected ResponseEntity<String> generateResponse(
+      HttpServletRequest request, AnnoPage annoPage, HttpStatus status)
+      throws SerializationException {
+
+    AnnotationWrapper annotationWrapper = ftService.generateAnnoPageV2(annoPage, true);
+    // no context in json responses
+    annotationWrapper.setContext(null);
+
+    ZonedDateTime modified = CacheUtils.dateToZonedUTC(annoPage.getModified());
+    String requestVersion = REQUEST_VERSION_2;
+
+    String eTag =
+        CacheUtils.generateETag(
+            annoPage.getDsId() + annoPage.getLcId() + annoPage.getPgId(),
+            modified,
+            requestVersion + appSettings.getAppVersion(),
+            true);
+
+    org.springframework.http.HttpHeaders headers =
+        CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
+    addContentTypeToResponseHeader(headers, requestVersion, true);
+    // overwrite Allow header populated in CacheUtils.generateHeaders
+    headers.set(HttpHeaders.ALLOW, getMethodsForRequestPattern(request, requestPathMethodService));
+
+    return ResponseEntity.status(status)
+        .headers(headers)
+        .body(ftService.serialise(annotationWrapper));
+  }
+
+  private ResponseEntity<String> noContentResponse(HttpServletRequest request) {
+    org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+    headers.add(HttpHeaders.ALLOW, getMethodsForRequestPattern(request, requestPathMethodService));
+    return ResponseEntity.noContent().headers(headers).build();
   }
 }

@@ -41,7 +41,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <api-commons.version>0.3.10-SNAPSHOT</api-commons.version>
+        <api-commons.version>0.3.14-SNAPSHOT</api-commons.version>
         <!-- upgraded to 2.5.9 as 2.6.x is not compatible with swagger (springfox-swagger-ui)-->
         <!-- org.apache.tomcat.embed version 9.0.56 is included uptill 2.6.3 which is vulnerable. See : CVE-2022-23181  -->
         <spring-boot.version>2.5.9</spring-boot.version>
@@ -49,7 +49,7 @@
         <io-informatics.version>0.1.1</io-informatics.version>
         <morphia.version>2.2.6</morphia.version>
         <mongo-driver.version>4.5.1</mongo-driver.version>
-        <snappy.version>1.1.7.2</snappy.version>
+        <snappy.version>1.1.8.4</snappy.version>
         <commons-lang3.version>3.9</commons-lang3.version>
         <commons-io.version>2.4</commons-io.version>
         <log4j2.version>2.17.1</log4j2.version>
@@ -75,6 +75,44 @@
                 <version>${spring-boot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>eu.europeana.api.commons</groupId>
+                <artifactId>commons-web</artifactId>
+                <version>${api-commons.version}</version>
+                <exclusions>
+                    <!-- exclude Swagger dependency as it clashes with version in project
+                     TODO: remove Swagger from api-commons -->
+                    <exclusion>
+                        <groupId>io.springfox</groupId>
+                        <artifactId>springfox-swagger2</artifactId>
+                    </exclusion>
+                    <!-- Transitive dependency from commons-definitions. Mongo version there
+                     clashes with fulltext version -->
+                    <exclusion>
+                        <groupId>org.mongodb</groupId>
+                        <artifactId>mongo-java-driver</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>eu.europeana.api.commons</groupId>
+                <artifactId>commons-error</artifactId>
+                <version>${api-commons.version}</version>
+                <exclusions>
+                    <!-- Transitive dependency from commons-definitions. Mongo version there
+                     clashes with fulltext version -->
+                    <exclusion>
+                        <groupId>org.mongodb</groupId>
+                        <artifactId>mongo-java-driver</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>commons-collections</artifactId>
+                        <groupId>commons-collections</groupId>
+                    </exclusion>
+                </exclusions>
             </dependency>
         </dependencies>
     </dependencyManagement>

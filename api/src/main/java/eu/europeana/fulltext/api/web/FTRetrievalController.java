@@ -25,9 +25,8 @@ import springfox.documentation.annotations.ApiIgnore;
 import javax.servlet.http.HttpServletRequest;
 import java.time.ZonedDateTime;
 import java.util.*;
-import java.util.regex.Matcher;
 
-import static eu.europeana.fulltext.util.RequestUtils.*;
+import static eu.europeana.fulltext.util.HttpUtils.*;
 import static eu.europeana.fulltext.api.config.FTDefinitions.*;
 import static eu.europeana.fulltext.api.service.CacheUtils.generateETag;
 import static eu.europeana.fulltext.api.service.CacheUtils.generateSimpleETag;
@@ -43,7 +42,7 @@ import static eu.europeana.fulltext.api.service.CacheUtils.generateSimpleETag;
 @RestController
 @Api(tags = {"Full-text item"},
     description = "Retrieve a page with annotations, an individual annotation or a full-text")
-public class FTController {
+public class FTRetrievalController {
 
     private static final Set<AnnotationType> ALLOWED_ANNOTATION_TYPES = EnumSet.of(AnnotationType.PAGE,
         AnnotationType.BLOCK,
@@ -52,11 +51,11 @@ public class FTController {
         AnnotationType.MEDIA,
         AnnotationType.CAPTION);
 
-    private static final Logger LOG = LogManager.getLogger(FTController.class);
+    private static final Logger LOG = LogManager.getLogger(FTRetrievalController.class);
 
     private final FTService fts;
 
-    public FTController(FTService ftService) {
+    public FTRetrievalController(FTService ftService) {
         this.fts = ftService;
     }
 
@@ -166,13 +165,12 @@ public class FTController {
             return new ResponseEntity<>(ACCEPT_VERSION_INVALID, HttpStatus.NOT_ACCEPTABLE);
         }
         AnnotationWrapper annotationPage;
-        HttpHeaders headers;
 
         List<AnnotationType> textGranValues = ControllerUtils.validateTextGranularity(textGranularity,
             ALLOWED_ANNOTATION_TYPES);
         AnnoPage annoPage = fts.fetchAnnoPage(datasetId, localId, pageId, textGranValues, lang);
         ZonedDateTime modified = CacheUtils.dateToZonedUTC(annoPage.getModified());
-        String eTag = generateETag(datasetId + localId + pageId,
+        String eTag = CacheUtils.generateETag(datasetId + localId + pageId,
             modified,
             requestVersion + fts.getSettings().getAppVersion(),
             true);
@@ -181,7 +179,7 @@ public class FTController {
             return cached;
         }
 
-        headers = CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
+        HttpHeaders headers = CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
         addContentTypeToResponseHeader(headers, requestVersion, isJson);
 
         // Now profile can be profile=text OR
@@ -434,57 +432,6 @@ public class FTController {
 
     // --- utils ---
 
-    private void addContentTypeToResponseHeader(HttpHeaders headers, String version, boolean isJson) {
-        if ("3".equalsIgnoreCase(version)) {
-            if (isJson) {
-                headers.add(CONTENT_TYPE, MEDIA_TYPE_IIIF_JSON_V3);
-            } else {
-                headers.add(CONTENT_TYPE, MEDIA_TYPE_IIIF_JSONLD_V3);
-            }
-        } else {
-            if (isJson) {
-                headers.add(CONTENT_TYPE, MEDIA_TYPE_IIIF_JSON_V2);
-            } else {
-                headers.add(CONTENT_TYPE, MEDIA_TYPE_IIIF_JSONLD_V2);
-            }
-        }
-    }
-
-    /**
-     * Retrieve the requested version from the accept header, or if not present from the format parameter. If nothing is
-     * specified then 2 is returned as default
-     *
-     * @return either version 2, 3 or ACCEPT_INVALID
-     */
-    private String getRequestVersion(HttpServletRequest request, String format) {
-        String result = null;
-        String accept = request.getHeader(ACCEPT);
-        if (StringUtils.isNotEmpty(accept)) {
-            Matcher m = ACCEPT_PROFILE_PATTERN.matcher(accept);
-            if (m.find()) { // found a Profile parameter in the Accept header
-                String profiles = m.group(1);
-                if (profiles.toLowerCase(Locale.getDefault()).contains(MEDIA_TYPE_IIIF_V3)) {
-                    result = "3";
-                } else if (profiles.toLowerCase(Locale.getDefault()).contains(MEDIA_TYPE_IIIF_V2)) {
-                    result = "2";
-                } else {
-                    result
-                        = ACCEPT_VERSION_INVALID; // in case a Profile is found that matches neither version => HTTP 406
-                }
-            }
-        }
-        if (result == null) {
-            // Request header is empty, or does not contain a Profile parameter
-            if (StringUtils.isBlank(format)) {
-                result = "2";    // if format not given, fall back to default "2"
-            } else if ("2".equals(format) || "3".equals(format)) {
-                result = format; // else use the format parameter
-            } else {
-                result = ACCEPT_VERSION_INVALID;
-            }
-        }
-        return result;
-    }
 
     /**
      * For testing retrieving the version from the pom file
