@@ -6,12 +6,16 @@ import eu.europeana.fulltext.subtitles.edm.EdmReference;
 import eu.europeana.fulltext.subtitles.edm.EdmTimeBoundary;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.TranslationResource;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 
 public class GeneralUtils {
 
@@ -191,5 +195,25 @@ public class GeneralUtils {
     }
 
     return path;
+  }
+
+
+  public static String generateAnnotationSearchQuery(@Nullable Instant from, @NonNull Instant to) {
+    /*
+     * if 'from' is null, fetch from the earliest representable time
+     */
+
+    String fromString = from != null ? toSolrDateString(from) : "*";
+    String toString = toSolrDateString(to);
+
+    return "generated:[" + fromString + " TO " + toString + "] AND motivation:subtitling";
+  }
+
+  private static String toSolrDateString(Instant instant) {
+    /*
+     * escape colons in dates, as the colon is a special character to Solr's parser
+     * See: https://solr.apache.org/guide/6_6/working-with-dates.html#WorkingwithDates-DateFormatting
+     */
+    return instant.atZone(ZoneOffset.UTC).toString().replace(":", "\\:");
   }
 }

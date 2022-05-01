@@ -4,6 +4,7 @@ import static eu.europeana.fulltext.AppConstants.ANNO_SYNC_TASK_EXECUTOR;
 import static eu.europeana.fulltext.batch.BatchUtils.ANNO_SYNC_JOB;
 
 import eu.europeana.fulltext.api.config.FTSettings;
+import eu.europeana.fulltext.api.service.EmailService;
 import eu.europeana.fulltext.batch.listener.AnnoSyncUpdateListener;
 import eu.europeana.fulltext.batch.processor.AnnotationProcessor;
 import eu.europeana.fulltext.batch.reader.ItemReaderConfig;
@@ -23,7 +24,6 @@ import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.step.skip.SkipPolicy;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -48,6 +48,9 @@ public class AnnotationSyncJobConfig {
 
   private final TaskExecutor annoSyncTaskExecutor;
 
+  private final AnnoSyncStats stats;
+  private final EmailService emailService;
+
   /** SkipPolicy to ignore all failures when executing jobs, as they can be handled later */
   private static final SkipPolicy noopSkipPolicy = (Throwable t, int skipCount) -> true;
 
@@ -61,7 +64,8 @@ public class AnnotationSyncJobConfig {
       AnnoPageUpsertWriter annoPageWriter,
       AnnoPageDeletionWriter annoPageDeletionWriter,
       AnnoSyncUpdateListener updateListener,
-      @Qualifier(ANNO_SYNC_TASK_EXECUTOR) TaskExecutor annoSyncTaskExecutor) {
+      @Qualifier(ANNO_SYNC_TASK_EXECUTOR) TaskExecutor annoSyncTaskExecutor,
+      AnnoSyncStats stats, EmailService emailService) {
     this.appSettings = appSettings;
     this.jobBuilderFactory = jobBuilderFactory;
     this.stepBuilderFactory = stepBuilderFactory;
@@ -72,6 +76,8 @@ public class AnnotationSyncJobConfig {
     this.annoPageDeletionWriter = annoPageDeletionWriter;
     this.updateListener = updateListener;
     this.annoSyncTaskExecutor = annoSyncTaskExecutor;
+    this.stats = stats;
+    this.emailService = emailService;
   }
 
   private Step syncAnnotationsStep(Instant from, Instant to) {
@@ -111,10 +117,22 @@ public class AnnotationSyncJobConfig {
       logger.info(
           "Starting annotation sync job. Fetching annotations from {} to {}", fromLogString, to);
     }
+
+    // reset stats before each job run
+    stats.reset();
+
     return this.jobBuilderFactory
         .get(ANNO_SYNC_JOB)
         .start(syncAnnotationsStep(from, to))
         .next(deleteAnnotationsStep(from, to))
+        .next(sendSuccessEmailStep(from, to))
+        .build();
+  }
+
+  private Step sendSuccessEmailStep(Instant from, Instant to) {
+    return stepBuilderFactory
+        .get("sendEmailStep")
+        .tasklet(new MailSenderTasklet(stats, emailService, from, to, appSettings))
         .build();
   }
 }

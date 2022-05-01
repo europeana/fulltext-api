@@ -85,8 +85,8 @@ public class SubtitleService {
     // ADD the resource in Fulltext page
     resource.setValue(subtitleContext.end());
     page.setResource(resource);
-    if (logger.isDebugEnabled()) {
-      logger.debug(
+    if (logger.isTraceEnabled()) {
+      logger.trace(
           "Successfully converted SRT to EDM for record {}. Processed Annotations - {}",
           preview.getRecordId(),
           page.size());
