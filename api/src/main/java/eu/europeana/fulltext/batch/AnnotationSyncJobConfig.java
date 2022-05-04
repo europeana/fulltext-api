@@ -6,8 +6,10 @@ import static eu.europeana.fulltext.batch.BatchUtils.ANNO_SYNC_JOB;
 import eu.europeana.fulltext.api.config.FTSettings;
 import eu.europeana.fulltext.api.service.EmailService;
 import eu.europeana.fulltext.batch.listener.AnnoSyncUpdateListener;
+import eu.europeana.fulltext.batch.model.AnnoSyncJobMetadata;
 import eu.europeana.fulltext.batch.processor.AnnotationProcessor;
 import eu.europeana.fulltext.batch.reader.ItemReaderConfig;
+import eu.europeana.fulltext.batch.repository.AnnoSyncJobMetadataRepo;
 import eu.europeana.fulltext.batch.writer.AnnoPageDeletionWriter;
 import eu.europeana.fulltext.batch.writer.AnnoPageUpsertWriter;
 import eu.europeana.fulltext.entity.TranslationAnnoPage;
@@ -51,6 +53,8 @@ public class AnnotationSyncJobConfig {
   private final AnnoSyncStats stats;
   private final EmailService emailService;
 
+  private final AnnoSyncJobMetadataRepo annoSyncJobMetaRepository;
+
   /** SkipPolicy to ignore all failures when executing jobs, as they can be handled later */
   private static final SkipPolicy noopSkipPolicy = (Throwable t, int skipCount) -> true;
 
@@ -65,7 +69,9 @@ public class AnnotationSyncJobConfig {
       AnnoPageDeletionWriter annoPageDeletionWriter,
       AnnoSyncUpdateListener updateListener,
       @Qualifier(ANNO_SYNC_TASK_EXECUTOR) TaskExecutor annoSyncTaskExecutor,
-      AnnoSyncStats stats, EmailService emailService) {
+      AnnoSyncStats stats,
+      EmailService emailService,
+      AnnoSyncJobMetadataRepo annoSyncJobMetaRepository) {
     this.appSettings = appSettings;
     this.jobBuilderFactory = jobBuilderFactory;
     this.stepBuilderFactory = stepBuilderFactory;
@@ -78,6 +84,7 @@ public class AnnotationSyncJobConfig {
     this.annoSyncTaskExecutor = annoSyncTaskExecutor;
     this.stats = stats;
     this.emailService = emailService;
+    this.annoSyncJobMetaRepository = annoSyncJobMetaRepository;
   }
 
   private Step syncAnnotationsStep(Instant from, Instant to) {
@@ -109,13 +116,24 @@ public class AnnotationSyncJobConfig {
   }
 
   public Job syncAnnotations() {
-    Instant from = BatchUtils.getMostRecentSuccessfulStartTime(jobExplorer);
-    Instant to = Instant.now();
+
+    AnnoSyncJobMetadata jobMetadata = annoSyncJobMetaRepository.getMostRecentAnnoSyncMetadata();
+    Instant from = null;
+    Instant now = Instant.now();
+
+    // take from value from previous run if it exists
+    if (jobMetadata != null) {
+      from = jobMetadata.getLastSuccessfulStartTime();
+    } else {
+      jobMetadata = new AnnoSyncJobMetadata();
+    }
+
+    jobMetadata.setLastSuccessfulStartTime(now);
 
     if (logger.isInfoEnabled()) {
       String fromLogString = from == null ? "*" : from.toString();
       logger.info(
-          "Starting annotation sync job. Fetching annotations from {} to {}", fromLogString, to);
+          "Starting annotation sync job. Fetching annotations from {} to {}", fromLogString, now);
     }
 
     // reset stats before each job run
@@ -123,9 +141,17 @@ public class AnnotationSyncJobConfig {
 
     return this.jobBuilderFactory
         .get(ANNO_SYNC_JOB)
-        .start(syncAnnotationsStep(from, to))
-        .next(deleteAnnotationsStep(from, to))
-        .next(sendSuccessEmailStep(from, to))
+        .start(syncAnnotationsStep(from, now))
+        .next(deleteAnnotationsStep(from, now))
+        .next(sendSuccessEmailStep(from, now))
+        .next(updateAnnoSyncJobMetadata(jobMetadata))
+        .build();
+  }
+
+  private Step updateAnnoSyncJobMetadata(AnnoSyncJobMetadata jobMetadata) {
+    return stepBuilderFactory
+        .get("updateJobMetadataStep")
+        .tasklet(new AnnoSyncMetadataUpdaterTasklet(annoSyncJobMetaRepository, jobMetadata))
         .build();
   }
 

@@ -118,6 +118,9 @@ public class FTSettings implements InitializingBean {
     @Value("${annosync.enabled}")
     private boolean annoSyncEnabled;
 
+    @Value("${annosync.mail.enabled}")
+    private boolean annoSyncMailEnabled;
+
     @Value("${annosync.mail.from:}")
     private String mailFrom;
 
@@ -319,5 +322,9 @@ public class FTSettings implements InitializingBean {
 
     public String getDeploymentName(){
         return deploymentName;
+    }
+
+    public boolean annoSyncMailEnabled() {
+        return annoSyncMailEnabled;
     }
 }

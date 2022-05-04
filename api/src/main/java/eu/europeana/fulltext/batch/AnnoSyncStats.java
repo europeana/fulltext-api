@@ -4,7 +4,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.stereotype.Component;
 
 /**
- * Thread-safe counter track of new, updated and deleted AnnoPages when syncing Annotations.
+ * Thread-safe counter to track new, updated and deleted AnnoPages when syncing Annotations.
  *
  * Before use, call {@link AnnoSyncStats#reset()}
  */

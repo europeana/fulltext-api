@@ -23,6 +23,8 @@ public class MailSenderTasklet implements Tasklet {
   private final Instant from;
   private final Instant to;
 
+  private final boolean mailEnabled;
+
   private final String annotationApiUrl;
   private final String annotationWskey;
 
@@ -40,11 +42,13 @@ public class MailSenderTasklet implements Tasklet {
     this.to = to;
     this.annotationApiUrl = settings.getAnnotationsApiUrl();
     this.annotationWskey = settings.getAnnotationsApiKey();
+    this.mailEnabled = settings.annoSyncMailEnabled();
   }
 
   @Override
   public RepeatStatus execute(StepContribution stepContribution, ChunkContext chunkContext)
       throws Exception {
+
     String annotationSearchQuery =
         annotationApiUrl
             + ANNOTATION_SEARCH_PATH
@@ -55,7 +59,7 @@ public class MailSenderTasklet implements Tasklet {
                 GeneralUtils.generateAnnotationSearchQuery(from, to),
                 StandardCharsets.UTF_8.toString());
 
-    if (stats.getNew() + stats.getUpdated() + stats.getDeleted() > 0) {
+    if (mailEnabled && stats.getNew() + stats.getUpdated() + stats.getDeleted() > 0) {
       emailService.sendAnnoSyncSuccessEmail(
           "Successful Annotations Sync",
           stats.getNew(),
@@ -63,7 +67,12 @@ public class MailSenderTasklet implements Tasklet {
           stats.getDeleted(),
           annotationSearchQuery);
     } else {
-      logger.info("Not sending email as no annotations were synced");
+      logger.info(
+          "Email not sent. new={}; updated={}; deleted={}; mailEnabled={}",
+          stats.getNew(),
+          stats.getUpdated(),
+          stats.getDeleted(),
+          mailEnabled);
     }
     return RepeatStatus.FINISHED;
   }
