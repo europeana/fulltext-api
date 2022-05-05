@@ -1,5 +1,7 @@
 package eu.europeana.fulltext.api.config;
 
+import static eu.europeana.fulltext.util.GeneralUtils.DATE_FORMAT_PATTERN;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
@@ -24,7 +26,7 @@ public class SerializationConfig {
         return new Jackson2ObjectMapperBuilder()
                 // ignore null properties when serializing objects
                 .serializationInclusion(JsonInclude.Include.NON_NULL)
-                .dateFormat(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXX"))
+                .dateFormat(new SimpleDateFormat(DATE_FORMAT_PATTERN))
                 .visibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY).build();
     }
 

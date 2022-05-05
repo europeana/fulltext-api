@@ -61,10 +61,7 @@ public class MailSenderTasklet implements Tasklet {
 
     if (mailEnabled && stats.getNew() + stats.getUpdated() + stats.getDeleted() > 0) {
       emailService.sendAnnoSyncSuccessEmail(
-          "Successful Annotations Sync",
-          stats.getNew(),
-          stats.getUpdated(),
-          stats.getDeleted(),
+          "Successful Annotations Sync", stats,
           annotationSearchQuery);
     } else {
       logger.info(

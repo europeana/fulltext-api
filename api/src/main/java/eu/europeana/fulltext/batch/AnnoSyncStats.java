@@ -1,12 +1,14 @@
 package eu.europeana.fulltext.batch;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.stereotype.Component;
 
 /**
  * Thread-safe counter to track new, updated and deleted AnnoPages when syncing Annotations.
  *
- * Before use, call {@link AnnoSyncStats#reset()}
+ * <p>Before use, call {@link AnnoSyncStats#reset()}
  */
 @Component
 public class AnnoSyncStats {
@@ -14,10 +16,24 @@ public class AnnoSyncStats {
   private final AtomicInteger updatedAnnotations = new AtomicInteger();
   private final AtomicInteger deletedAnnotations = new AtomicInteger();
 
+  private Instant startTime;
+  private Duration elapsedTime;
+
   public void reset() {
     newAnnotations.set(0);
     updatedAnnotations.set(0);
     deletedAnnotations.set(0);
+
+    startTime = null;
+    elapsedTime = Duration.ZERO;
+  }
+
+  public void setStartTime(Instant startTime) {
+    this.startTime = startTime;
+  }
+
+  public void setElapsedTime(Duration elapsedTime) {
+    this.elapsedTime = elapsedTime;
   }
 
   public void addNew() {
@@ -42,5 +58,13 @@ public class AnnoSyncStats {
 
   public int getDeleted() {
     return deletedAnnotations.get();
+  }
+
+  public Duration getElapsedTime() {
+    return elapsedTime;
+  }
+
+  public Instant getStartTime() {
+    return startTime;
   }
 }

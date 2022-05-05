@@ -14,6 +14,7 @@ import eu.europeana.fulltext.batch.writer.AnnoPageDeletionWriter;
 import eu.europeana.fulltext.batch.writer.AnnoPageUpsertWriter;
 import eu.europeana.fulltext.entity.TranslationAnnoPage;
 import eu.europeana.fulltext.subtitles.external.AnnotationItem;
+import java.time.Duration;
 import java.time.Instant;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,6 +25,7 @@ import org.springframework.batch.core.configuration.annotation.JobBuilderFactory
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.step.skip.SkipPolicy;
+import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
@@ -119,7 +121,7 @@ public class AnnotationSyncJobConfig {
 
     AnnoSyncJobMetadata jobMetadata = annoSyncJobMetaRepository.getMostRecentAnnoSyncMetadata();
     Instant from = null;
-    Instant now = Instant.now();
+    Instant startTime = Instant.now();
 
     // take from value from previous run if it exists
     if (jobMetadata != null) {
@@ -128,23 +130,47 @@ public class AnnotationSyncJobConfig {
       jobMetadata = new AnnoSyncJobMetadata();
     }
 
-    jobMetadata.setLastSuccessfulStartTime(now);
+    jobMetadata.setLastSuccessfulStartTime(startTime);
 
     if (logger.isInfoEnabled()) {
       String fromLogString = from == null ? "*" : from.toString();
       logger.info(
-          "Starting annotation sync job. Fetching annotations from {} to {}", fromLogString, now);
+          "Starting annotation sync job. Fetching annotations from {} to {}",
+          fromLogString,
+          startTime);
     }
-
-    // reset stats before each job run
-    stats.reset();
 
     return this.jobBuilderFactory
         .get(ANNO_SYNC_JOB)
-        .start(syncAnnotationsStep(from, now))
-        .next(deleteAnnotationsStep(from, now))
-        .next(sendSuccessEmailStep(from, now))
+        .start(initStats(stats, startTime))
+        .next(syncAnnotationsStep(from, startTime))
+        .next(deleteAnnotationsStep(from, startTime))
+        .next(finishStats(stats, startTime))
+        .next(sendSuccessEmailStep(from, startTime))
         .next(updateAnnoSyncJobMetadata(jobMetadata))
+        .build();
+  }
+
+  private Step finishStats(AnnoSyncStats stats, Instant startTime) {
+    return stepBuilderFactory
+        .get("finishStatsStep")
+        .tasklet(
+            ((stepContribution, chunkContext) -> {
+              stats.setElapsedTime(Duration.between(startTime, Instant.now()));
+              return RepeatStatus.FINISHED;
+            }))
+        .build();
+  }
+
+  private Step initStats(AnnoSyncStats stats, Instant startTime) {
+    return stepBuilderFactory
+        .get("initStatsStep")
+        .tasklet(
+            ((stepContribution, chunkContext) -> {
+              stats.reset();
+              stats.setStartTime(startTime);
+              return RepeatStatus.FINISHED;
+            }))
         .build();
   }
 

@@ -6,6 +6,7 @@ import eu.europeana.fulltext.subtitles.edm.EdmReference;
 import eu.europeana.fulltext.subtitles.edm.EdmTimeBoundary;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.TranslationResource;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.Arrays;
@@ -19,7 +20,7 @@ import org.springframework.lang.Nullable;
 
 public class GeneralUtils {
 
-
+  public static String DATE_FORMAT_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSSXX";
   private GeneralUtils() {
     // private constructor to hide implicit one
   }

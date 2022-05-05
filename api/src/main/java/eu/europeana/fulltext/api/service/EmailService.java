@@ -1,9 +1,16 @@
 package eu.europeana.fulltext.api.service;
 
+import static eu.europeana.fulltext.batch.BatchUtils.getDurationText;
+import static eu.europeana.fulltext.util.GeneralUtils.DATE_FORMAT_PATTERN;
+
 import eu.europeana.fulltext.api.config.FTSettings;
+import eu.europeana.fulltext.batch.AnnoSyncStats;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
+import org.apache.commons.lang.time.DurationFormatUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -27,6 +34,9 @@ public class EmailService {
   private static final Logger logger = LogManager.getLogger(EmailService.class);
 
   private final JavaMailSender emailSender;
+
+  private final DateTimeFormatter formatter =
+      DateTimeFormatter.ofPattern(DATE_FORMAT_PATTERN).withZone(ZoneId.of("UTC"));
 
   /** Creates a new EmailService instance. Uses the default Spring Boot JavaMailSender */
   public EmailService(
@@ -54,6 +64,7 @@ public class EmailService {
       helper.setSubject(subject);
       helper.setText(body, true);
       emailSender.send(message);
+      logger.info("Email with subject {} sent. to={}; cc={}", subject, to, cc);
     } catch (MessagingException e) {
       logger.warn("Error sending email message: body={}", body, e);
     }
@@ -63,15 +74,18 @@ public class EmailService {
     }
   }
 
-  public void sendAnnoSyncSuccessEmail(String subject, int newAnnopages, int updatedAnnopages, int deletedAnnopages, String searchQuery) {
+  public void sendAnnoSyncSuccessEmail(String subject, AnnoSyncStats stats, String searchQuery) {
 
     Context thymeleafContext = new Context();
 
     Map<String, Object> templateModel =
         Map.of(
-            "numNewAnnopages", newAnnopages,
-            "numUpdatedAnnopages", updatedAnnopages,
-            "numDeletedAnnopages", deletedAnnopages,
+            "startTimeString",
+                stats.getStartTime() == null ? "" : formatter.format(stats.getStartTime()),
+            "durationString", getDurationText(stats.getElapsedTime()),
+            "numNewAnnopages", stats.getNew(),
+            "numUpdatedAnnopages", stats.getUpdated(),
+            "numDeletedAnnopages", stats.getDeleted(),
             "annotationSearchQuery", searchQuery,
             "deploymentName", deploymentName);
 
