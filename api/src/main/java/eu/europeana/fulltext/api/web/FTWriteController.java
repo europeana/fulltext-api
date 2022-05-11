@@ -191,7 +191,7 @@ public class FTWriteController extends BaseRestController {
     if (ftService.annoPageExistsByTgtId(datasetId, localId, media, lang)) {
       String redirectPath =
           String.format(
-              "/presentation/%s/%s/%s", datasetId, localId, GeneralUtils.derivePageId(media));
+              "/presentation/%s/%s/annopage/%s", datasetId, localId, GeneralUtils.derivePageId(media));
       if (LOG.isDebugEnabled()) {
         LOG.debug(
             "AnnoPage already exists for subtitle. Redirecting to {}?lang={}", redirectPath, lang);
