@@ -48,7 +48,7 @@ public class FTServiceTest {
 
     @BeforeEach
     public void setup(){
-        given(apRepository.existsOriginalByPageId(eq("ds1"), eq("lc1"), eq("pg1")))
+        given(apRepository.existsByPageId(eq("ds1"), eq("lc1"), eq("pg1")))
                 .willReturn(true);
         given(apRepository.findOriginalByPageId(eq("ds1"), eq("lc1"), eq("pg1"), any()))
                 .willReturn(anp_1);
@@ -57,23 +57,23 @@ public class FTServiceTest {
                 .willReturn(anp_1);
         given(apRepository.existsWithAnnoId(eq("ds1"), eq("lc1"), eq("an1")))
                 .willReturn(true);
-        given(apRepository.findOriginalByAnnoId(eq("ds1"), eq("lc1"), eq("an1")))
+        given(apRepository.findByAnnoId(eq("ds1"), eq("lc1"), eq("an1")))
                 .willReturn(anp_1);
         given(apRepository.existsWithAnnoId(eq("ds1"), eq("lc1"), eq("an2")))
                 .willReturn(true);
-        given(apRepository.findOriginalByAnnoId(eq("ds1"), eq("lc1"), eq("an2")))
+        given(apRepository.findByAnnoId(eq("ds1"), eq("lc1"), eq("an2")))
                 .willReturn(anp_1);
         given(apRepository.existsWithAnnoId(eq("ds1"), eq("lc1"), eq("an3")))
                 .willReturn(true);
-        given(apRepository.findOriginalByAnnoId(eq("ds1"), eq("lc1"), eq("an3")))
+        given(apRepository.findByAnnoId(eq("ds1"), eq("lc1"), eq("an3")))
                 .willReturn(anp_1);
-        given(resRepository.existsOriginal(eq("ds1"), eq("lc1"), eq("res1")))
+        given(resRepository.resourceExists(eq("ds1"), eq("lc1"), eq("res1")))
                 .willReturn(true);
-        given(resRepository.findOriginalByResId(eq("ds1"), eq("lc1"), eq("res1")))
+        given(resRepository.findByResId(eq("ds1"), eq("lc1"), eq("res1")))
                 .willReturn(res_1);
-        given(resRepository.existsOriginal(eq("ds1"), eq("lc1"), eq("res2")))
+        given(resRepository.resourceExists(eq("ds1"), eq("lc1"), eq("res2")))
                 .willReturn(true);
-        given(resRepository.findOriginalByResId(eq("ds1"), eq("lc1"), eq("res2")))
+        given(resRepository.findByResId(eq("ds1"), eq("lc1"), eq("res2")))
                 .willReturn(res_2);
     }
 

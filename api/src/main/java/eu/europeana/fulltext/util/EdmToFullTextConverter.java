@@ -2,10 +2,10 @@ package eu.europeana.fulltext.util;
 
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.WebConstants;
+import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Annotation;
+import eu.europeana.fulltext.entity.Resource;
 import eu.europeana.fulltext.entity.Target;
-import eu.europeana.fulltext.entity.TranslationAnnoPage;
-import eu.europeana.fulltext.entity.TranslationResource;
 import eu.europeana.fulltext.exception.SubtitleConversionException;
 import eu.europeana.fulltext.subtitles.AnnotationPreview;
 import eu.europeana.fulltext.subtitles.edm.EdmAnnotation;
@@ -32,11 +32,11 @@ import org.apache.commons.lang3.StringUtils;
      * @param fulltext
      * @return
      */
-    public static TranslationAnnoPage getAnnoPage(
+    public static AnnoPage getAnnoPage(
         String datasetId, String localId, AnnotationPreview request, EdmFullTextPackage fulltext)
         throws SubtitleConversionException {
-      TranslationResource resource = getResource(fulltext.getResource(), request, datasetId, localId);
-      TranslationAnnoPage annoPage = new TranslationAnnoPage();
+      Resource resource = getResource(fulltext.getResource(), request, datasetId, localId);
+      AnnoPage annoPage = new AnnoPage();
       annoPage.setDsId(datasetId);
       annoPage.setLcId(localId);
       annoPage.setPgId(GeneralUtils.derivePageId(request.getMedia()));
@@ -61,9 +61,9 @@ import org.apache.commons.lang3.StringUtils;
       return annoPage;
     }
 
-    private static TranslationResource getResource(
+    private static Resource getResource(
         EdmFullTextResource ftResource, AnnotationPreview request, String datasetId, String localId) {
-      TranslationResource resource = new TranslationResource();
+      Resource resource = new Resource();
       resource.setId(
           getFulltextResourceId(ftResource.getFullTextResourceURI(), request.getRecordId()));
       resource.setLang(request.getLanguage());

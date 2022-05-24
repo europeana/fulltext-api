@@ -13,7 +13,7 @@ import com.dotsub.converter.importer.impl.WebVttImportHandler;
 import com.dotsub.converter.model.SubtitleItem;
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.WebConstants;
-import eu.europeana.fulltext.entity.TranslationAnnoPage;
+import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.exception.InvalidFormatException;
 import eu.europeana.fulltext.exception.SubtitleConversionException;
 import eu.europeana.fulltext.exception.SubtitleParsingException;
@@ -143,30 +143,7 @@ public class SubtitleService {
         .build();
   }
 
-  private TranslationAnnoPage getAnnoPageToUpdate(
-      AnnotationPreview annotationPreview, TranslationAnnoPage existingAnnoPage)
-      throws SubtitleConversionException {
-    TranslationAnnoPage annoPageTobeUpdated = null;
-    // if there is no subtitles ie; content was empty, only update rights in the resource
-    if (annotationPreview.getSubtitleItems().isEmpty()) {
-      annoPageTobeUpdated = existingAnnoPage;
-      annoPageTobeUpdated.getRes().setRights(annotationPreview.getRights());
-      // if new source value is present, add the value in annoPage
-      if (StringUtils.isNotEmpty(annotationPreview.getSource())) {
-        annoPageTobeUpdated.setSource(annotationPreview.getSource());
-      }
-    } else { // process the subtitle list and update annotations in AnnoPage. Also, rights and value
-      // in Resource
-      annoPageTobeUpdated = createAnnoPage(annotationPreview);
-      if (StringUtils.isEmpty(annoPageTobeUpdated.getSource())
-          && StringUtils.isNotEmpty(existingAnnoPage.getSource())) {
-        annoPageTobeUpdated.setSource(existingAnnoPage.getSource());
-      }
-    }
-    return annoPageTobeUpdated;
-  }
-
-  public TranslationAnnoPage createAnnoPage(AnnotationPreview annotationPreview)
+  public AnnoPage createAnnoPage(AnnotationPreview annotationPreview)
       throws SubtitleConversionException {
     EdmFullTextPackage fulltext = convert(annotationPreview);
     // Conversion for testing

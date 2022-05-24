@@ -5,7 +5,6 @@ import eu.europeana.fulltext.subtitles.edm.EdmAnnotation;
 import eu.europeana.fulltext.subtitles.edm.EdmReference;
 import eu.europeana.fulltext.subtitles.edm.EdmTimeBoundary;
 import eu.europeana.fulltext.entity.AnnoPage;
-import eu.europeana.fulltext.entity.TranslationResource;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
@@ -22,9 +21,6 @@ public class GeneralUtils {
 
   /** Matches spring.profiles.active property in test/resource application.properties file */
   public static final String ACTIVE_TEST_PROFILE = "test";
-
-  public static final String TRANSLATION_RESOURCE_COL = TranslationResource.class.getSimpleName();
-
 
 
   /**

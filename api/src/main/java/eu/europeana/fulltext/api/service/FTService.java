@@ -1,9 +1,6 @@
 package eu.europeana.fulltext.api.service;
 
 import static eu.europeana.fulltext.util.GeneralUtils.getAnnoPageToString;
-import static eu.europeana.fulltext.util.MorphiaUtils.Fields.LANGUAGE;
-import static eu.europeana.fulltext.util.MorphiaUtils.Fields.PAGE_ID;
-import static eu.europeana.fulltext.util.MorphiaUtils.Fields.TRANSLATIONS;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.bulk.BulkWriteResult;
@@ -12,37 +9,34 @@ import dev.morphia.query.internal.MorphiaCursor;
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.api.config.FTDefinitions;
 import eu.europeana.fulltext.api.config.FTSettings;
+import eu.europeana.fulltext.api.model.FTResource;
 import eu.europeana.fulltext.api.model.info.SummaryAnnoPage;
 import eu.europeana.fulltext.api.model.info.SummaryCanvas;
 import eu.europeana.fulltext.api.model.info.SummaryManifest;
-import eu.europeana.fulltext.api.model.FTResource;
 import eu.europeana.fulltext.api.model.v2.AnnotationPageV2;
 import eu.europeana.fulltext.api.model.v2.AnnotationV2;
 import eu.europeana.fulltext.api.model.v3.AnnotationPageV3;
 import eu.europeana.fulltext.api.model.v3.AnnotationV3;
-import eu.europeana.fulltext.entity.TranslationAnnoPage;
+import eu.europeana.fulltext.entity.AnnoPage;
+import eu.europeana.fulltext.entity.Resource;
 import eu.europeana.fulltext.exception.AnnoPageDoesNotExistException;
 import eu.europeana.fulltext.exception.DatabaseQueryException;
 import eu.europeana.fulltext.exception.ResourceDoesNotExistException;
 import eu.europeana.fulltext.exception.SerializationException;
-import eu.europeana.fulltext.entity.AnnoPage;
-import eu.europeana.fulltext.entity.Resource;
 import eu.europeana.fulltext.exception.SubtitleConversionException;
 import eu.europeana.fulltext.repository.AnnoPageRepository;
 import eu.europeana.fulltext.repository.ResourceRepository;
 import eu.europeana.fulltext.subtitles.AnnotationPreview;
 import eu.europeana.fulltext.util.GeneralUtils;
+import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.bson.Document;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-
-import java.io.IOException;
-import java.util.List;
 
 /**
  * @author Lúthien Created on 27-02-2018
@@ -51,7 +45,7 @@ import java.util.List;
 public class FTService {
 
     private static final String GENERATED_IN = "Generated in {} ms ";
-    private static final String FETCHED_SEPARATE = "Originals fetched in {} ms, translations in {} ms";
+
     private static final String FETCHED_AGGREGATED = "Originals with translations fetched in {} ms";
     private static final Logger LOG = LogManager.getLogger(FTService.class);
 
@@ -114,7 +108,7 @@ public class FTService {
             //  (unless we can fix this my doing 1 query in AnnoPageRepository)
             result = annoPageRepository.findOriginalByPageIdLang(datasetId, localId, pageId, textGranValues, lang);
             if (result == null) {
-                result = annoPageRepository.findTranslationByPageIdLang(datasetId, localId, pageId, textGranValues,
+                result = annoPageRepository.findOriginalByPageIdLang(datasetId, localId, pageId, textGranValues,
                     lang);
                 LOG.debug("No original AnnoPage, TranslationAnnoPage = {}", result);
             }
@@ -156,12 +150,7 @@ public class FTService {
      */
     public AnnoPage fetchAPAnnotation(String datasetId, String localId, String annoId)
         throws AnnoPageDoesNotExistException {
-        // TODO do request to get original and translation in parallel instead in series (unless we can fix this my doing 1 query in AnnoPageRepository)
-        AnnoPage result = annoPageRepository.findOriginalByAnnoId(datasetId, localId, annoId);
-        if (result == null) {
-            annoPageRepository.findTranslationByAnnoId(datasetId, localId, annoId);
-            LOG.debug("Annotation not in original AnnoPage, TranslationAnnoPage = {}", result);
-        }
+        AnnoPage result = annoPageRepository.findByAnnoId(datasetId, localId, annoId);
 
         if (result == null) {
             throw new AnnoPageDoesNotExistException(String.format("/%s/%s/anno/%s", datasetId, localId, annoId));
@@ -183,9 +172,9 @@ public class FTService {
         throws ResourceDoesNotExistException {
         // TODO investigate if we can combine original annopage and translation annopage in 1 query
         //  (or maybe when lang is specified we can sent 2 requests in parallel)
-        Resource result = resourceRepository.findOriginalByResId(datasetId, localId, resId);
+        Resource result = resourceRepository.findByResId(datasetId, localId, resId);
         if (result == null) {
-            result = resourceRepository.findTranslationByResId(datasetId, localId, resId);
+            result = resourceRepository.findByResId(datasetId, localId, resId);
             LOG.debug("No original Resource, TranslationResource = {}", result);
         }
 
@@ -208,28 +197,22 @@ public class FTService {
     public SummaryManifest collectApAndTranslationInfo(String datasetId, String localId) {
         Instant start = Instant.now();
         SummaryManifest apInfoSummaryManifest = new SummaryManifest(datasetId, localId);
-        List<Document> annoPagesAndTranslations = annoPageRepository.getAnnoPageAndTranslations(datasetId, localId);
+        List<AnnoPage> annoPages = annoPageRepository.getAnnoPages(datasetId, localId);
         Instant finish = Instant.now();
         LOG.debug(FETCHED_AGGREGATED,  Duration.between(start, finish).toMillis());
 
-        for (Document apWt : annoPagesAndTranslations){
-            SummaryCanvas summaryCanvas = new SummaryCanvas(makeSummaryCanvasID(datasetId, localId, apWt.get(PAGE_ID).toString()));
+        for (AnnoPage annoPage : annoPages){
+            SummaryCanvas summaryCanvas = new SummaryCanvas(makeSummaryCanvasID(datasetId, localId,
+                annoPage.getPgId()));
 
             // add original SummaryAnnoPage to the SummaryCanvas
             summaryCanvas.addAnnotation(
                 new SummaryAnnoPage(
-                    makeLangAwareAnnoPageID(datasetId, localId, apWt.get(PAGE_ID).toString(), apWt.get(LANGUAGE).toString()),
-                    apWt.get(LANGUAGE).toString()));
-            summaryCanvas.setOriginalLanguage(apWt.get(LANGUAGE).toString());
+                    makeLangAwareAnnoPageID(datasetId, localId, annoPage.getPgId(),
+                        annoPage.getLang()),
+                    annoPage.getLang()));
+            summaryCanvas.setOriginalLanguage(annoPage.getLang());
 
-            // add translated AnnotationLangPages (if any) to the SummaryCanvas
-            List<Document> translations = (List<Document>) apWt.get(TRANSLATIONS);
-            for (Document tap : translations) {
-                summaryCanvas.addAnnotation(
-                    new SummaryAnnoPage(
-                        makeLangAwareAnnoPageID(datasetId, localId, apWt.get(PAGE_ID).toString(), tap.get(LANGUAGE).toString()),
-                        tap.get(LANGUAGE).toString()));
-            }
             // add SummaryCanvas to SummaryManifest
             apInfoSummaryManifest.addCanvas(summaryCanvas);
         }
@@ -294,23 +277,10 @@ public class FTService {
      */
     public boolean doesAnnoPageExist(String datasetId, String localId, String pageId, String lang) {
         if (!StringUtils.hasLength(lang)) {
-            return annoPageRepository.existsOriginalByPageId(datasetId, localId, pageId);
+            return annoPageRepository.existsByPageId(datasetId, localId, pageId);
         }
 
-        // TODO investigate if we can combine original annopage and translation annopage in 1 query
-        //  (or maybe when lang is specified we can sent 2 requests in parallel)
-        boolean result = annoPageRepository.existsOriginalByPageIdLang(datasetId, localId, pageId, lang);
-        if (!result) {
-            result = annoPageRepository.existsTranslationByPageIdLang(datasetId, localId, pageId, lang);
-            LOG.debug("No original AnnoPage, TranslationAnnoPage exists = {}", result);
-        }
-        return result;
-    }
-
-    /** Checks if a TranslationAnnoPage exists with the specified dsId, lcId, pgId and lang */
-    public boolean doesTranslationExist(
-        String datasetId, String localId, String pageId, String lang) {
-        return annoPageRepository.existsTranslationByPageIdLang(datasetId, localId, pageId, lang);
+       return annoPageRepository.existsByPageIdLang(datasetId, localId, pageId, lang);
     }
 
     // = = [ generate JSON objects ] = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -396,7 +366,7 @@ public class FTService {
      *
      * @param annoPage AnnoPage to save
      */
-    public void saveAnnoPage(TranslationAnnoPage annoPage) {
+    public void saveAnnoPage(AnnoPage annoPage) {
         annoPageRepository.saveAnnoPage(annoPage);
         if (annoPage.getRes() != null) {
             resourceRepository.saveResource(annoPage.getRes());
@@ -404,10 +374,10 @@ public class FTService {
         LOG.info("Saved annoPage to database - {} ", annoPage);
     }
 
-  public TranslationAnnoPage updateAnnoPage(
-      AnnotationPreview annotationPreview, TranslationAnnoPage existingAnnoPage)
+  public AnnoPage updateAnnoPage(
+      AnnotationPreview annotationPreview, AnnoPage existingAnnoPage)
       throws SubtitleConversionException {
-    TranslationAnnoPage annoPage = getAnnoPageToUpdate(annotationPreview, existingAnnoPage);
+    AnnoPage annoPage = getAnnoPageToUpdate(annotationPreview, existingAnnoPage);
     resourceRepository.saveResource(annoPage.getRes());
     if (LOG.isDebugEnabled()) {
       LOG.debug("Updated Resource in db : id={}", annoPage.getRes().getId());
@@ -458,10 +428,10 @@ public class FTService {
             pageId);
     }
 
-    private TranslationAnnoPage getAnnoPageToUpdate(
-        AnnotationPreview annotationPreview, TranslationAnnoPage existingAnnoPage)
+    private AnnoPage getAnnoPageToUpdate(
+        AnnotationPreview annotationPreview, AnnoPage existingAnnoPage)
         throws SubtitleConversionException {
-        TranslationAnnoPage annoPageTobeUpdated = null;
+        AnnoPage annoPageTobeUpdated = null;
         // if there is no subtitles ie; content was empty, only update rights in the resource
         if (annotationPreview.getSubtitleItems().isEmpty()) {
             annoPageTobeUpdated = existingAnnoPage;
@@ -488,7 +458,7 @@ public class FTService {
      * @param source source to query for
      * @return TranslationAnnoPage
      */
-    public TranslationAnnoPage getShellAnnoPageBySource(String source) {
+    public AnnoPage getShellAnnoPageBySource(String source) {
         return annoPageRepository.getAnnoPageWithSource(source, false);
     }
 
@@ -525,7 +495,7 @@ public class FTService {
         return count;
     }
 
-    public void upsertAnnoPage(List<? extends TranslationAnnoPage> annoPageList)
+    public void upsertAnnoPage(List<? extends AnnoPage> annoPageList)
         throws DatabaseQueryException {
         BulkWriteResult resourceWriteResult = resourceRepository.upsertFromAnnoPage(annoPageList);
         if (LOG.isDebugEnabled()) {
@@ -536,7 +506,7 @@ public class FTService {
                 resourceWriteResult.getInsertedCount());
         }
 
-        BulkWriteResult annoPageWriteResult = annoPageRepository.upsert(annoPageList);
+        BulkWriteResult annoPageWriteResult = annoPageRepository.upsertAnnoPages(annoPageList);
         if (LOG.isDebugEnabled()) {
             LOG.debug(
                 "Saved annoPages to db: matched={}, modified={}, inserted={}, annoPages={}",
@@ -557,9 +527,9 @@ public class FTService {
     }
 
     /** Creates an AnnoPage from the AnnotationPreview object, saving it in the database */
-    public TranslationAnnoPage createAndSaveAnnoPage(AnnotationPreview annotationPreview)
+    public AnnoPage createAndSaveAnnoPage(AnnotationPreview annotationPreview)
         throws SubtitleConversionException {
-        TranslationAnnoPage annoPage = subtitleService.createAnnoPage(annotationPreview);
+        AnnoPage annoPage = subtitleService.createAnnoPage(annotationPreview);
         resourceRepository.saveResource(annoPage.getRes());
         return annoPageRepository.saveAnnoPage(annoPage);
     }
@@ -569,9 +539,9 @@ public class FTService {
      *
      * @return AnnoPage or null if none found
      */
-    public TranslationAnnoPage getAnnoPageByPgId(
+    public AnnoPage getAnnoPageByPgId(
         String datasetId, String localId, String pgId, String lang) {
-        return annoPageRepository.findTranslationByPageIdLang(datasetId, localId, pgId, List.of(), lang);
+        return annoPageRepository.findOriginalByPageIdLang(datasetId, localId, pgId, List.of(), lang);
     }
 
     /**
@@ -579,12 +549,6 @@ public class FTService {
      * invoked from tests
      */
     public void dropCollections() {
-        if (GeneralUtils.testProfileNotActive(activeProfileString)) {
-            throw new IllegalStateException(
-                String.format(
-                    "Attempting to drop collections outside testing. activeProfiles=%s",
-                    activeProfileString));
-        }
         annoPageRepository.deleteAll();
         resourceRepository.deleteAll();
     }
@@ -596,7 +560,7 @@ public class FTService {
             return 0;
         }
 
-        return annoPageRepository.countTranslation();
+        return annoPageRepository.count();
     }
 
     public long countResource() {
@@ -606,7 +570,7 @@ public class FTService {
             return 0;
         }
 
-        return resourceRepository.countTranslation();
+        return resourceRepository.count();
     }
 
 

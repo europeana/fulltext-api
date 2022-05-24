@@ -38,15 +38,15 @@ public class MongoService {
     public void saveAnnoPageList(List<AnnoPage> apList, MongoSaveMode saveMode) throws LoaderException {
         LOG.debug("Saving {} annoPages...", apList.size());
 
-        long resourceCount = resourceRepository.countOriginal();
-        long annoPageCount = annoPageRepository.countOriginal();
+        long resourceCount = resourceRepository.count();
+        long annoPageCount = annoPageRepository.count();
         if (MongoSaveMode.INSERT.equals(saveMode)) {
             for (AnnoPage annoPage : apList) {
                 saveResource(annoPage.getRes());
                 saveAnnoPage(annoPage);
             }
-            long newResourceCount = resourceRepository.countOriginal();
-            long newAnnoPageCount = annoPageRepository.countOriginal();
+            long newResourceCount = resourceRepository.count();
+            long newAnnoPageCount = annoPageRepository.count();
             if (resourceCount + apList.size() != newResourceCount) {
                 LogFile.OUT.warn("Expected number of resource in database is {}, but actual number is {}",
                         resourceCount + apList.size(), newResourceCount);
@@ -68,7 +68,7 @@ public class MongoService {
         String lcId = resource.getLcId();
         String id = resource.getId();
         try{
-            resourceRepository.saveOriginal(resource);
+            resourceRepository.save(resource);
             LOG.debug("{}/{}/{} - Resource saved", dsId, lcId, id);
             return true;
         } catch (Exception e){
@@ -88,7 +88,7 @@ public class MongoService {
      * @return the number of deleted resources
      */
     public long deleteAllResources(String datasetId) {
-        return resourceRepository.deleteOriginalDataset(datasetId);
+        return resourceRepository.deleteDataset(datasetId);
     }
 
     /**

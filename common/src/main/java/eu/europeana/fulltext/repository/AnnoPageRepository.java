@@ -1,12 +1,23 @@
 package eu.europeana.fulltext.repository;
 
+import static dev.morphia.aggregation.experimental.expressions.ArrayExpressions.filter;
+import static dev.morphia.aggregation.experimental.expressions.Expressions.field;
+import static dev.morphia.aggregation.experimental.expressions.Expressions.value;
+import static dev.morphia.query.experimental.filters.Filters.eq;
+import static dev.morphia.query.experimental.filters.Filters.in;
+import static eu.europeana.fulltext.util.MorphiaUtils.Fields.*;
+import static eu.europeana.fulltext.util.MorphiaUtils.RESOURCE_COL;
+import static eu.europeana.fulltext.util.MorphiaUtils.SET;
+import static eu.europeana.fulltext.util.MorphiaUtils.SET_ON_INSERT;
+import static eu.europeana.fulltext.util.MorphiaUtils.UPSERT_OPTS;
+
 import com.mongodb.DBRef;
 import com.mongodb.bulk.BulkWriteResult;
+import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.UpdateOneModel;
 import com.mongodb.client.model.WriteModel;
 import com.mongodb.client.result.UpdateResult;
 import dev.morphia.Datastore;
-import dev.morphia.UpdateOptions;
 import dev.morphia.aggregation.experimental.Aggregation;
 import dev.morphia.aggregation.experimental.expressions.ArrayExpressions;
 import dev.morphia.aggregation.experimental.stages.Projection;
@@ -15,35 +26,20 @@ import dev.morphia.query.experimental.filters.Filter;
 import dev.morphia.query.internal.MorphiaCursor;
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.entity.AnnoPage;
-import eu.europeana.fulltext.entity.TranslationAnnoPage;
-import eu.europeana.fulltext.entity.TranslationResource;
+import eu.europeana.fulltext.entity.Resource;
 import eu.europeana.fulltext.exception.DatabaseQueryException;
 import eu.europeana.fulltext.util.MorphiaUtils;
 import java.time.Instant;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Repository;
+import java.util.ArrayList;
 import java.util.Arrays;
-import org.bson.Document;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
-
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
-
-import static dev.morphia.aggregation.experimental.expressions.ArrayExpressions.filter;
-import static dev.morphia.aggregation.experimental.expressions.Expressions.field;
-import static dev.morphia.aggregation.experimental.expressions.Expressions.value;
-import static dev.morphia.query.experimental.filters.Filters.eq;
-import static dev.morphia.query.experimental.filters.Filters.in;
-import static eu.europeana.fulltext.util.MorphiaUtils.Fields.*;
-import static eu.europeana.fulltext.util.MorphiaUtils.SET;
-import static eu.europeana.fulltext.util.MorphiaUtils.SET_ON_INSERT;
-import static eu.europeana.fulltext.util.MorphiaUtils.TRANSLATION_RESOURCE_COL;
-import static eu.europeana.fulltext.util.MorphiaUtils.UPSERT_OPTS;
+import org.apache.commons.lang3.StringUtils;
+import org.bson.Document;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Repository;
 
 
 /**
@@ -52,30 +48,14 @@ import static eu.europeana.fulltext.util.MorphiaUtils.UPSERT_OPTS;
 @Repository
 public class AnnoPageRepository {
 
-    private static final Logger LOG = LogManager.getLogger(AnnoPageRepository.class);
+    @Value("${spring.profiles.active:}")
+    private String activeProfileString;
 
     @Autowired
     protected Datastore datastore;
 
-    // TODO investigate if we can query for both original and translation annopages in 1 query (e.g. with aggregation)
-    // If not we could try and sent the original and translation query simultaneously (see also FTService)
-
-    /**
-     * @return the total number of original AnnoPages in the database
-     */
-    public long countOriginal() {
-        return count(AnnoPage.class);
-    }
-
-    /**
-     * @return the total number of TranslationAnnoPages in the database
-     */
-    public long countTranslation() {
-        return count(TranslationAnnoPage.class);
-    }
-
-    private long count(Class<? extends AnnoPage> clazz) {
-        return datastore.getMapper().getCollection(clazz).countDocuments();
+    public long count() {
+        return datastore.getMapper().getCollection(AnnoPage.class).countDocuments();
     }
 
     /**
@@ -85,8 +65,8 @@ public class AnnoPageRepository {
      * @param localId   ID of the parent of the Annopage object
      * @return true if yes, otherwise false
      */
-    public long existForEuropeanaId(String datasetId, String localId, Class claph) {
-        return datastore.find(claph).filter(eq(DATASET_ID, datasetId), eq(LOCAL_ID, localId))
+    public long existForEuropeanaId(String datasetId, String localId) {
+        return datastore.find(AnnoPage.class).filter(eq(DATASET_ID, datasetId), eq(LOCAL_ID, localId))
             .count();
     }
 
@@ -97,7 +77,7 @@ public class AnnoPageRepository {
      * @param localId   ID of the parent of the Annopage object
      * @return List of AnnoPage objects
      */
-    public List<AnnoPage> findOrigPages(String datasetId, String localId) {
+    public List<AnnoPage> findAnnoPages(String datasetId, String localId) {
         //TODO instead of loading the AnnoPage + Resource, we should load have the option to only the AnnoPage
         return datastore.find(AnnoPage.class)
             .filter(eq(DATASET_ID, datasetId), eq(LOCAL_ID, localId))
@@ -118,66 +98,30 @@ public class AnnoPageRepository {
     }
 
     /**
-     * Find and return TranslationAnnoPages that match the given parameters using DBCollection.count(). The Morphia
-     * ReferenceException is thrown if there is no matching TranslationResource document found;
-     *
-     * @param datasetId ID of the dataset
-     * @param localId   ID of the parent of the TranslationAnnopage object
-     * @param pageId    index (page number) of the TranslationAnnopage object
-     * @return List of TranslationAnnopage objects
-     */
-    public List<TranslationAnnoPage> findTranslatedPages(String datasetId, String localId,
-        String pageId) {
-        // TODO instead of loading the AnnoPage + Resource, we should load only the AnnoPage
-        return datastore.find(TranslationAnnoPage.class).filter(eq(DATASET_ID, datasetId),
-            eq(LOCAL_ID, localId),
-            eq(PAGE_ID, pageId)).iterator().toList();
-    }
-
-    /**
-     * Check if an original AnnoPage exists that matches the given parameters using DBCollection.count().
+     * Check if an  AnnoPage exists that matches the given parameters using DBCollection.count().
      *
      * @param datasetId ID of the dataset
      * @param localId   ID of the parent of the Annopage object
      * @param pageId    index (page number) of the Annopage object
      * @return true if yes, otherwise false
      */
-    public boolean existsOriginalByPageId(String datasetId, String localId, String pageId) {
+    public boolean existsByPageId(String datasetId, String localId, String pageId) {
         return datastore.find(AnnoPage.class).filter(eq(DATASET_ID, datasetId),
             eq(LOCAL_ID, localId),
             eq(PAGE_ID, pageId)).count() > 0;
     }
 
     /**
-     * Check if an original AnnoPage exists that matches the given parameters using DBCollection.count().
+     * Check if an  AnnoPage exists that matches the given parameters using DBCollection.count().
      *
      * @param datasetId ID of the dataset
      * @param localId   ID of the parent of the Annopage object
      * @param pageId    index (page number) of the Annopage object
-     * @param lang      in which language should the original AnnoPage be
+     * @param lang      in which language should the  AnnoPage be
      * @return true if yes, otherwise false
      */
-    public boolean existsOriginalByPageIdLang(String datasetId, String localId, String pageId,
+    public boolean existsByPageIdLang(String datasetId, String localId, String pageId,
         String lang) {
-        return existsByPageIdLang(datasetId, localId, pageId, lang, AnnoPage.class);
-    }
-
-    /**
-     * Check if a TranslationAnnoPage exists that matches the given parameters using DBCollection.count().
-     *
-     * @param datasetId ID of the dataset
-     * @param localId   ID of the parent of the Annopage object
-     * @param pageId    index (page number) of the Annopage object
-     * @param lang      in which language should the translation be
-     * @return true if yes, otherwise false
-     */
-    public boolean existsTranslationByPageIdLang(String datasetId, String localId, String pageId,
-        String lang) {
-        return existsByPageIdLang(datasetId, localId, pageId, lang, TranslationAnnoPage.class);
-    }
-
-    private boolean existsByPageIdLang(String datasetId, String localId, String pageId, String lang,
-        Class<? extends AnnoPage> clazz) {
         List<Filter> filter =
             new ArrayList<>(
                 Arrays.asList(eq(DATASET_ID, datasetId), eq(LOCAL_ID, localId), eq(PAGE_ID, pageId)));
@@ -185,7 +129,7 @@ public class AnnoPageRepository {
         if (StringUtils.isNotEmpty(lang)) {
             filter.add(eq(LANGUAGE, lang));
         }
-        return datastore.find(clazz).filter(filter.toArray(new Filter[0])).count()
+        return datastore.find(AnnoPage.class).filter(filter.toArray(new Filter[0])).count()
             > 0L;
     }
 
@@ -252,54 +196,6 @@ public class AnnoPageRepository {
     }
 
     /**
-     * Find and return a Translation AnnoPage that matches the given parameters.
-     *
-     * @param datasetId ID of the dataset
-     * @param localId   ID of the parent of the Annopage object
-     * @param pageId    index (page number) of the Annopage object
-     * @param lang      language
-     * @param annoTypes dcType values to filter annotations with
-     * @return AnnoPage
-     */
-    public TranslationAnnoPage findTranslationByPageIdLang(
-        String datasetId, String localId, String pageId, List<AnnotationType> annoTypes,
-        String lang) {
-        List<Document> aggregatePipeLine = MorphiaUtils.getAggregatePipelineForTranslation(datasetId, localId, pageId, lang);
-        // add the filter projection based on Text Granularity values
-        if (!annoTypes.isEmpty()) {
-            aggregatePipeLine.add(filterOnTextGranularity(annoTypes));
-        }
-        // as for translation lang parameter is passed, only one AnnoPage will be returned
-        Document result = datastore
-                .getDatabase()
-                .getCollection(TranslationAnnoPage.class.getSimpleName())
-                .aggregate(aggregatePipeLine)
-                .iterator()
-                .tryNext();
-        return MorphiaUtils.processMongoDocument(result, datasetId, localId, pageId, lang);
-        }
-
-    /**
-     * Gets the filter projection based on DcTypes values for annotations
-     * @param annoType
-     * @return
-     */
-    private Document filterOnTextGranularity(List<AnnotationType> annoType) {
-        return new Document(DATASET_ID, 1L)
-                .append(LOCAL_ID, 1L)
-                .append(PAGE_ID, 1L)
-                .append(RESOURCE, 1L)
-                .append(TARGET_ID, 1L)
-                .append(MODIFIED, 1L)
-                .append(ANNOTATIONS,
-                        new Document(MONGO_FILTER,
-                                new Document(MONGO_INPUT, MONGO_ANNOTATIONS)
-                                        .append(MONGO_AS, ANNOTATIONS)
-                                        .append(MONGO_CONDITION,
-                                                new Document(MONGO_IN, Arrays.asList(MONGO_FILTER_ANS_DCTYPE, getDcTypes(annoType))))));
-    }
-
-    /**
      * Find and return original AnnoPage that contains an annotation that matches the given parameters
      *
      * @param datasetId ID of the dataset
@@ -307,27 +203,8 @@ public class AnnoPageRepository {
      * @param annoId    ID of the annotation
      * @return AnnoPage
      */
-    public AnnoPage findOriginalByAnnoId(String datasetId, String localId, String annoId) {
-        return findAnnotationById(datasetId, localId, annoId, AnnoPage.class);
-    }
-
-    /**
-     * Find and return a Translation AnnoPage that contains an annotation that matches the given parameters
-     *
-     * @param datasetId ID of the dataset
-     * @param localId   ID of the parent of the Annopage object
-     * @param annoId    ID of the annotation
-     * @return TranslationAnnoPage
-     */
-    public TranslationAnnoPage findTranslationByAnnoId(String datasetId, String localId,
-        String annoId) {
-        return (TranslationAnnoPage) findAnnotationById(datasetId, localId, annoId,
-            TranslationAnnoPage.class);
-    }
-
-    private AnnoPage findAnnotationById(String datasetId, String localId, String annoId,
-        Class clazz) {
-        return (AnnoPage) datastore.find(clazz).filter(eq(DATASET_ID, datasetId),
+    public AnnoPage findByAnnoId(String datasetId, String localId, String annoId) {
+        return datastore.find(AnnoPage.class).filter(eq(DATASET_ID, datasetId),
             eq(LOCAL_ID, localId),
             eq(ANNOTATIONS_ID, annoId)).first();
     }
@@ -358,9 +235,16 @@ public class AnnoPageRepository {
     }
 
 
-    public UpdateResult updateAnnoPage(TranslationAnnoPage annoPage) {
-        MongoCollection<TranslationAnnoPage> collection =
-            datastore.getMapper().getCollection(TranslationAnnoPage.class);
+    /**
+     * Updates the given AnnoPage.
+     * This call bypasses Morphia, so the AnnoPage object doesn't need to have
+     * an _id value set
+     * @param annoPage AnnoPage to update
+     * @return UpdateResult
+     */
+    public UpdateResult updateAnnoPage(AnnoPage annoPage) {
+        MongoCollection<AnnoPage> collection =
+            datastore.getMapper().getCollection(AnnoPage.class);
         return collection.updateOne(
             new Document(
                 Map.of(
@@ -380,25 +264,31 @@ public class AnnoPageRepository {
     }
 
     /**
-     * Saves an TranslationAnnoPage to the database
+     * Saves an AnnoPage to the database
      *
-     * @param annoPage TranslationAnnoPage object to save
-     * @return the saved TranslationAnnoPage document
+     * @param annoPage AnnoPage object to save
+     * @return the saved AnnoPage document
      */
-    public TranslationAnnoPage saveAnnoPage(TranslationAnnoPage annoPage) {
+    public AnnoPage saveAnnoPage(AnnoPage annoPage) {
         return datastore.save(annoPage);
     }
 
-    public BulkWriteResult upsert(List<? extends TranslationAnnoPage> annoPageList)
+    /**
+     * "Upserts" the AnnoPages to the database
+     * @param annoPageList list of AnnoPages to upsert
+     * @return BulkWriteResult of operation
+     * @throws DatabaseQueryException if list contains an invalid AnnoPage (ie. missing Resource)
+     */
+    public BulkWriteResult upsertAnnoPages(List<? extends AnnoPage> annoPageList)
         throws DatabaseQueryException {
-        MongoCollection<TranslationAnnoPage> annoPageCollection =
-            datastore.getMapper().getCollection(TranslationAnnoPage.class);
+        MongoCollection<AnnoPage> annoPageCollection =
+            datastore.getMapper().getCollection(AnnoPage.class);
 
-        List<WriteModel<TranslationAnnoPage>> annoPageUpdates = new ArrayList<>();
+        List<WriteModel<AnnoPage>> annoPageUpdates = new ArrayList<>();
 
         Instant now = Instant.now();
 
-        for (TranslationAnnoPage annoPage : annoPageList) {
+        for (AnnoPage annoPage : annoPageList) {
             annoPageUpdates.add(createAnnoPageUpdate(now, annoPage));
         }
 
@@ -447,39 +337,20 @@ public class AnnoPageRepository {
     }
 
 
-    public List<Document> getAnnoPageAndTranslations(String dsId, String lcId) {
-        List<Document> annoPagesWithTranslations = new ArrayList<>();
-
-        MongoDatabase database = datastore.getDatabase();
-        MongoCollection<Document> collection = database.getCollection("AnnoPage");
-
-        Map<String, Boolean> projectionTapFields = new HashMap<>();
-        projectionTapFields.put(DOC_ID, false);
-        projectionTapFields.put(LANGUAGE, true);
-        projectionTapFields.put(MODIFIED, true);
-        Map<String, Boolean> projectionApFields = new HashMap<>();
-        projectionTapFields.put(DOC_ID, false);
-        projectionApFields.put(DATASET_ID, true);
-        projectionApFields.put(LOCAL_ID, true);
-        projectionApFields.put(PAGE_ID, true);
-        projectionApFields.put(LANGUAGE, true);
-        projectionApFields.put(MODIFIED, true);
-        projectionApFields.put(TRANSLATIONS, true);
-
-        for (Document apWt : collection.aggregate(Arrays.asList(
-                                                    createMatchFilter(dsId, lcId),
-                                                    getLookupPipeline(projectionTapFields),
-                                                    getProjectionFields(projectionApFields)
-                                                 ))){
-            annoPagesWithTranslations.add(apWt);
-        }
-        return annoPagesWithTranslations;
+    public List<AnnoPage> getAnnoPages(String dsId, String lcId) {
+        return datastore
+            .find(AnnoPage.class)
+            .filter(eq(DATASET_ID, dsId),
+                eq(LOCAL_ID, lcId))
+            .iterator(new FindOptions().projection()
+                .include(DATASET_ID, LOCAL_ID, PAGE_ID, LANGUAGE, MODIFIED))
+            .toList();
     }
 
     public boolean annoPageExistsByTgtId(
         String datasetId, String localId, String targetId, String lang) {
         return datastore
-            .find(TranslationAnnoPage.class)
+            .find(AnnoPage.class)
             .filter(
                 eq(DATASET_ID, datasetId),
                 eq(LOCAL_ID, localId),
@@ -489,54 +360,10 @@ public class AnnoPageRepository {
             > 0L;
     }
 
-    private Document createMatchFilter(String dataSetId, String localId) {
-        return new Document(MONGO_MATCH,
-            new Document(DATASET_ID, dataSetId).append(LOCAL_ID, localId));
-    }
+    private UpdateOneModel<AnnoPage> createAnnoPageUpdate(
+        Instant now, AnnoPage annoPage) throws DatabaseQueryException {
 
-    private Document getLookupPipeline(Map<String, Boolean> projectionFields) {
-        return new Document(MONGO_LOOKUP,
-            new Document(MONGO_FROM, "TranslationAnnoPage")
-                .append(MONGO_LET, new Document("origDsId", MONGO_DATASET_ID)
-                    .append("origLcId", MONGO_LOCAL_ID)
-                    .append("origPgId", MONGO_PAGE_ID))
-                .append(MONGO_PIPELINE, getPipeLineForFromCollection(projectionFields))
-                .append(MONGO_AS, TRANSLATIONS));
-    }
-
-    private List<Document> getPipeLineForFromCollection(Map<String, Boolean> projectionFields) {
-        Document matchExprePipeline = new Document(MONGO_MATCH,
-            new Document(MONGO_EXPRESSION,
-                new Document(MONGO_AND,
-                    Arrays.asList(
-                        new Document(MONGO_EQUALS, Arrays.asList(MONGO_DATASET_ID, "$$origDsId")),
-                        new Document(MONGO_EQUALS, Arrays.asList(MONGO_LOCAL_ID, "$$origLcId")),
-                        new Document(MONGO_EQUALS, Arrays.asList(MONGO_PAGE_ID, "$$origPgId"))))));
-
-        Document projection = getProjectionFields(projectionFields);
-        if (projection != null) {
-            return Arrays.asList(matchExprePipeline, projection);
-        } else {
-            return Arrays.asList(matchExprePipeline);
-        }
-    }
-
-    private Document getProjectionFields(Map<String, Boolean> projectionFields) {
-        if (!projectionFields.isEmpty()) {
-            Document d = new Document();
-            for (Map.Entry<String, Boolean> entry : projectionFields.entrySet()) {
-                long inclusion = entry.getValue() ? 1L : 0L;
-                d.append(entry.getKey(), inclusion);
-            }
-            return new Document(MONGO_PROJECT, d);
-        }
-        return null;
-    }
-
-    private UpdateOneModel<TranslationAnnoPage> createAnnoPageUpdate(
-        Instant now, TranslationAnnoPage annoPage) throws DatabaseQueryException {
-
-        TranslationResource res = annoPage.getRes();
+        Resource res = annoPage.getRes();
 
         if (res == null) {
             // all AnnoPages should have a resource
@@ -573,13 +400,13 @@ public class AnnoPageRepository {
                 // Only link resource for new documents. Resource ref should not change otherwise
                 .append(
                     SET_ON_INSERT,
-                    new Document(RESOURCE, new DBRef(TRANSLATION_RESOURCE_COL, res.getId()))),
+                    new Document(RESOURCE, new DBRef(RESOURCE_COL, res.getId()))),
             UPSERT_OPTS);
     }
 
     public long deleteAnnoPage(String datasetId, String localId, String pageId, String lang) {
         return datastore
-            .find(TranslationAnnoPage.class)
+            .find(AnnoPage.class)
             .filter(
                 eq(DATASET_ID, datasetId),
                 eq(LOCAL_ID, localId),
@@ -591,13 +418,20 @@ public class AnnoPageRepository {
 
     public long deleteAnnoPages(String datasetId, String localId, String pageId) {
         return datastore
-            .find(TranslationAnnoPage.class)
+            .find(AnnoPage.class)
             .filter(eq(DATASET_ID, datasetId), eq(LOCAL_ID, localId), eq(PAGE_ID, pageId))
             .delete(MorphiaUtils.MULTI_DELETE_OPTS)
             .getDeletedCount();
     }
 
-    public TranslationAnnoPage getAnnoPageWithSource(String source, boolean fetchFullDoc) {
+    /**
+     * Gets the AnnoPage with the specified source value
+     * @param source source value to query
+     * @param fetchFullDoc if false, only dsId, lcId, pgId, tgtId, lang and source values are
+     *                     set in the AnnoPage result
+     * @return AnnoPage result
+     */
+    public AnnoPage getAnnoPageWithSource(String source, boolean fetchFullDoc) {
         FindOptions findOptions = new FindOptions().limit(1);
 
         if (!fetchFullDoc) {
@@ -608,15 +442,21 @@ public class AnnoPageRepository {
         }
 
         return datastore
-            .find(TranslationAnnoPage.class)
+            .find(AnnoPage.class)
             .filter(eq(SOURCE, source))
             .iterator(findOptions)
             .tryNext();
     }
 
+    /**
+     * Deletes the AnnoPage document(s) whose source value is contained within the provided
+     * list.
+     * @param sources List of sources to be used for AnnoPage deletion
+     * @return number of deleted documents
+     */
     public long deleteAnnoPagesWithSources(List<? extends String> sources) {
         return datastore
-            .find(TranslationAnnoPage.class)
+            .find(AnnoPage.class)
             .filter(in(SOURCE, sources))
             .delete(MorphiaUtils.MULTI_DELETE_OPTS)
             .getDeletedCount();
@@ -624,6 +464,7 @@ public class AnnoPageRepository {
 
     /** Only for tests */
     public void deleteAll() {
-        datastore.find(TranslationAnnoPage.class).delete(MorphiaUtils.MULTI_DELETE_OPTS);
+        MorphiaUtils.validateDeletion(activeProfileString);
+        datastore.find(AnnoPage.class).delete(MorphiaUtils.MULTI_DELETE_OPTS);
     }
 }

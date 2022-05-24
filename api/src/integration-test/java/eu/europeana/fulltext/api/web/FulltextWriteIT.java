@@ -17,7 +17,7 @@ import eu.europeana.fulltext.WebConstants;
 import eu.europeana.fulltext.api.BaseIntegrationTest;
 import eu.europeana.fulltext.api.IntegrationTestUtils;
 import eu.europeana.fulltext.api.service.FTService;
-import eu.europeana.fulltext.entity.TranslationAnnoPage;
+import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.util.GeneralUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -77,8 +77,8 @@ class FulltextWriteIT extends BaseIntegrationTest {
   @Test
   void fulltextUpdateShouldBeSuccessfulWithoutBody() throws Exception {
     // add the anno page and resource first
-    TranslationAnnoPage annoPage =
-        mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), TranslationAnnoPage.class);
+    AnnoPage annoPage =
+        mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), AnnoPage.class);
     ftService.saveAnnoPage(annoPage);
 
         String updatedRights = annoPage.getRes().getRights() + "updated";
@@ -118,8 +118,8 @@ class FulltextWriteIT extends BaseIntegrationTest {
   @Test
   void fulltextRemovalShouldBeSuccessfulWithoutLang() throws Exception {
     // add the anno page and resource first
-    TranslationAnnoPage annoPage =
-        mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), TranslationAnnoPage.class);
+    AnnoPage annoPage =
+        mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), AnnoPage.class);
     ftService.saveAnnoPage(annoPage);
     mockMvc
         .perform(delete(GeneralUtils.getAnnoPageUrl(annoPage)).accept(MediaType.APPLICATION_JSON))
@@ -129,8 +129,8 @@ class FulltextWriteIT extends BaseIntegrationTest {
   @Test
   void fulltextRemovalShouldBeSuccessfulWithLang() throws Exception {
     // add the anno page and resource first
-    TranslationAnnoPage annoPage =
-        mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), TranslationAnnoPage.class);
+    AnnoPage annoPage =
+        mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), AnnoPage.class);
     ftService.saveAnnoPage(annoPage);
     mockMvc
         .perform(
