@@ -104,6 +104,7 @@ public final class MorphiaUtils {
         public static final String MONGO_RESOURCE_REF_ID = "res.$id";
         public static final String RIGHTS = "rights";
         public static final String VALUE = "value";
+        public static final String CONTRIBUTED = "contributed";
 
 
         private Fields() {

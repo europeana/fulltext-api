@@ -20,6 +20,6 @@ public class AnnotationProcessor implements ItemProcessor<AnnotationItem, AnnoPa
   @Override
   public AnnoPage process(@NonNull AnnotationItem item) throws Exception {
     AnnotationPreview annotationPreview = subtitleService.createAnnotationPreview(item);
-    return subtitleService.createAnnoPage(annotationPreview);
+    return subtitleService.createAnnoPage(annotationPreview, true);
   }
 }

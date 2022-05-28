@@ -6,6 +6,8 @@ import static eu.europeana.fulltext.api.IntegrationTestUtils.SUBTITLE_VTT;
 import static eu.europeana.fulltext.api.IntegrationTestUtils.loadFile;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -26,7 +28,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -53,9 +54,11 @@ class FulltextWriteIT extends BaseIntegrationTest {
     String requestBody = IntegrationTestUtils.loadFile(SUBTITLE_VTT);
 
     String mediaUrl = "https://www.filmportal.de/node/1197365";
+    String dsId = "08604";
+    String lcId= "FDE2205EEE384218A8D986E5138F9691";
     mockMvc
         .perform(
-            post("/presentation/08604/FDE2205EEE384218A8D986E5138F9691/annopage")
+            post("/presentation/{dsId}/{lcId}/annopage", dsId, lcId)
                 .param(WebConstants.REQUEST_VALUE_MEDIA, mediaUrl)
                 .param(WebConstants.REQUEST_VALUE_LANG, "nl")
                 .param(
@@ -69,9 +72,16 @@ class FulltextWriteIT extends BaseIntegrationTest {
             jsonPath(
                 "$.@id",
                 endsWith(
-                    "/08604/FDE2205EEE384218A8D986E5138F9691/annopage/"
-                        + GeneralUtils.derivePageId(mediaUrl))))
+                    String.format("/%s/%s/annopage/%s", dsId, lcId, GeneralUtils.derivePageId(mediaUrl)))))
         .andExpect(jsonPath("$.language", is("nl")));
+
+    // check that resource is saved with contributed=false
+    AnnoPage retrievedAnnoPage =
+        ftService.getAnnoPageByPgId(
+            dsId, lcId, GeneralUtils.derivePageId(mediaUrl), "nl");
+    assertNotNull(retrievedAnnoPage);
+    assertNotNull(retrievedAnnoPage.getRes());
+    assertFalse(retrievedAnnoPage.getRes().isContributed());
   }
 
   @Test

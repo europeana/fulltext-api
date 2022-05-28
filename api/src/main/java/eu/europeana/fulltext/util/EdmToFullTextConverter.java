@@ -33,9 +33,9 @@ import org.apache.commons.lang3.StringUtils;
      * @return
      */
     public static AnnoPage getAnnoPage(
-        String datasetId, String localId, AnnotationPreview request, EdmFullTextPackage fulltext)
+        String datasetId, String localId, AnnotationPreview request, EdmFullTextPackage fulltext, boolean isContributed)
         throws SubtitleConversionException {
-      Resource resource = getResource(fulltext.getResource(), request, datasetId, localId);
+      Resource resource = getResource(fulltext.getResource(), request, datasetId, localId, isContributed);
       AnnoPage annoPage = new AnnoPage();
       annoPage.setDsId(datasetId);
       annoPage.setLcId(localId);
@@ -62,8 +62,9 @@ import org.apache.commons.lang3.StringUtils;
     }
 
     private static Resource getResource(
-        EdmFullTextResource ftResource, AnnotationPreview request, String datasetId, String localId) {
+        EdmFullTextResource ftResource, AnnotationPreview request, String datasetId, String localId, boolean isContributed) {
       Resource resource = new Resource();
+      resource.setContributed(isContributed);
       resource.setId(
           getFulltextResourceId(ftResource.getFullTextResourceURI(), request.getRecordId()));
       resource.setLang(request.getLanguage());

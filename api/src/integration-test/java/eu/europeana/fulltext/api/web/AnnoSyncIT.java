@@ -25,6 +25,7 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
 import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -64,7 +65,8 @@ class AnnoSyncIT extends BaseIntegrationTest {
 
           @NotNull
           @Override
-          public MockResponse dispatch(@NotNull RecordedRequest request) throws InterruptedException {
+          public MockResponse dispatch(@NotNull RecordedRequest request)
+              throws InterruptedException {
 
             try {
               String path = request.getPath();
@@ -80,7 +82,8 @@ class AnnoSyncIT extends BaseIntegrationTest {
                     .setResponseCode(200)
                     .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
               }
-              List<String> pathSegments = Objects.requireNonNull(request.getRequestUrl()).pathSegments();
+              List<String> pathSegments =
+                  Objects.requireNonNull(request.getRequestUrl()).pathSegments();
 
               if (pathSegments.size() != 2) {
                 // Unsupported request path
@@ -131,8 +134,23 @@ class AnnoSyncIT extends BaseIntegrationTest {
                 .param(WebConstants.REQUEST_VALUE_SOURCE, annotationId)
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isAccepted())
-        .andExpect(jsonPath("$.@id", endsWith("/08604/node_1680982/annopage/" + GeneralUtils.derivePageId(expectedTgtId))))
-        .andExpect(jsonPath("$.language", is("es")));
+        .andExpect(
+            jsonPath(
+                "$.@id",
+                endsWith(
+                    "/08604/node_1680982/annopage/" + GeneralUtils.derivePageId(expectedTgtId))))
+        .andExpect(jsonPath("$.language", is("es")))
+        .andExpect(jsonPath("$.source", is(annotationId)));
+
+    // check that AnnoPage is saved in db
+    AnnoPage retrievedAnnoPage =
+        ftService.getAnnoPageByPgId(
+            "08604", "node_1680982", GeneralUtils.derivePageId(expectedTgtId), "es");
+    Assertions.assertNotNull(retrievedAnnoPage);
+
+    Assertions.assertNotNull(retrievedAnnoPage.getRes());
+    // synced AnnoPage resource should have contributed=true
+    Assertions.assertTrue(retrievedAnnoPage.getRes().isContributed());
   }
 
   @Test
