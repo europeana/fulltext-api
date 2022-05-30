@@ -123,7 +123,7 @@ public class ResourceRepository {
                     new Document(
                         // filter
                         Map.of(
-                            DATASET_ID, res.getDsId(), LOCAL_ID, res.getLcId(), LANGUAGE, res.getLang())),
+                            DATASET_ID, res.getDsId(), LOCAL_ID, res.getLcId(), LANGUAGE, res.getLang(), DOC_ID, res.getId())),
                     // update doc
                     new Document(
                         SET,

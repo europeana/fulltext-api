@@ -188,4 +188,8 @@ public class GeneralUtils {
 
     return path;
   }
+
+  public static String generateResourceId(String recordId, String language, String media) {
+    return generateHash(recordId + language + media);
+  }
 }

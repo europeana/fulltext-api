@@ -3,11 +3,13 @@ package eu.europeana.fulltext.api.web;
 import static eu.europeana.fulltext.AppConstants.CONTENT_TYPE_VTT;
 import static eu.europeana.fulltext.api.IntegrationTestUtils.ANNOPAGE_FILMPORTAL_1197365_JSON;
 import static eu.europeana.fulltext.api.IntegrationTestUtils.SUBTITLE_VTT;
+import static eu.europeana.fulltext.api.IntegrationTestUtils.SUBTITLE_VTT_2;
 import static eu.europeana.fulltext.api.IntegrationTestUtils.loadFile;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -194,5 +196,56 @@ class FulltextWriteIT extends BaseIntegrationTest {
                 .contentType(CONTENT_TYPE_VTT)
                 .content(requestBody))
         .andExpect(status().isBadRequest());
+  }
+
+  /**
+   * Submits multiple annotations with the same record id and lang, but different media urls (page id).
+   * Checks that resources are created for each AnnoPage
+   */
+  @Test
+  void submittingMultiPageAnnotationShouldBeSuccessful() throws Exception{
+
+    String mediaUrl1 = "https://www.filmportal.de/node/1197365";
+    String mediaUrl2 = "https://www.filmportal.de/node/1197366";
+
+    String dsId = "08604";
+    String lcId= "FDE2205EEE384218A8D986E5138F9691";
+    String lang = "nl";
+    mockMvc
+        .perform(
+            post("/presentation/{dsId}/{lcId}/annopage", dsId, lcId)
+                .param(WebConstants.REQUEST_VALUE_MEDIA, mediaUrl1)
+                .param(WebConstants.REQUEST_VALUE_LANG, lang)
+                .param(
+                    WebConstants.REQUEST_VALUE_RIGHTS,
+                    "http://creativecommons.org/licenses/by-sa/4.0/")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(CONTENT_TYPE_VTT)
+                .content(IntegrationTestUtils.loadFile(SUBTITLE_VTT)))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(
+            post("/presentation/{dsId}/{lcId}/annopage", dsId, lcId)
+                .param(WebConstants.REQUEST_VALUE_MEDIA, mediaUrl2)
+                .param(WebConstants.REQUEST_VALUE_LANG, lang)
+                .param(
+                    WebConstants.REQUEST_VALUE_RIGHTS,
+                    "http://creativecommons.org/licenses/by-sa/4.0/")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(CONTENT_TYPE_VTT)
+                .content(IntegrationTestUtils.loadFile(SUBTITLE_VTT_2)))
+        .andExpect(status().isOk());
+
+
+    // check that the correct number of AnnoPage and Resource docs are created
+    assertTrue(ftService.doesAnnoPageExist(dsId, lcId, GeneralUtils.derivePageId(mediaUrl1), lang));
+    assertTrue(ftService.doesAnnoPageExist(dsId, lcId, GeneralUtils.derivePageId(mediaUrl2), lang));
+
+    String resourceId1 = GeneralUtils.generateResourceId(GeneralUtils.generateRecordId(dsId, lcId), lang, mediaUrl1);
+    assertTrue(ftService.resourceExists(dsId, lcId, resourceId1));
+
+    String resourceId2 = GeneralUtils.generateResourceId(GeneralUtils.generateRecordId(dsId, lcId), lang, mediaUrl2);
+    assertTrue(ftService.resourceExists(dsId, lcId, resourceId2));
   }
 }

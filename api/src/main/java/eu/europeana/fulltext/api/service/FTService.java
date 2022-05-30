@@ -565,6 +565,10 @@ public class FTService {
         return resourceRepository.count();
     }
 
+    public boolean resourceExists(String datasetId, String localId, String resId) {
+        return resourceRepository.resourceExists(datasetId, localId, resId);
+    }
+
 
     public void deleteAll() {
         if (GeneralUtils.testProfileNotActive(activeProfileString)) {
