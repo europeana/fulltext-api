@@ -150,7 +150,7 @@ public class FTWriteController extends BaseRestController {
 
     AnnotationPreview annotationPreview =
         subtitleService.createAnnotationPreview(itemOptional.get());
-    AnnoPage annoPage = subtitleService.createAnnoPage(annotationPreview);
+    AnnoPage annoPage = subtitleService.createAnnoPage(annotationPreview, true);
 
     // Morphia creates a new _id value if none exists, so we can't directly call save() – as this
     // could be an update.
@@ -214,12 +214,13 @@ public class FTWriteController extends BaseRestController {
     AnnotationPreview annotationPreview =
         createAnnotationPreview(
             datasetId, localId, lang, originalLang, rights, source, media, content, type);
-    AnnoPage savedAnnoPage = ftService.createAndSaveAnnoPage(annotationPreview);
+    AnnoPage annoPage = subtitleService.createAnnoPage(annotationPreview, false);
+    ftService.saveAnnoPage(annoPage);
 
     if (LOG.isDebugEnabled()) {
-      LOG.debug("Created new AnnoPage {}", savedAnnoPage);
+      LOG.debug("Created new AnnoPage {}", annoPage);
     }
-    return generateResponse(request, savedAnnoPage, HttpStatus.OK);
+    return generateResponse(request, annoPage, HttpStatus.OK);
   }
 
   @ApiOperation(value = "Replaces existing fulltext for a media resource with a new document")

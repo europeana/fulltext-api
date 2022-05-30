@@ -131,7 +131,9 @@ public class ResourceRepository {
                             .append(LOCAL_ID, res.getLcId())
                             .append(LANGUAGE, res.getLang())
                             .append(VALUE, res.getValue())
-                            .append(RIGHTS, res.getRights()))
+                            .append(RIGHTS, res.getRights())
+                            .append(CONTRIBUTED, res.isContributed())
+                    )
                         // only create _id for new records
                         .append(SET_ON_INSERT, new Document("_id", res.getId())),
                     UPSERT_OPTS));

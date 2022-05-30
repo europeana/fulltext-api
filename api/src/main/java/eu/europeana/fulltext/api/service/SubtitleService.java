@@ -143,13 +143,12 @@ public class SubtitleService {
         .build();
   }
 
-  public AnnoPage createAnnoPage(AnnotationPreview annotationPreview)
+  public AnnoPage createAnnoPage(AnnotationPreview annotationPreview, boolean isContributed)
       throws SubtitleConversionException {
     EdmFullTextPackage fulltext = convert(annotationPreview);
-    // Conversion for testing
     String recordId = annotationPreview.getRecordId();
     return EdmToFullTextConverter.getAnnoPage(
-        getDsId(recordId), getLocalId(recordId), annotationPreview, fulltext);
+        getDsId(recordId), getLocalId(recordId), annotationPreview, fulltext, isContributed);
   }
 
   /**

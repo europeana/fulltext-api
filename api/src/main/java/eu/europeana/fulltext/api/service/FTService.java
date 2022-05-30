@@ -442,7 +442,7 @@ public class FTService {
             }
         } else { // process the subtitle list and update annotations in AnnoPage. Also, rights and value
             // in Resource
-            annoPageTobeUpdated = subtitleService.createAnnoPage(annotationPreview);
+            annoPageTobeUpdated = subtitleService.createAnnoPage(annotationPreview, false);
             if (org.apache.commons.lang3.StringUtils.isEmpty(annoPageTobeUpdated.getSource())
                 && org.apache.commons.lang3.StringUtils.isNotEmpty(existingAnnoPage.getSource())) {
                 annoPageTobeUpdated.setSource(existingAnnoPage.getSource());
@@ -524,14 +524,6 @@ public class FTService {
     public boolean annoPageExistsByTgtId(
         String datasetId, String localId, String targetId, String lang) {
         return annoPageRepository.annoPageExistsByTgtId(datasetId, localId, targetId, lang);
-    }
-
-    /** Creates an AnnoPage from the AnnotationPreview object, saving it in the database */
-    public AnnoPage createAndSaveAnnoPage(AnnotationPreview annotationPreview)
-        throws SubtitleConversionException {
-        AnnoPage annoPage = subtitleService.createAnnoPage(annotationPreview);
-        resourceRepository.saveResource(annoPage.getRes());
-        return annoPageRepository.saveAnnoPage(annoPage);
     }
 
     /**
