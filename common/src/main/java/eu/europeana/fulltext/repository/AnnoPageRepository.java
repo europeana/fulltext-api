@@ -163,7 +163,7 @@ public class AnnoPageRepository {
      * @param annoTypes dcType values to filter annotations with
      * @return AnnoPage
      */
-    public AnnoPage findOriginalByPageId(
+    public AnnoPage findByPageId(
         String datasetId, String localId, String pageId, List<AnnotationType> annoTypes) {
         Aggregation<AnnoPage> query = datastore.aggregate(AnnoPage.class)
             .match(eq(DATASET_ID, datasetId),
@@ -174,7 +174,7 @@ public class AnnoPageRepository {
     }
 
     /**
-     * Find and return an original AnnoPage that matches the given parameters.
+     * Find and return an AnnoPage that matches the given parameters.
      *
      * @param datasetId ID of the dataset
      * @param localId   ID of the parent of the Annopage object
@@ -183,7 +183,7 @@ public class AnnoPageRepository {
      * @param annoTypes dcType values to filter annotations with
      * @return AnnoPage
      */
-    public AnnoPage findOriginalByPageIdLang(
+    public AnnoPage findByPageIdLang(
         String datasetId, String localId, String pageId, List<AnnotationType> annoTypes,
         String lang) {
         Aggregation<AnnoPage> query = datastore.aggregate(AnnoPage.class)
@@ -196,7 +196,7 @@ public class AnnoPageRepository {
     }
 
     /**
-     * Find and return original AnnoPage that contains an annotation that matches the given parameters
+     * Find and return AnnoPage that contains an annotation that matches the given parameters
      *
      * @param datasetId ID of the dataset
      * @param localId   ID of the parent of the Annopage object
@@ -210,7 +210,7 @@ public class AnnoPageRepository {
     }
 
     /**
-     * Find and return original AnnoPages that contains an annotation that matches the given parameters.
+     * Find and return AnnoPages that contains an annotation that matches the given parameters.
      * <p>
      * Returns a {@link MorphiaCursor} that can be iterated on to obtain matching AnnoPages. The cursor must be closed
      * after iteration is completed.
@@ -345,19 +345,6 @@ public class AnnoPageRepository {
             .iterator(new FindOptions().projection()
                 .include(DATASET_ID, LOCAL_ID, PAGE_ID, LANGUAGE, MODIFIED))
             .toList();
-    }
-
-    public boolean annoPageExistsByTgtId(
-        String datasetId, String localId, String targetId, String lang) {
-        return datastore
-            .find(AnnoPage.class)
-            .filter(
-                eq(DATASET_ID, datasetId),
-                eq(LOCAL_ID, localId),
-                eq(LANGUAGE, lang),
-                eq(TARGET_ID, targetId))
-            .count()
-            > 0L;
     }
 
     private UpdateOneModel<AnnoPage> createAnnoPageUpdate(

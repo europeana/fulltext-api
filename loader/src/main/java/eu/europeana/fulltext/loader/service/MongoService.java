@@ -19,8 +19,6 @@ import java.util.List;
 @Service
 public class MongoService {
 
-    // TODO At the moment this only saves original AnnoPage and Resources. There is no support for saving translations yet
-
     private static final Logger LOG = LogManager.getLogger(MongoService.class);
 
     private static final int LIMIT_NUMBER_ANNOTATIONS = 25_000;
@@ -105,7 +103,7 @@ public class MongoService {
                     annoPage.getDsId(), annoPage.getLcId(), annoPage.getPgId(), annoPage.getAns().size());
         }
         try{
-            annoPageRepository.saveOriginal(annoPage);
+            annoPageRepository.save(annoPage);
             LOG.debug("{}/{}/{} AnnoPage saved", dsId, lcId, pgId);
             return true;
         } catch (Exception e){
@@ -125,7 +123,7 @@ public class MongoService {
      * @return the number of deleted annopages
      */
     public long deleteAllAnnoPages(String datasetId) {
-        return annoPageRepository.deleteOriginalDataset(datasetId);
+        return annoPageRepository.deleteDataset(datasetId);
     }
 
 

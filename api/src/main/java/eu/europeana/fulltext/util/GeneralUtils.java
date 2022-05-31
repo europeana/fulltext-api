@@ -116,24 +116,6 @@ public class GeneralUtils {
         + annoPage.getPgId();
   }
 
-  /**
-   * Returns the Existing Translation AnnoPage Url lang parameter is required to fetch the
-   * translation annopage
-   *
-   * @param annoPage
-   * @return
-   */
-  public static String getTranslationAnnoPageUrl(AnnoPage annoPage) {
-    if (StringUtils.isNotEmpty(annoPage.getLang())) {
-      return getAnnoPageUrl(annoPage)
-          + "?"
-          + WebConstants.REQUEST_VALUE_LANG
-          + "="
-          + annoPage.getLang();
-    }
-    return getAnnoPageUrl(annoPage);
-  }
-
   public static String[] getAnnoPageToString(List<? extends AnnoPage> annoPages) {
     return annoPages.stream().map(AnnoPage::toString).toArray(String[]::new);
   }
@@ -178,7 +160,7 @@ public class GeneralUtils {
 
   }
 
-  public static String getTranslationAnnoPageUrl(
+  public static String getAnnoPageUrl(
       String dsId, String lcId, String pgId, String lang) {
     String path = String.format("/presentation/%s/%s/%s", dsId, lcId, pgId);
 

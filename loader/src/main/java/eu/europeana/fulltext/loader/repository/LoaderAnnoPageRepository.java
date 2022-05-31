@@ -22,14 +22,14 @@ public class LoaderAnnoPageRepository extends AnnoPageRepository {
      * @param datasetId ID of the dataset to be deleted
      * @return the number of deleted annotation pages
      */
-    public long deleteOriginalDataset(String datasetId) {
+    public long deleteDataset(String datasetId) {
         return datastore.find(Resource.class).filter(
                 eq(DATASET_ID, datasetId))
                 .delete(MULTI_DELETE_OPTS).getDeletedCount();
     }
 
 
-    public void saveOriginal(AnnoPage apToSave){
+    public void save(AnnoPage apToSave){
         datastore.save(apToSave);
     }
 

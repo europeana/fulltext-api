@@ -46,7 +46,7 @@ public class FTService {
 
     private static final String GENERATED_IN = "Generated in {} ms ";
 
-    private static final String FETCHED_AGGREGATED = "Originals with translations fetched in {} ms";
+    private static final String FETCHED_AGGREGATED = "Originals fetched in {} ms";
     private static final Logger LOG = LogManager.getLogger(FTService.class);
 
     private final ResourceRepository resourceRepository;
@@ -89,7 +89,7 @@ public class FTService {
      * @param localId        identifier of the AnnoPage's record
      * @param pageId         identifier of the AnnoPage
      * @param textGranValues dcType values to filter annotations with
-     * @param lang           optional, if provided we'll check if there's an original or translation annopage with this
+     * @param lang           optional, if provided we'll check if there's an annopage with this
      *                       language
      * @return AnnoPage
      * @throws AnnoPageDoesNotExistException when the Annopage cannot be found
@@ -97,21 +97,14 @@ public class FTService {
     public AnnoPage fetchAnnoPage(String datasetId, String localId, String pageId, List<AnnotationType> textGranValues,
         String lang) throws AnnoPageDoesNotExistException {
         AnnoPage result;
-        if (StringUtils.isEmpty(lang)) {
-            result = annoPageRepository.findOriginalByPageId(datasetId, localId, pageId, textGranValues);
+        if (!StringUtils.hasLength(lang)) {
+            result = annoPageRepository.findByPageId(datasetId, localId, pageId, textGranValues);
             if (result == null) {
                 throw new AnnoPageDoesNotExistException(
                     String.format("/%s/%s/annopage/%s", datasetId, localId, pageId));
             }
         } else {
-            // TODO do request to get original and translation in parallel instead in series
-            //  (unless we can fix this my doing 1 query in AnnoPageRepository)
-            result = annoPageRepository.findOriginalByPageIdLang(datasetId, localId, pageId, textGranValues, lang);
-            if (result == null) {
-                result = annoPageRepository.findOriginalByPageIdLang(datasetId, localId, pageId, textGranValues,
-                    lang);
-                LOG.debug("No original AnnoPage, TranslationAnnoPage = {}", result);
-            }
+            result = annoPageRepository.findByPageIdLang(datasetId, localId, pageId, textGranValues, lang);
             if (result == null) {
                 throw new AnnoPageDoesNotExistException(String.format("/%s/%s/annopage/%s", datasetId, localId, pageId),
                     lang);
@@ -170,14 +163,7 @@ public class FTService {
      */
     public FTResource fetchFTResource(String datasetId, String localId, String resId)
         throws ResourceDoesNotExistException {
-        // TODO investigate if we can combine original annopage and translation annopage in 1 query
-        //  (or maybe when lang is specified we can sent 2 requests in parallel)
         Resource result = resourceRepository.findByResId(datasetId, localId, resId);
-        if (result == null) {
-            result = resourceRepository.findByResId(datasetId, localId, resId);
-            LOG.debug("No original Resource, TranslationResource = {}", result);
-        }
-
         if (result == null) {
             throw new ResourceDoesNotExistException(String.format("/%s/%s/%s", datasetId, localId, resId));
         }
@@ -194,7 +180,7 @@ public class FTService {
         return annoPage;
     }
 
-    public SummaryManifest collectApAndTranslationInfo(String datasetId, String localId) {
+    public SummaryManifest collectionAnnoPageInfo(String datasetId, String localId) {
         Instant start = Instant.now();
         SummaryManifest apInfoSummaryManifest = new SummaryManifest(datasetId, localId);
         List<AnnoPage> annoPages = annoPageRepository.getAnnoPages(datasetId, localId);
@@ -362,7 +348,7 @@ public class FTService {
     }
 
     /**
-     * Saves the given TranslationAnnoPage in the database.
+     * Saves the given AnnoPage in the database.
      *
      * @param annoPage AnnoPage to save
      */
@@ -452,11 +438,11 @@ public class FTService {
     }
 
     /**
-     * Gets TranslationAnnoPage with the specified source. Only identifying properties (ie. dsId,
+     * Gets AnnoPage with the specified source. Only identifying properties (ie. dsId,
      * lcId, pgId, tgId, lang) are populated.
      *
      * @param source source to query for
-     * @return TranslationAnnoPage
+     * @return AnnoPage
      */
     public AnnoPage getShellAnnoPageBySource(String source) {
         return annoPageRepository.getAnnoPageWithSource(source, false);
@@ -481,7 +467,7 @@ public class FTService {
     }
 
     /**
-     * Deletes TranslationAnnoPage(s) with the specified source
+     * Deletes AnnoPage(s) with the specified source
      *
      * @param sources sources to query
      * @return number of deleted documents
@@ -495,6 +481,13 @@ public class FTService {
         return count;
     }
 
+    /**
+     * For each AnnoPage in the input list:
+     *      - updates the existing records in AnnoPage and Resource collections in the database (matching on dsId, lcId, pgId and lang); or
+     *      - creates new records in AnnoPage and Resource collections if none exist
+     * @param annoPageList List of AnnoPages to upsert
+     * @throws DatabaseQueryException if
+     */
     public void upsertAnnoPage(List<? extends AnnoPage> annoPageList)
         throws DatabaseQueryException {
         BulkWriteResult resourceWriteResult = resourceRepository.upsertFromAnnoPage(annoPageList);
@@ -518,26 +511,17 @@ public class FTService {
     }
 
     /**
-     * Checks if a TranslationAnnoPage exists with the specified field combination. Uses targetId
-     * instead of pageId
-     */
-    public boolean annoPageExistsByTgtId(
-        String datasetId, String localId, String targetId, String lang) {
-        return annoPageRepository.annoPageExistsByTgtId(datasetId, localId, targetId, lang);
-    }
-
-    /**
      * Retrieves the AnnoPage with the specified dcId, lcId, pgId and lang
      *
      * @return AnnoPage or null if none found
      */
     public AnnoPage getAnnoPageByPgId(
         String datasetId, String localId, String pgId, String lang) {
-        return annoPageRepository.findOriginalByPageIdLang(datasetId, localId, pgId, List.of(), lang);
+        return annoPageRepository.findByPageIdLang(datasetId, localId, pgId, List.of(), lang);
     }
 
     /**
-     * Drops the TranslationAnnoPage and TranslationResource collections. Can only be successfully
+     * Drops the AnnoPage and Resource collections. Can only be successfully
      * invoked from tests
      */
     public void dropCollections() {
@@ -545,7 +529,7 @@ public class FTService {
         resourceRepository.deleteAll();
     }
 
-    public long countTranslationAnnoPage() {
+    public long countAnnoPage() {
         if (GeneralUtils.testProfileNotActive(activeProfileString)) {
             LOG.warn(
                 "Repository count is temporarily disabled because of bad performance with large collections");

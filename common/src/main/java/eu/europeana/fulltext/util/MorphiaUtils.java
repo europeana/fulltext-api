@@ -67,7 +67,6 @@ public final class MorphiaUtils {
         public static final String PAGE_ID      = "pgId";
         public static final String RESOURCE     = "res";
         public static final String TARGET_ID    = "tgtId";
-        public static final String TRANSLATIONS = "translations";
         public static final String SOURCE       = "source";
         public static final String TARGETS      = "tgs";
         public static final String AN_ID        = "anId";

@@ -187,10 +187,11 @@ public class FTWriteController extends BaseRestController {
      * Check if there is a fulltext annotation page associated with the combination of DATASET_ID,
      * LOCAL_ID and the media URL, if so then return a HTTP 301 with the URL of the Annotation Page
      */
-    if (ftService.annoPageExistsByTgtId(datasetId, localId, media, lang)) {
+    String pageId = GeneralUtils.derivePageId(media);
+    if (ftService.doesAnnoPageExist(datasetId, localId, pageId, lang)) {
       String redirectPath =
           String.format(
-              "/presentation/%s/%s/annopage/%s", datasetId, localId, GeneralUtils.derivePageId(media));
+              "/presentation/%s/%s/annopage/%s", datasetId, localId, pageId);
       if (LOG.isDebugEnabled()) {
         LOG.debug(
             "AnnoPage already exists for subtitle. Redirecting to {}?lang={}", redirectPath, lang);
@@ -255,7 +256,7 @@ public class FTWriteController extends BaseRestController {
     if (annoPage == null) {
       throw new AnnoPageDoesNotExistException(
           "Annotation page does not exist for "
-              + GeneralUtils.getTranslationAnnoPageUrl(datasetId, localId, pageId, lang));
+              + GeneralUtils.getAnnoPageUrl(datasetId, localId, pageId, lang));
     }
     // determine type
     SubtitleType type = null;
@@ -306,7 +307,7 @@ public class FTWriteController extends BaseRestController {
     if (!ftService.doesAnnoPageExist(datasetId, localId, pageId, lang)) {
       throw new AnnoPageDoesNotExistException(
           "Annotation page does not exist for "
-              + GeneralUtils.getTranslationAnnoPageUrl(datasetId, localId, pageId, lang));
+              + GeneralUtils.getAnnoPageUrl(datasetId, localId, pageId, lang));
     }
 
     /*

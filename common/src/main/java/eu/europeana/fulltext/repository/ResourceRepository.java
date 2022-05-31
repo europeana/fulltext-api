@@ -36,7 +36,7 @@ public class ResourceRepository {
     protected Datastore datastore;
 
     /**
-     * Check if an original Resource exists that matches the given parameters
+     * Check if a Resource exists that matches the given parameters
      * @param datasetId ID of the associated dataset
      * @param localId   ID of the associated Annopage parent object
      * @param resId     ID of the Resource document
@@ -53,7 +53,7 @@ public class ResourceRepository {
 
 
   /**
-     * @return the total number of original resources in the database
+     * @return the total number of resources in the database
      */
   public long count() {
     return datastore.getMapper().getCollection(Resource.class).countDocuments();
@@ -79,7 +79,7 @@ public class ResourceRepository {
     /**
      * Saves a Resource to the database
      *
-     * @param resource Translation Resource object to save
+     * @param resource Resource object to save
      * @return the saved resource document
      */
     public Resource saveResource(Resource resource) {
