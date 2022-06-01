@@ -1,5 +1,4 @@
-**/fulltext.user.properties
-**/loader.user.properties
+**/*.user.properties
 
 loader/logs
 logs
