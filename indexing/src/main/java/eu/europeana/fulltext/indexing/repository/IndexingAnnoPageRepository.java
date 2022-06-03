@@ -1,11 +1,7 @@
 package eu.europeana.fulltext.indexing.repository;
 
-import static dev.morphia.query.experimental.filters.Filters.gt;
-import static eu.europeana.fulltext.util.MorphiaUtils.Fields.DATASET_ID;
-import static eu.europeana.fulltext.util.MorphiaUtils.Fields.LANGUAGE;
-import static eu.europeana.fulltext.util.MorphiaUtils.Fields.LOCAL_ID;
-import static eu.europeana.fulltext.util.MorphiaUtils.Fields.MODIFIED;
-import static eu.europeana.fulltext.util.MorphiaUtils.Fields.PAGE_ID;
+import static dev.morphia.query.experimental.filters.Filters.*;
+import static eu.europeana.fulltext.util.MorphiaUtils.Fields.*;
 
 import com.mongodb.client.model.Filters;
 import dev.morphia.Datastore;
@@ -20,6 +16,7 @@ public class IndexingAnnoPageRepository {
 
   @Autowired private Datastore datastore;
 
+  //TODO API TEAM: this query is really slow, any way to speed it up (e.g., indexing the field 'modified')?
   public List<AnnoPage> getRecordsModifiedAfter(long date) {
     return datastore
         .find(AnnoPage.class)
@@ -27,7 +24,18 @@ public class IndexingAnnoPageRepository {
         .iterator(
             new FindOptions()
                 .projection()
-                .include(DATASET_ID, LOCAL_ID, PAGE_ID, LANGUAGE, MODIFIED))
+                .include(DATASET_ID, LOCAL_ID))
         .toList();
+  }
+
+  public List<AnnoPage> getAllWebResources(String dsId, String lcId) {
+    return datastore
+            .find(AnnoPage.class)
+            .filter(and(eq(DATASET_ID, dsId),eq(LOCAL_ID,lcId)))
+            .iterator(
+                    new FindOptions()
+                            .projection()
+                            .include(DATASET_ID, LOCAL_ID, TARGET_ID, LANGUAGE, MODIFIED, RESOURCE))
+            .toList();
   }
 }

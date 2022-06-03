@@ -25,7 +25,8 @@ public class IndexingApplication implements CommandLineRunner {
 
   @Override
   public void run(String... args) throws Exception {
-    List<AnnoPage> annoPages = repository.getRecordsModifiedAfter(1654095437);
+    //List<AnnoPage> annoPages = repository.getRecordsModifiedAfter(1654034400000L);
+    List<AnnoPage> annoPages = repository.getAllWebResources("9200396","BibliographicResource_3000118436165");
     logger.info("{}", annoPages);
 
   }
