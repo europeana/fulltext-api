@@ -159,11 +159,16 @@ class FTWriteServiceIT extends BaseIntegrationTest {
     assertEquals(1, service.countAnnoPage());
     assertEquals(1, service.countResource());
 
-    service.deleteAnnoPages(
+    service.deprecateAnnoPages(
         annoPage.getDsId(), annoPage.getLcId(), annoPage.getPgId(), annoPage.getLang());
 
-    assertEquals(0, service.countAnnoPage());
-    assertEquals(0, service.countResource());
+    // deprecation should set a "deleted" property on AnnoPage
+
+    AnnoPage retrievedAnnoPage =
+        service.getAnnoPageByPgId(annoPage.getDsId(), annoPage.getLcId(), annoPage.getPgId(), annoPage.getLang());
+
+    assertNotNull(retrievedAnnoPage);
+    assertNotNull(retrievedAnnoPage.isDeleted());
   }
 
   @Test
@@ -172,19 +177,20 @@ class FTWriteServiceIT extends BaseIntegrationTest {
     assertEquals(0, service.countAnnoPage());
     assertEquals(0, service.countResource());
 
-    // add the anno page and resource with same dsId, lcId, pgId but different lang
     AnnoPage annoPage =
         mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), AnnoPage.class);
     service.saveAnnoPage(annoPage);
-    annoPage =
+    // add the anno page and resource with same dsId, lcId, pgId but different lang
+    AnnoPage annoPage2 =
         mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_EN_JSON), AnnoPage.class);
-    service.saveAnnoPage(annoPage);
+    service.saveAnnoPage(annoPage2);
+
     assertEquals(2, service.countAnnoPage());
     assertEquals(2, service.countResource());
 
-    service.deleteAnnoPages(annoPage.getDsId(), annoPage.getLcId(), annoPage.getPgId());
+    // both annoppages have same dsId, lcId and pgId
+    service.deprecateAnnoPages(annoPage.getDsId(), annoPage.getLcId(), annoPage.getPgId());
 
-    assertEquals(0, service.countAnnoPage());
-    assertEquals(0, service.countResource());
+    //TODO: check that deleted field is created on both AnnoPages
   }
 }

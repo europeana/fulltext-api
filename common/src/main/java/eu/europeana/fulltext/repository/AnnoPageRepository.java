@@ -5,6 +5,8 @@ import static dev.morphia.aggregation.experimental.expressions.Expressions.field
 import static dev.morphia.aggregation.experimental.expressions.Expressions.value;
 import static dev.morphia.query.experimental.filters.Filters.eq;
 import static dev.morphia.query.experimental.filters.Filters.in;
+import static dev.morphia.query.experimental.updates.UpdateOperators.set;
+import static dev.morphia.query.experimental.updates.UpdateOperators.unset;
 import static eu.europeana.fulltext.util.MorphiaUtils.Fields.*;
 import static eu.europeana.fulltext.util.MorphiaUtils.RESOURCE_COL;
 import static eu.europeana.fulltext.util.MorphiaUtils.SET;
@@ -318,9 +320,9 @@ public class AnnoPageRepository {
             .include(CLASSNAME)
             .include(TARGET_ID)
             .include(MODIFIED)
-            .include(ANNOTATIONS,
-                filter(field(ANNOTATIONS),
-                    ArrayExpressions.in(value("$$annotation.dcType"),
+                .include(ANNOTATIONS,
+                    filter(field(ANNOTATIONS),
+                        ArrayExpressions.in(value("$$annotation.dcType"),
                         value(dcTypes))).as("annotation")));
     }
 
@@ -391,24 +393,36 @@ public class AnnoPageRepository {
             UPSERT_OPTS);
     }
 
-    public long deleteAnnoPage(String datasetId, String localId, String pageId, String lang) {
+    public long deprecateAnnoPage(String datasetId, String localId, String pageId, String lang) {
+        Instant now = Instant.now();
         return datastore
-            .find(AnnoPage.class)
-            .filter(
-                eq(DATASET_ID, datasetId),
-                eq(LOCAL_ID, localId),
-                eq(PAGE_ID, pageId),
-                eq(LANGUAGE, lang))
-            .delete()
-            .getDeletedCount();
+        .find(AnnoPage.class)
+        .filter(
+            eq(DATASET_ID, datasetId),
+            eq(LOCAL_ID, localId),
+            eq(PAGE_ID, pageId),
+            eq(LANGUAGE, lang))
+        .update(
+            set(MODIFIED, now),set(DELETED, now),
+            // only remove embedded annotations and Resource
+            unset(ANNOTATIONS),
+            unset(RESOURCE))
+        .execute()
+        .getModifiedCount();
     }
 
-    public long deleteAnnoPages(String datasetId, String localId, String pageId) {
+    public long deprecateAnnoPages(String datasetId, String localId, String pageId) {
+        Instant now = Instant.now();
         return datastore
             .find(AnnoPage.class)
             .filter(eq(DATASET_ID, datasetId), eq(LOCAL_ID, localId), eq(PAGE_ID, pageId))
-            .delete(MorphiaUtils.MULTI_DELETE_OPTS)
-            .getDeletedCount();
+            .update(
+                set(MODIFIED, now),set(DELETED, now),
+                // only remove embedded annotations and Resource
+                unset(ANNOTATIONS),
+                unset(RESOURCE))
+            .execute()
+            .getModifiedCount();
     }
 
     /**
@@ -436,17 +450,23 @@ public class AnnoPageRepository {
     }
 
     /**
-     * Deletes the AnnoPage document(s) whose source value is contained within the provided
+     * Deprecates the AnnoPage document(s) whose source value is contained within the provided
      * list.
-     * @param sources List of sources to be used for AnnoPage deletion
-     * @return number of deleted documents
+     * @param sources List of sources to be used for AnnoPage deprecation
+     * @return number of deprecated documents
      */
-    public long deleteAnnoPagesWithSources(List<? extends String> sources) {
+    public long deprecateAnnoPagesWithSources(List<? extends String> sources) {
+        Instant now = Instant.now();
         return datastore
             .find(AnnoPage.class)
             .filter(in(SOURCE, sources))
-            .delete(MorphiaUtils.MULTI_DELETE_OPTS)
-            .getDeletedCount();
+            .update(
+                set(MODIFIED, now),set(DELETED, now),
+                // only remove embedded annotations and Resource
+                unset(ANNOTATIONS),
+                unset(RESOURCE))
+            .execute()
+            .getModifiedCount();
     }
 
     /** Only for tests */

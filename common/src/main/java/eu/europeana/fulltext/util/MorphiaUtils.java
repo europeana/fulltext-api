@@ -64,6 +64,7 @@ public final class MorphiaUtils {
         public static final String LANGUAGE     = "lang";
         public static final String LOCAL_ID     = "lcId";
         public static final String MODIFIED     = "modified";
+        public static final String DELETED     = "deleted";
         public static final String PAGE_ID      = "pgId";
         public static final String RESOURCE     = "res";
         public static final String TARGET_ID    = "tgtId";

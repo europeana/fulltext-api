@@ -315,9 +315,9 @@ public class FTWriteController extends BaseRestController {
      * all languages will be deleted)
      */
     if (StringUtils.isNotEmpty(lang)) {
-      ftService.deleteAnnoPages(datasetId, localId, pageId, lang);
+      ftService.deprecateAnnoPages(datasetId, localId, pageId, lang);
     } else {
-      ftService.deleteAnnoPages(datasetId, localId, pageId);
+      ftService.deprecateAnnoPages(datasetId, localId, pageId);
     }
     if (LOG.isDebugEnabled()) {
       LOG.debug("Deleted AnnoPage(s) for {}/{}/{}?lang={}", datasetId, localId, pageId, lang);

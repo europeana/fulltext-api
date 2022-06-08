@@ -388,9 +388,9 @@ public class FTService {
     /**
      * Deletes AnnoPage with the specified dsId, lcId, pgId and lang values. Can delete max 1 record.
      */
-    public void deleteAnnoPages(String datasetId, String localId, String pageId, String lang) {
+    public void deprecateAnnoPages(String datasetId, String localId, String pageId, String lang) {
         long resourceCount = resourceRepository.deleteResource(datasetId, localId, lang);
-        long annoPageCount = annoPageRepository.deleteAnnoPage(datasetId, localId, pageId, lang);
+        long annoPageCount = annoPageRepository.deprecateAnnoPage(datasetId, localId, pageId, lang);
         LOG.info(
             "AnnoPage and Resource with datasetId={}, localId={}, pageId={}, lang={} are deleted. resourceCount={}, annoPageCount={}",
             datasetId,
@@ -402,9 +402,9 @@ public class FTService {
     }
 
     /** Deletes AnnoPage(s) with the specified dsId, lcId and pgId. Could delete multiple records */
-    public void deleteAnnoPages(String datasetId, String localId, String pageId) {
+    public void deprecateAnnoPages(String datasetId, String localId, String pageId) {
         long resourceCount = resourceRepository.deleteResources(datasetId, localId);
-        long annoPageCount = annoPageRepository.deleteAnnoPages(datasetId, localId, pageId);
+        long annoPageCount = annoPageRepository.deprecateAnnoPages(datasetId, localId, pageId);
         LOG.info(
             "{} AnnoPage and {} Resource with datasetId={}, localId={}, pageId={} are deleted",
             annoPageCount,
@@ -473,7 +473,7 @@ public class FTService {
      * @return number of deleted documents
      */
     public long deleteAnnoPagesWithSources(List<? extends String> sources) {
-        long count = annoPageRepository.deleteAnnoPagesWithSources(sources);
+        long count = annoPageRepository.deprecateAnnoPagesWithSources(sources);
         if (LOG.isDebugEnabled()) {
             LOG.debug("Deleted {} AnnoPages for sources {}", count, sources);
         }
