@@ -5,25 +5,30 @@ import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.request.schema.SchemaRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.client.solrj.response.schema.SchemaRepresentation;
+import org.apache.solr.client.solrj.response.schema.SchemaResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrInputDocument;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author mmarrero
  * Services to index/synchronize the Solr fulltext collection
  */
-public class FulltextServices {
-    private static final Logger logger = LogManager.getLogger(FulltextServices.class);
+public class FulltextCollection {
+    private static final Logger logger = LogManager.getLogger(FulltextCollection.class);
     private static final String EUROPEANA_ID = "europeana_id";
     private static final String TIMESTAMP = "timestamp";
     private static final String VERSION = "_version_";
     private static final String TIMESTAMP_UPDATE_METADATA   = "timestamp_update";
     private static final String TIMESTAMP_UPDATE_FULLTEXT   = "timestamp_update_fulltext";
+    private static final String FULLTEXT = "fulltext";
 
     static private SolrClient fulltextSolr;
     static String fulltextCollection;
@@ -38,11 +43,16 @@ public class FulltextServices {
      */
     public static void addDocuments(List<String> ids) throws IOException, SolrServerException {
         List<SolrInputDocument> toAdd = new ArrayList<>();
-        for (String europeana_id:ids) {
-            toAdd.add(toSolrInputDocument(MetadataServices.getFullDocument(europeana_id)));
-        }
-        if (!toAdd.isEmpty()) {
-            SolrServices.add(fulltextSolr, fulltextCollection, toAdd);
+        try {
+            for (String europeana_id : ids) {
+                toAdd.add(toSolrInputDocument(MetadataCollection.getFullDocument(europeana_id)));
+            }
+            if (!toAdd.isEmpty()) {
+                SolrServices.add(fulltextSolr, fulltextCollection, toAdd);
+            }
+        } catch (SolrServerException | IOException e){
+            logger.error(e.getMessage());
+            throw e;
         }
     }
 
@@ -53,7 +63,13 @@ public class FulltextServices {
      * @throws SolrServerException
      */
     public static void deleteDocuments(List<String> ids) throws IOException, SolrServerException {
-        SolrServices.deleteById(fulltextSolr,fulltextCollection,ids);
+        try {
+            SolrServices.deleteById(fulltextSolr,fulltextCollection,ids);
+        } catch (SolrServerException | IOException e){
+            logger.error(e.getMessage());
+            throw e;
+        }
+
     }
 
     /**
@@ -63,31 +79,41 @@ public class FulltextServices {
      * @throws SolrServerException
      */
     public static void setMetadata(List<String> ids) throws IOException, SolrServerException {
-        List<SolrInputDocument> toSet = new ArrayList<>();
-        for (String europeana_id : ids) {
-            SolrDocument existingDocument = MetadataServices.getFullDocument(europeana_id);
-            SolrInputDocument newDocument = new SolrInputDocument();
-            newDocument.addField(EUROPEANA_ID, europeana_id);
-            for (String field : existingDocument.getFieldNames()) {
-                if (!field.equals(TIMESTAMP) && !field.equals(VERSION)) { //_version_ and timestamp are automatically added by Solr
-                    Map<String, Object> atomicUpdates = new HashMap<>(1);
-                    atomicUpdates.put("set", existingDocument.getFieldValue(field));
-                    newDocument.addField(field, atomicUpdates);
+        try {
+            List<SolrInputDocument> toSet = new ArrayList<>();
+            for (String europeana_id : ids) {
+                SolrDocument existingDocument = MetadataCollection.getFullDocument(europeana_id);
+                SolrInputDocument newDocument = new SolrInputDocument();
+                newDocument.addField(EUROPEANA_ID, europeana_id);
+                for (String field : existingDocument.getFieldNames()) {
+                    if (!field.equals(TIMESTAMP) && !field.equals(VERSION)) { //_version_ and timestamp are automatically added by Solr
+                        Map<String, Object> atomicUpdates = new HashMap<>(1);
+                        atomicUpdates.put("set", existingDocument.getFieldValue(field));
+                        newDocument.addField(field, atomicUpdates);
+                    }
                 }
+                toSet.add(newDocument);
             }
-            toSet.add(newDocument);
+            SolrServices.add(fulltextSolr, fulltextCollection, toSet);
+        } catch (SolrServerException | IOException e){
+            logger.error(e.getMessage());
+            throw e;
         }
-        SolrServices.add(fulltextSolr, fulltextCollection, toSet);
     }
 
-    public static void setFulltext(){}
+    public static void setFulltext(List<String> ids){
+        //update fulltext -by language, and include prefix in contents
+        //update timestamp_update_fulltext
+        //update issued with normalization of proxy_dcterms_issued?
+        //TODO
+    }
 
 
     /**
-     * Return the date and time of the most recent updated metadata (following the date of update in the metadata collection)
+     * Return the date and time of the most recent updated metadata, indexed in the field timestamp_update (following the date of update in the metadata collection)
      * @return LocalDateTime
      */
-    public static LocalDateTime getLastUpdateMetadata(){
+    public static LocalDateTime getLastUpdateMetadata() throws IOException, SolrServerException {
         SolrQuery query = new SolrQuery();
         query.set("q", "*:*");
         query.set("fl", TIMESTAMP_UPDATE_METADATA);
@@ -98,15 +124,15 @@ public class FulltextServices {
             return LocalDateTime.parse(response.getResults().get(0).getFieldValue(TIMESTAMP_UPDATE_METADATA).toString());
         } catch (IOException | SolrServerException e){
             logger.error(e.getMessage());
+            throw e;
         }
-        return null;
     }
 
     /**
-     * Return the date and time of the most recent updated fulltext (following the date of update in the fulltext MongoDB)
+     * Return the date and time of the most recent updated fulltext, indexed in the field timestamp_update_fulltext (following the date of update in the fulltext MongoDB)
      * @return LocalDateTime
      */
-    public static LocalDateTime getLastUpdateFulltext(){
+    public static LocalDateTime getLastUpdateFulltext() throws IOException, SolrServerException {
         SolrQuery query = new SolrQuery();
         query.set("q", "*:*");
         query.set("fl", TIMESTAMP_UPDATE_FULLTEXT);
@@ -117,8 +143,26 @@ public class FulltextServices {
             return LocalDateTime.parse(response.getResults().get(0).getFieldValue(TIMESTAMP_UPDATE_FULLTEXT).toString());
         } catch (IOException | SolrServerException e){
             logger.error(e.getMessage());
+            throw e;
         }
-        return null;
+    }
+
+    /**
+     * Returns true if the document with europeana_id exists in the collection
+     * @param europeana_id
+     * @return
+     * @throws SolrServerException
+     * @throws IOException
+     */
+    public static boolean exists(String europeana_id) throws SolrServerException, IOException {
+        try {
+            SolrDocument document = SolrServices.get(fulltextSolr, fulltextCollection, europeana_id);
+            if (document != null){ return true;}
+            return  false;
+        } catch (SolrServerException | IOException e){
+            logger.error(e.getMessage());
+            throw e;
+        }
     }
 
     /**
@@ -137,5 +181,17 @@ public class FulltextServices {
         return inputDocument;
     }
 
+    protected static boolean isLangSupported(String language) throws SolrServerException, IOException {
+        if (language == null || language.isEmpty())
+            return false;
+        SchemaRequest request = new SchemaRequest();
+        SchemaResponse response = request.process(fulltextSolr, fulltextCollection);
+        SchemaRepresentation schema = response.getSchemaRepresentation();
+        if (!schema.getFields().stream().map(p -> p.get("name")).collect(Collectors.toList())
+                .contains(FULLTEXT + "." + language)) {
+            return false;
+        }
+        return true;
+    }
 
 }

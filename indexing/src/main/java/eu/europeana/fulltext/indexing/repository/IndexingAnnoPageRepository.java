@@ -38,4 +38,9 @@ public class IndexingAnnoPageRepository {
                             .include(DATASET_ID, LOCAL_ID, TARGET_ID, LANGUAGE, MODIFIED, RESOURCE))
             .toList();
   }
+
+  public boolean isDeleted(String dsId, String lcId) {
+    //TODO API TEAM: Query + logic to determine if all resources associated to same dsId and lcId are deleted
+    return false;
+  }
 }
