@@ -2,11 +2,17 @@ package eu.europeana.fulltext.entity;
 
 import dev.morphia.annotations.*;
 
-/**
- * Created by luthien on 31/05/2018.
- */
+/** Created by luthien on 31/05/2018. */
 @Entity(value = "Resource", useDiscriminator = false)
-@Indexes(@Index(fields = { @Field("dsId"), @Field("lcId"), @Field("_id") }, options = @IndexOptions(unique = true)))
+@Indexes({
+  @Index(
+      fields = {@Field("dsId"), @Field("lcId"), @Field("_id")},
+      options = @IndexOptions(unique = true)),
+    // only index contributed Resources
+  @Index(
+      fields = {@Field("contributed")},
+      options = @IndexOptions(partialFilter = "{contributed: {$eq: true}}"))
+})
 public class Resource {
 
     @Id
@@ -18,6 +24,7 @@ public class Resource {
 
     private String source;
     private String rights;
+    private boolean contributed;
 
     /**
      * Empty constructor required for serialisation
@@ -94,4 +101,12 @@ public class Resource {
     public String getRights() { return rights; }
 
     public void setRights(String rights) { this.rights = rights; }
+
+    public boolean isContributed() {
+        return contributed;
+    }
+
+    public void setContributed(boolean contributed) {
+        this.contributed = contributed;
+    }
 }

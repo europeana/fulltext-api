@@ -9,7 +9,7 @@ import eu.europeana.fulltext.batch.processor.AnnotationProcessor;
 import eu.europeana.fulltext.batch.reader.ItemReaderConfig;
 import eu.europeana.fulltext.batch.writer.AnnoPageDeletionWriter;
 import eu.europeana.fulltext.batch.writer.AnnoPageUpsertWriter;
-import eu.europeana.fulltext.entity.TranslationAnnoPage;
+import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.subtitles.external.AnnotationItem;
 import java.time.Instant;
 import org.apache.logging.log4j.LogManager;
@@ -23,7 +23,6 @@ import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.step.skip.SkipPolicy;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -77,7 +76,7 @@ public class AnnotationSyncJobConfig {
   private Step syncAnnotationsStep(Instant from, Instant to) {
     return this.stepBuilderFactory
         .get("synchroniseAnnoStep")
-        .<AnnotationItem, TranslationAnnoPage>chunk(appSettings.getAnnotationItemsPageSize())
+        .<AnnotationItem, AnnoPage>chunk(appSettings.getAnnotationItemsPageSize())
         .reader(itemReaderConfig.createAnnotationReader(from, to))
         .processor(annotationProcessor)
         .writer(annoPageWriter)

@@ -11,18 +11,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.europeana.fulltext.WebConstants;
 import eu.europeana.fulltext.api.service.FTService;
-import eu.europeana.fulltext.entity.TranslationAnnoPage;
 import eu.europeana.fulltext.api.BaseIntegrationTest;
 import eu.europeana.fulltext.api.IntegrationTestUtils;
+import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.util.GeneralUtils;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
+import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -60,12 +63,15 @@ class AnnoSyncIT extends BaseIntegrationTest {
           // create mapper here, as we can't access the Autowired one from static method
           final ObjectMapper dispatcherMapper = new ObjectMapper();
 
+          @NotNull
           @Override
-          public MockResponse dispatch(RecordedRequest request) throws InterruptedException {
+          public MockResponse dispatch(@NotNull RecordedRequest request)
+              throws InterruptedException {
 
             try {
               String path = request.getPath();
               // can't use String.equals() as path contains wskey param
+              assert path != null;
               if (path.startsWith("/annotations/deleted")) {
                 List<String> response =
                     DELETED_ANNOTATION_IDS.stream()
@@ -76,7 +82,8 @@ class AnnoSyncIT extends BaseIntegrationTest {
                     .setResponseCode(200)
                     .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
               }
-              List<String> pathSegments = request.getRequestUrl().pathSegments();
+              List<String> pathSegments =
+                  Objects.requireNonNull(request.getRequestUrl()).pathSegments();
 
               if (pathSegments.size() != 2) {
                 // Unsupported request path
@@ -127,8 +134,23 @@ class AnnoSyncIT extends BaseIntegrationTest {
                 .param(WebConstants.REQUEST_VALUE_SOURCE, annotationId)
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isAccepted())
-        .andExpect(jsonPath("$.@id", endsWith("/08604/node_1680982/annopage/" + GeneralUtils.derivePageId(expectedTgtId))))
-        .andExpect(jsonPath("$.language", is("es")));
+        .andExpect(
+            jsonPath(
+                "$.@id",
+                endsWith(
+                    "/08604/node_1680982/annopage/" + GeneralUtils.derivePageId(expectedTgtId))))
+        .andExpect(jsonPath("$.language", is("es")))
+        .andExpect(jsonPath("$.source", is(annotationId)));
+
+    // check that AnnoPage is saved in db
+    AnnoPage retrievedAnnoPage =
+        ftService.getAnnoPageByPgId(
+            "08604", "node_1680982", GeneralUtils.derivePageId(expectedTgtId), "es");
+    Assertions.assertNotNull(retrievedAnnoPage);
+
+    Assertions.assertNotNull(retrievedAnnoPage.getRes());
+    // synced AnnoPage resource should have contributed=true
+    Assertions.assertTrue(retrievedAnnoPage.getRes().isContributed());
   }
 
   @Test
@@ -140,10 +162,10 @@ class AnnoSyncIT extends BaseIntegrationTest {
     DELETED_ANNOTATION_IDS.add(annId);
 
     // create AnnoPage in DB (source property in JSON matches url in deleted annotations list)
-    TranslationAnnoPage annoPage =
+    AnnoPage annoPage =
         mapper.readValue(
             loadFileAndReplaceServerUrl(ANNOPAGE_FILMPORTAL_SALEM06_JSON, serverBaseUrl),
-            TranslationAnnoPage.class);
+            AnnoPage.class);
     ftService.saveAnnoPage(annoPage);
 
     mockMvc

@@ -29,3 +29,5 @@ dist/
 nbdist/
 .nb-gradle/
 /common/.mvn/
+
+.DS_Store

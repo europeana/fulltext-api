@@ -60,14 +60,14 @@ public class FTRetrievalController {
     }
 
     /**
-     * Lists available AnnoPages for this record, including all translations
+     * Lists available AnnoPages for this record
      *
      * @param datasetId identifier of the AnnoPage's dataset
      * @param localId   identifier of the AnnoPage's record
      * @return result String containing requested info
      * @throws EuropeanaApiException when serialising to Json fails
      */
-    @ApiOperation(value = "Lists available Annotation Pages for a given EuropeanaID (dataset + localID), including translations")
+    @ApiOperation(value = "Lists available Annotation Pages for a given EuropeanaID (dataset + localID)")
     @GetMapping(value = "/presentation/{datasetId}/{localId}/annopage", headers = ACCEPT_JSON)
     public ResponseEntity<String> annoPageInfo(
         @PathVariable String datasetId,
@@ -90,7 +90,7 @@ public class FTRetrievalController {
             return cached;
         }
         HttpHeaders headers = CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
-        SummaryManifest apInfo = fts.collectApAndTranslationInfo(datasetId, localId);
+        SummaryManifest apInfo = fts.collectionAnnoPageInfo(datasetId, localId);
 
         return new ResponseEntity<>(fts.serialise(apInfo), headers, HttpStatus.OK);
     }

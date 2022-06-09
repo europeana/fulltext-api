@@ -1,7 +1,6 @@
 package eu.europeana.fulltext.loader.repository;
 
 import eu.europeana.fulltext.entity.Resource;
-import eu.europeana.fulltext.entity.TranslationResource;
 import eu.europeana.fulltext.repository.ResourceRepository;
 import org.springframework.stereotype.Repository;
 
@@ -21,24 +20,13 @@ public class LoaderResourceRepository extends ResourceRepository {
      * @param datasetId ID of the associated dataset
      * @return the number of deleted resources
      */
-    public long deleteOriginalDataset(String datasetId) {
-        return deleteDataset(datasetId, Resource.class);
-    }
-
-    public long deleteTranslationDataset(String datasetId) {
-        return deleteDataset(datasetId, TranslationResource.class);
-    }
-
-    private long deleteDataset(String datasetId, Class clazz) {
-        return datastore.find(clazz)
+    public long deleteDataset(String datasetId) {
+        return datastore.find(Resource.class)
                 .filter(eq(DATASET_ID, datasetId)).delete(MULTI_DELETE_OPTS).getDeletedCount();
     }
 
-    public void saveOriginal(Resource resToSave){
-        datastore.save(resToSave);
-    }
 
-    public void saveTranslation(TranslationResource resToSave){
+    public void save(Resource resToSave){
         datastore.save(resToSave);
     }
 }

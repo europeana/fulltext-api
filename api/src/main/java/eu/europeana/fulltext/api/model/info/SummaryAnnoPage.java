@@ -15,7 +15,7 @@ public class SummaryAnnoPage extends JsonLdIdType {
     private String language;
 
     /**
-     * This object serves as a placeholder for either an original or translated AnnoPage
+     * This object serves as a placeholder for AnnoPages.
      * It is used in the summary info endpoint only
      *
      * @param id    String containing identifying URL of the SummaryAnnoPage

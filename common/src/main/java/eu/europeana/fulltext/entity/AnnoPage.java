@@ -17,7 +17,7 @@ import java.util.Objects;
  * Resource base URL: https://www.europeana.eu/api/fulltext/
  */
 @Entity(value = "AnnoPage", useDiscriminator = false)
-@Indexes(@Index(fields = {@Field("dsId"), @Field("lcId"), @Field("pgId")}, options = @IndexOptions(unique = true)))
+@Indexes(@Index(fields = {@Field("dsId"), @Field("lcId"), @Field("pgId"), @Field("lang")}, options = @IndexOptions(unique = true)))
 public class AnnoPage {
 
     @Id
@@ -25,6 +25,7 @@ public class AnnoPage {
     private String           dsId;
     private String           lcId;
     private String           pgId;
+    @Indexed
     private String           tgtId;
     private List<Annotation> ans;
     private Date             modified;

@@ -22,7 +22,6 @@ import eu.europeana.fulltext.api.service.CacheUtils;
 import eu.europeana.fulltext.api.service.FTService;
 import eu.europeana.fulltext.api.service.SubtitleService;
 import eu.europeana.fulltext.entity.AnnoPage;
-import eu.europeana.fulltext.entity.TranslationAnnoPage;
 import eu.europeana.fulltext.exception.AnnoPageDoesNotExistException;
 import eu.europeana.fulltext.exception.InvalidFormatException;
 import eu.europeana.fulltext.exception.InvalidUriException;
@@ -127,7 +126,7 @@ public class FTWriteController extends BaseRestController {
     if (itemOptional.isEmpty()) {
       // annotationItem not present, meaning 410 returned by Annotation API - so it has been deleted
 
-      TranslationAnnoPage annoPage = ftService.getShellAnnoPageBySource(source);
+      AnnoPage annoPage = ftService.getShellAnnoPageBySource(source);
       long count = ftService.deleteAnnoPagesWithSources(Collections.singletonList(source));
 
       DeleteAnnoSyncResponse response =
@@ -151,7 +150,7 @@ public class FTWriteController extends BaseRestController {
 
     AnnotationPreview annotationPreview =
         subtitleService.createAnnotationPreview(itemOptional.get());
-    TranslationAnnoPage annoPage = subtitleService.createAnnoPage(annotationPreview);
+    AnnoPage annoPage = subtitleService.createAnnoPage(annotationPreview, true);
 
     // Morphia creates a new _id value if none exists, so we can't directly call save() – as this
     // could be an update.
@@ -188,10 +187,11 @@ public class FTWriteController extends BaseRestController {
      * Check if there is a fulltext annotation page associated with the combination of DATASET_ID,
      * LOCAL_ID and the media URL, if so then return a HTTP 301 with the URL of the Annotation Page
      */
-    if (ftService.annoPageExistsByTgtId(datasetId, localId, media, lang)) {
+    String pageId = GeneralUtils.derivePageId(media);
+    if (ftService.doesAnnoPageExist(datasetId, localId, pageId, lang)) {
       String redirectPath =
           String.format(
-              "/presentation/%s/%s/annopage/%s", datasetId, localId, GeneralUtils.derivePageId(media));
+              "/presentation/%s/%s/annopage/%s", datasetId, localId, pageId);
       if (LOG.isDebugEnabled()) {
         LOG.debug(
             "AnnoPage already exists for subtitle. Redirecting to {}?lang={}", redirectPath, lang);
@@ -215,12 +215,13 @@ public class FTWriteController extends BaseRestController {
     AnnotationPreview annotationPreview =
         createAnnotationPreview(
             datasetId, localId, lang, originalLang, rights, source, media, content, type);
-    AnnoPage savedAnnoPage = ftService.createAndSaveAnnoPage(annotationPreview);
+    AnnoPage annoPage = subtitleService.createAnnoPage(annotationPreview, false);
+    ftService.saveAnnoPage(annoPage);
 
     if (LOG.isDebugEnabled()) {
-      LOG.debug("Created new AnnoPage {}", savedAnnoPage);
+      LOG.debug("Created new AnnoPage {}", annoPage);
     }
-    return generateResponse(request, savedAnnoPage, HttpStatus.OK);
+    return generateResponse(request, annoPage, HttpStatus.OK);
   }
 
   @ApiOperation(value = "Replaces existing fulltext for a media resource with a new document")
@@ -250,12 +251,12 @@ public class FTWriteController extends BaseRestController {
      * Check if there is a fulltext annotation page associated with the combination of DATASET_ID,
      * LOCAL_ID and the PAGE_ID and LANG, if not then return a HTTP 404
      */
-    TranslationAnnoPage annoPage = ftService.getAnnoPageByPgId(datasetId, localId, pageId, lang);
+    AnnoPage annoPage = ftService.getAnnoPageByPgId(datasetId, localId, pageId, lang);
 
     if (annoPage == null) {
       throw new AnnoPageDoesNotExistException(
           "Annotation page does not exist for "
-              + GeneralUtils.getTranslationAnnoPageUrl(datasetId, localId, pageId, lang));
+              + GeneralUtils.getAnnoPageUrl(datasetId, localId, pageId, lang));
     }
     // determine type
     SubtitleType type = null;
@@ -277,7 +278,7 @@ public class FTWriteController extends BaseRestController {
             annoPage.getTgtId(),
             content,
             type);
-    TranslationAnnoPage updatedAnnoPage = ftService.updateAnnoPage(annotationPreview, annoPage);
+    AnnoPage updatedAnnoPage = ftService.updateAnnoPage(annotationPreview, annoPage);
     if (LOG.isDebugEnabled()) {
       LOG.debug("Replaced AnnoPage {}", updatedAnnoPage);
     }
@@ -303,10 +304,10 @@ public class FTWriteController extends BaseRestController {
      * Check if there is a fulltext annotation page associated with the combination of DATASET_ID,
      * LOCAL_ID and the PAGE_ID and LANG (if provided), if not then return a HTTP 404
      */
-    if (!ftService.doesTranslationExist(datasetId, localId, pageId, lang)) {
+    if (!ftService.doesAnnoPageExist(datasetId, localId, pageId, lang)) {
       throw new AnnoPageDoesNotExistException(
           "Annotation page does not exist for "
-              + GeneralUtils.getTranslationAnnoPageUrl(datasetId, localId, pageId, lang));
+              + GeneralUtils.getAnnoPageUrl(datasetId, localId, pageId, lang));
     }
 
     /*

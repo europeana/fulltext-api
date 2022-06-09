@@ -5,18 +5,13 @@ import dev.morphia.UpdateOptions;
 import dev.morphia.mapping.DiscriminatorFunction;
 import dev.morphia.mapping.MapperOptions;
 import dev.morphia.mapping.NamingStrategy;
-import eu.europeana.fulltext.entity.Annotation;
-import eu.europeana.fulltext.entity.Target;
-import eu.europeana.fulltext.entity.TranslationAnnoPage;
-import eu.europeana.fulltext.entity.TranslationResource;
-import org.bson.Document;
-
-import java.util.*;
-
-import static eu.europeana.fulltext.util.MorphiaUtils.Fields.*;
-import static eu.europeana.fulltext.util.MorphiaUtils.Fields.RESOURCE;
+import eu.europeana.fulltext.entity.Resource;
+import java.util.Arrays;
 
 public final class MorphiaUtils {
+
+    /** Matches spring.profiles.active property in test/resource application.properties file */
+    public static final String ACTIVE_TEST_PROFILE = "test";
 
     public static final MapperOptions MAPPER_OPTIONS = MapperOptions.builder()
                                                                     // use legacy settings for backwards-compatibility
@@ -27,7 +22,7 @@ public final class MorphiaUtils {
 
     public static final String SET_ON_INSERT = "$setOnInsert";
     public static final String SET = "$set";
-    public static final String TRANSLATION_RESOURCE_COL = TranslationResource.class.getSimpleName();
+    public static final String RESOURCE_COL = Resource.class.getSimpleName();
 
 
     // Morphia deletes the first matching document by default. This is required for deleting all matches.
@@ -37,127 +32,26 @@ public final class MorphiaUtils {
     // ie. creates new records if they do not already exist, or updates them if they do.
     public static final UpdateOptions UPSERT_OPTS = new UpdateOptions().upsert(true);
 
+    public static boolean testProfileNotActive(String activeProfileString) {
+        return Arrays.stream(activeProfileString.split(",")).noneMatch(ACTIVE_TEST_PROFILE::equals);
+    }
+
+    public static void validateDeletion(String activeProfileString) {
+        if (MorphiaUtils.testProfileNotActive(activeProfileString)) {
+            throw new IllegalStateException(
+                String.format(
+                    "Attempting to drop collection outside testing. activeProfiles=%s",
+                    activeProfileString));
+        }
+    }
 
 
     private MorphiaUtils() {
         // private constructor to prevent instantiation
     }
 
-    /**
-     * Creates Aggregation pipeline to fetch the translations, and it's translations Resource
-     * This is to avoid the issue of Translation Resource being fetched as AnnoPage.res
-     *
-     * @param datasetId
-     * @param localId
-     * @param pageId
-     * @param lang
-     * @return
-     */
-    public static List<Document> getAggregatePipelineForTranslation(String datasetId, String localId, String pageId, String lang) {
-       return Arrays.asList(
-                new Document(
-                        MONGO_MATCH,
-                        new Document(DATASET_ID, datasetId)
-                                .append(LOCAL_ID, localId)
-                                .append(PAGE_ID, pageId)
-                                .append(LANGUAGE, lang)),
-                new Document(
-                        MONGO_LOOKUP,
-                        new Document(MONGO_FROM, TranslationResource.class.getSimpleName())
-                                .append(MONGO_LOCAL_FIELD, MONGO_RESOURCE_REF_ID)
-                                .append(MONGO_FOREIGN_FIELD, DOC_ID)
-                                .append(MONGO_AS, RESOURCE))
-       );
-    }
 
-    // process the Document from Mongo mainly used for Translations
-    public static TranslationAnnoPage processMongoDocument(
-            Document document, String datasetId, String localId, String pageId, String lang) {
-        if (document != null) {
-            TranslationAnnoPage annoPage = new TranslationAnnoPage();
-            annoPage.setDsId(datasetId);
-            annoPage.setLcId(localId);
-            annoPage.setPgId(pageId);
-            annoPage.setLang(lang);
-            annoPage.setAns(getAnnotations(document));
-            annoPage.setTgtId(document.getString(TARGET_ID));
-            annoPage.setSource(document.getString(SOURCE));
-            annoPage.setModified((Date) document.get(MODIFIED));
-            TranslationResource resource = getResource(((List<Document>) document.get(RESOURCE)).get(0), datasetId, localId, lang);
-            annoPage.setRes(resource);
-            return annoPage;
-        }
-        return null;
-    }
 
-    private static List<Annotation> getAnnotations(Document document) {
-        List<Annotation> annotations = new ArrayList<>();
-        List<Document> ansList = (List<Document>) document.get(ANNOTATIONS);
-        for (Document ans: ansList) {
-            Annotation annotation = new Annotation(ans.getString(AN_ID), ans.getString(DC_TYPE).charAt(0), ans.getInteger("from"), ans.getInteger("to"));
-            List<Target> target = getTgs(ans);
-            if (target != null && !target.isEmpty()) {
-                annotation.setTgs(target);
-            }
-            if (ans.containsKey(LANGUAGE)) {
-                annotation.setLang(ans.getString(LANGUAGE));
-            }
-            if (ans.containsKey(MOTIV)) {
-                annotation.setMotiv(ans.getString(MOTIV));
-            }
-            annotations.add(annotation);
-        }
-        return annotations;
-    }
-
-    private static List<Target> getTgs(Document document) {
-        if (document.containsKey(TARGETS)) {
-            List<Target> target = new ArrayList<>();
-            List<Document> tgs = (List<Document>) document.get(TARGETS);
-            for (Document tg:tgs) {
-                    target.add(getTargetValues(tg));
-            }
-            return target;
-        }
-        return new ArrayList<>();
-    }
-
-    private static Target getTargetValues(Document doc) {
-        Target target = new Target();
-        if(doc.containsKey("x")) {
-            target.setX(doc.getInteger("x"));
-        }
-        if(doc.containsKey("y")) {
-            target.setY(doc.getInteger("y"));
-        }
-        if(doc.containsKey("w")) {
-            target.setW(doc.getInteger("w"));
-        }
-        if(doc.containsKey("h")) {
-            target.setH(doc.getInteger("h"));
-        }
-        if(doc.containsKey("start")) {
-            target.setStart(doc.getInteger("start"));
-        }
-        if(doc.containsKey("end")) {
-            target.setEnd(doc.getInteger("end"));
-        }
-        return target;
-    }
-
-    private static TranslationResource getResource(Document res, String datasetId, String localId, String lang) {
-        TranslationResource resource = new TranslationResource();
-        resource.setId(res.getString(DOC_ID));
-        resource.setLang(lang);
-        resource.setRights(res.getString(RIGHTS));
-        resource.setValue(res.getString(VALUE));
-        if (res.containsKey(SOURCE)) {
-            resource.setSource(res.getString(SOURCE));
-        }
-        resource.setDsId(datasetId);
-        resource.setLcId(localId);
-        return resource;
-    }
 
     // Collection field names
     public static final class Fields {
@@ -173,7 +67,6 @@ public final class MorphiaUtils {
         public static final String PAGE_ID      = "pgId";
         public static final String RESOURCE     = "res";
         public static final String TARGET_ID    = "tgtId";
-        public static final String TRANSLATIONS = "translations";
         public static final String SOURCE       = "source";
         public static final String TARGETS      = "tgs";
         public static final String AN_ID        = "anId";
@@ -210,11 +103,11 @@ public final class MorphiaUtils {
         public static final String MONGO_RESOURCE_REF_ID = "res.$id";
         public static final String RIGHTS = "rights";
         public static final String VALUE = "value";
+        public static final String CONTRIBUTED = "contributed";
 
 
         private Fields() {
             // private constructor to prevent instantiation
         }
     }
-
 }
