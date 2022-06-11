@@ -524,7 +524,7 @@ public class AnnoPageRepository {
                 // only remove embedded annotations and Resource
                 unset(ANNOTATIONS),
                 unset(RESOURCE))
-            .execute()
+            .execute(MULTI_UPDATE_OPTS)
             .getModifiedCount();
     }
 
@@ -564,4 +564,18 @@ public class AnnoPageRepository {
                 .include(DATASET_ID, LOCAL_ID, PAGE_ID, TARGET_ID, LANGUAGE, SOURCE, MODIFIED, DELETED))
         .tryNext();
   }
+
+    /**
+     * Gets the resource ids for AnnoPages matching the sources in the provided list
+     * @param sources source url for match AnnoPages with
+     * @return list of resource ids
+     */
+    public List<String> getResourceIdsForAnnoPageSources(List<? extends String> sources) {
+        List<AnnoPage> annoPages = datastore.find(AnnoPage.class)
+            .filter(in(SOURCE, sources))
+            .iterator(new FindOptions().projection().include(RESOURCE))
+            .toList();
+
+        return annoPages.stream().map(a -> a.getRes().getId()).collect(Collectors.toList());
+    }
 }

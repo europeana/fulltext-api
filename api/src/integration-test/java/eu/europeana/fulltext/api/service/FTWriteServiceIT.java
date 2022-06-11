@@ -202,4 +202,32 @@ class FTWriteServiceIT extends BaseIntegrationTest {
     assertNotNull(retrievedAnnoPage2);
     assertTrue(retrievedAnnoPage2.isDeprecated());
   }
+
+  @Test
+  void shouldDeprecateAnnoPagesViaSource() throws Exception{
+    String source1 = "http://annotation/1";
+    String source2 = "http://annotation/2";
+    AnnoPage annoPage1 =
+        mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), AnnoPage.class);
+    annoPage1.setSource(source1);
+    ftService.saveAnnoPage(annoPage1);
+
+    AnnoPage annoPage2 =
+        mapper.readValue(loadFile(ANNOPAGE_VIMEO_208310501_JSON), AnnoPage.class);
+    annoPage2.setSource(source2);
+    ftService.saveAnnoPage(annoPage2);
+
+    ftService.deprecateAnnoPagesWithSources(List.of(source1, source2));
+
+
+    AnnoPage retrievedAnnoPage1 =
+        service.getAnnoPageByPgId(annoPage1.getDsId(), annoPage1.getLcId(), annoPage1.getPgId(), annoPage1.getLang(), true);
+    assertNotNull(retrievedAnnoPage1);
+    assertNotNull(retrievedAnnoPage1.getDeleted());
+
+    AnnoPage retrievedAnnoPage2 =
+        service.getAnnoPageByPgId(annoPage2.getDsId(), annoPage2.getLcId(), annoPage2.getPgId(), annoPage2.getLang(), true);
+    assertNotNull(retrievedAnnoPage2);
+    assertNotNull(retrievedAnnoPage2.getDeleted());
+  }
 }

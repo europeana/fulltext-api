@@ -1,6 +1,7 @@
 package eu.europeana.fulltext.api.web;
 
 import static eu.europeana.fulltext.WebConstants.MOTIVATION_SUBTITLING;
+import static eu.europeana.fulltext.WebConstants.MOTIVATION_TRANSCRIBING;
 import static eu.europeana.fulltext.WebConstants.REQUEST_VALUE_SOURCE;
 import static eu.europeana.fulltext.util.GeneralUtils.isValidAnnotationId;
 import static eu.europeana.fulltext.util.HttpUtils.REQUEST_VERSION_2;
@@ -127,13 +128,16 @@ public class FTWriteController extends BaseRestController {
     if (itemOptional.isEmpty()) {
       // annotationItem not present, meaning 410 returned by Annotation API - so it has been deleted
 
-      AnnoPage annoPage = ftService.getShellAnnoPageBySource(source, true);
-      long count = ftService.deleteAnnoPagesWithSources(Collections.singletonList(source));
+      AnnoPage annoPage = ftService.getShellAnnoPageBySource(source, false);
 
-      DeleteAnnoSyncResponse response =
-          new DeleteAnnoSyncResponse(
-              source, count > 0 ? Status.DELETED.getValue() : Status.NOOP.getValue(), annoPage);
-
+      DeleteAnnoSyncResponse response;
+      if (annoPage == null) {
+        // AnnoPage already deprecated, or doesn't exist
+        response = new DeleteAnnoSyncResponse(source, Status.NOOP.getValue(), null);
+      } else {
+        ftService.deprecateAnnoPagesWithSources(Collections.singletonList(source));
+        response = new DeleteAnnoSyncResponse(source, Status.DELETED.getValue(), annoPage);
+      }
       return ResponseEntity.status(HttpStatus.ACCEPTED)
           .header(HttpHeaders.ALLOW, getMethodsForRequestPattern(request, requestPathMethodService))
           .body(ftService.serialise(response));
@@ -142,10 +146,10 @@ public class FTWriteController extends BaseRestController {
     AnnotationItem item = itemOptional.get();
     // motivation must be subtitling
 
-    if (!MOTIVATION_SUBTITLING.equals(item.getMotivation())) {
+    if (!List.of(MOTIVATION_SUBTITLING, MOTIVATION_TRANSCRIBING).contains(item.getMotivation())) {
       throw new UnsupportedAnnotationException(
           String.format(
-              "Annotation motivation '%s' not supported for sync. Only subtitles are supported",
+              "Annotation motivation '%s' not supported for sync. Only subtitles and transcriptions are supported",
               item.getMotivation()));
     }
 
