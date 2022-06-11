@@ -8,6 +8,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import org.springframework.lang.Nullable;
 
 /**
  * Created by luthien on 31/05/2018.
@@ -142,7 +143,7 @@ public class AnnoPage {
         this.source = source;
     }
 
-    public Date isDeleted() {
+    public Date getDeleted() {
         return deleted;
     }
 
@@ -150,7 +151,23 @@ public class AnnoPage {
         this.deleted = deleted;
     }
 
+    public boolean isDeprecated(){
+        return deleted != null;
+    }
+
     public String toString() {
         return "/" + this.dsId + "/" + this.getLcId() + "/" + this.getPgId();
+    }
+
+    /**
+     * Morphia handles a "save" operation as an update if the mongo _id is set.
+     *
+     * This method copies the _id value from a source AnnoPage object to this one.
+     * @param source source AnnoPage
+     */
+    public void copyDbIdFrom(@Nullable AnnoPage source){
+        if (source != null) {
+            _id = source._id;
+        }
     }
 }

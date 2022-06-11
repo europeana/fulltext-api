@@ -6,6 +6,7 @@ import static eu.europeana.fulltext.api.IntegrationTestUtils.ANNOPAGE_VIMEO_2083
 import static eu.europeana.fulltext.api.IntegrationTestUtils.loadFile;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.europeana.fulltext.api.BaseIntegrationTest;
@@ -49,7 +50,7 @@ class FTWriteServiceIT extends BaseIntegrationTest {
     service.upsertAnnoPage(List.of(annoPage));
 
     AnnoPage retrievedAnnoPage =
-        service.getAnnoPageByPgId("08604", "FDE2205EEE384218A8D986E5138F9691", "1", "nl");
+        service.getAnnoPageByPgId("08604", "FDE2205EEE384218A8D986E5138F9691", "1", "nl", false);
 
     assertNotNull(retrievedAnnoPage.getRes());
   }
@@ -165,10 +166,10 @@ class FTWriteServiceIT extends BaseIntegrationTest {
     // deprecation should set a "deleted" property on AnnoPage
 
     AnnoPage retrievedAnnoPage =
-        service.getAnnoPageByPgId(annoPage.getDsId(), annoPage.getLcId(), annoPage.getPgId(), annoPage.getLang());
+        service.getAnnoPageByPgId(annoPage.getDsId(), annoPage.getLcId(), annoPage.getPgId(), annoPage.getLang(), true);
 
     assertNotNull(retrievedAnnoPage);
-    assertNotNull(retrievedAnnoPage.isDeleted());
+    assertNotNull(retrievedAnnoPage.getDeleted());
   }
 
   @Test
@@ -191,6 +192,14 @@ class FTWriteServiceIT extends BaseIntegrationTest {
     // both annoppages have same dsId, lcId and pgId
     service.deprecateAnnoPages(annoPage.getDsId(), annoPage.getLcId(), annoPage.getPgId());
 
-    //TODO: check that deleted field is created on both AnnoPages
+    AnnoPage retrievedAnnoPage1 =
+        service.getAnnoPageByPgId(annoPage.getDsId(), annoPage.getLcId(), annoPage.getPgId(), annoPage.getLang(), true);
+    assertNotNull(retrievedAnnoPage1);
+    assertTrue(retrievedAnnoPage1.isDeprecated());
+
+    AnnoPage retrievedAnnoPage2 =
+        service.getAnnoPageByPgId(annoPage2.getDsId(), annoPage2.getLcId(), annoPage2.getPgId(), annoPage2.getLang(), true);
+    assertNotNull(retrievedAnnoPage2);
+    assertTrue(retrievedAnnoPage2.isDeprecated());
   }
 }

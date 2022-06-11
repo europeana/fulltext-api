@@ -145,7 +145,7 @@ class AnnoSyncIT extends BaseIntegrationTest {
     // check that AnnoPage is saved in db
     AnnoPage retrievedAnnoPage =
         ftService.getAnnoPageByPgId(
-            "08604", "node_1680982", GeneralUtils.derivePageId(expectedTgtId), "es");
+            "08604", "node_1680982", GeneralUtils.derivePageId(expectedTgtId), "es", false);
     Assertions.assertNotNull(retrievedAnnoPage);
 
     Assertions.assertNotNull(retrievedAnnoPage.getRes());

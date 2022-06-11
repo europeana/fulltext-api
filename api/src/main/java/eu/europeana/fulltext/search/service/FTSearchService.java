@@ -76,7 +76,7 @@ public class FTSearchService {
         if (solrResult.isEmpty()) {
             LOG.debug("Solr returned empty result in {} ms", System.currentTimeMillis() - start);
             // check if there are 0 hits because the record doesn't exist
-            if (!fulltextRepo.doesAnnoPageExist(europeanaId.getDatasetId(), europeanaId.getLocalId(), "1", null)) {
+            if (!fulltextRepo.doesAnnoPageExist(europeanaId.getDatasetId(), europeanaId.getLocalId(), "1", null, false)) {
                 LOG.debug("No results from Mongo");
                 throw new RecordDoesNotExistException(europeanaId);
             }
@@ -98,7 +98,7 @@ public class FTSearchService {
 
         long start = System.currentTimeMillis();
         try (MorphiaCursor<AnnoPage> annoPageCursor = fulltextRepo.fetchAnnoPageFromTargetId(europeanaId.getDatasetId(),
-                europeanaId.getLocalId(), new ArrayList<>(solrHitsByImageId.keySet()), annoTypes)) {
+                europeanaId.getLocalId(), new ArrayList<>(solrHitsByImageId.keySet()), annoTypes, false)) {
             if (annoPageCursor == null || !annoPageCursor.hasNext()) {
                 LOG.debug("No results from Mongo");
                 throw new RecordDoesNotExistException(europeanaId);

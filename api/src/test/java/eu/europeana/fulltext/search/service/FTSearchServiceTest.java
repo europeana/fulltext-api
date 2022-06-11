@@ -108,12 +108,12 @@ public class FTSearchServiceTest {
         );
 
         // default no AnnoPages are available for any record
-        given(fulltextRepo.doesAnnoPageExist(any(), any(), any(), any())).willReturn(
+        given(fulltextRepo.doesAnnoPageExist(any(), any(), any(), any(), anyBoolean())).willReturn(
                 Boolean.FALSE
         );
         // except for 1 record
         given(fulltextRepo.doesAnnoPageExist(eq(RECORDID_HAS_RESULTS.getDatasetId()), eq(RECORDID_HAS_RESULTS.getLocalId()),
-                anyString(), any())).willReturn(
+                anyString(), any(), anyBoolean())).willReturn(
                         Boolean.TRUE
         );
     }
@@ -175,7 +175,7 @@ public class FTSearchServiceTest {
                 .willReturn(filteredAnnoPages.get(0))
                 .willReturn(filteredAnnoPages.get(1));
         given(fulltextRepo.fetchAnnoPageFromTargetId(eq(RECORDID_HAS_RESULTS.getDatasetId()), eq(RECORDID_HAS_RESULTS.getLocalId()),
-                any(), any())).willReturn(
+                any(), any(), anyBoolean())).willReturn(
                 morphiaCursor
         );
     }

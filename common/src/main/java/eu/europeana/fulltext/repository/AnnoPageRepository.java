@@ -8,6 +8,7 @@ import static dev.morphia.query.experimental.filters.Filters.in;
 import static dev.morphia.query.experimental.updates.UpdateOperators.set;
 import static dev.morphia.query.experimental.updates.UpdateOperators.unset;
 import static eu.europeana.fulltext.util.MorphiaUtils.Fields.*;
+import static eu.europeana.fulltext.util.MorphiaUtils.MULTI_UPDATE_OPTS;
 import static eu.europeana.fulltext.util.MorphiaUtils.RESOURCE_COL;
 import static eu.europeana.fulltext.util.MorphiaUtils.SET;
 import static eu.europeana.fulltext.util.MorphiaUtils.SET_ON_INSERT;
@@ -105,12 +106,20 @@ public class AnnoPageRepository {
      * @param datasetId ID of the dataset
      * @param localId   ID of the parent of the Annopage object
      * @param pageId    index (page number) of the Annopage object
+     * @param includeDeprecated
      * @return true if yes, otherwise false
      */
-    public boolean existsByPageId(String datasetId, String localId, String pageId) {
-        return datastore.find(AnnoPage.class).filter(eq(DATASET_ID, datasetId),
-            eq(LOCAL_ID, localId),
-            eq(PAGE_ID, pageId)).count() > 0;
+    public boolean existsByPageId(String datasetId, String localId, String pageId,
+        boolean includeDeprecated) {
+    List<Filter> filters =
+        new ArrayList<>(
+            Arrays.asList(eq(DATASET_ID, datasetId), eq(LOCAL_ID, localId), eq(PAGE_ID, pageId)));
+
+    if (!includeDeprecated) {
+      filters.add(eq(DELETED, null));
+    }
+
+    return datastore.find(AnnoPage.class).filter(filters.toArray(new Filter[0])).count() > 0;
     }
 
     /**
@@ -120,16 +129,21 @@ public class AnnoPageRepository {
      * @param localId   ID of the parent of the Annopage object
      * @param pageId    index (page number) of the Annopage object
      * @param lang      in which language should the  AnnoPage be
+     * @param includeDeprecated indicates whether deprecated AnnoPages should be included in result
      * @return true if yes, otherwise false
      */
     public boolean existsByPageIdLang(String datasetId, String localId, String pageId,
-        String lang) {
+        String lang, boolean includeDeprecated) {
         List<Filter> filter =
             new ArrayList<>(
                 Arrays.asList(eq(DATASET_ID, datasetId), eq(LOCAL_ID, localId), eq(PAGE_ID, pageId)));
 
         if (StringUtils.isNotEmpty(lang)) {
             filter.add(eq(LANGUAGE, lang));
+        }
+
+        if(!includeDeprecated){
+            filter.add(eq(DELETED, null));
         }
         return datastore.find(AnnoPage.class).filter(filter.toArray(new Filter[0])).count()
             > 0L;
@@ -166,11 +180,20 @@ public class AnnoPageRepository {
      * @return AnnoPage
      */
     public AnnoPage findByPageId(
-        String datasetId, String localId, String pageId, List<AnnotationType> annoTypes) {
+        String datasetId, String localId, String pageId, List<AnnotationType> annoTypes, boolean includeDeprecated) {
+
+        List<Filter> filters =
+            new ArrayList<>(
+                Arrays.asList(eq(DATASET_ID, datasetId),
+                    eq(LOCAL_ID, localId),
+                    eq(PAGE_ID, pageId)));
+
+        if(!includeDeprecated){
+            filters.add(eq(DELETED, null));
+        }
+
         Aggregation<AnnoPage> query = datastore.aggregate(AnnoPage.class)
-            .match(eq(DATASET_ID, datasetId),
-                eq(LOCAL_ID, localId),
-                eq(PAGE_ID, pageId));
+            .match(filters.toArray(new Filter[0]));
         query = filterTextGranularity(query, annoTypes);
         return query.execute(AnnoPage.class).tryNext();
     }
@@ -181,18 +204,28 @@ public class AnnoPageRepository {
      * @param datasetId ID of the dataset
      * @param localId   ID of the parent of the Annopage object
      * @param pageId    index (page number) of the Annopage object
-     * @param lang      language
      * @param annoTypes dcType values to filter annotations with
+     * @param lang      language
+     * @param includeDeprecated
      * @return AnnoPage
      */
     public AnnoPage findByPageIdLang(
         String datasetId, String localId, String pageId, List<AnnotationType> annoTypes,
-        String lang) {
+        String lang, boolean includeDeprecated) {
+
+        List<Filter> filters =
+            new ArrayList<>(
+                Arrays.asList(eq(DATASET_ID, datasetId),
+                    eq(LOCAL_ID, localId),
+                    eq(PAGE_ID, pageId),
+                    eq(LANGUAGE, lang)));
+
+        if(!includeDeprecated){
+            filters.add(eq(DELETED, null));
+        }
+
         Aggregation<AnnoPage> query = datastore.aggregate(AnnoPage.class)
-            .match(eq(DATASET_ID, datasetId),
-                eq(LOCAL_ID, localId),
-                eq(PAGE_ID, pageId),
-                eq(LANGUAGE, lang));
+            .match(filters.toArray(new Filter[0]));
         query = filterTextGranularity(query, annoTypes);
         return query.execute(AnnoPage.class).tryNext();
     }
@@ -205,7 +238,16 @@ public class AnnoPageRepository {
      * @param annoId    ID of the annotation
      * @return AnnoPage
      */
-    public AnnoPage findByAnnoId(String datasetId, String localId, String annoId) {
+    public AnnoPage findByAnnoId(String datasetId, String localId, String annoId, boolean includeDeprecated) {
+
+        List<Filter> filter =
+            new ArrayList<>(
+                Arrays.asList(eq(DATASET_ID, datasetId),
+                    eq(LOCAL_ID, localId),
+                    eq(ANNOTATIONS_ID, annoId)));
+
+
+
         return datastore.find(AnnoPage.class).filter(eq(DATASET_ID, datasetId),
             eq(LOCAL_ID, localId),
             eq(ANNOTATIONS_ID, annoId)).first();
@@ -227,11 +269,20 @@ public class AnnoPageRepository {
      * @return MorphiaCursor containing AnnoPage entries.
      */
     public MorphiaCursor<AnnoPage> findByTargetId(
-        String datasetId, String localId, List<String> targetIds, List<AnnotationType> annoTypes) {
+        String datasetId, String localId, List<String> targetIds, List<AnnotationType> annoTypes, boolean includeDeprecated) {
+
+        List<Filter> filter =
+            new ArrayList<>(
+                Arrays.asList(eq(DATASET_ID, datasetId),
+                    eq(LOCAL_ID, localId),
+                    in(TARGET_ID, targetIds)));
+
+        if(!includeDeprecated){
+            filter.add(eq(DELETED, null));
+        }
+
         Aggregation<AnnoPage> query = datastore.aggregate(AnnoPage.class)
-            .match(eq(DATASET_ID, datasetId),
-                eq(LOCAL_ID, localId),
-                in(TARGET_ID, targetIds));
+            .match(filter.toArray(new Filter[0]));
         query = filterTextGranularity(query, annoTypes);
         return query.execute(AnnoPage.class);
     }
@@ -343,7 +394,8 @@ public class AnnoPageRepository {
         return datastore
             .find(AnnoPage.class)
             .filter(eq(DATASET_ID, dsId),
-                eq(LOCAL_ID, lcId))
+                eq(LOCAL_ID, lcId),
+                eq(DELETED, null))
             .iterator(new FindOptions().projection()
                 .include(DATASET_ID, LOCAL_ID, PAGE_ID, LANGUAGE, MODIFIED))
             .toList();
@@ -421,30 +473,37 @@ public class AnnoPageRepository {
                 // only remove embedded annotations and Resource
                 unset(ANNOTATIONS),
                 unset(RESOURCE))
-            .execute()
+            .execute(MULTI_UPDATE_OPTS)
             .getModifiedCount();
     }
 
     /**
      * Gets the AnnoPage with the specified source value
      * @param source source value to query
-     * @param fetchFullDoc if false, only dsId, lcId, pgId, tgtId, lang and source values are
+     * @param fetchFullDoc if false, only dsId, lcId, pgId, tgtId, lang, source and modified values are
      *                     set in the AnnoPage result
      * @return AnnoPage result
      */
-    public AnnoPage getAnnoPageWithSource(String source, boolean fetchFullDoc) {
-        FindOptions findOptions = new FindOptions().limit(1);
+    public AnnoPage getAnnoPageWithSource(String source, boolean fetchFullDoc, boolean includeDeprecated) {
+        List<Filter> filter =
+            new ArrayList<>(
+                List.of(eq(SOURCE, source)));
 
+        if(!includeDeprecated){
+            filter.add(eq(DELETED, null));
+        }
+
+        FindOptions findOptions = new FindOptions().limit(1);
         if (!fetchFullDoc) {
             findOptions =
                 findOptions
                     .projection()
-                    .include(DATASET_ID, LOCAL_ID, PAGE_ID, TARGET_ID, LANGUAGE, SOURCE);
+                    .include(DATASET_ID, LOCAL_ID, PAGE_ID, TARGET_ID, LANGUAGE, SOURCE, MODIFIED);
         }
 
         return datastore
             .find(AnnoPage.class)
-            .filter(eq(SOURCE, source))
+            .filter(filter.toArray(new Filter[0]))
             .iterator(findOptions)
             .tryNext();
     }
@@ -474,4 +533,35 @@ public class AnnoPageRepository {
         MorphiaUtils.validateDeletion(activeProfileString);
         datastore.find(AnnoPage.class).delete(MorphiaUtils.MULTI_DELETE_OPTS);
     }
+
+  /**
+   * Retrieves a "shell" AnnoPage from the database.
+   * TODO: this functionality can be added to {@link #getShellAnnoPageById(String, String, String, String)}~
+   * @return
+   */
+  public AnnoPage getShellAnnoPageById(
+      String datasetId, String localId, String pageId, String lang, boolean includeDeprecated) {
+
+      List<Filter> filter =
+          new ArrayList<>(
+              Arrays.asList(eq(DATASET_ID, datasetId), eq(LOCAL_ID, localId), eq(PAGE_ID, pageId), eq(DELETED, null)));
+
+      if (StringUtils.isNotEmpty(lang)) {
+          filter.add(eq(LANGUAGE, lang));
+      }
+
+      if(!includeDeprecated){
+          filter.add(eq(DELETED, null));
+      }
+
+    return datastore
+        .find(AnnoPage.class)
+        .filter(filter.toArray(new Filter[0]))
+        .iterator(
+            new FindOptions()
+                .limit(1)
+                .projection()
+                .include(DATASET_ID, LOCAL_ID, PAGE_ID, TARGET_ID, LANGUAGE, SOURCE, MODIFIED, DELETED))
+        .tryNext();
+  }
 }

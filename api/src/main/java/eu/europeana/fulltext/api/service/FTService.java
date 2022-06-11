@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.result.UpdateResult;
 import dev.morphia.query.internal.MorphiaCursor;
+import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.api.config.FTDefinitions;
 import eu.europeana.fulltext.api.config.FTSettings;
@@ -20,6 +21,7 @@ import eu.europeana.fulltext.api.model.v3.AnnotationV3;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Resource;
 import eu.europeana.fulltext.exception.AnnoPageDoesNotExistException;
+import eu.europeana.fulltext.exception.AnnoPageGoneException;
 import eu.europeana.fulltext.exception.DatabaseQueryException;
 import eu.europeana.fulltext.exception.ResourceDoesNotExistException;
 import eu.europeana.fulltext.exception.SerializationException;
@@ -55,6 +57,8 @@ public class FTService {
     private final FTSettings ftSettings;
 
     private final ObjectMapper mapper;
+    private final String ANNOPAGE_ID_FORMAT = "/%s/%s/annopage/%s";
+    private final String ANNOPAGE_ID_LANG_FORMAT = "/%s/%s/annopage/%s";
 
 
     @Value("${spring.profiles.active:}")
@@ -95,21 +99,31 @@ public class FTService {
      * @throws AnnoPageDoesNotExistException when the Annopage cannot be found
      */
     public AnnoPage fetchAnnoPage(String datasetId, String localId, String pageId, List<AnnotationType> textGranValues,
-        String lang) throws AnnoPageDoesNotExistException {
+        String lang) throws AnnoPageDoesNotExistException, AnnoPageGoneException {
         AnnoPage result;
         if (!StringUtils.hasLength(lang)) {
-            result = annoPageRepository.findByPageId(datasetId, localId, pageId, textGranValues);
+            result = annoPageRepository.findByPageId(datasetId, localId, pageId, textGranValues, true);
             if (result == null) {
                 throw new AnnoPageDoesNotExistException(
-                    String.format("/%s/%s/annopage/%s", datasetId, localId, pageId));
+                    String.format(ANNOPAGE_ID_FORMAT, datasetId, localId, pageId));
+            }
+            else if(result.isDeprecated()){
+                throw new AnnoPageGoneException(
+                    String.format(ANNOPAGE_ID_FORMAT, datasetId, localId, pageId));
             }
         } else {
-            result = annoPageRepository.findByPageIdLang(datasetId, localId, pageId, textGranValues, lang);
+            result = annoPageRepository.findByPageIdLang(datasetId, localId, pageId, textGranValues, lang,
+                true);
             if (result == null) {
-                throw new AnnoPageDoesNotExistException(String.format("/%s/%s/annopage/%s", datasetId, localId, pageId),
+                throw new AnnoPageDoesNotExistException(String.format(ANNOPAGE_ID_LANG_FORMAT, datasetId, localId, pageId),
+                    lang);
+            }
+            else if(result.isDeprecated()){
+                throw new AnnoPageGoneException(String.format(ANNOPAGE_ID_LANG_FORMAT, datasetId, localId, pageId),
                     lang);
             }
         }
+
         return result;
     }
 
@@ -127,8 +141,8 @@ public class FTService {
      * @return MorphiaCursor containing AnnoPage entries.
      */
     public MorphiaCursor<AnnoPage> fetchAnnoPageFromTargetId(String datasetId, String localId, List<String> targetIds,
-        List<AnnotationType> annoTypes) {
-        return annoPageRepository.findByTargetId(datasetId, localId, targetIds, annoTypes);
+        List<AnnotationType> annoTypes, boolean includeDeprecated) {
+        return annoPageRepository.findByTargetId(datasetId, localId, targetIds, annoTypes, includeDeprecated);
     }
 
 
@@ -142,11 +156,15 @@ public class FTService {
      * @throws AnnoPageDoesNotExistException when the Annopage containing the required Annotation can't be found
      */
     public AnnoPage fetchAPAnnotation(String datasetId, String localId, String annoId)
-        throws AnnoPageDoesNotExistException {
-        AnnoPage result = annoPageRepository.findByAnnoId(datasetId, localId, annoId);
+        throws EuropeanaApiException {
+        AnnoPage result = annoPageRepository.findByAnnoId(datasetId, localId, annoId, true);
 
         if (result == null) {
             throw new AnnoPageDoesNotExistException(String.format("/%s/%s/anno/%s", datasetId, localId, annoId));
+        }
+
+        if(result.isDeprecated()){
+            throw new AnnoPageGoneException(String.format("/%s/%s/anno/%s", datasetId, localId, annoId));
         }
         return result;
     }
@@ -261,13 +279,14 @@ public class FTService {
      * @param lang      optional, in which language should the AnnoPage be
      * @return true if it exists, otherwise false
      */
-    public boolean doesAnnoPageExist(String datasetId, String localId, String pageId, String lang) {
+    public boolean doesAnnoPageExist(String datasetId, String localId, String pageId, String lang, boolean includeDeprecated) {
         if (!StringUtils.hasLength(lang)) {
-            return annoPageRepository.existsByPageId(datasetId, localId, pageId);
+            return annoPageRepository.existsByPageId(datasetId, localId, pageId, includeDeprecated);
         }
 
-       return annoPageRepository.existsByPageIdLang(datasetId, localId, pageId, lang);
+       return annoPageRepository.existsByPageIdLang(datasetId, localId, pageId, lang, includeDeprecated);
     }
+
 
     // = = [ generate JSON objects ] = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
@@ -392,7 +411,7 @@ public class FTService {
         long resourceCount = resourceRepository.deleteResource(datasetId, localId, lang);
         long annoPageCount = annoPageRepository.deprecateAnnoPage(datasetId, localId, pageId, lang);
         LOG.info(
-            "AnnoPage and Resource with datasetId={}, localId={}, pageId={}, lang={} are deleted. resourceCount={}, annoPageCount={}",
+            "AnnoPage and Resource with datasetId={}, localId={}, pageId={}, lang={} are deprecated. resourceCount={}, annoPageCount={}",
             datasetId,
             localId,
             pageId,
@@ -406,7 +425,7 @@ public class FTService {
         long resourceCount = resourceRepository.deleteResources(datasetId, localId);
         long annoPageCount = annoPageRepository.deprecateAnnoPages(datasetId, localId, pageId);
         LOG.info(
-            "{} AnnoPage and {} Resource with datasetId={}, localId={}, pageId={} are deleted",
+            "{} AnnoPage and {} Resource with datasetId={}, localId={}, pageId={} are deprecated",
             annoPageCount,
             resourceCount,
             datasetId,
@@ -444,10 +463,13 @@ public class FTService {
      * @param source source to query for
      * @return AnnoPage
      */
-    public AnnoPage getShellAnnoPageBySource(String source) {
-        return annoPageRepository.getAnnoPageWithSource(source, false);
+    public AnnoPage getShellAnnoPageBySource(String source, boolean includeDeprecated) {
+        return annoPageRepository.getAnnoPageWithSource(source, false, includeDeprecated);
     }
 
+    public AnnoPage getShellAnnoPageById(String datasetId, String localId, String pageId, String lang, boolean includeDeprecated){
+        return annoPageRepository.getShellAnnoPageById(datasetId, localId, pageId, lang, includeDeprecated);
+    }
 
     // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
@@ -516,8 +538,8 @@ public class FTService {
      * @return AnnoPage or null if none found
      */
     public AnnoPage getAnnoPageByPgId(
-        String datasetId, String localId, String pgId, String lang) {
-        return annoPageRepository.findByPageIdLang(datasetId, localId, pgId, List.of(), lang);
+        String datasetId, String localId, String pgId, String lang, boolean includeDeprecated) {
+        return annoPageRepository.findByPageIdLang(datasetId, localId, pgId, List.of(), lang, includeDeprecated);
     }
 
     /**

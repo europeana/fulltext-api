@@ -34,12 +34,6 @@ import org.springframework.web.context.WebApplicationContext;
 @SpringBootTest
 @AutoConfigureMockMvc
 class FulltextWriteIT extends BaseIntegrationTest {
-  @Autowired private WebApplicationContext webApplicationContext;
-  @Autowired private FTService ftService;
-  @Autowired ObjectMapper mapper;
-
-  public static final String BASE_SERVICE_URL = "/presentation";
-
   private MockMvc mockMvc;
 
   @BeforeEach
@@ -78,10 +72,35 @@ class FulltextWriteIT extends BaseIntegrationTest {
     // check that resource is saved with contributed=false
     AnnoPage retrievedAnnoPage =
         ftService.getAnnoPageByPgId(
-            dsId, lcId, GeneralUtils.derivePageId(mediaUrl), "nl");
+            dsId, lcId, GeneralUtils.derivePageId(mediaUrl), "nl", false);
     assertNotNull(retrievedAnnoPage);
     assertNotNull(retrievedAnnoPage.getRes());
     assertFalse(retrievedAnnoPage.getRes().isContributed());
+  }
+
+  @Test
+  void fulltextSubmissionShouldBeSuccessfulForDeprecatedAnnoPage() throws Exception{
+    AnnoPage annoPage =
+        mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), AnnoPage.class);
+
+    ftService.saveAnnoPage(annoPage);
+    // manually deprecate AnnoPage
+    ftService.deprecateAnnoPages(annoPage.getDsId(), annoPage.getLcId(), annoPage.getPgId(), annoPage.getLang());
+
+
+    String requestBody = IntegrationTestUtils.loadFile(SUBTITLE_VTT);
+    mockMvc
+        .perform(
+            post("/presentation/{dsId}/{lcId}/annopage", annoPage.getDsId(), annoPage.getLcId())
+                .param(WebConstants.REQUEST_VALUE_MEDIA, annoPage.getTgtId())
+                .param(WebConstants.REQUEST_VALUE_LANG, annoPage.getLcId())
+                .param(
+                    WebConstants.REQUEST_VALUE_RIGHTS,
+                    "http://creativecommons.org/licenses/by-sa/4.0/")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(CONTENT_TYPE_VTT)
+                .content(requestBody))
+        .andExpect(status().isOk());
   }
 
   @Test
