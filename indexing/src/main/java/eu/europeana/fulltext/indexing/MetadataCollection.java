@@ -1,5 +1,7 @@
 package eu.europeana.fulltext.indexing;
 
+import static eu.europeana.fulltext.indexing.Constants.METADATA_SOLR_BEAN;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrClient;
@@ -16,18 +18,30 @@ import org.apache.solr.common.params.ModifiableSolrParams;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
 /**
  * @author mmarrero
  * Services to read the required information from Solr metadata collection
  */
+@Component
 public class MetadataCollection {
-    private static final Logger logger = LogManager.getLogger(MetadataCollection.class);
-    private static final String EUROPEANA_ID = "europeana_id";
-    private static final String TIMESTAMP_UPDATE_METADATA   = "timestamp_update";
-    static private SolrClient metadataSolr;
-    static String metadataCollection;
+    private final SolrClient metadataSolr;
 
+    private  final Logger logger = LogManager.getLogger(MetadataCollection.class);
+    private final String EUROPEANA_ID = "europeana_id";
+    private  final String TIMESTAMP_UPDATE_METADATA   = "timestamp_update";
+    private String metadataCollection;
+
+    //PUT coreURLs heres
+    private static final List<String> coreURLs = List.of();
+
+    public MetadataCollection(
+        @Qualifier(METADATA_SOLR_BEAN) SolrClient metadataSolr) {
+        this.metadataSolr = metadataSolr;
+    }
 
     /**
      * Retrieves the list of ids of the documents modified (timestamp_update) after last_timestamp_update_metadata
@@ -35,7 +49,7 @@ public class MetadataCollection {
      * @return list of europeana_id
      * @throws IOException
      */
-    public static List<String> getDocumentsModifiedAfter(LocalDateTime last_timestamp_update_metadata) throws IOException {
+    public  List<String> getDocumentsModifiedAfter(LocalDateTime last_timestamp_update_metadata) throws IOException {
         try {
             List<String> ids = new ArrayList<>();
             for (String coreURL : coreURLs) { //we have to iterate each core separately
@@ -74,7 +88,7 @@ public class MetadataCollection {
      * @param europeana_id
      * @return
      */
-    public static SolrDocument getFullDocument(String europeana_id) throws IOException, SolrServerException {
+    public SolrDocument getFullDocument(String europeana_id) throws IOException, SolrServerException {
         SolrQuery query = new SolrQuery();
         query.set("q", EUROPEANA_ID + ":\"" + europeana_id + "\"");
         query.set("fl", "*"); //retrieve all the fields

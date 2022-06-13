@@ -24,6 +24,12 @@ public class IndexingApplication implements CommandLineRunner {
   @Autowired
   private IndexingAnnoPageRepository repository;
 
+  @Autowired
+  private MetadataCollection metadataCollection;
+
+  @Autowired
+  private FulltextCollection fulltextCollection;
+
   private static final Logger logger = LogManager.getLogger(IndexingApplication.class);
 
   public static void main(String[] args) {
@@ -31,20 +37,20 @@ public class IndexingApplication implements CommandLineRunner {
   }
 
   public void synchronizeMetadataContent() throws IOException, SolrServerException {
-    LocalDateTime lastUpdate = FulltextCollection.getLastUpdateMetadata();
-    List<String> toUpdate = MetadataCollection.getDocumentsModifiedAfter(lastUpdate);
-    FulltextCollection.setMetadata(toUpdate);
+    LocalDateTime lastUpdate = fulltextCollection.getLastUpdateMetadata();
+    List<String> toUpdate = metadataCollection.getDocumentsModifiedAfter(lastUpdate);
+    fulltextCollection.setMetadata(toUpdate);
   }
 
   public void synchronizeFulltextContent() throws IOException, SolrServerException {
-    LocalDateTime lastUpdate = FulltextCollection.getLastUpdateFulltext();
+    LocalDateTime lastUpdate = fulltextCollection.getLastUpdateFulltext();
     List<AnnoPage> updated = repository.getRecordsModifiedAfter(lastUpdate.toEpochSecond(ZoneOffset.UTC));
     List<String> updated_europeana_ids = updated.stream().map(p-> getEuropeanaId(p.getDsId(),p.getLcId())).distinct().collect(Collectors.toList());
     List<String> toAdd = new ArrayList<>();
     List<String> toDelete = new ArrayList<>();
     List<String> toUpdate = new ArrayList<>();
     for (String europeana_id: updated_europeana_ids){
-      if (!FulltextCollection.exists(europeana_id)){
+      if (!fulltextCollection.exists(europeana_id)){
         toAdd.add(europeana_id);
       } else if (repository.isDeleted(getDsId(europeana_id), getLcId(europeana_id))){
         toDelete.add(europeana_id);
@@ -53,15 +59,15 @@ public class IndexingApplication implements CommandLineRunner {
       }
     }
     if (!toAdd.isEmpty()) {
-      FulltextCollection.addDocuments(toAdd);
-      FulltextCollection.setMetadata(toAdd);
-      FulltextCollection.setFulltext(toAdd);
+      fulltextCollection.addDocuments(toAdd);
+      fulltextCollection.setMetadata(toAdd);
+      fulltextCollection.setFulltext(toAdd);
     }
     if (!toDelete.isEmpty()){
-      FulltextCollection.deleteDocuments(toDelete);
+      fulltextCollection.deleteDocuments(toDelete);
     }
     if (!toUpdate.isEmpty()){
-      FulltextCollection.setFulltext(toUpdate);
+      fulltextCollection.setFulltext(toUpdate);
     }
   }
 
