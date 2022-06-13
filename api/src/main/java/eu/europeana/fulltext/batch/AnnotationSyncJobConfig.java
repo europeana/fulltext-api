@@ -7,7 +7,7 @@ import eu.europeana.fulltext.api.config.FTSettings;
 import eu.europeana.fulltext.batch.listener.AnnoSyncUpdateListener;
 import eu.europeana.fulltext.batch.processor.AnnotationProcessor;
 import eu.europeana.fulltext.batch.reader.ItemReaderConfig;
-import eu.europeana.fulltext.batch.writer.AnnoPageDeletionWriter;
+import eu.europeana.fulltext.batch.writer.AnnoPageDeprecationWriter;
 import eu.europeana.fulltext.batch.writer.AnnoPageUpsertWriter;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.subtitles.external.AnnotationItem;
@@ -41,7 +41,7 @@ public class AnnotationSyncJobConfig {
 
   private final AnnotationProcessor annotationProcessor;
   private final AnnoPageUpsertWriter annoPageWriter;
-  private final AnnoPageDeletionWriter annoPageDeletionWriter;
+  private final AnnoPageDeprecationWriter annoPageDeletionWriter;
 
   private final AnnoSyncUpdateListener updateListener;
 
@@ -58,7 +58,7 @@ public class AnnotationSyncJobConfig {
       ItemReaderConfig itemReaderConfig,
       AnnotationProcessor annotationProcessor,
       AnnoPageUpsertWriter annoPageWriter,
-      AnnoPageDeletionWriter annoPageDeletionWriter,
+      AnnoPageDeprecationWriter annoPageDeletionWriter,
       AnnoSyncUpdateListener updateListener,
       @Qualifier(ANNO_SYNC_TASK_EXECUTOR) TaskExecutor annoSyncTaskExecutor) {
     this.appSettings = appSettings;

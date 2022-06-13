@@ -18,6 +18,7 @@ public class WebConstants {
   public static final String REQUEST_VALUE_DOC = "document";
 
   public static final String MOTIVATION_SUBTITLING = "subtitling";
+  public static final String MOTIVATION_TRANSCRIBING = "transcribing";
 
   // Fulltext Urls constants
   public static final String PRESENTATION = "presentation";

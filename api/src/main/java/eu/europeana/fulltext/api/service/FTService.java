@@ -494,13 +494,15 @@ public class FTService {
      * @param sources sources to query
      * @return number of deleted documents
      */
-    public long deleteAnnoPagesWithSources(List<? extends String> sources) {
-        long count = annoPageRepository.deprecateAnnoPagesWithSources(sources);
+    public long deprecateAnnoPagesWithSources(List<? extends String> sources) {
+        List<String> resourceIds = annoPageRepository.getResourceIdsForAnnoPageSources(sources);
+        long resourceCount = resourceRepository.deleteResourcesById(resourceIds);
+        long annoPageCount = annoPageRepository.deprecateAnnoPagesWithSources(sources);
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Deleted {} AnnoPages for sources {}", count, sources);
+            LOG.debug("Deprecated {} AnnoPages and deleted {} Resources for for sources {}", annoPageCount, resourceCount, sources);
         }
 
-        return count;
+        return annoPageCount;
     }
 
     /**

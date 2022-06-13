@@ -57,7 +57,7 @@ public class AnnotationApiRestService {
   }
 
   public List<AnnotationItem> getAnnotations(int page, int pageSize, Instant from, Instant to) {
-    String searchQuery = generateQuery(from, to) + " AND motivation:subtitling";
+    String searchQuery = generateQuery(from, to) + " AND (motivation:subtitling OR motivation:transcribing)";
     AnnotationSearchResponse response =
         webClient
             .get()
