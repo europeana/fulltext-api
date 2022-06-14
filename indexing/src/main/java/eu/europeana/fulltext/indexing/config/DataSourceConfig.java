@@ -10,12 +10,15 @@ import dev.morphia.Morphia;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.impl.CloudSolrClient;
 import org.apache.solr.client.solrj.impl.Http2SolrClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
+
+import java.util.Arrays;
 
 @Configuration
 @PropertySource("classpath:indexing.properties")
@@ -47,11 +50,13 @@ public class DataSourceConfig {
   public SolrClient metadataSolrClient(){
     logger.info("Configuring metadata solr client: {}", metadataSolrUrl);
     return new Http2SolrClient.Builder(metadataSolrUrl).build();
+    //return  new CloudSolrClient.Builder(Arrays.asList(metadataSolrUrl)).build();
   }
 
   @Bean(FULLTEXT_SOLR_BEAN)
   public SolrClient fulltextSolrClient(){
     logger.info("Configuring fulltext solr client: {}", fulltextSolrUrl);
     return new Http2SolrClient.Builder(fulltextSolrUrl).build();
+    //return  new CloudSolrClient.Builder(Arrays.asList(fulltextSolrUrl)).build();
   }
 }

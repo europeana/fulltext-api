@@ -71,7 +71,7 @@ public class FulltextCollection {
 
     /**
      * Retrieves from the Solr metadata collection the list of documents with the ids received and add them to the Solr fulltext collection
-     * All fields are copied except for timestamp and _version_
+     * Only id is included
      * @param ids list of europeana_id
      * @throws IOException
      * @throws SolrServerException
@@ -80,7 +80,10 @@ public class FulltextCollection {
         List<SolrInputDocument> toAdd = new ArrayList<>();
         try {
             for (String europeana_id : ids) {
-                toAdd.add(toSolrInputDocument(metadataCollection.getFullDocument(europeana_id)));
+                //toAdd.add(toSolrInputDocument(metadataCollection.getFullDocument(europeana_id)));
+                SolrInputDocument newDocument = new SolrInputDocument();
+                newDocument.addField(EUROPEANA_ID, europeana_id);
+                toAdd.add(newDocument);
             }
             if (!toAdd.isEmpty()) {
                 SolrServices.add(fulltextSolr, fulltextCollectionName, toAdd);
@@ -134,22 +137,24 @@ public class FulltextCollection {
                                 Map<String, Object> atomicUpdates = new HashMap<>(1);
                                 atomicUpdates.put("set", iso_dates);
                                 newDocument.addField(ISSUED, atomicUpdates);
-
-                            } else if (!field.equals(TIMESTAMP) && !field.equals(VERSION)) { //_version_ and timestamp are automatically added by Solr
-                                Map<String, Object> atomicUpdates = new HashMap<>(1);
-                                atomicUpdates.put("set", existingDocument.getFieldValue(field));
-                                newDocument.addField(field, atomicUpdates);
                             }
                         }
+
+                    } else if (!field.equals(TIMESTAMP) && !field.equals(VERSION)) { //_version_ and timestamp are automatically added by Solr
+                        Map<String, Object> atomicUpdates = new HashMap<>(1);
+                        atomicUpdates.put("set", existingDocument.getFieldValue(field));
+                        newDocument.addField(field, atomicUpdates);
                     }
-                    toSet.add(newDocument);
                 }
-                SolrServices.add(fulltextSolr, fulltextCollectionName, toSet);
+
+                toSet.add(newDocument);
             }
+            SolrServices.add(fulltextSolr, fulltextCollectionName, toSet);
         } catch (SolrServerException | IOException e){
             logger.error(e.getMessage());
             throw e;
         }
+
     }
 
     /**

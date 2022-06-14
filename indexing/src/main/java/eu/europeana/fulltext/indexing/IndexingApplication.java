@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.chrono.ChronoLocalDateTime;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
@@ -139,6 +140,17 @@ public class IndexingApplication implements CommandLineRunner {
 
  */
     //List<AnnoPage> annoPages = repository.getRecordsModifiedAfter(1654034400000L);
+
+    List<String> ids = new ArrayList<>();
+    ids.add("/9200396/BibliographicResource_3000118435009");
+    String[] url = {"http://solr-2-rnd.eanadev.org:9191/solr"};
+    //CloudSolrClient client = new CloudSolrClient.Builder(Arrays.asList(url)).build();
+    //client.setDefaultCollection("fulltext");
+
+    metadataCollection.getFullDocument("/9200396/BibliographicResource_3000118435009");
+//    fulltextCollection.addDocuments(ids,metadataCollection);
+//    fulltextCollection.setMetadata(ids,metadataCollection);
+//    fulltextCollection.setFulltext(ids);
     List<AnnoPage> annoPages = repository.getActive("9200396","BibliographicResource_3000118436165");
     logger.info("{}", annoPages);
 
