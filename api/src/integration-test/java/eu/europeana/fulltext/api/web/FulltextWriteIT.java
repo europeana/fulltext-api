@@ -254,8 +254,8 @@ class FulltextWriteIT extends BaseIntegrationTest {
 
 
     // check that the correct number of AnnoPage and Resource docs are created
-    assertTrue(ftService.doesAnnoPageExist(dsId, lcId, GeneralUtils.derivePageId(mediaUrl1), lang));
-    assertTrue(ftService.doesAnnoPageExist(dsId, lcId, GeneralUtils.derivePageId(mediaUrl2), lang));
+    assertTrue(ftService.doesAnnoPageExist(dsId, lcId, GeneralUtils.derivePageId(mediaUrl1), lang, false));
+    assertTrue(ftService.doesAnnoPageExist(dsId, lcId, GeneralUtils.derivePageId(mediaUrl2), lang, false));
 
     String resourceId1 = GeneralUtils.generateResourceId(GeneralUtils.generateRecordId(dsId, lcId), lang, mediaUrl1);
     assertTrue(ftService.resourceExists(dsId, lcId, resourceId1));
