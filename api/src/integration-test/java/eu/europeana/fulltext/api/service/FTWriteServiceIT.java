@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.bulk.BulkWriteResult;
 import eu.europeana.fulltext.api.BaseIntegrationTest;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Annotation;
@@ -92,7 +93,14 @@ class FTWriteServiceIT extends BaseIntegrationTest {
         mapper.readValue(loadFile(ANNOPAGE_VIMEO_208310501_JSON), AnnoPage.class);
 
     // try saving new annoPage (annoPage2) together with existing annoPage
-    service.upsertAnnoPage(List.of(annoPage2, annoPage1Copy));
+    BulkWriteResult bulkWriteResult = service.upsertAnnoPage(List.of(annoPage2, annoPage1Copy));
+
+    // should update the existing doc for annoPage1
+    assertEquals(1, bulkWriteResult.getModifiedCount());
+
+    // should also upsert the new doc
+    assertEquals(1, bulkWriteResult.getUpserts().size());
+
     assertEquals(2, service.countAnnoPage());
   }
 

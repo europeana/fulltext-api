@@ -512,26 +512,26 @@ public class FTService {
      * @param annoPageList List of AnnoPages to upsert
      * @throws DatabaseQueryException if
      */
-    public void upsertAnnoPage(List<? extends AnnoPage> annoPageList)
+    public BulkWriteResult upsertAnnoPage(List<? extends AnnoPage> annoPageList)
         throws DatabaseQueryException {
         BulkWriteResult resourceWriteResult = resourceRepository.upsertFromAnnoPage(annoPageList);
         if (LOG.isDebugEnabled()) {
             LOG.debug(
-                "Saved resources to db: matched={}, modified={}, inserted={}",
-                resourceWriteResult.getMatchedCount(),
+                "Saved resources to db: replaced={}; new={}",
                 resourceWriteResult.getModifiedCount(),
-                resourceWriteResult.getInsertedCount());
+                resourceWriteResult.getUpserts().size());
         }
 
         BulkWriteResult annoPageWriteResult = annoPageRepository.upsertAnnoPages(annoPageList);
         if (LOG.isDebugEnabled()) {
             LOG.debug(
-                "Saved annoPages to db: matched={}, modified={}, inserted={}, annoPages={}",
-                annoPageWriteResult.getMatchedCount(),
+                "Saved annoPages to db: replaced={}; new={}; annoPages={}",
                 annoPageWriteResult.getModifiedCount(),
-                annoPageWriteResult.getInsertedCount(),
+                annoPageWriteResult.getUpserts().size(),
                 getAnnoPageToString(annoPageList));
         }
+
+        return annoPageWriteResult;
     }
 
     /**

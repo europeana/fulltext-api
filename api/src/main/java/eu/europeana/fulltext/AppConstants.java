@@ -28,4 +28,9 @@ public class AppConstants {
   public static final String MONGO_RESOURCE_REF_ID = "res.$id";
   public static final String RIGHTS = "rights";
   public static final String VALUE = "value";
+
+
+  // Annotation Sync
+  public static final String ANNOTATION_SEARCH_PATH  = "/annotation/search";
+  public static final String ANNOTATION_DELETED_PATH  = "/annotations/deleted";
 }

@@ -1,7 +1,6 @@
 package eu.europeana.fulltext.api.web;
 
 import static eu.europeana.fulltext.WebConstants.MOTIVATION_SUBTITLING;
-import static eu.europeana.fulltext.WebConstants.MOTIVATION_TRANSCRIBING;
 import static eu.europeana.fulltext.WebConstants.REQUEST_VALUE_SOURCE;
 import static eu.europeana.fulltext.util.GeneralUtils.isValidAnnotationId;
 import static eu.europeana.fulltext.util.HttpUtils.REQUEST_VERSION_2;
@@ -146,10 +145,10 @@ public class FTWriteController extends BaseRestController {
     AnnotationItem item = itemOptional.get();
     // motivation must be subtitling
 
-    if (!List.of(MOTIVATION_SUBTITLING, MOTIVATION_TRANSCRIBING).contains(item.getMotivation())) {
+    if (!MOTIVATION_SUBTITLING.equals(item.getMotivation())) {
       throw new UnsupportedAnnotationException(
           String.format(
-              "Annotation motivation '%s' not supported for sync. Only subtitles and transcriptions are supported",
+              "Annotation motivation '%s' not supported for sync. Only subtitles are supported",
               item.getMotivation()));
     }
 
