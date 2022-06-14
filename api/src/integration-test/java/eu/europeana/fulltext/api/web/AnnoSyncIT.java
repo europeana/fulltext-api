@@ -1,6 +1,6 @@
 package eu.europeana.fulltext.api.web;
 
-import static eu.europeana.fulltext.api.IntegrationTestUtils.ANNOPAGE_FILMPORTAL_SALEM06_JSON;
+import static eu.europeana.fulltext.api.IntegrationTestUtils.ANNOPAGE_VIMEO_208310501_JSON;
 import static eu.europeana.fulltext.api.IntegrationTestUtils.loadFileAndReplaceServerUrl;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.is;
@@ -145,7 +145,7 @@ class AnnoSyncIT extends BaseIntegrationTest {
     // check that AnnoPage is saved in db
     AnnoPage retrievedAnnoPage =
         ftService.getAnnoPageByPgId(
-            "08604", "node_1680982", GeneralUtils.derivePageId(expectedTgtId), "es");
+            "08604", "node_1680982", GeneralUtils.derivePageId(expectedTgtId), "es", false);
     Assertions.assertNotNull(retrievedAnnoPage);
 
     Assertions.assertNotNull(retrievedAnnoPage.getRes());
@@ -164,7 +164,7 @@ class AnnoSyncIT extends BaseIntegrationTest {
     // create AnnoPage in DB (source property in JSON matches url in deleted annotations list)
     AnnoPage annoPage =
         mapper.readValue(
-            loadFileAndReplaceServerUrl(ANNOPAGE_FILMPORTAL_SALEM06_JSON, serverBaseUrl),
+            loadFileAndReplaceServerUrl(ANNOPAGE_VIMEO_208310501_JSON, serverBaseUrl),
             AnnoPage.class);
     ftService.saveAnnoPage(annoPage);
 

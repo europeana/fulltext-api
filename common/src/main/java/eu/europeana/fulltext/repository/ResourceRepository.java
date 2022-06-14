@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 import static dev.morphia.query.experimental.filters.Filters.eq;
+import static dev.morphia.query.experimental.filters.Filters.in;
 import static eu.europeana.fulltext.util.MorphiaUtils.Fields.*;
 import static eu.europeana.fulltext.util.MorphiaUtils.SET;
 import static eu.europeana.fulltext.util.MorphiaUtils.SET_ON_INSERT;
@@ -144,4 +145,12 @@ public class ResourceRepository {
             .getCollection(Resource.class)
             .bulkWrite(resourceUpdates);
     }
+
+  public long deleteResourcesById(List<String> resourceIds) {
+      return datastore
+          .find(Resource.class)
+          .filter(in(DOC_ID, resourceIds))
+          .delete(MorphiaUtils.MULTI_DELETE_OPTS)
+          .getDeletedCount();
+  }
 }

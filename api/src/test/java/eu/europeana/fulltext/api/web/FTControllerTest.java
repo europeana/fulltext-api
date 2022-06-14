@@ -1,12 +1,10 @@
 package eu.europeana.fulltext.api.web;
 
 
+import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.fulltext.api.config.FTSettings;
 import eu.europeana.fulltext.api.service.CacheUtils;
 import eu.europeana.fulltext.api.service.FTService;
-import eu.europeana.fulltext.exception.AnnoPageDoesNotExistException;
-import eu.europeana.fulltext.exception.ResourceDoesNotExistException;
-import eu.europeana.fulltext.exception.SerializationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +21,7 @@ import static eu.europeana.fulltext.api.config.FTDefinitions.*;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.hasItems;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.startsWith;
 import static org.mockito.BDDMockito.eq;
 import static org.mockito.BDDMockito.given;
@@ -106,7 +105,7 @@ public class FTControllerTest {
 //    private CacheUtils cacheUtils;
 
     @BeforeEach
-    public void setup() throws AnnoPageDoesNotExistException, SerializationException, ResourceDoesNotExistException {
+    public void setup() throws EuropeanaApiException {
 
         given(ftService.fetchAnnoPage(any(), any(), any(), any(), any())).willReturn(anp_1);
         given(ftService.generateAnnoPageV2(anp_1, false)).willReturn(anpv2_1);
@@ -134,8 +133,8 @@ public class FTControllerTest {
         given(ftService.serialise(ftres_1)).willReturn(JSON_RES_1_OUTPUT);
         given(ftService.serialise(ftres_2)).willReturn(JSON_RES_2_OUTPUT);
 
-        given(ftService.doesAnnoPageExist(any(), any(), startsWith("a"), any())).willReturn(true);
-        given(ftService.doesAnnoPageExist(any(), any(), startsWith("z"), any())).willReturn(false);
+        given(ftService.doesAnnoPageExist(any(), any(), startsWith("a"), any(), anyBoolean())).willReturn(true);
+        given(ftService.doesAnnoPageExist(any(), any(), startsWith("z"), any(), anyBoolean())).willReturn(false);
 
         given(ftSettings.getAppVersion()).willReturn("v1.0-test");
         given(ftService.getSettings()).willReturn(ftSettings);

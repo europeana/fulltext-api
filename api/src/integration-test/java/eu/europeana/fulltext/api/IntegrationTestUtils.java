@@ -20,8 +20,6 @@ public class IntegrationTestUtils {
       "/annopages/annopage-repozytorium-9927.json";
   public static final String ANNOPAGE_VIMEO_208310501_JSON =
       "/annopages/annopage-vimeo-208310501.json";
-  public static final String ANNOPAGE_FILMPORTAL_SALEM06_JSON =
-      "/annopages/annopage-filmportal-salem06.json";
 
   public static String loadFile(String resourcePath) throws IOException {
     InputStream resourceAsStream = IntegrationTestUtils.class.getResourceAsStream(resourcePath);
