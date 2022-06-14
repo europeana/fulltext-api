@@ -10,9 +10,9 @@ import eu.europeana.fulltext.batch.model.AnnoSyncJobMetadata;
 import eu.europeana.fulltext.batch.processor.AnnotationProcessor;
 import eu.europeana.fulltext.batch.reader.ItemReaderConfig;
 import eu.europeana.fulltext.batch.repository.AnnoSyncJobMetadataRepo;
-import eu.europeana.fulltext.batch.writer.AnnoPageDeletionWriter;
+import eu.europeana.fulltext.batch.writer.AnnoPageDeprecationWriter;
 import eu.europeana.fulltext.batch.writer.AnnoPageUpsertWriter;
-import eu.europeana.fulltext.entity.TranslationAnnoPage;
+import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.subtitles.external.AnnotationItem;
 import java.time.Duration;
 import java.time.Instant;
@@ -46,7 +46,7 @@ public class AnnotationSyncJobConfig {
 
   private final AnnotationProcessor annotationProcessor;
   private final AnnoPageUpsertWriter annoPageWriter;
-  private final AnnoPageDeletionWriter annoPageDeletionWriter;
+  private final AnnoPageDeprecationWriter annoPageDeletionWriter;
 
   private final AnnoSyncUpdateListener updateListener;
 
@@ -68,7 +68,7 @@ public class AnnotationSyncJobConfig {
       ItemReaderConfig itemReaderConfig,
       AnnotationProcessor annotationProcessor,
       AnnoPageUpsertWriter annoPageWriter,
-      AnnoPageDeletionWriter annoPageDeletionWriter,
+      AnnoPageDeprecationWriter annoPageDeletionWriter,
       AnnoSyncUpdateListener updateListener,
       @Qualifier(ANNO_SYNC_TASK_EXECUTOR) TaskExecutor annoSyncTaskExecutor,
       AnnoSyncStats stats,
@@ -92,7 +92,7 @@ public class AnnotationSyncJobConfig {
   private Step syncAnnotationsStep(Instant from, Instant to) {
     return this.stepBuilderFactory
         .get("synchroniseAnnoStep")
-        .<AnnotationItem, TranslationAnnoPage>chunk(appSettings.getAnnotationItemsPageSize())
+        .<AnnotationItem, AnnoPage>chunk(appSettings.getAnnotationItemsPageSize())
         .reader(itemReaderConfig.createAnnotationReader(from, to))
         .processor(annotationProcessor)
         .writer(annoPageWriter)

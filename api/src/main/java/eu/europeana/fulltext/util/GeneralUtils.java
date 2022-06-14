@@ -1,12 +1,10 @@
 package eu.europeana.fulltext.util;
 
 import eu.europeana.fulltext.WebConstants;
+import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.subtitles.edm.EdmAnnotation;
 import eu.europeana.fulltext.subtitles.edm.EdmReference;
 import eu.europeana.fulltext.subtitles.edm.EdmTimeBoundary;
-import eu.europeana.fulltext.entity.AnnoPage;
-import eu.europeana.fulltext.entity.TranslationResource;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.Arrays;
@@ -27,9 +25,6 @@ public class GeneralUtils {
 
   /** Matches spring.profiles.active property in test/resource application.properties file */
   public static final String ACTIVE_TEST_PROFILE = "test";
-
-  public static final String TRANSLATION_RESOURCE_COL = TranslationResource.class.getSimpleName();
-
 
 
   /**
@@ -125,24 +120,6 @@ public class GeneralUtils {
         + annoPage.getPgId();
   }
 
-  /**
-   * Returns the Existing Translation AnnoPage Url lang parameter is required to fetch the
-   * translation annopage
-   *
-   * @param annoPage
-   * @return
-   */
-  public static String getTranslationAnnoPageUrl(AnnoPage annoPage) {
-    if (StringUtils.isNotEmpty(annoPage.getLang())) {
-      return getAnnoPageUrl(annoPage)
-          + "?"
-          + WebConstants.REQUEST_VALUE_LANG
-          + "="
-          + annoPage.getLang();
-    }
-    return getAnnoPageUrl(annoPage);
-  }
-
   public static String[] getAnnoPageToString(List<? extends AnnoPage> annoPages) {
     return annoPages.stream().map(AnnoPage::toString).toArray(String[]::new);
   }
@@ -187,7 +164,7 @@ public class GeneralUtils {
 
   }
 
-  public static String getTranslationAnnoPageUrl(
+  public static String getAnnoPageUrl(
       String dsId, String lcId, String pgId, String lang) {
     String path = String.format("/presentation/%s/%s/%s", dsId, lcId, pgId);
 
@@ -207,7 +184,7 @@ public class GeneralUtils {
     String fromString = from != null ? toSolrDateString(from) : "*";
     String toString = toSolrDateString(to);
 
-    return "generated:[" + fromString + " TO " + toString + "] AND motivation:subtitling";
+    return "generated:[" + fromString + " TO " + toString + "] AND  (motivation:subtitling)";
   }
 
   private static String toSolrDateString(Instant instant) {
@@ -216,5 +193,9 @@ public class GeneralUtils {
      * See: https://solr.apache.org/guide/6_6/working-with-dates.html#WorkingwithDates-DateFormatting
      */
     return instant.atZone(ZoneOffset.UTC).toString().replace(":", "\\:");
+  }
+
+  public static String generateResourceId(String recordId, String language, String media) {
+    return generateHash(recordId + language + media);
   }
 }

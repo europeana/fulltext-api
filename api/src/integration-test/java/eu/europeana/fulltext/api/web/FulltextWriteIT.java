@@ -3,42 +3,35 @@ package eu.europeana.fulltext.api.web;
 import static eu.europeana.fulltext.AppConstants.CONTENT_TYPE_VTT;
 import static eu.europeana.fulltext.api.IntegrationTestUtils.ANNOPAGE_FILMPORTAL_1197365_JSON;
 import static eu.europeana.fulltext.api.IntegrationTestUtils.SUBTITLE_VTT;
+import static eu.europeana.fulltext.api.IntegrationTestUtils.SUBTITLE_VTT_2;
 import static eu.europeana.fulltext.api.IntegrationTestUtils.loadFile;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.europeana.fulltext.WebConstants;
 import eu.europeana.fulltext.api.BaseIntegrationTest;
 import eu.europeana.fulltext.api.IntegrationTestUtils;
-import eu.europeana.fulltext.api.service.FTService;
-import eu.europeana.fulltext.entity.TranslationAnnoPage;
+import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.util.GeneralUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 class FulltextWriteIT extends BaseIntegrationTest {
-  @Autowired private WebApplicationContext webApplicationContext;
-  @Autowired private FTService ftService;
-  @Autowired ObjectMapper mapper;
-
-  public static final String BASE_SERVICE_URL = "/presentation";
-
   private MockMvc mockMvc;
 
   @BeforeEach
@@ -53,9 +46,11 @@ class FulltextWriteIT extends BaseIntegrationTest {
     String requestBody = IntegrationTestUtils.loadFile(SUBTITLE_VTT);
 
     String mediaUrl = "https://www.filmportal.de/node/1197365";
+    String dsId = "08604";
+    String lcId= "FDE2205EEE384218A8D986E5138F9691";
     mockMvc
         .perform(
-            post("/presentation/08604/FDE2205EEE384218A8D986E5138F9691/annopage")
+            post("/presentation/{dsId}/{lcId}/annopage", dsId, lcId)
                 .param(WebConstants.REQUEST_VALUE_MEDIA, mediaUrl)
                 .param(WebConstants.REQUEST_VALUE_LANG, "nl")
                 .param(
@@ -69,16 +64,48 @@ class FulltextWriteIT extends BaseIntegrationTest {
             jsonPath(
                 "$.@id",
                 endsWith(
-                    "/08604/FDE2205EEE384218A8D986E5138F9691/annopage/"
-                        + GeneralUtils.derivePageId(mediaUrl))))
+                    String.format("/%s/%s/annopage/%s", dsId, lcId, GeneralUtils.derivePageId(mediaUrl)))))
         .andExpect(jsonPath("$.language", is("nl")));
+
+    // check that resource is saved with contributed=false
+    AnnoPage retrievedAnnoPage =
+        ftService.getAnnoPageByPgId(
+            dsId, lcId, GeneralUtils.derivePageId(mediaUrl), "nl", false);
+    assertNotNull(retrievedAnnoPage);
+    assertNotNull(retrievedAnnoPage.getRes());
+    assertFalse(retrievedAnnoPage.getRes().isContributed());
+  }
+
+  @Test
+  void fulltextSubmissionShouldBeSuccessfulForDeprecatedAnnoPage() throws Exception{
+    AnnoPage annoPage =
+        mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), AnnoPage.class);
+
+    ftService.saveAnnoPage(annoPage);
+    // manually deprecate AnnoPage
+    ftService.deprecateAnnoPages(annoPage.getDsId(), annoPage.getLcId(), annoPage.getPgId(), annoPage.getLang());
+
+
+    String requestBody = IntegrationTestUtils.loadFile(SUBTITLE_VTT);
+    mockMvc
+        .perform(
+            post("/presentation/{dsId}/{lcId}/annopage", annoPage.getDsId(), annoPage.getLcId())
+                .param(WebConstants.REQUEST_VALUE_MEDIA, annoPage.getTgtId())
+                .param(WebConstants.REQUEST_VALUE_LANG, annoPage.getLcId())
+                .param(
+                    WebConstants.REQUEST_VALUE_RIGHTS,
+                    "http://creativecommons.org/licenses/by-sa/4.0/")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(CONTENT_TYPE_VTT)
+                .content(requestBody))
+        .andExpect(status().isOk());
   }
 
   @Test
   void fulltextUpdateShouldBeSuccessfulWithoutBody() throws Exception {
     // add the anno page and resource first
-    TranslationAnnoPage annoPage =
-        mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), TranslationAnnoPage.class);
+    AnnoPage annoPage =
+        mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), AnnoPage.class);
     ftService.saveAnnoPage(annoPage);
 
         String updatedRights = annoPage.getRes().getRights() + "updated";
@@ -118,8 +145,8 @@ class FulltextWriteIT extends BaseIntegrationTest {
   @Test
   void fulltextRemovalShouldBeSuccessfulWithoutLang() throws Exception {
     // add the anno page and resource first
-    TranslationAnnoPage annoPage =
-        mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), TranslationAnnoPage.class);
+    AnnoPage annoPage =
+        mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), AnnoPage.class);
     ftService.saveAnnoPage(annoPage);
     mockMvc
         .perform(delete(GeneralUtils.getAnnoPageUrl(annoPage)).accept(MediaType.APPLICATION_JSON))
@@ -129,8 +156,8 @@ class FulltextWriteIT extends BaseIntegrationTest {
   @Test
   void fulltextRemovalShouldBeSuccessfulWithLang() throws Exception {
     // add the anno page and resource first
-    TranslationAnnoPage annoPage =
-        mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), TranslationAnnoPage.class);
+    AnnoPage annoPage =
+        mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), AnnoPage.class);
     ftService.saveAnnoPage(annoPage);
     mockMvc
         .perform(
@@ -184,5 +211,56 @@ class FulltextWriteIT extends BaseIntegrationTest {
                 .contentType(CONTENT_TYPE_VTT)
                 .content(requestBody))
         .andExpect(status().isBadRequest());
+  }
+
+  /**
+   * Submits multiple annotations with the same record id and lang, but different media urls (page id).
+   * Checks that resources are created for each AnnoPage
+   */
+  @Test
+  void submittingMultiPageAnnotationShouldBeSuccessful() throws Exception{
+
+    String mediaUrl1 = "https://www.filmportal.de/node/1197365";
+    String mediaUrl2 = "https://www.filmportal.de/node/1197366";
+
+    String dsId = "08604";
+    String lcId= "FDE2205EEE384218A8D986E5138F9691";
+    String lang = "nl";
+    mockMvc
+        .perform(
+            post("/presentation/{dsId}/{lcId}/annopage", dsId, lcId)
+                .param(WebConstants.REQUEST_VALUE_MEDIA, mediaUrl1)
+                .param(WebConstants.REQUEST_VALUE_LANG, lang)
+                .param(
+                    WebConstants.REQUEST_VALUE_RIGHTS,
+                    "http://creativecommons.org/licenses/by-sa/4.0/")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(CONTENT_TYPE_VTT)
+                .content(IntegrationTestUtils.loadFile(SUBTITLE_VTT)))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(
+            post("/presentation/{dsId}/{lcId}/annopage", dsId, lcId)
+                .param(WebConstants.REQUEST_VALUE_MEDIA, mediaUrl2)
+                .param(WebConstants.REQUEST_VALUE_LANG, lang)
+                .param(
+                    WebConstants.REQUEST_VALUE_RIGHTS,
+                    "http://creativecommons.org/licenses/by-sa/4.0/")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(CONTENT_TYPE_VTT)
+                .content(IntegrationTestUtils.loadFile(SUBTITLE_VTT_2)))
+        .andExpect(status().isOk());
+
+
+    // check that the correct number of AnnoPage and Resource docs are created
+    assertTrue(ftService.doesAnnoPageExist(dsId, lcId, GeneralUtils.derivePageId(mediaUrl1), lang, false));
+    assertTrue(ftService.doesAnnoPageExist(dsId, lcId, GeneralUtils.derivePageId(mediaUrl2), lang, false));
+
+    String resourceId1 = GeneralUtils.generateResourceId(GeneralUtils.generateRecordId(dsId, lcId), lang, mediaUrl1);
+    assertTrue(ftService.resourceExists(dsId, lcId, resourceId1));
+
+    String resourceId2 = GeneralUtils.generateResourceId(GeneralUtils.generateRecordId(dsId, lcId), lang, mediaUrl2);
+    assertTrue(ftService.resourceExists(dsId, lcId, resourceId2));
   }
 }

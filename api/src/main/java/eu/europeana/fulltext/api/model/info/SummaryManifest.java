@@ -29,8 +29,7 @@ public class SummaryManifest implements Serializable {
     private List<SummaryCanvas> canvases;
 
     /**
-     * This is a container object to group "fake" SummaryCanvas objects containing original and translated AnnoPages
-     * for a given Fulltext record / object
+     * This is a container object to group "fake" SummaryCanvas objects AnnoPages for a given Fulltext record / object
      *
      * @param dataSetId String containing the dataset of this Fulltext SummaryManifest
      * @param localId   String containing the localId of this Fulltext SummaryManifest
@@ -59,7 +58,7 @@ public class SummaryManifest implements Serializable {
 
 
     /**
-     * Adds a *fake* SummaryCanvas containing original and translated versions of an AnnoPage (AnnotationLangPages)
+     * Adds a *fake* SummaryCanvas containing an AnnoPage (AnnotationLangPages)
      * @param summaryCanvas SummaryCanvas object to be added to the canvases List
      */
     public void addCanvas(SummaryCanvas summaryCanvas){

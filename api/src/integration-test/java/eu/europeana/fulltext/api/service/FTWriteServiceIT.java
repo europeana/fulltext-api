@@ -6,13 +6,14 @@ import static eu.europeana.fulltext.api.IntegrationTestUtils.ANNOPAGE_VIMEO_2083
 import static eu.europeana.fulltext.api.IntegrationTestUtils.loadFile;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.bulk.BulkWriteResult;
 import eu.europeana.fulltext.api.BaseIntegrationTest;
+import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Annotation;
 import eu.europeana.fulltext.entity.Target;
-import eu.europeana.fulltext.entity.TranslationAnnoPage;
 import eu.europeana.fulltext.subtitles.AnnotationPreview;
 import eu.europeana.fulltext.util.GeneralUtils;
 import java.io.IOException;
@@ -36,51 +37,51 @@ class FTWriteServiceIT extends BaseIntegrationTest {
 
   @Test
   void saveAnnoPageShouldBeSuccessful() throws Exception {
-    TranslationAnnoPage annoPage =
-        mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), TranslationAnnoPage.class);
+    AnnoPage annoPage =
+        mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), AnnoPage.class);
     service.upsertAnnoPage(List.of(annoPage));
-    assertEquals(1, service.countTranslationAnnoPage());
+    assertEquals(1, service.countAnnoPage());
     assertEquals(1, service.countResource());
   }
 
   @Test
   void annoPageRetrievalShouldBeSuccessful() throws Exception {
-    TranslationAnnoPage annoPage =
-        mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), TranslationAnnoPage.class);
+    AnnoPage annoPage =
+        mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), AnnoPage.class);
     service.upsertAnnoPage(List.of(annoPage));
 
-    TranslationAnnoPage retrievedAnnoPage =
-        service.getAnnoPageByPgId("08604", "FDE2205EEE384218A8D986E5138F9691", "1", "nl");
+    AnnoPage retrievedAnnoPage =
+        service.getAnnoPageByPgId("08604", "FDE2205EEE384218A8D986E5138F9691", "1", "nl", false);
 
     assertNotNull(retrievedAnnoPage.getRes());
   }
 
   @Test
   void saveAnnoPageBulkShouldBeSuccessful() throws Exception {
-    assertEquals(0, service.countTranslationAnnoPage());
+    assertEquals(0, service.countAnnoPage());
 
-    TranslationAnnoPage annoPage1 =
-        mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), TranslationAnnoPage.class);
-    TranslationAnnoPage annoPage2 =
-        mapper.readValue(loadFile(ANNOPAGE_VIMEO_208310501_JSON), TranslationAnnoPage.class);
+    AnnoPage annoPage1 =
+        mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), AnnoPage.class);
+    AnnoPage annoPage2 =
+        mapper.readValue(loadFile(ANNOPAGE_VIMEO_208310501_JSON), AnnoPage.class);
 
     service.upsertAnnoPage(List.of(annoPage1, annoPage2));
 
-    assertEquals(2, service.countTranslationAnnoPage());
+    assertEquals(2, service.countAnnoPage());
   }
 
   @Test
   void saveAnnoPageBulkShouldUpsert() throws Exception {
 
-    TranslationAnnoPage annoPage1 =
-        mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), TranslationAnnoPage.class);
+    AnnoPage annoPage1 =
+        mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), AnnoPage.class);
     service.saveAnnoPage(annoPage1);
 
-    assertEquals(1, service.countTranslationAnnoPage());
+    assertEquals(1, service.countAnnoPage());
 
-    // load TranslationAnnoPage again as Morphia sets _id on object during save
-    TranslationAnnoPage annoPage1Copy =
-        mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), TranslationAnnoPage.class);
+    // load AnnoPage again as Morphia sets _id on object during save
+    AnnoPage annoPage1Copy =
+        mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), AnnoPage.class);
 
     // change random value in annoPage1
     Annotation newAnnotation =
@@ -88,8 +89,8 @@ class FTWriteServiceIT extends BaseIntegrationTest {
             "65dacfd36f67b9b7faa983b514baf257", 'C', 851, 856, List.of(new Target(70947, 75000)));
     annoPage1Copy.getAns().add(newAnnotation);
 
-    TranslationAnnoPage annoPage2 =
-        mapper.readValue(loadFile(ANNOPAGE_VIMEO_208310501_JSON), TranslationAnnoPage.class);
+    AnnoPage annoPage2 =
+        mapper.readValue(loadFile(ANNOPAGE_VIMEO_208310501_JSON), AnnoPage.class);
 
     // try saving new annoPage (annoPage2) together with existing annoPage
     BulkWriteResult bulkWriteResult = service.upsertAnnoPage(List.of(annoPage2, annoPage1Copy));
@@ -100,33 +101,33 @@ class FTWriteServiceIT extends BaseIntegrationTest {
     // should also upsert the new doc
     assertEquals(1, bulkWriteResult.getUpserts().size());
 
-    assertEquals(2, service.countTranslationAnnoPage());
+    assertEquals(2, service.countAnnoPage());
   }
 
   @Test
   void shouldDropCollection() throws Exception {
-    TranslationAnnoPage annoPage =
-        mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), TranslationAnnoPage.class);
+    AnnoPage annoPage =
+        mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), AnnoPage.class);
     service.saveAnnoPage(annoPage);
-    assertEquals(1, service.countTranslationAnnoPage());
+    assertEquals(1, service.countAnnoPage());
 
     service.dropCollections();
 
-    assertEquals(0, service.countTranslationAnnoPage());
+    assertEquals(0, service.countAnnoPage());
     assertEquals(0, service.countResource());
   }
 
   @Test
   void updateAnnoPageShouldBeSuccessful()
       throws Exception {
-    assertEquals(0, service.countTranslationAnnoPage());
+    assertEquals(0, service.countAnnoPage());
     assertEquals(0, service.countResource());
 
     // add the anno page and resource
-    TranslationAnnoPage annoPage =
-        mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), TranslationAnnoPage.class);
+    AnnoPage annoPage =
+        mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), AnnoPage.class);
     service.saveAnnoPage(annoPage);
-    assertEquals(1, service.countTranslationAnnoPage());
+    assertEquals(1, service.countAnnoPage());
     assertEquals(1, service.countResource());
 
     String rights = annoPage.getRes().getRights() + "updated";
@@ -143,56 +144,98 @@ class FTWriteServiceIT extends BaseIntegrationTest {
             .setOriginalLang(false)
             .build();
 
-    TranslationAnnoPage updatedAnnopage = service.updateAnnoPage(preview, annoPage);
+    AnnoPage updatedAnnopage = service.updateAnnoPage(preview, annoPage);
 
     // check
     assertEquals("https://annotation/source/value", updatedAnnopage.getSource());
     assertEquals(rights, updatedAnnopage.getRes().getRights());
     assertEquals(annoPage.getAns().size(), updatedAnnopage.getAns().size());
     assertEquals(annoPage.getLang(), updatedAnnopage.getLang());
-    assertEquals(1, service.countTranslationAnnoPage());
+    assertEquals(1, service.countAnnoPage());
     assertEquals(1, service.countResource());
   }
 
   @Test
   void deleteAnnoPageWithLangSuccessful() throws IOException {
 
-    assertEquals(0, service.countTranslationAnnoPage());
+    assertEquals(0, service.countAnnoPage());
     assertEquals(0, service.countResource());
 
     // add the anno page and resource
-    TranslationAnnoPage annoPage =
-        mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), TranslationAnnoPage.class);
+    AnnoPage annoPage =
+        mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), AnnoPage.class);
     service.saveAnnoPage(annoPage);
-    assertEquals(1, service.countTranslationAnnoPage());
+    assertEquals(1, service.countAnnoPage());
     assertEquals(1, service.countResource());
 
-    service.deleteAnnoPages(
+    service.deprecateAnnoPages(
         annoPage.getDsId(), annoPage.getLcId(), annoPage.getPgId(), annoPage.getLang());
 
-    assertEquals(0, service.countTranslationAnnoPage());
-    assertEquals(0, service.countResource());
+    // deprecation should set a "deleted" property on AnnoPage
+
+    AnnoPage retrievedAnnoPage =
+        service.getAnnoPageByPgId(annoPage.getDsId(), annoPage.getLcId(), annoPage.getPgId(), annoPage.getLang(), true);
+
+    assertNotNull(retrievedAnnoPage);
+    assertNotNull(retrievedAnnoPage.getDeleted());
   }
 
   @Test
   void deleteAnnoPageWithoutLangSuccessful() throws IOException {
 
-    assertEquals(0, service.countTranslationAnnoPage());
+    assertEquals(0, service.countAnnoPage());
     assertEquals(0, service.countResource());
 
+    AnnoPage annoPage =
+        mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), AnnoPage.class);
+    service.saveAnnoPage(annoPage);
     // add the anno page and resource with same dsId, lcId, pgId but different lang
-    TranslationAnnoPage annoPage =
-        mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), TranslationAnnoPage.class);
-    service.saveAnnoPage(annoPage);
-    annoPage =
-        mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_EN_JSON), TranslationAnnoPage.class);
-    service.saveAnnoPage(annoPage);
-    assertEquals(2, service.countTranslationAnnoPage());
+    AnnoPage annoPage2 =
+        mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_EN_JSON), AnnoPage.class);
+    service.saveAnnoPage(annoPage2);
+
+    assertEquals(2, service.countAnnoPage());
     assertEquals(2, service.countResource());
 
-    service.deleteAnnoPages(annoPage.getDsId(), annoPage.getLcId(), annoPage.getPgId());
+    // both annoppages have same dsId, lcId and pgId
+    service.deprecateAnnoPages(annoPage.getDsId(), annoPage.getLcId(), annoPage.getPgId());
 
-    assertEquals(0, service.countTranslationAnnoPage());
-    assertEquals(0, service.countResource());
+    AnnoPage retrievedAnnoPage1 =
+        service.getAnnoPageByPgId(annoPage.getDsId(), annoPage.getLcId(), annoPage.getPgId(), annoPage.getLang(), true);
+    assertNotNull(retrievedAnnoPage1);
+    assertTrue(retrievedAnnoPage1.isDeprecated());
+
+    AnnoPage retrievedAnnoPage2 =
+        service.getAnnoPageByPgId(annoPage2.getDsId(), annoPage2.getLcId(), annoPage2.getPgId(), annoPage2.getLang(), true);
+    assertNotNull(retrievedAnnoPage2);
+    assertTrue(retrievedAnnoPage2.isDeprecated());
+  }
+
+  @Test
+  void shouldDeprecateAnnoPagesViaSource() throws Exception{
+    String source1 = "http://annotation/1";
+    String source2 = "http://annotation/2";
+    AnnoPage annoPage1 =
+        mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), AnnoPage.class);
+    annoPage1.setSource(source1);
+    ftService.saveAnnoPage(annoPage1);
+
+    AnnoPage annoPage2 =
+        mapper.readValue(loadFile(ANNOPAGE_VIMEO_208310501_JSON), AnnoPage.class);
+    annoPage2.setSource(source2);
+    ftService.saveAnnoPage(annoPage2);
+
+    ftService.deprecateAnnoPagesWithSources(List.of(source1, source2));
+
+
+    AnnoPage retrievedAnnoPage1 =
+        service.getAnnoPageByPgId(annoPage1.getDsId(), annoPage1.getLcId(), annoPage1.getPgId(), annoPage1.getLang(), true);
+    assertNotNull(retrievedAnnoPage1);
+    assertNotNull(retrievedAnnoPage1.getDeleted());
+
+    AnnoPage retrievedAnnoPage2 =
+        service.getAnnoPageByPgId(annoPage2.getDsId(), annoPage2.getLcId(), annoPage2.getPgId(), annoPage2.getLang(), true);
+    assertNotNull(retrievedAnnoPage2);
+    assertNotNull(retrievedAnnoPage2.getDeleted());
   }
 }

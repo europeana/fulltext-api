@@ -8,7 +8,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
+import org.springframework.lang.Nullable;
 
 /**
  * Created by luthien on 31/05/2018.
@@ -17,7 +17,7 @@ import java.util.Objects;
  * Resource base URL: https://www.europeana.eu/api/fulltext/
  */
 @Entity(value = "AnnoPage", useDiscriminator = false)
-@Indexes(@Index(fields = {@Field("dsId"), @Field("lcId"), @Field("pgId")}, options = @IndexOptions(unique = true)))
+@Indexes(@Index(fields = {@Field("dsId"), @Field("lcId"), @Field("pgId"), @Field("lang")}, options = @IndexOptions(unique = true)))
 public class AnnoPage {
 
     @Id
@@ -25,12 +25,15 @@ public class AnnoPage {
     private String           dsId;
     private String           lcId;
     private String           pgId;
+    @Indexed
     private String           tgtId;
     private List<Annotation> ans;
     private Date             modified;
     private String           lang;
     @Indexed
     private String           source;
+    @Indexed
+    private Date deleted;
 
     @Reference
     private Resource res;
@@ -140,7 +143,31 @@ public class AnnoPage {
         this.source = source;
     }
 
+    public Date getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Date deleted) {
+        this.deleted = deleted;
+    }
+
+    public boolean isDeprecated(){
+        return deleted != null;
+    }
+
     public String toString() {
         return "/" + this.dsId + "/" + this.getLcId() + "/" + this.getPgId();
+    }
+
+    /**
+     * Morphia handles a "save" operation as an update if the mongo _id is set.
+     *
+     * This method copies the _id value from a source AnnoPage object to this one.
+     * @param source source AnnoPage
+     */
+    public void copyDbIdFrom(@Nullable AnnoPage source){
+        if (source != null) {
+            _id = source._id;
+        }
     }
 }

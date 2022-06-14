@@ -1,33 +1,42 @@
 package eu.europeana.fulltext.subtitles;
 
-import eu.europeana.fulltext.entity.TranslationAnnoPage;
+import eu.europeana.fulltext.entity.AnnoPage;
+import org.springframework.lang.Nullable;
 
 public class DeleteAnnoSyncResponse {
 
   private final String source;
   private final String status;
 
-  private TranslationAnnoPage annoPage;
+  private AnnoPage annoPage;
 
-  public DeleteAnnoSyncResponse(String source, String status, TranslationAnnoPage annoPage) {
+  public DeleteAnnoSyncResponse(String source, String status, @Nullable AnnoPage annoPage) {
     this.source = source;
     this.status = status;
-    this.annoPage = annoPage;
+
+    // copy required props from AnnoPage
+    if (annoPage != null) {
+      this.annoPage = new AnnoPage();
+      this.annoPage.setDsId(annoPage.getDsId());
+      this.annoPage.setLcId(annoPage.getLcId());
+      this.annoPage.setPgId(annoPage.getPgId());
+      this.annoPage.setLang(annoPage.getLang());
+    }
   }
 
   public String getStatus() {
     return status;
   }
 
-  public TranslationAnnoPage getAnnoPage() {
+  public AnnoPage getAnnoPage() {
     return annoPage;
   }
 
-  public void setAnnoPage(TranslationAnnoPage annoPage) {
+  public void setAnnoPage(AnnoPage annoPage) {
     this.annoPage = annoPage;
   }
 
-  public static enum Status {
+  public enum Status {
     DELETED("deleted"),
     NOOP("no-op");
 

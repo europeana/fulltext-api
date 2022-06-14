@@ -19,8 +19,7 @@ public class SummaryCanvas extends JsonLdIdType {
     private List<SummaryAnnoPage> annotations;
 
     /**
-     * This is not a true IIIF SummaryCanvas object but merely a container object to group original and
-     * translated Annopages
+     * This is not a true IIIF SummaryCanvas object but merely a container object to group Annopages
      *
      * @param id String containing identifying URL of the SummaryCanvas
      */
