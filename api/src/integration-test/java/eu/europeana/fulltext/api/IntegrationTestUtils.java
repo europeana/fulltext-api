@@ -8,6 +8,7 @@ import org.apache.commons.io.IOUtils;
 public class IntegrationTestUtils {
 
   public static final String SUBTITLE_VTT = "/subtitles/submission.vtt";
+  public static final String SUBTITLE_VTT_2 = "/subtitles/submission_pg2.vtt";
 
   public static final String ANNOPAGE_FILMPORTAL_1197365_JSON =
       "/annopages/annopage-filmportal-1197365.json";
