@@ -7,6 +7,9 @@ import com.mongodb.client.model.Filters;
 import dev.morphia.Datastore;
 import dev.morphia.query.FindOptions;
 import eu.europeana.fulltext.entity.AnnoPage;
+
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -28,7 +31,8 @@ public class IndexingAnnoPageRepository {
         .toList();
   }
 
-  public List<AnnoPage> getAllWebResources(String dsId, String lcId) {
+    public List<AnnoPage> getActive(String dsId, String lcId) {
+    //TODO API TEAM: add filter to get non deleted ones
     return datastore
             .find(AnnoPage.class)
             .filter(and(eq(DATASET_ID, dsId),eq(LOCAL_ID,lcId)))
@@ -39,8 +43,14 @@ public class IndexingAnnoPageRepository {
             .toList();
   }
 
-  public boolean isDeleted(String dsId, String lcId) {
-    //TODO API TEAM: Query + logic to determine if all resources associated to same dsId and lcId are deleted
-    return false;
+  public Iterator<AnnoPage> getActive(){
+    //TODO API TEAM: add filter to get non deleted ones
+    return datastore.find(AnnoPage.class).iterator(new FindOptions().projection().include(DATASET_ID,LOCAL_ID, MODIFIED));
   }
+
+  public Iterator<AnnoPage> getDeleted(){
+    //TODO API TEAM: add filter to get deleted ones
+    return datastore.find(AnnoPage.class).iterator(new FindOptions().projection().include(DATASET_ID,LOCAL_ID, MODIFIED));
+  }
+
 }
