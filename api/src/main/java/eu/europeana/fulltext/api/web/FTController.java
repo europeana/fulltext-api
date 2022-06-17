@@ -164,7 +164,6 @@ public class FTController {
         LOG.debug("Retrieve Annopage: {}/{}/{} with language {}", datasetId, localId, pageId, lang);
         // validate the format
         String requestVersion = getRequestVersion(request, versionParam);
-        System.out.println(requestVersion);
         if (StringUtils.isEmpty(requestVersion)) {
             throw new InvalidVersionException(ACCEPT_VERSION_INVALID);
         }
