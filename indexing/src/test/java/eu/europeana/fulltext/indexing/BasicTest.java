@@ -1,23 +1,20 @@
-package eu.europeana.fullstext.indexing.test;
+package eu.europeana.fulltext.indexing;
 
-import eu.europeana.fulltext.indexing.FulltextCollection;
-import eu.europeana.fulltext.indexing.MetadataCollection;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import eu.europeana.fulltext.indexing.repository.IndexingAnnoPageRepository;
-import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.common.util.Pair;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
-
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.common.util.Pair;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
 public class BasicTest {
@@ -32,7 +29,7 @@ public class BasicTest {
     private FulltextCollection fulltextCollection;
 
     @Test
-    public void test() throws IOException, SolrServerException {
+     void test() throws IOException, SolrServerException {
         List<String> ids = new ArrayList<>();
         ids.add("/9200396/BibliographicResource_3000118435009");
         ids.add("/9200396/BibliographicResource_3000118436165");
