@@ -79,7 +79,7 @@ public class IndexingApplication implements CommandLineRunner {
       }
     }
     if (!toAdd.isEmpty()) {
-      fulltextCollection.addDocuments(toAdd,metadataCollection);
+      //fulltextCollection.addDocuments(toAdd,metadataCollection); not necessary
       fulltextCollection.setMetadata(toAdd,metadataCollection);
       fulltextCollection.setFulltext(toAdd);
     }
@@ -143,14 +143,28 @@ public class IndexingApplication implements CommandLineRunner {
 
     List<String> ids = new ArrayList<>();
     ids.add("/9200396/BibliographicResource_3000118435009");
+    ids.add("/9200396/BibliographicResource_3000118436165");
     String[] url = {"http://solr-2-rnd.eanadev.org:9191/solr"};
     //CloudSolrClient client = new CloudSolrClient.Builder(Arrays.asList(url)).build();
     //client.setDefaultCollection("fulltext");
 
-    metadataCollection.getFullDocument("/9200396/BibliographicResource_3000118435009");
-//    fulltextCollection.addDocuments(ids,metadataCollection);
-//    fulltextCollection.setMetadata(ids,metadataCollection);
-//    fulltextCollection.setFulltext(ids);
+
+   // fulltextCollection.deleteDocuments(ids);
+   // boolean exists1 = fulltextCollection.exists(ids.get(0));
+   // fulltextCollection.commit();
+    boolean exists2 = fulltextCollection.exists(ids.get(0));
+ //   fulltextCollection.addDocuments(ids,metadataCollection);
+  //  fulltextCollection.commit();
+    fulltextCollection.setMetadata(ids,metadataCollection);
+    fulltextCollection.commit();
+    boolean valid1 = fulltextCollection.checkMetadata(ids.get(0));
+    boolean valid2 = fulltextCollection.checkMetadata(ids.get(1));
+    fulltextCollection.setFulltext(ids);
+    fulltextCollection.commit();
+    LocalDateTime mtdt = fulltextCollection.getLastUpdateMetadata();
+    LocalDateTime ftdt = fulltextCollection.getLastUpdateFulltext();
+    boolean exists = fulltextCollection.exists(ids.get(0));
+    Pair<LocalDateTime,LocalDateTime> dates = fulltextCollection.getLastUpdateDates(ids.get(0));
     List<AnnoPage> annoPages = repository.getActive("9200396","BibliographicResource_3000118436165");
     logger.info("{}", annoPages);
 

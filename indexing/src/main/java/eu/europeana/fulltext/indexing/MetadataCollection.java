@@ -2,6 +2,7 @@ package eu.europeana.fulltext.indexing;
 
 import static eu.europeana.fulltext.indexing.Constants.METADATA_SOLR_BEAN;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrClient;
@@ -20,6 +21,7 @@ import org.apache.solr.common.params.ModifiableSolrParams;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -36,11 +38,11 @@ public class MetadataCollection {
     private  final Logger logger = LogManager.getLogger(MetadataCollection.class);
     private final String EUROPEANA_ID = "europeana_id";
     private  final String TIMESTAMP_UPDATE_METADATA   = "timestamp_update";
-    private String metadataCollectionName ="search_production_publish_4"; //TODO API: include as property
+    private String metadataCollectionName ="search_production_publish_4"; //TODO: include as property
 
 
     //PUT coreURLs heres
-    private static final List<String> coreURLs = List.of();
+    private static final List<String> coreURLs = List.of(); //TODO: better to get them from the Solr instance, like now? if not static, we can call getCoreNames()
 
     public MetadataCollection(
         @Qualifier(METADATA_SOLR_BEAN) SolrClient metadataSolr) {
@@ -97,7 +99,9 @@ public class MetadataCollection {
         try {
             SolrDocument document = SolrServices.get(metadataSolr, metadataCollectionName, europeana_id);
             if (document != null) {
-                return  LocalDateTime.parse(document.getFieldValue(TIMESTAMP_UPDATE_METADATA).toString());
+                return  ((Date)document.getFieldValue(TIMESTAMP_UPDATE_METADATA)).toInstant()
+                        .atZone(ZoneOffset.UTC)
+                        .toLocalDateTime();
             }
             return null;
         } catch (SolrServerException | IOException e){
@@ -106,19 +110,23 @@ public class MetadataCollection {
         }
     }
 
+
+
     /**
      * Retrieves the document with the id received from the Solr metadata collection. All fields are retrieved
      * @param europeana_id
+     * @throws NullPointerException if document does not exist
      * @return
+     *
      */
-    protected SolrDocument getFullDocument(String europeana_id) throws IOException, SolrServerException {
+    protected SolrDocument getDocument(String europeana_id) throws IOException, SolrServerException {
         SolrQuery query = new SolrQuery();
         query.set("q", EUROPEANA_ID + ":\"" + europeana_id + "\"");
         query.set("fl", "*"); //retrieve all the fields
         try {
             QueryResponse response = SolrServices.query(metadataSolr, metadataCollectionName, query);
             return response.getResults().get(0);
-        } catch (IOException | SolrServerException e){
+        } catch (IOException | SolrServerException | NullPointerException e){
             logger.error("Error retrieving record " + europeana_id + " - " + e.getMessage());
             throw e;
         }
