@@ -156,7 +156,7 @@ class FTWriteServiceIT extends BaseIntegrationTest {
   }
 
   @Test
-  void deleteAnnoPageWithLangSuccessful() throws IOException {
+  void deprecateAnnoPageWithLangSuccessful() throws IOException {
 
     assertEquals(0, service.countAnnoPage());
     assertEquals(0, service.countResource());
@@ -177,11 +177,11 @@ class FTWriteServiceIT extends BaseIntegrationTest {
         service.getAnnoPageByPgId(annoPage.getDsId(), annoPage.getLcId(), annoPage.getPgId(), annoPage.getLang(), true);
 
     assertNotNull(retrievedAnnoPage);
-    assertNotNull(retrievedAnnoPage.getDeleted());
+    assertTrue(retrievedAnnoPage.isDeprecated());
   }
 
   @Test
-  void deleteAnnoPageWithoutLangSuccessful() throws IOException {
+  void deprecateAnnoPageWithoutLangSuccessful() throws IOException {
 
     assertEquals(0, service.countAnnoPage());
     assertEquals(0, service.countResource());
@@ -231,11 +231,11 @@ class FTWriteServiceIT extends BaseIntegrationTest {
     AnnoPage retrievedAnnoPage1 =
         service.getAnnoPageByPgId(annoPage1.getDsId(), annoPage1.getLcId(), annoPage1.getPgId(), annoPage1.getLang(), true);
     assertNotNull(retrievedAnnoPage1);
-    assertNotNull(retrievedAnnoPage1.getDeleted());
+    assertTrue(retrievedAnnoPage1.isDeprecated());
 
     AnnoPage retrievedAnnoPage2 =
         service.getAnnoPageByPgId(annoPage2.getDsId(), annoPage2.getLcId(), annoPage2.getPgId(), annoPage2.getLang(), true);
     assertNotNull(retrievedAnnoPage2);
-    assertNotNull(retrievedAnnoPage2.getDeleted());
+    assertTrue(retrievedAnnoPage2.isDeprecated());
   }
 }

@@ -298,11 +298,11 @@ public class FTWriteController extends BaseRestController {
     return generateResponse(request, updatedAnnoPage, HttpStatus.OK);
   }
 
-  @ApiOperation(value = "Deletes the full-text associated to a media resource\n")
+  @ApiOperation(value = "Deprecates the full-text associated to a media resource\n")
   @DeleteMapping(
       value = "/presentation/{datasetId}/{localId}/annopage/{pageId}",
       produces = {HttpHeaders.CONTENT_TYPE_JSONLD, MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<String> deleteFulltext(
+  public ResponseEntity<String> deprecateFulltext(
       @PathVariable(value = WebConstants.REQUEST_VALUE_DATASET_ID) String datasetId,
       @PathVariable(value = WebConstants.REQUEST_VALUE_LOCAL_ID) String localId,
       @PathVariable(value = WebConstants.REQUEST_VALUE_PAGE_ID) String pageId,
@@ -331,8 +331,8 @@ public class FTWriteController extends BaseRestController {
     }
 
     /*
-     * Delete the respective AnnotationPage(s) entry from MongoDB (if lang is omitted, the pages for
-     * all languages will be deleted)
+     * Deprecates the respective AnnotationPage(s) entry from MongoDB (if lang is omitted, the pages for
+     * all languages will be deprecated)
      */
     if (StringUtils.isNotEmpty(lang)) {
       ftService.deprecateAnnoPages(datasetId, localId, pageId, lang);
@@ -340,7 +340,7 @@ public class FTWriteController extends BaseRestController {
       ftService.deprecateAnnoPages(datasetId, localId, pageId);
     }
     if (LOG.isDebugEnabled()) {
-      LOG.debug("Deleted AnnoPage(s) for {}/{}/{}?lang={}", datasetId, localId, pageId, lang);
+      LOG.debug("Deprecated AnnoPage(s) for {}/{}/{}?lang={}", datasetId, localId, pageId, lang);
     }
     return noContentResponse(request);
   }

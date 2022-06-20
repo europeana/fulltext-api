@@ -24,7 +24,7 @@ public class AnnoPageDeprecationWriter implements ItemWriter<String> {
     long deletedCount = ftService.deprecateAnnoPagesWithSources(annoPages);
 
     for (int i = 0; i < deletedCount; i++) {
-      statsCounter.addDeleted();
+      statsCounter.addDeprecated();
     }
   }
 }

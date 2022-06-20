@@ -10,7 +10,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
-import org.apache.commons.lang.time.DurationFormatUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -85,7 +84,7 @@ public class EmailService {
             "durationString", getDurationText(stats.getElapsedTime()),
             "numNewAnnopages", stats.getNew(),
             "numUpdatedAnnopages", stats.getUpdated(),
-            "numDeletedAnnopages", stats.getDeleted(),
+            "numDeprecatedAnnopages", stats.getDeprecated(),
             "annotationSearchQuery", searchQuery,
             "deploymentName", deploymentName);
 

@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.stereotype.Component;
 
 /**
- * Thread-safe counter to track new, updated and deleted AnnoPages when syncing Annotations.
+ * Thread-safe counter to track new, updated and deprecated AnnoPages when syncing Annotations.
  *
  * <p>Before use, call {@link AnnoSyncStats#reset()}
  */
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 public class AnnoSyncStats {
   private final AtomicInteger newAnnotations = new AtomicInteger();
   private final AtomicInteger updatedAnnotations = new AtomicInteger();
-  private final AtomicInteger deletedAnnotations = new AtomicInteger();
+  private final AtomicInteger deprecatedAnnotations = new AtomicInteger();
 
   private Instant startTime;
   private Duration elapsedTime;
@@ -22,7 +22,7 @@ public class AnnoSyncStats {
   public void reset() {
     newAnnotations.set(0);
     updatedAnnotations.set(0);
-    deletedAnnotations.set(0);
+    deprecatedAnnotations.set(0);
 
     startTime = null;
     elapsedTime = Duration.ZERO;
@@ -44,8 +44,8 @@ public class AnnoSyncStats {
     updatedAnnotations.incrementAndGet();
   }
 
-  public void addDeleted() {
-    deletedAnnotations.incrementAndGet();
+  public void addDeprecated() {
+    deprecatedAnnotations.incrementAndGet();
   }
 
   public int getNew() {
@@ -56,8 +56,8 @@ public class AnnoSyncStats {
     return updatedAnnotations.get();
   }
 
-  public int getDeleted() {
-    return deletedAnnotations.get();
+  public int getDeprecated() {
+    return deprecatedAnnotations.get();
   }
 
   public Duration getElapsedTime() {

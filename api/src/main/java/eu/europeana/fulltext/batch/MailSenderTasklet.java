@@ -59,7 +59,7 @@ public class MailSenderTasklet implements Tasklet {
                 GeneralUtils.generateAnnotationSearchQuery(from, to),
                 StandardCharsets.UTF_8.toString());
 
-    if (mailEnabled && stats.getNew() + stats.getUpdated() + stats.getDeleted() > 0) {
+    if (mailEnabled && stats.getNew() + stats.getUpdated() + stats.getDeprecated() > 0) {
       emailService.sendAnnoSyncSuccessEmail(
           "Successful Annotations Sync", stats,
           annotationSearchQuery);
@@ -68,7 +68,7 @@ public class MailSenderTasklet implements Tasklet {
           "Email not sent. new={}; updated={}; deleted={}; mailEnabled={}",
           stats.getNew(),
           stats.getUpdated(),
-          stats.getDeleted(),
+          stats.getDeprecated(),
           mailEnabled);
     }
     return RepeatStatus.FINISHED;

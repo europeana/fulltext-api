@@ -405,7 +405,11 @@ public class FTService {
   }
 
     /**
-     * Deletes AnnoPage with the specified dsId, lcId, pgId and lang values. Can delete max 1 record.
+     * Deprecates AnnoPage with the specified dsId, lcId, pgId and lang values.
+     * Deprecation deletes the Resource associated to an AnnoPage and its annotations. Other properties
+     * are retained within the AnnoPage – effectively making it a "shell" record.
+     *
+     * Can deprecate max 1 AnnoPage.
      */
     public void deprecateAnnoPages(String datasetId, String localId, String pageId, String lang) {
         long resourceCount = resourceRepository.deleteResource(datasetId, localId, lang);
@@ -420,7 +424,13 @@ public class FTService {
             annoPageCount);
     }
 
-    /** Deletes AnnoPage(s) with the specified dsId, lcId and pgId. Could delete multiple records */
+    /** Deprecates AnnoPage(s) with the specified dsId, lcId and pgId.
+     * Deprecation deletes the Resource associated to an AnnoPage and its annotations. Other properties
+     * are retained within the AnnoPage – effectively making it a "shell" record.
+     *
+     *
+     *  Could deprecate multiple records
+     */
     public void deprecateAnnoPages(String datasetId, String localId, String pageId) {
         long resourceCount = resourceRepository.deleteResources(datasetId, localId);
         long annoPageCount = annoPageRepository.deprecateAnnoPages(datasetId, localId, pageId);
@@ -489,10 +499,10 @@ public class FTService {
     }
 
     /**
-     * Deletes AnnoPage(s) with the specified source
+     * Deprecates AnnoPage(s) with the specified source
      *
      * @param sources sources to query
-     * @return number of deleted documents
+     * @return number of deprecated documents
      */
     public long deprecateAnnoPagesWithSources(List<? extends String> sources) {
         List<String> resourceIds = annoPageRepository.getResourceIdsForAnnoPageSources(sources);
