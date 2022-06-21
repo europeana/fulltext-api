@@ -35,8 +35,14 @@ public class DataSourceConfig {
   @Value("${solr.metadata.url}")
   private String metadataSolrUrl;
 
-  @Value("${solr.fulltext.url}")
-  private String fulltextSolrUrl;
+  @Value("${solr.fulltext.zk.url}")
+  private String fulltextZkUrl;
+
+  @Value("${solr.metadata.collection}")
+  private String metadataCollection;
+
+  @Value("${solr.fulltext.collection}")
+  private String fulltextCollection;
 
   @Bean
   public Datastore fulltextDatastore() {
@@ -45,18 +51,29 @@ public class DataSourceConfig {
         MongoClients.create(mongoConnectionUrl), fulltextDatabase, MAPPER_OPTIONS);
   }
 
-
+  /**
+   * Create metadata client from solr node directly because it is expected it will be only one node, and we need this information to get the cores
+   * @return
+   */
   @Bean(METADATA_SOLR_BEAN)
-  public SolrClient metadataSolrClient(){
+  public CloudSolrClient metadataSolrClient(){
     logger.info("Configuring metadata solr client: {}", metadataSolrUrl);
-    //return new Http2SolrClient.Builder(metadataSolrUrl).build();
-    return  new CloudSolrClient.Builder(Arrays.asList(metadataSolrUrl)).build();
+    // new Http2SolrClient.Builder(metadataSolrUrl).build();
+    CloudSolrClient client = new CloudSolrClient.Builder(Arrays.asList(metadataSolrUrl)).build();
+    client.setDefaultCollection(metadataCollection);
+    return client;
   }
 
+  /**
+   * Create fulltext client from zookeeper nodes because it is expected it will be more than one node and it is more efficient this way
+   * @return
+   */
   @Bean(FULLTEXT_SOLR_BEAN)
-  public SolrClient fulltextSolrClient(){
-    logger.info("Configuring fulltext solr client: {}", fulltextSolrUrl);
+  public CloudSolrClient fulltextSolrClient(){
+    logger.info("Configuring fulltext solr client: {}", fulltextZkUrl);
     //return new Http2SolrClient.Builder(fulltextSolrUrl).build();
-    return  new CloudSolrClient.Builder(Arrays.asList(fulltextSolrUrl)).build();
+    CloudSolrClient client = new CloudSolrClient.Builder(Arrays.asList(fulltextZkUrl), java.util.Optional.empty()).build();
+    client.setDefaultCollection(fulltextCollection);
+    return  client;
   }
 }

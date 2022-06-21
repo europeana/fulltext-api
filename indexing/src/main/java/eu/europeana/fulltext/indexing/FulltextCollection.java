@@ -3,8 +3,6 @@ package eu.europeana.fulltext.indexing;
 import static eu.europeana.fulltext.indexing.Constants.FULLTEXT_SOLR_BEAN;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,9 +12,9 @@ import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.indexing.repository.IndexingAnnoPageRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.impl.CloudSolrClient;
 import org.apache.solr.client.solrj.request.schema.SchemaRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.schema.SchemaRepresentation;
@@ -49,18 +47,19 @@ public class FulltextCollection {
     private static final String PROXY_ISSUED = "proxy_dcterms_issued";
     private static final String ISSUED = "issued";
     private static final String IS_FULLTEXT = "is_fulltext";
-    private final SolrClient fulltextSolr;
+    private final CloudSolrClient fulltextSolr;
     private final MetadataCollection metadataCollection;
-    private static String fulltextCollectionName ="fulltext"; //TODO API: maybe include as property
+    private final String fulltextCollectionName;
 
 
     @Autowired
     private IndexingAnnoPageRepository repository;
 
     public FulltextCollection(
-        @Qualifier(FULLTEXT_SOLR_BEAN) SolrClient fulltextSolr,
+        @Qualifier(FULLTEXT_SOLR_BEAN) CloudSolrClient fulltextSolr,
         MetadataCollection metadataCollection) {
         this.fulltextSolr = fulltextSolr;
+        this.fulltextCollectionName = fulltextSolr.getDefaultCollection();
         this.metadataCollection = metadataCollection;
     }
 
@@ -245,7 +244,7 @@ public class FulltextCollection {
      * Return the date and time of the most recent updated metadata, indexed in the field timestamp_update (following the date of update in the metadata collection)
      * @return LocalDateTime, null if no items in the collection
      */
-    public LocalDateTime getLastUpdateMetadata() throws IOException, SolrServerException {
+    public ZonedDateTime getLastUpdateMetadata() throws IOException, SolrServerException {
         SolrQuery query = new SolrQuery();
         query.set("q", "*:*");
         query.set("fl", TIMESTAMP_UPDATE_METADATA);
@@ -255,8 +254,8 @@ public class FulltextCollection {
             QueryResponse response = SolrServices.query(fulltextSolr, fulltextCollectionName, query);
             if (response.getResults().size() > 0) {
                 return ((Date) response.getResults().get(0).getFieldValue(TIMESTAMP_UPDATE_METADATA)).toInstant()
-                        .atZone(ZoneOffset.UTC)
-                        .toLocalDateTime();
+                        .atZone(ZoneOffset.UTC);
+
             }
             return null;
         } catch (IOException | SolrServerException e){
@@ -269,7 +268,7 @@ public class FulltextCollection {
      * Return the date and time of the most recent updated fulltext, indexed in the field timestamp_update_fulltext (following the date of update in the fulltext MongoDB)
      * @return LocalDateTime, null if no items in the collection
      */
-    public LocalDateTime getLastUpdateFulltext() throws IOException, SolrServerException {
+    public ZonedDateTime getLastUpdateFulltext() throws IOException, SolrServerException {
         SolrQuery query = new SolrQuery();
         query.set("q", "*:*");
         query.set("fl", TIMESTAMP_UPDATE_FULLTEXT);
@@ -279,8 +278,8 @@ public class FulltextCollection {
             QueryResponse response = SolrServices.query(fulltextSolr, fulltextCollectionName, query);
             if (response.getResults().size() > 0) {
                 return ((Date) response.getResults().get(0).getFieldValue(TIMESTAMP_UPDATE_FULLTEXT)).toInstant()
-                        .atZone(ZoneOffset.UTC)
-                        .toLocalDateTime();
+                        .atZone(ZoneOffset.UTC);
+
             }
             return null;
         } catch (IOException | SolrServerException e){
@@ -314,12 +313,12 @@ public class FulltextCollection {
      * @throws SolrServerException
      * @throws IOException
      */
-    public Pair<LocalDateTime, LocalDateTime> getLastUpdateDates(String europeana_id) throws SolrServerException, IOException {
+    public Pair<ZonedDateTime, ZonedDateTime> getLastUpdateDates(String europeana_id) throws SolrServerException, IOException {
         try {
             SolrDocument document = SolrServices.get(fulltextSolr, fulltextCollectionName, europeana_id);
             if (document != null) {
-                LocalDateTime mt_ts = ((Date)(document.getFieldValue(TIMESTAMP_UPDATE_METADATA))).toInstant().atZone(ZoneOffset.UTC).toLocalDateTime();
-                LocalDateTime ft_ts = ((Date)(document.getFieldValue(TIMESTAMP_UPDATE_FULLTEXT))).toInstant().atZone(ZoneOffset.UTC).toLocalDateTime();
+                ZonedDateTime mt_ts = ((Date)(document.getFieldValue(TIMESTAMP_UPDATE_METADATA))).toInstant().atZone(ZoneOffset.UTC);
+                ZonedDateTime ft_ts = ((Date)(document.getFieldValue(TIMESTAMP_UPDATE_FULLTEXT))).toInstant().atZone(ZoneOffset.UTC);
                 return  new Pair(mt_ts,ft_ts);
             }
             return null;
