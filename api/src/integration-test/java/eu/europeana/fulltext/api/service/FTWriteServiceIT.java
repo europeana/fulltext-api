@@ -6,8 +6,10 @@ import static eu.europeana.fulltext.api.IntegrationTestUtils.ANNOPAGE_VIMEO_2083
 import static eu.europeana.fulltext.api.IntegrationTestUtils.loadFile;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.bulk.BulkWriteResult;
 import eu.europeana.fulltext.api.BaseIntegrationTest;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Annotation;
@@ -49,7 +51,7 @@ class FTWriteServiceIT extends BaseIntegrationTest {
     service.upsertAnnoPage(List.of(annoPage));
 
     AnnoPage retrievedAnnoPage =
-        service.getAnnoPageByPgId("08604", "FDE2205EEE384218A8D986E5138F9691", "1", "nl");
+        service.getAnnoPageByPgId("08604", "FDE2205EEE384218A8D986E5138F9691", "1", "nl", false);
 
     assertNotNull(retrievedAnnoPage.getRes());
   }
@@ -91,7 +93,14 @@ class FTWriteServiceIT extends BaseIntegrationTest {
         mapper.readValue(loadFile(ANNOPAGE_VIMEO_208310501_JSON), AnnoPage.class);
 
     // try saving new annoPage (annoPage2) together with existing annoPage
-    service.upsertAnnoPage(List.of(annoPage2, annoPage1Copy));
+    BulkWriteResult bulkWriteResult = service.upsertAnnoPage(List.of(annoPage2, annoPage1Copy));
+
+    // should update the existing doc for annoPage1
+    assertEquals(1, bulkWriteResult.getModifiedCount());
+
+    // should also upsert the new doc
+    assertEquals(1, bulkWriteResult.getUpserts().size());
+
     assertEquals(2, service.countAnnoPage());
   }
 
@@ -147,7 +156,7 @@ class FTWriteServiceIT extends BaseIntegrationTest {
   }
 
   @Test
-  void deleteAnnoPageWithLangSuccessful() throws IOException {
+  void deprecateAnnoPageWithLangSuccessful() throws IOException {
 
     assertEquals(0, service.countAnnoPage());
     assertEquals(0, service.countResource());
@@ -159,32 +168,74 @@ class FTWriteServiceIT extends BaseIntegrationTest {
     assertEquals(1, service.countAnnoPage());
     assertEquals(1, service.countResource());
 
-    service.deleteAnnoPages(
+    service.deprecateAnnoPages(
         annoPage.getDsId(), annoPage.getLcId(), annoPage.getPgId(), annoPage.getLang());
 
-    assertEquals(0, service.countAnnoPage());
-    assertEquals(0, service.countResource());
+    // deprecation should set a "deleted" property on AnnoPage
+
+    AnnoPage retrievedAnnoPage =
+        service.getAnnoPageByPgId(annoPage.getDsId(), annoPage.getLcId(), annoPage.getPgId(), annoPage.getLang(), true);
+
+    assertNotNull(retrievedAnnoPage);
+    assertTrue(retrievedAnnoPage.isDeprecated());
   }
 
   @Test
-  void deleteAnnoPageWithoutLangSuccessful() throws IOException {
+  void deprecateAnnoPageWithoutLangSuccessful() throws IOException {
 
     assertEquals(0, service.countAnnoPage());
     assertEquals(0, service.countResource());
 
-    // add the anno page and resource with same dsId, lcId, pgId but different lang
     AnnoPage annoPage =
         mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), AnnoPage.class);
     service.saveAnnoPage(annoPage);
-    annoPage =
+    // add the anno page and resource with same dsId, lcId, pgId but different lang
+    AnnoPage annoPage2 =
         mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_EN_JSON), AnnoPage.class);
-    service.saveAnnoPage(annoPage);
+    service.saveAnnoPage(annoPage2);
+
     assertEquals(2, service.countAnnoPage());
     assertEquals(2, service.countResource());
 
-    service.deleteAnnoPages(annoPage.getDsId(), annoPage.getLcId(), annoPage.getPgId());
+    // both annoppages have same dsId, lcId and pgId
+    service.deprecateAnnoPages(annoPage.getDsId(), annoPage.getLcId(), annoPage.getPgId());
 
-    assertEquals(0, service.countAnnoPage());
-    assertEquals(0, service.countResource());
+    AnnoPage retrievedAnnoPage1 =
+        service.getAnnoPageByPgId(annoPage.getDsId(), annoPage.getLcId(), annoPage.getPgId(), annoPage.getLang(), true);
+    assertNotNull(retrievedAnnoPage1);
+    assertTrue(retrievedAnnoPage1.isDeprecated());
+
+    AnnoPage retrievedAnnoPage2 =
+        service.getAnnoPageByPgId(annoPage2.getDsId(), annoPage2.getLcId(), annoPage2.getPgId(), annoPage2.getLang(), true);
+    assertNotNull(retrievedAnnoPage2);
+    assertTrue(retrievedAnnoPage2.isDeprecated());
+  }
+
+  @Test
+  void shouldDeprecateAnnoPagesViaSource() throws Exception{
+    String source1 = "http://annotation/1";
+    String source2 = "http://annotation/2";
+    AnnoPage annoPage1 =
+        mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), AnnoPage.class);
+    annoPage1.setSource(source1);
+    ftService.saveAnnoPage(annoPage1);
+
+    AnnoPage annoPage2 =
+        mapper.readValue(loadFile(ANNOPAGE_VIMEO_208310501_JSON), AnnoPage.class);
+    annoPage2.setSource(source2);
+    ftService.saveAnnoPage(annoPage2);
+
+    ftService.deprecateAnnoPagesWithSources(List.of(source1, source2));
+
+
+    AnnoPage retrievedAnnoPage1 =
+        service.getAnnoPageByPgId(annoPage1.getDsId(), annoPage1.getLcId(), annoPage1.getPgId(), annoPage1.getLang(), true);
+    assertNotNull(retrievedAnnoPage1);
+    assertTrue(retrievedAnnoPage1.isDeprecated());
+
+    AnnoPage retrievedAnnoPage2 =
+        service.getAnnoPageByPgId(annoPage2.getDsId(), annoPage2.getLcId(), annoPage2.getPgId(), annoPage2.getLang(), true);
+    assertNotNull(retrievedAnnoPage2);
+    assertTrue(retrievedAnnoPage2.isDeprecated());
   }
 }

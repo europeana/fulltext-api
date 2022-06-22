@@ -1,10 +1,14 @@
 package eu.europeana.fulltext.api.service;
 
+import static eu.europeana.fulltext.AppConstants.ANNOTATION_DELETED_PATH;
+import static eu.europeana.fulltext.AppConstants.ANNOTATION_SEARCH_PATH;
+
 import eu.europeana.fulltext.api.config.FTSettings;
 import eu.europeana.fulltext.exception.AnnotationApiGoneException;
 import eu.europeana.fulltext.exception.AnnotationApiNotFoundException;
 import eu.europeana.fulltext.subtitles.external.AnnotationItem;
 import eu.europeana.fulltext.subtitles.external.AnnotationSearchResponse;
+import eu.europeana.fulltext.util.GeneralUtils;
 import io.netty.handler.logging.LogLevel;
 import java.net.URI;
 import java.time.Instant;
@@ -57,14 +61,14 @@ public class AnnotationApiRestService {
   }
 
   public List<AnnotationItem> getAnnotations(int page, int pageSize, Instant from, Instant to) {
-    String searchQuery = generateQuery(from, to) + " AND motivation:subtitling";
+    String searchQuery = GeneralUtils.generateAnnotationSearchQuery(from, to);
     AnnotationSearchResponse response =
         webClient
             .get()
             .uri(
                 uriBuilder ->
                     uriBuilder
-                        .path("/annotation/search")
+                        .path(ANNOTATION_SEARCH_PATH)
                         .queryParam("query", searchQuery)
                         .queryParam("wskey", wskey)
                         .queryParam("sort", "created")
@@ -154,16 +158,6 @@ public class AnnotationApiRestService {
     return deletedAnnotations;
   }
 
-  private String generateQuery(@Nullable Instant from, @NonNull Instant to) {
-    /*
-     * if 'from' is null, fetch from the earliest representable time
-     */
-
-    String fromString = from != null ? toSolrDateString(from) : "*";
-    String toString = toSolrDateString(to);
-
-    return "generated:[" + fromString + " TO " + toString + "]";
-  }
 
   /**
    * Helper method for constructing request URI. Only includes "from" and "to" parameters if not
@@ -174,7 +168,7 @@ public class AnnotationApiRestService {
     return uriBuilder -> {
       UriBuilder builder =
           uriBuilder
-              .path("/annotations/deleted")
+              .path(ANNOTATION_DELETED_PATH)
               .queryParam("wskey", wskey)
               .queryParam("page", page)
               .queryParam("limit", pageSize);
@@ -189,13 +183,5 @@ public class AnnotationApiRestService {
 
       return builder.build();
     };
-  }
-
-  private String toSolrDateString(Instant instant) {
-    /*
-     * escape colons in dates, as the colon is a special character to Solr's parser
-     * See: https://solr.apache.org/guide/6_6/working-with-dates.html#WorkingwithDates-DateFormatting
-     */
-    return instant.atZone(ZoneOffset.UTC).toString().replace(":", "\\:");
   }
 }

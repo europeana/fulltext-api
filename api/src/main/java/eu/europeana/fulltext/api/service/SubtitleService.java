@@ -56,7 +56,7 @@ public class SubtitleService {
     String fullTextResourceURI =
         GeneralUtils.getFullTextResourceURI(
             preview.getRecordId(),
-            GeneralUtils.generateHash(preview.getRecordId() + preview.getLanguage()));
+            GeneralUtils.generateResourceId(preview.getRecordId(), preview.getLanguage(), preview.getMedia()));
 
     EdmFullTextPackage page = new EdmFullTextPackage(annotationPageURI, null);
 
@@ -85,8 +85,8 @@ public class SubtitleService {
     // ADD the resource in Fulltext page
     resource.setValue(subtitleContext.end());
     page.setResource(resource);
-    if (logger.isDebugEnabled()) {
-      logger.debug(
+    if (logger.isTraceEnabled()) {
+      logger.trace(
           "Successfully converted SRT to EDM for record {}. Processed Annotations - {}",
           preview.getRecordId(),
           page.size());

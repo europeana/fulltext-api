@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 import static dev.morphia.query.experimental.filters.Filters.eq;
+import static dev.morphia.query.experimental.filters.Filters.in;
 import static eu.europeana.fulltext.util.MorphiaUtils.Fields.*;
 import static eu.europeana.fulltext.util.MorphiaUtils.SET;
 import static eu.europeana.fulltext.util.MorphiaUtils.SET_ON_INSERT;
@@ -86,6 +87,12 @@ public class ResourceRepository {
         return datastore.save(resource);
     }
 
+  /**
+   * Deletes the Resource(s) that match the specified parameters
+   * @param datasetId Dataset id
+   * @param localId Local id
+   * @return number of deleted records
+   */
     public long deleteResources(String datasetId, String localId) {
         return datastore
             .find(Resource.class)
@@ -94,6 +101,13 @@ public class ResourceRepository {
             .getDeletedCount();
     }
 
+  /**
+   *  Deletes the Resource that matches the specified parameters
+   * @param datasetId dataset id
+   * @param localId local id
+   * @param lang Resource language
+   * @return number of deleted records. Should be either 1 or 0.
+   */
     public long deleteResource(String datasetId, String localId, String lang) {
         return datastore
             .find(Resource.class)
@@ -123,7 +137,7 @@ public class ResourceRepository {
                     new Document(
                         // filter
                         Map.of(
-                            DATASET_ID, res.getDsId(), LOCAL_ID, res.getLcId(), LANGUAGE, res.getLang())),
+                            DATASET_ID, res.getDsId(), LOCAL_ID, res.getLcId(), LANGUAGE, res.getLang(), DOC_ID, res.getId())),
                     // update doc
                     new Document(
                         SET,
@@ -144,4 +158,17 @@ public class ResourceRepository {
             .getCollection(Resource.class)
             .bulkWrite(resourceUpdates);
     }
+
+  /**
+   * Deletes the Resources with _id values matching contents of provided list
+   * @param resourceIds Resource _ids to match
+   * @return Number of deleted records
+   */
+  public long deleteResourcesById(List<String> resourceIds) {
+      return datastore
+          .find(Resource.class)
+          .filter(in(DOC_ID, resourceIds))
+          .delete(MorphiaUtils.MULTI_DELETE_OPTS)
+          .getDeletedCount();
+  }
 }

@@ -8,6 +8,7 @@ import org.apache.commons.io.IOUtils;
 public class IntegrationTestUtils {
 
   public static final String SUBTITLE_VTT = "/subtitles/submission.vtt";
+  public static final String SUBTITLE_VTT_2 = "/subtitles/submission_pg2.vtt";
 
   public static final String ANNOPAGE_FILMPORTAL_1197365_JSON =
       "/annopages/annopage-filmportal-1197365.json";
@@ -19,8 +20,6 @@ public class IntegrationTestUtils {
       "/annopages/annopage-repozytorium-9927.json";
   public static final String ANNOPAGE_VIMEO_208310501_JSON =
       "/annopages/annopage-vimeo-208310501.json";
-  public static final String ANNOPAGE_FILMPORTAL_SALEM06_JSON =
-      "/annopages/annopage-filmportal-salem06.json";
 
   public static String loadFile(String resourcePath) throws IOException {
     InputStream resourceAsStream = IntegrationTestUtils.class.getResourceAsStream(resourcePath);

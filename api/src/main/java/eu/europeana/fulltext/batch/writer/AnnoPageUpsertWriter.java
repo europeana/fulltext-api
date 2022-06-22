@@ -1,6 +1,8 @@
 package eu.europeana.fulltext.batch.writer;
 
+import com.mongodb.bulk.BulkWriteResult;
 import eu.europeana.fulltext.api.service.FTService;
+import eu.europeana.fulltext.batch.AnnoSyncStats;
 import eu.europeana.fulltext.entity.AnnoPage;
 import java.util.List;
 import org.springframework.batch.item.ItemWriter;
@@ -11,13 +13,23 @@ import org.springframework.stereotype.Component;
 public class AnnoPageUpsertWriter implements ItemWriter<AnnoPage> {
 
   private final FTService ftService;
+  private final AnnoSyncStats statsCounter;
 
-  public AnnoPageUpsertWriter(FTService annotationService) {
+  public AnnoPageUpsertWriter(FTService annotationService, AnnoSyncStats statsCounter) {
     this.ftService = annotationService;
+    this.statsCounter = statsCounter;
   }
 
   @Override
   public void write(@NonNull List<? extends AnnoPage> annoPages) throws Exception {
-    ftService.upsertAnnoPage(annoPages);
+    BulkWriteResult writeResult = ftService.upsertAnnoPage(annoPages);
+
+    for (int i = 0; i < writeResult.getUpserts().size(); i++) {
+      statsCounter.addNew();
+    }
+
+    for (int i = 0; i < writeResult.getModifiedCount(); i++) {
+      statsCounter.addUpdated();
+    }
   }
 }

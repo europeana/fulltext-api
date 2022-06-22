@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:remove="all">Template for HTML email</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+</head>
+<body style="margin: 20px">
+<h3><span th:text="${deploymentName}"></span>: Fulltext Contribution Report </h3>
+<a th:href="@{${annotationSearchQuery}}">Annotation Search Query</a>
+
+<p><strong>Start Time:</strong><span style="padding-left:10px" th:text="${startTimeString}">2022-05-05T06:43:03.787Z</span></p>
+<p><strong>Elapsed Time:</strong> <span style="padding-left:10px" th:text="${durationString}">9.605 seconds</span></p>
+
+
+<table style="margin-top:15px;border-collapse:collapse">
+  <tr style="height: 25px">
+    <td>New:</td>
+    <td style="padding-left:50px;text-align:right" th:text="${numNewAnnopages}">0</td>
+  </tr>
+  <tr style="height: 25px">
+    <td>Updated:</td>
+    <td style="padding-left:50px;text-align:right" th:text="${numUpdatedAnnopages}">0</td>
+  </tr>
+  <tr style="height: 25px">
+    <td>Deleted:</td>
+    <td style="padding-left:50px;text-align:right" th:text="${numDeprecatedAnnopages}">0</td>
+  </tr>
+</table>
+</body>
+</html>

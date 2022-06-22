@@ -4,13 +4,17 @@ import static eu.europeana.fulltext.AppConstants.ANNO_SYNC_TASK_EXECUTOR;
 import static eu.europeana.fulltext.batch.BatchUtils.ANNO_SYNC_JOB;
 
 import eu.europeana.fulltext.api.config.FTSettings;
+import eu.europeana.fulltext.api.service.EmailService;
 import eu.europeana.fulltext.batch.listener.AnnoSyncUpdateListener;
+import eu.europeana.fulltext.batch.model.AnnoSyncJobMetadata;
 import eu.europeana.fulltext.batch.processor.AnnotationProcessor;
 import eu.europeana.fulltext.batch.reader.ItemReaderConfig;
-import eu.europeana.fulltext.batch.writer.AnnoPageDeletionWriter;
+import eu.europeana.fulltext.batch.repository.AnnoSyncJobMetadataRepo;
+import eu.europeana.fulltext.batch.writer.AnnoPageDeprecationWriter;
 import eu.europeana.fulltext.batch.writer.AnnoPageUpsertWriter;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.subtitles.external.AnnotationItem;
+import java.time.Duration;
 import java.time.Instant;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,6 +25,7 @@ import org.springframework.batch.core.configuration.annotation.JobBuilderFactory
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.step.skip.SkipPolicy;
+import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
@@ -41,11 +46,16 @@ public class AnnotationSyncJobConfig {
 
   private final AnnotationProcessor annotationProcessor;
   private final AnnoPageUpsertWriter annoPageWriter;
-  private final AnnoPageDeletionWriter annoPageDeletionWriter;
+  private final AnnoPageDeprecationWriter annoPageDeletionWriter;
 
   private final AnnoSyncUpdateListener updateListener;
 
   private final TaskExecutor annoSyncTaskExecutor;
+
+  private final AnnoSyncStats stats;
+  private final EmailService emailService;
+
+  private final AnnoSyncJobMetadataRepo annoSyncJobMetaRepository;
 
   /** SkipPolicy to ignore all failures when executing jobs, as they can be handled later */
   private static final SkipPolicy noopSkipPolicy = (Throwable t, int skipCount) -> true;
@@ -58,9 +68,12 @@ public class AnnotationSyncJobConfig {
       ItemReaderConfig itemReaderConfig,
       AnnotationProcessor annotationProcessor,
       AnnoPageUpsertWriter annoPageWriter,
-      AnnoPageDeletionWriter annoPageDeletionWriter,
+      AnnoPageDeprecationWriter annoPageDeletionWriter,
       AnnoSyncUpdateListener updateListener,
-      @Qualifier(ANNO_SYNC_TASK_EXECUTOR) TaskExecutor annoSyncTaskExecutor) {
+      @Qualifier(ANNO_SYNC_TASK_EXECUTOR) TaskExecutor annoSyncTaskExecutor,
+      AnnoSyncStats stats,
+      EmailService emailService,
+      AnnoSyncJobMetadataRepo annoSyncJobMetaRepository) {
     this.appSettings = appSettings;
     this.jobBuilderFactory = jobBuilderFactory;
     this.stepBuilderFactory = stepBuilderFactory;
@@ -71,6 +84,9 @@ public class AnnotationSyncJobConfig {
     this.annoPageDeletionWriter = annoPageDeletionWriter;
     this.updateListener = updateListener;
     this.annoSyncTaskExecutor = annoSyncTaskExecutor;
+    this.stats = stats;
+    this.emailService = emailService;
+    this.annoSyncJobMetaRepository = annoSyncJobMetaRepository;
   }
 
   private Step syncAnnotationsStep(Instant from, Instant to) {
@@ -102,18 +118,73 @@ public class AnnotationSyncJobConfig {
   }
 
   public Job syncAnnotations() {
-    Instant from = BatchUtils.getMostRecentSuccessfulStartTime(jobExplorer);
-    Instant to = Instant.now();
+
+    AnnoSyncJobMetadata jobMetadata = annoSyncJobMetaRepository.getMostRecentAnnoSyncMetadata();
+    Instant from = null;
+    Instant startTime = Instant.now();
+
+    // take from value from previous run if it exists
+    if (jobMetadata != null) {
+      from = jobMetadata.getLastSuccessfulStartTime();
+    } else {
+      jobMetadata = new AnnoSyncJobMetadata();
+    }
+
+    jobMetadata.setLastSuccessfulStartTime(startTime);
 
     if (logger.isInfoEnabled()) {
       String fromLogString = from == null ? "*" : from.toString();
       logger.info(
-          "Starting annotation sync job. Fetching annotations from {} to {}", fromLogString, to);
+          "Starting annotation sync job. Fetching annotations from {} to {}",
+          fromLogString,
+          startTime);
     }
+
     return this.jobBuilderFactory
         .get(ANNO_SYNC_JOB)
-        .start(syncAnnotationsStep(from, to))
-        .next(deleteAnnotationsStep(from, to))
+        .start(initStats(stats, startTime))
+        .next(syncAnnotationsStep(from, startTime))
+        .next(deleteAnnotationsStep(from, startTime))
+        .next(finishStats(stats, startTime))
+        .next(sendSuccessEmailStep(from, startTime))
+        .next(updateAnnoSyncJobMetadata(jobMetadata))
+        .build();
+  }
+
+  private Step finishStats(AnnoSyncStats stats, Instant startTime) {
+    return stepBuilderFactory
+        .get("finishStatsStep")
+        .tasklet(
+            ((stepContribution, chunkContext) -> {
+              stats.setElapsedTime(Duration.between(startTime, Instant.now()));
+              return RepeatStatus.FINISHED;
+            }))
+        .build();
+  }
+
+  private Step initStats(AnnoSyncStats stats, Instant startTime) {
+    return stepBuilderFactory
+        .get("initStatsStep")
+        .tasklet(
+            ((stepContribution, chunkContext) -> {
+              stats.reset();
+              stats.setStartTime(startTime);
+              return RepeatStatus.FINISHED;
+            }))
+        .build();
+  }
+
+  private Step updateAnnoSyncJobMetadata(AnnoSyncJobMetadata jobMetadata) {
+    return stepBuilderFactory
+        .get("updateJobMetadataStep")
+        .tasklet(new AnnoSyncMetadataUpdaterTasklet(annoSyncJobMetaRepository, jobMetadata))
+        .build();
+  }
+
+  private Step sendSuccessEmailStep(Instant from, Instant to) {
+    return stepBuilderFactory
+        .get("sendEmailStep")
+        .tasklet(new MailSenderTasklet(stats, emailService, from, to, appSettings))
         .build();
   }
 }

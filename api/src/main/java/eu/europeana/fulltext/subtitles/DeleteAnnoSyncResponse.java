@@ -1,6 +1,7 @@
 package eu.europeana.fulltext.subtitles;
 
 import eu.europeana.fulltext.entity.AnnoPage;
+import org.springframework.lang.Nullable;
 
 public class DeleteAnnoSyncResponse {
 
@@ -9,10 +10,18 @@ public class DeleteAnnoSyncResponse {
 
   private AnnoPage annoPage;
 
-  public DeleteAnnoSyncResponse(String source, String status, AnnoPage annoPage) {
+  public DeleteAnnoSyncResponse(String source, String status, @Nullable AnnoPage annoPage) {
     this.source = source;
     this.status = status;
-    this.annoPage = annoPage;
+
+    // copy required props from AnnoPage
+    if (annoPage != null) {
+      this.annoPage = new AnnoPage();
+      this.annoPage.setDsId(annoPage.getDsId());
+      this.annoPage.setLcId(annoPage.getLcId());
+      this.annoPage.setPgId(annoPage.getPgId());
+      this.annoPage.setLang(annoPage.getLang());
+    }
   }
 
   public String getStatus() {

@@ -25,8 +25,10 @@ public final class MorphiaUtils {
     public static final String RESOURCE_COL = Resource.class.getSimpleName();
 
 
-    // Morphia deletes the first matching document by default. This is required for deleting all matches.
+    // Morphia deletes / update the first matching document by default. These are required for operating on all matches.
     public static final DeleteOptions MULTI_DELETE_OPTS = new DeleteOptions().multi(true);
+
+    public static final UpdateOptions MULTI_UPDATE_OPTS = new UpdateOptions().multi(true);
 
     // Indicates that an update query should be executed as an "upsert",
     // ie. creates new records if they do not already exist, or updates them if they do.
@@ -64,6 +66,7 @@ public final class MorphiaUtils {
         public static final String LANGUAGE     = "lang";
         public static final String LOCAL_ID     = "lcId";
         public static final String MODIFIED     = "modified";
+        public static final String DELETED     = "deleted";
         public static final String PAGE_ID      = "pgId";
         public static final String RESOURCE     = "res";
         public static final String TARGET_ID    = "tgtId";

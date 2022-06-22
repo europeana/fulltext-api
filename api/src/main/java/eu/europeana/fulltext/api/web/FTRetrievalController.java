@@ -265,14 +265,14 @@ public class FTRetrievalController {
         HttpServletRequest request) {
         String requestVersion = getRequestVersion(request, versionParam);
         if (ACCEPT_VERSION_INVALID.equals(requestVersion)) {
-            return new ResponseEntity(ACCEPT_VERSION_INVALID, HttpStatus.NOT_ACCEPTABLE);
+            return new ResponseEntity<>(ACCEPT_VERSION_INVALID, HttpStatus.NOT_ACCEPTABLE);
         }
         HttpHeaders headers = new HttpHeaders();
         addContentTypeToResponseHeader(headers, requestVersion, isJson);
-        if (fts.doesAnnoPageExist(datasetId, localId, pageId, lang)) {
-            return new ResponseEntity(headers, HttpStatus.OK);
+        if (fts.doesAnnoPageExist(datasetId, localId, pageId, lang, false)) {
+            return new ResponseEntity<>(headers, HttpStatus.OK);
         } else {
-            return new ResponseEntity(headers, HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(headers, HttpStatus.NOT_FOUND);
         }
     }
 
