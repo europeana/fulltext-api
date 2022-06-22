@@ -1,5 +1,6 @@
 package eu.europeana.fulltext.indexing;
 
+import dev.morphia.query.MorphiaCursor;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.indexing.repository.IndexingAnnoPageRepository;
 
@@ -60,7 +61,7 @@ public class IndexingApplication implements CommandLineRunner {
   }
 
   public void synchronizeFulltextContent(ZonedDateTime lastUpdate) throws IOException, SolrServerException {
-    List<AnnoPage> updated = repository.getRecordsModifiedAfter(lastUpdate.toEpochSecond());
+    List<DataIdWrapper> updated = repository.getRecordsModifiedAfter(Date.from(lastUpdate.toInstant()));
     List<String> updated_europeana_ids = updated.stream().map(p-> FulltextCollection.getEuropeanaId(p.getDsId(),p.getLcId())).distinct().collect(Collectors.toList());
     synchronizeFulltextContent(updated_europeana_ids);
   }
@@ -72,7 +73,7 @@ public class IndexingApplication implements CommandLineRunner {
     for (String id: europeana_id){
       if (!fulltextCollection.exists(id)){
         toAdd.add(id);
-      } else if (repository.getActive(FulltextCollection.getDsId(id), FulltextCollection.getLcId(id)).isEmpty()){
+      } else if (!repository.existsActive(FulltextCollection.getDsId(id), FulltextCollection.getLcId(id))){
         toDelete.add(id);
       } else {
         toUpdate.add(id);
@@ -94,9 +95,9 @@ public class IndexingApplication implements CommandLineRunner {
 
   public List<String> check() throws IOException, SolrServerException {
     Set<String> toRepair = new HashSet<>();
-    Iterator<AnnoPage> iteratorActive = repository.getActive();
-      while (iteratorActive.hasNext()){
-        AnnoPage ap = iteratorActive.next();
+    MorphiaCursor<AnnoPage> cursorActive = repository.getActive();
+    while (cursorActive.hasNext()){
+        AnnoPage ap = cursorActive.next();
         ZonedDateTime lastUpdate_ap = ZonedDateTime.from(ap.getModified().toInstant().atZone(ZoneOffset.UTC)); //TODO API: 'modified' in anno page already include time and zone, any way to get them from the Date type?
         String europeana_id = FulltextCollection.getEuropeanaId(ap.getDsId(),ap.getLcId());
         Pair<ZonedDateTime,ZonedDateTime> lastUpdateSolr = fulltextCollection.getLastUpdateDates(europeana_id);
@@ -115,14 +116,16 @@ public class IndexingApplication implements CommandLineRunner {
           }
         }
       }
-      Iterator<AnnoPage> iteratorDeleted = repository.getDeleted();
-      while (iteratorDeleted.hasNext()) {
-        AnnoPage ap = iteratorDeleted.next();
-        if (repository.getActive(ap.getDsId(),ap.getLcId()).isEmpty()) {
+
+    try(MorphiaCursor<AnnoPage> deletedCursor = repository.getDeleted()){
+      while (deletedCursor.hasNext()) {
+        AnnoPage ap = deletedCursor.next();
+        if (!repository.existsActive(ap.getDsId(), ap.getLcId())) {
           String europeana_id = FulltextCollection.getEuropeanaId(ap.getDsId(), ap.getLcId());
           if (fulltextCollection.exists(europeana_id)) {
-            toRepair.add(europeana_id); //the document has not been deleted in Solr
+            toRepair.add(europeana_id); // the document has not been deleted in Solr
           }
+        }
         }
       }
       logger.warn("Documents to be reprocessed to update fulltext content: " + toRepair.size());
@@ -189,6 +192,12 @@ public class IndexingApplication implements CommandLineRunner {
   public void run(String... args) throws Exception {
     //fulltextTest();
     //metadataTest();
-    List<AnnoPage> list = repository.getActive("9200396","BibliographicResource_3000118435009");
+//    try (MorphiaCursor<AnnoPage> bibliographicResource_3000118435009 = repository.getActive("9200396",
+//        "BibliographicResource_3000118435009")){
+//      // iterate over cursor here
+//    }
+
+    List<DataIdWrapper> recordsModifiedAfter = repository.getRecordsModifiedAfter(
+        Date.from(LocalDateTime.of(2022, Month.JUNE, 22, 00, 00).toInstant(ZoneOffset.UTC)));
   }
 }
