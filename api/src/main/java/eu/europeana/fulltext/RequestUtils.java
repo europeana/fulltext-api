@@ -26,9 +26,11 @@ public class RequestUtils {
 
 
     /**
-     * Retrieve the requested version from the accept header, or if not present from the format parameter. If nothing
-     * is specified then 2 is returned as default
-     * @return either version 2, 3 or ACCEPT_INVALID
+     * Retrieve the requested version from accept header if present
+     * OR if not present, check the format parameter.
+     * If nothing is specified then 2 is returned as default
+     *
+     * @return either version 2, 3 or null (if invalid)
      */
     public static String getRequestVersion(HttpServletRequest request, String format) {
         String result = null;
@@ -42,21 +44,18 @@ public class RequestUtils {
                 } else if (profiles.toLowerCase(Locale.getDefault()).contains(MEDIA_TYPE_IIIF_V2)) {
                     result = REQUEST_VERSION_2;
                 } else {
-                    result = ACCEPT_VERSION_INVALID; // in case a Profile is found that matches neither version => HTTP 406
+                    result = null; // in case profile is found & it's invalid.
                 }
+                return result; // if accept header present and contains profile; return the value processed
             }
         }
-        if (result == null) {
-            // Request header is empty, or does not contain a Profile parameter
-            if (StringUtils.isBlank(format)){
-                result = REQUEST_VERSION_2;    // if format not given, fall back to default REQUEST_VERSION_2
-            } else if (REQUEST_VERSION_2.equals(format) || REQUEST_VERSION_3.equals(format)) {
-                result = format; // else use the format parameter
-            } else {
-                result = ACCEPT_VERSION_INVALID;
-            }
+
+        // Check if format is present in the request param
+        if (StringUtils.isBlank(format)) {
+            result = REQUEST_VERSION_2;    // if format not given, fall back to default REQUEST_VERSION_2
+        } else if (REQUEST_VERSION_2.equals(format) || REQUEST_VERSION_3.equals(format)) {
+            result = format; // else use the format parameter
         }
         return result;
     }
-
 }

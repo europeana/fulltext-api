@@ -4,18 +4,19 @@ import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.api.config.FTSettings;
 import eu.europeana.fulltext.api.service.ControllerUtils;
+import eu.europeana.fulltext.api.service.exception.InvalidVersionException;
 import eu.europeana.fulltext.search.config.SearchConfig;
 import eu.europeana.fulltext.search.exception.InvalidParameterException;
 import eu.europeana.fulltext.search.model.query.EuropeanaId;
 import eu.europeana.fulltext.search.model.response.SearchResult;
 import eu.europeana.fulltext.search.service.FTSearchService;
 import io.swagger.annotations.Api;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -23,8 +24,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
-import static eu.europeana.fulltext.RequestUtils.ACCEPT_VERSION_INVALID;
-import static eu.europeana.fulltext.RequestUtils.getRequestVersion;
+import static eu.europeana.fulltext.RequestUtils.*;
 
 /**
  * Rest controller that handles search requests
@@ -72,9 +72,10 @@ public class FTSearchController {
                                     @RequestParam(required = false) String debug,
                                     HttpServletRequest request) throws EuropeanaApiException {
 
+        // validate the format
         String requestVersion = getRequestVersion(request, versionParam);
-        if (ACCEPT_VERSION_INVALID.equals(requestVersion)){
-            return new ResponseEntity<>(ACCEPT_VERSION_INVALID, HttpStatus.NOT_ACCEPTABLE);
+        if (StringUtils.isEmpty(requestVersion)) {
+            throw new InvalidVersionException(ACCEPT_VERSION_INVALID);
         }
 
         // validate input

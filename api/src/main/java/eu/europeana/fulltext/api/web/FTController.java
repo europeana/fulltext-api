@@ -8,6 +8,7 @@ import eu.europeana.fulltext.api.model.FTResource;
 import eu.europeana.fulltext.api.service.CacheUtils;
 import eu.europeana.fulltext.api.service.ControllerUtils;
 import eu.europeana.fulltext.api.service.FTService;
+import eu.europeana.fulltext.api.service.exception.InvalidVersionException;
 import eu.europeana.fulltext.api.service.exception.InvalidRequestParamException;
 import eu.europeana.fulltext.api.service.exception.SerializationException;
 import eu.europeana.fulltext.entity.AnnoPage;
@@ -25,7 +26,6 @@ import springfox.documentation.annotations.ApiIgnore;
 import javax.servlet.http.HttpServletRequest;
 import java.time.ZonedDateTime;
 import java.util.*;
-import java.util.regex.Matcher;
 
 import static eu.europeana.fulltext.RequestUtils.*;
 import static eu.europeana.fulltext.api.config.FTDefinitions.*;
@@ -162,9 +162,10 @@ public class FTController {
         HttpServletRequest request,
         boolean isJson) throws EuropeanaApiException {
         LOG.debug("Retrieve Annopage: {}/{}/{} with language {}", datasetId, localId, pageId, lang);
+        // validate the format
         String requestVersion = getRequestVersion(request, versionParam);
-        if (ACCEPT_VERSION_INVALID.equals(requestVersion)) {
-            return new ResponseEntity<>(ACCEPT_VERSION_INVALID, HttpStatus.NOT_ACCEPTABLE);
+        if (StringUtils.isEmpty(requestVersion)) {
+            throw new InvalidVersionException(ACCEPT_VERSION_INVALID);
         }
         AnnotationWrapper annotationPage;
         HttpHeaders headers;
@@ -230,7 +231,7 @@ public class FTController {
         @PathVariable String pageId,
         @RequestParam(value = "lang", required = false) String lang,
         @RequestParam(value = "format", required = false) String versionParam,
-        HttpServletRequest request) {
+        HttpServletRequest request) throws EuropeanaApiException {
         return getAnnoPageHead(datasetId, localId, pageId, lang, versionParam, true, request);
     }
 
@@ -254,7 +255,7 @@ public class FTController {
         @PathVariable String pageId,
         @RequestParam(value = "lang", required = false) String lang,
         @RequestParam(value = "format", required = false) String versionParam,
-        HttpServletRequest request) {
+        HttpServletRequest request) throws EuropeanaApiException {
         return getAnnoPageHead(datasetId, localId, pageId, lang, versionParam, false, request);
     }
 
@@ -265,10 +266,11 @@ public class FTController {
         String lang,
         String versionParam,
         boolean isJson,
-        HttpServletRequest request) {
+        HttpServletRequest request) throws InvalidVersionException {
+        // validate the format
         String requestVersion = getRequestVersion(request, versionParam);
-        if (ACCEPT_VERSION_INVALID.equals(requestVersion)) {
-            return new ResponseEntity(ACCEPT_VERSION_INVALID, HttpStatus.NOT_ACCEPTABLE);
+        if (StringUtils.isEmpty(requestVersion)) {
+            throw new InvalidVersionException(ACCEPT_VERSION_INVALID);
         }
         HttpHeaders headers = new HttpHeaders();
         addContentTypeToResponseHeader(headers, requestVersion, isJson);
@@ -329,9 +331,10 @@ public class FTController {
         HttpServletRequest request,
         boolean isJson) throws EuropeanaApiException {
         LOG.debug("Retrieve Annotation: {}/{}/{}", datasetId, localId, annoID);
+        // validate the format
         String requestVersion = getRequestVersion(request, versionParam);
-        if (ACCEPT_VERSION_INVALID.equals(requestVersion)) {
-            return new ResponseEntity<>(ACCEPT_VERSION_INVALID, HttpStatus.NOT_ACCEPTABLE);
+        if (StringUtils.isEmpty(requestVersion)) {
+            throw new InvalidVersionException(ACCEPT_VERSION_INVALID);
         }
 
         HttpHeaders headers;
@@ -449,42 +452,6 @@ public class FTController {
                 headers.add(CONTENT_TYPE, MEDIA_TYPE_IIIF_JSONLD_V2);
             }
         }
-    }
-
-    /**
-     * Retrieve the requested version from the accept header, or if not present from the format parameter. If nothing is
-     * specified then 2 is returned as default
-     *
-     * @return either version 2, 3 or ACCEPT_INVALID
-     */
-    private String getRequestVersion(HttpServletRequest request, String format) {
-        String result = null;
-        String accept = request.getHeader(ACCEPT);
-        if (StringUtils.isNotEmpty(accept)) {
-            Matcher m = ACCEPT_PROFILE_PATTERN.matcher(accept);
-            if (m.find()) { // found a Profile parameter in the Accept header
-                String profiles = m.group(1);
-                if (profiles.toLowerCase(Locale.getDefault()).contains(MEDIA_TYPE_IIIF_V3)) {
-                    result = "3";
-                } else if (profiles.toLowerCase(Locale.getDefault()).contains(MEDIA_TYPE_IIIF_V2)) {
-                    result = "2";
-                } else {
-                    result
-                        = ACCEPT_VERSION_INVALID; // in case a Profile is found that matches neither version => HTTP 406
-                }
-            }
-        }
-        if (result == null) {
-            // Request header is empty, or does not contain a Profile parameter
-            if (StringUtils.isBlank(format)) {
-                result = "2";    // if format not given, fall back to default "2"
-            } else if ("2".equals(format) || "3".equals(format)) {
-                result = format; // else use the format parameter
-            } else {
-                result = ACCEPT_VERSION_INVALID;
-            }
-        }
-        return result;
     }
 
     /**
