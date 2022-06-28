@@ -2,6 +2,7 @@ package eu.europeana.fulltext.indexing;
 
 import static eu.europeana.fulltext.indexing.Constants.METADATA_SOLR_BEAN;
 
+import eu.europeana.fulltext.indexing.utils.SolrServices;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -15,12 +16,11 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.cloud.Replica;
 import org.apache.solr.common.params.ModifiableSolrParams;
-
 import java.io.IOException;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
-
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
@@ -48,26 +48,40 @@ public class MetadataCollection {
         this.coreURLs = getCoreURLs();
     }
 
-    /**
-     * Retrieves the list of ids of the documents modified (timestamp_update) after last_timestamp_update_metadata
-     * @param last_timestamp_update_metadata
-     * @return list of europeana_id
-     * @throws IOException
-     */
-    public List<String> getDocumentsModifiedAfter(ZonedDateTime last_timestamp_update_metadata) throws IOException {
+    public List<TupleStream> getDocumentsModifiedAfter(ZonedDateTime last_timestamp_update_metadata) throws IOException {
         try {
-            List<String> ids = new ArrayList<>();
+            List<TupleStream> streams = new ArrayList<>();
             for (String coreURL : coreURLs) { //we have to iterate each core separately
                 ModifiableSolrParams params = new ModifiableSolrParams();
                 params.set("q", "*:*");
                 params.set("qt", "/export");
                 params.set("sort", EUROPEANA_ID + " asc");
                 params.set("fl", EUROPEANA_ID);
-                params.set("fq", TIMESTAMP_UPDATE_METADATA + ":{" + last_timestamp_update_metadata.toString() + " TO NOW]");
+                String formatted_date = last_timestamp_update_metadata.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
+                params.set("fq", TIMESTAMP_UPDATE_METADATA + ":{" + formatted_date + " TO NOW]");
 
                 TupleStream solrStream = new SolrStream(coreURL, params);
                 StreamContext context = new StreamContext();
                 solrStream.setStreamContext(context);
+                streams.add(solrStream);
+            }
+            return streams;
+        }catch (IndexOutOfBoundsException  e){
+            logger.error(e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * Retrieves the list of ids of the documents modified (timestamp_update) after last_timestamp_update_metadata
+     * @param  streams
+     * @return list of europeana_id
+     * @throws IOException
+     */
+    public List<String> getDocumentsModifiedAfter(List<TupleStream> streams) throws IOException {
+        try {
+            List<String> ids = new ArrayList<>();
+            for (TupleStream solrStream: streams) { //we have to iterate each core separately
                 try {
                     solrStream.open();
                     Tuple tuple = solrStream.read();
@@ -87,6 +101,8 @@ public class MetadataCollection {
             throw e;
         }
     }
+
+
     /**
      * Returns the date of the last update of the metadata (timestamp_update)
      * @param europeana_id
@@ -99,9 +115,10 @@ public class MetadataCollection {
             SolrDocument document = SolrServices.get(metadataSolr, metadataCollectionName, europeana_id);
             if (document != null) {
                 return  ((Date)document.getFieldValue(TIMESTAMP_UPDATE_METADATA)).toInstant()
-                        .atZone(ZoneOffset.UTC);
+                        .atZone(ZoneOffset.UTC); //dates in Solr are always in format ISO8601 and UTC
 
             }
+            logger.info("No records in the metadata collection");
             return null;
         } catch (SolrServerException | IOException e){
             logger.error(e.getMessage());
@@ -124,8 +141,11 @@ public class MetadataCollection {
         query.set("fl", "*"); //retrieve all the fields
         try {
             QueryResponse response = SolrServices.query(metadataSolr, metadataCollectionName, query);
-            return response.getResults().get(0);
-        } catch (IOException | SolrServerException | NullPointerException e){
+            if (response != null && response.getResults().size() > 0){
+                return response.getResults().get(0);
+            }
+            return  null;
+        } catch (IOException | SolrServerException  e){
             logger.error("Error retrieving record " + europeana_id + " - " + e.getMessage());
             throw e;
         }

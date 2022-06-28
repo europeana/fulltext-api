@@ -12,6 +12,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
 //import org.apache.solr.client.solrj.impl.Http2SolrClient;
+import org.apache.solr.client.solrj.impl.LBHttpSolrClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,6 +20,8 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 @Configuration
 @PropertySource("classpath:indexing.properties")
@@ -34,6 +37,9 @@ public class DataSourceConfig {
 
   @Value("${solr.metadata.url}")
   private String metadataSolrUrl;
+
+  @Value("${solr.fulltext.url}")
+  private String fulltextSolrUrl;
 
   @Value("${solr.fulltext.zk.url}")
   private String fulltextZkUrl;
@@ -51,6 +57,7 @@ public class DataSourceConfig {
         MongoClients.create(mongoConnectionUrl), fulltextDatabase, MAPPER_OPTIONS);
   }
 
+  //TODO: maybe replace by metis solr utils
   /**
    * Create metadata client from solr node directly because it is expected it will be only one node, and we need this information to get the cores
    * @return
@@ -64,16 +71,18 @@ public class DataSourceConfig {
     return client;
   }
 
+  //TODO: maybe replace by metis solr utils
   /**
-   * Create fulltext client from zookeeper nodes because it is expected it will be more than one node and it is more efficient this way
+   * Create fulltext client from solr nodes (ideally it should be created from zookeeper nodes because it is expected it will be more than one node and it is more efficient but I sometimes get problems with the connection this way
    * @return
    */
   @Bean(FULLTEXT_SOLR_BEAN)
   public CloudSolrClient fulltextSolrClient(){
-    logger.info("Configuring fulltext solr client: {}", fulltextZkUrl);
+    logger.info("Configuring fulltext solr client: {}", fulltextSolrUrl);
     //return new Http2SolrClient.Builder(fulltextSolrUrl).build();
-    CloudSolrClient client = new CloudSolrClient.Builder(Arrays.asList(fulltextZkUrl), java.util.Optional.empty()).build();
-    client.setDefaultCollection(fulltextCollection);
+    //CloudSolrClient client = new CloudSolrClient.Builder(Arrays.asList(fulltextZkUrl), java.util.Optional.empty()).build(); I have trouble sometimes connecting to Zookeeper
+    CloudSolrClient client = new CloudSolrClient.Builder(Arrays.asList(fulltextSolrUrl)).build();
+     client.setDefaultCollection(fulltextCollection);
     return  client;
   }
 }

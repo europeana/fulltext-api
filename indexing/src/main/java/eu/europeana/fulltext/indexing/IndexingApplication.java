@@ -1,23 +1,13 @@
 package eu.europeana.fulltext.indexing;
 
-import dev.morphia.query.MorphiaCursor;
-import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.indexing.repository.IndexingAnnoPageRepository;
-
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.Month;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.chrono.ChronoLocalDateTime;
-import java.time.chrono.ChronoZonedDateTime;
+import java.time.*;
 import java.util.*;
-import java.util.stream.Collectors;
-
-import net.bytebuddy.asm.Advice;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.io.stream.TupleStream;
 import org.apache.solr.common.util.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -42,96 +32,8 @@ public class IndexingApplication implements CommandLineRunner {
     SpringApplication.run(IndexingApplication.class, args);
   }
 
-  public void synchronizeMetadataContent() throws IOException, SolrServerException {
-    ZonedDateTime lastUpdate = fulltextCollection.getLastUpdateMetadata();
-    synchronizeMetadataContent(lastUpdate);
-  }
-  public void synchronizeMetadataContent(ZonedDateTime lastUpdate) throws IOException, SolrServerException {
-    List<String> updated_europeana_ids = metadataCollection.getDocumentsModifiedAfter(lastUpdate);
-    synchronizeMetadataContent(updated_europeana_ids);
-  }
 
-  public void synchronizeMetadataContent(List<String> europeana_id) throws IOException, SolrServerException {
-    fulltextCollection.setMetadata(europeana_id, metadataCollection);
-  }
-
-  public void synchronizeFulltextContent() throws IOException, SolrServerException {
-    ZonedDateTime lastUpdate = fulltextCollection.getLastUpdateFulltext();
-    synchronizeFulltextContent(lastUpdate);
-  }
-
-  public void synchronizeFulltextContent(ZonedDateTime lastUpdate) throws IOException, SolrServerException {
-    List<DataIdWrapper> updated = repository.getRecordsModifiedAfter(Date.from(lastUpdate.toInstant()));
-    List<String> updated_europeana_ids = updated.stream().map(p-> FulltextCollection.getEuropeanaId(p.getDsId(),p.getLcId())).distinct().collect(Collectors.toList());
-    synchronizeFulltextContent(updated_europeana_ids);
-  }
-
-  public void synchronizeFulltextContent(List<String> europeana_id) throws IOException, SolrServerException {
-    List<String> toAdd = new ArrayList<>();
-    List<String> toDelete = new ArrayList<>();
-    List<String> toUpdate = new ArrayList<>();
-    for (String id: europeana_id){
-      if (!fulltextCollection.exists(id)){
-        toAdd.add(id);
-      } else if (!repository.existsActive(FulltextCollection.getDsId(id), FulltextCollection.getLcId(id))){
-        toDelete.add(id);
-      } else {
-        toUpdate.add(id);
-      }
-    }
-    if (!toAdd.isEmpty()) {
-      //fulltextCollection.addDocuments(toAdd,metadataCollection); not necessary
-      fulltextCollection.setMetadata(toAdd,metadataCollection);
-      fulltextCollection.setFulltext(toAdd);
-    }
-    if (!toDelete.isEmpty()){
-      fulltextCollection.deleteDocuments(toDelete);
-    }
-    if (!toUpdate.isEmpty()){
-      fulltextCollection.setFulltext(toUpdate);
-    }
-  }
-
-
-  public List<String> check() throws IOException, SolrServerException {
-    Set<String> toRepair = new HashSet<>();
-    MorphiaCursor<AnnoPage> cursorActive = repository.getActive();
-    while (cursorActive.hasNext()){
-        AnnoPage ap = cursorActive.next();
-        ZonedDateTime lastUpdate_ap = ZonedDateTime.from(ap.getModified().toInstant().atZone(ZoneOffset.UTC)); //TODO API: 'modified' in anno page already include time and zone, any way to get them from the Date type?
-        String europeana_id = FulltextCollection.getEuropeanaId(ap.getDsId(),ap.getLcId());
-        Pair<ZonedDateTime,ZonedDateTime> lastUpdateSolr = fulltextCollection.getLastUpdateDates(europeana_id);
-        if (lastUpdateSolr == null) {
-          toRepair.add(europeana_id); //the document does not exists in Solr
-        } else {
-          ZonedDateTime lastUpdate_ftc = lastUpdateSolr.first();
-          ZonedDateTime lastUpdate_mtc = lastUpdateSolr.second();
-          if (lastUpdate_ftc.isBefore(lastUpdate_ap)) {
-          //if (lastUpdate_ftc.isBefore(ChronoZonedDateTime.from(lastUpdate_ap.toInstant().atZone(ZoneOffset.UTC)))) {
-            toRepair.add(europeana_id); //fulltext content is not updated
-          }
-          ZonedDateTime lastUpdate_mt = metadataCollection.getLastUpdateDate(europeana_id);
-          if (lastUpdate_mtc.isBefore(lastUpdate_mt)) {
-            toRepair.add(europeana_id); //metadata is not updated
-          }
-        }
-      }
-
-    try(MorphiaCursor<AnnoPage> deletedCursor = repository.getDeleted()){
-      while (deletedCursor.hasNext()) {
-        AnnoPage ap = deletedCursor.next();
-        if (!repository.existsActive(ap.getDsId(), ap.getLcId())) {
-          String europeana_id = FulltextCollection.getEuropeanaId(ap.getDsId(), ap.getLcId());
-          if (fulltextCollection.exists(europeana_id)) {
-            toRepair.add(europeana_id); // the document has not been deleted in Solr
-          }
-        }
-        }
-      }
-      logger.warn("Documents to be reprocessed to update fulltext content: " + toRepair.size());
-      return new ArrayList<>(toRepair);
-  }
-
+  //TEST
   private void assertTrue(boolean value) throws Exception {
     if (!value){
       throw new Exception("assertTrue failed");
@@ -154,21 +56,27 @@ public class IndexingApplication implements CommandLineRunner {
     List<String> ids = new ArrayList<>();
     ids.add("/9200396/BibliographicResource_3000118435009");
     ids.add("/9200396/BibliographicResource_3000118436165");
-
-    fulltextCollection.deleteDocuments(ids);
+    fulltextCollection.deleteDocument(ids.get(0));
+    fulltextCollection.deleteDocument(ids.get(1));
+    fulltextCollection.commit();
     assertFalse(fulltextCollection.exists(ids.get(0)));
-    assertFalse(fulltextCollection.exists(ids.get(0)));
-    fulltextCollection.setMetadata(ids,metadataCollection);
+    assertFalse(fulltextCollection.exists(ids.get(1)));
+    fulltextCollection.setMetadata(ids.get(0),metadataCollection);
+    fulltextCollection.setMetadata(ids.get(1),metadataCollection);
+    fulltextCollection.commit();
     assertTrue(fulltextCollection.checkMetadata(ids.get(0)));
     assertTrue(fulltextCollection.checkMetadata(ids.get(1)));
-    fulltextCollection.setFulltext(ids);
-    assertEquals(ZonedDateTime.of(LocalDateTime.of(2018, Month.JULY,11,14,54,57,295000000),ZoneOffset.UTC),fulltextCollection.getLastUpdateMetadata());
+    fulltextCollection.setFulltext(ids.get(0));
+    fulltextCollection.setFulltext(ids.get(1));
+    fulltextCollection.commit();
+    assertEquals(ZonedDateTime.of(LocalDateTime.of(2018, Month.JULY,11,14,54,57,295000000), ZoneOffset.UTC),fulltextCollection.getLastUpdateMetadata());
     assertEquals(ZonedDateTime.of(LocalDateTime.of(2018, Month.OCTOBER,23,9,5,35,490000000),ZoneOffset.UTC),fulltextCollection.getLastUpdateFulltext());
     assertTrue(fulltextCollection.exists(ids.get(0)));
     assertTrue(fulltextCollection.exists(ids.get(1)));
-    assertEquals(new Pair<LocalDateTime,LocalDateTime>(LocalDateTime.of(2018,Month.JULY,11,14,52,41,794000000),LocalDateTime.of(2018,Month.OCTOBER,23,9,5,35,490000000)),fulltextCollection.getLastUpdateDates(ids.get(0)));
-    assertEquals(new Pair<LocalDateTime,LocalDateTime>(LocalDateTime.of(2018,Month.JULY,11,14,54,57,295000000),LocalDateTime.of(2018,Month.OCTOBER,23,9,0,52,508000000)),fulltextCollection.getLastUpdateDates(ids.get(1)));
-    fulltextCollection.deleteDocuments(ids);
+    assertEquals(new Pair<ZonedDateTime,ZonedDateTime>(ZonedDateTime.of(LocalDateTime.of(2018,Month.JULY,11,14,52,41,794000000),ZoneOffset.UTC),ZonedDateTime.of(LocalDateTime.of(2018,Month.OCTOBER,23,9,5,35,490000000),ZoneOffset.UTC)),fulltextCollection.getLastUpdateDates(ids.get(0)));
+    assertEquals(new Pair<ZonedDateTime,ZonedDateTime>(ZonedDateTime.of(LocalDateTime.of(2018,Month.JULY,11,14,54,57,295000000),ZoneOffset.UTC),ZonedDateTime.of(LocalDateTime.of(2018,Month.OCTOBER,23,9,0,52,508000000),ZoneOffset.UTC)),fulltextCollection.getLastUpdateDates(ids.get(1)));
+    fulltextCollection.deleteDocument(ids.get(0));
+    fulltextCollection.deleteDocument(ids.get(1));
     fulltextCollection.commit();
   }
 
@@ -178,26 +86,41 @@ public class IndexingApplication implements CommandLineRunner {
     ids.add("/9200396/BibliographicResource_3000118436165");
 
 
-    assertEquals(LocalDateTime.of(2018,Month.JULY,11,14,52,41,794000000),metadataCollection.getLastUpdateDate(ids.get(0)));
-    assertEquals(LocalDateTime.of(2018,Month.JULY,11,14,54,57,295000000),metadataCollection.getLastUpdateDate(ids.get(1)));
+    assertEquals(ZonedDateTime.of(LocalDateTime.of(2018,Month.JULY,11,14,52,41,794000000),ZoneOffset.UTC),metadataCollection.getLastUpdateDate(ids.get(0)));
+    assertEquals(ZonedDateTime.of(LocalDateTime.of(2018,Month.JULY,11,14,54,57,295000000),ZoneOffset.UTC), metadataCollection.getLastUpdateDate(ids.get(1)));
 
     LocalDateTime date = LocalDateTime.of(2022,Month.APRIL,28,15,00,04,0);
     ZonedDateTime dateZone = ZonedDateTime.of(date,ZoneOffset.UTC);
 
-    List<String> modified = metadataCollection.getDocumentsModifiedAfter(dateZone);
+    List<TupleStream> streams = metadataCollection.getDocumentsModifiedAfter(dateZone);
+    List<String> documents = metadataCollection.getDocumentsModifiedAfter(streams); //44 documents
   }
 
+  public void synchFulltextTest() throws Exception {
+    fulltextCollection.synchronizeFulltextContent(ZonedDateTime.ofInstant(Instant.EPOCH,ZoneOffset.UTC));
+    //fulltextCollection.synchronizeFulltextContent();
+    assertEquals(new ArrayList<String>(), fulltextCollection.isFulltextUpdated());
+  }
+
+  public void synchMetadata() throws IOException, SolrServerException {
+    fulltextCollection.synchronizeMetadataContent(ZonedDateTime.ofInstant(Instant.EPOCH,ZoneOffset.UTC));
+  }
+
+  public void tests(){
+    //fulltextTest();
+    //metadataTest();
+    //synchFulltextTest();
+    //synchMetadata();
+  }
 
   @Override
   public void run(String... args) throws Exception {
-    //fulltextTest();
-    //metadataTest();
-//    try (MorphiaCursor<AnnoPage> bibliographicResource_3000118435009 = repository.getActive("9200396",
-//        "BibliographicResource_3000118435009")){
-//      // iterate over cursor here
-//    }
+    //use:
+    //fulltextCollection.synchronizeFulltextContent();
+    //fulltextCollection.synchronizeMetadataContent();
 
-    List<DataIdWrapper> recordsModifiedAfter = repository.getRecordsModifiedAfter(
-        Date.from(LocalDateTime.of(2022, Month.JUNE, 22, 00, 00).toInstant(ZoneOffset.UTC)));
+    //for intensive check/repair if something goes wrong
+    //List<String> toRepair = fulltextCollection.isFulltextUpdated();
+    //fulltextCollection.synchronizeFulltextContent(toRepair);
   }
 }

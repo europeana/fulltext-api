@@ -1,4 +1,4 @@
-package eu.europeana.fulltext.indexing;
+package eu.europeana.fulltext.indexing.utils;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
