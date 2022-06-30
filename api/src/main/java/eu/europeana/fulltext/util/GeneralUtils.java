@@ -36,8 +36,8 @@ public class GeneralUtils {
   private static final Pattern ANNOTATION_ID_SUFFIX_PATTERN = Pattern.compile("/annotation/\\d+$");
 
   /**
-   * Generates Annotation ID. Hash of -> annotation.getType() url of the target (mediaUrl +
-   * fragment) (if present) url of the fulltextResource (fulltext resource url + fragment)
+   * Generates Annotation ID. Hash of -> annotation.getType() + url of the target (mediaUrl +
+   * fragment) (if present) + url of the fulltextResource (fulltext resource url + fragment)
    *
    * <p>fragment is calculated based on the boundaries. See: {@link EdmTimeBoundary#getFragment()} ()}
    * Or {@link EdmTimeBoundary#getFragment()}
