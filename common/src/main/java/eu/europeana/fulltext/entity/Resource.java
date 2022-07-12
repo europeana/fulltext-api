@@ -6,7 +6,7 @@ import dev.morphia.annotations.*;
 @Entity(value = "Resource", useDiscriminator = false)
 @Indexes({
   @Index(
-      fields = {@Field("dsId"), @Field("lcId"), @Field("_id")},
+      fields = {@Field("dsId"), @Field("lcId"), @Field("pgId"), @Field("lang")},
       options = @IndexOptions(unique = true)),
     // only index contributed Resources
   @Index(
@@ -21,10 +21,15 @@ public class Resource {
     private String lcId;  // IIIF_API_BASE_URL/      /{lcId}/annopage/
     private String lang;
     private String value;
+    private String pgId;
 
     private String source;
     private String rights;
     private boolean contributed;
+
+    // temp field added for migration; will be removed afterwards
+    @Transient
+    private String oldDbId;
 
     /**
      * Empty constructor required for serialisation
@@ -108,5 +113,21 @@ public class Resource {
 
     public void setContributed(boolean contributed) {
         this.contributed = contributed;
+    }
+
+    public String getOldDbId() {
+        return oldDbId;
+    }
+
+    public void setOldDbId(String oldDbId) {
+        this.oldDbId = oldDbId;
+    }
+
+    public String getPgId() {
+        return pgId;
+    }
+
+    public void setPgId(String pgId) {
+        this.pgId = pgId;
     }
 }

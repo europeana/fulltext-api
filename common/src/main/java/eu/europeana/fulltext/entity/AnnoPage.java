@@ -170,4 +170,8 @@ public class AnnoPage {
             _id = source._id;
         }
     }
+
+    public ObjectId getDbId(){
+        return _id;
+    }
 }

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <artifactId>fulltext</artifactId>
+    <groupId>eu.europeana</groupId>
+    <version>0.8.2-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>eu.europeana.fulltext</groupId>
+  <artifactId>migrations</artifactId>
+
+  <dependencies>
+    <!-- Use Log4j2 as default logger -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-log4j2</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>eu.europeana.fulltext</groupId>
+      <artifactId>common</artifactId>
+      <version>0.8.2-SNAPSHOT</version>
+    </dependency>
+
+    <!-- Adds Spring Batch support for Mongo JobRepository -->
+    <dependency>
+      <groupId>eu.europeana.api</groupId>
+      <artifactId>spring-batch-mongo</artifactId>
+      <version>${springbatch.mongo.version}</version>
+    </dependency>
+
+  </dependencies>
+</project>
