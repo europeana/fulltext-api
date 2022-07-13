@@ -72,6 +72,7 @@ import org.apache.commons.lang3.StringUtils;
       resource.setRights(request.getRights());
       resource.setDsId(datasetId);
       resource.setLcId(localId);
+      resource.setPgId(GeneralUtils.derivePageId(request.getMedia()));
       return resource;
     }
 

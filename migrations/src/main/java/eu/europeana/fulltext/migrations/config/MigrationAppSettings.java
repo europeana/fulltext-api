@@ -35,6 +35,9 @@ public class MigrationAppSettings {
   @Value("${batch.loggingInterval: 1000}")
   private int loggingInterval;
 
+  @Value("${batch.skipLimit: 500}")
+  private int skipLimit;
+
 
   public String getMongoConnectionUrl() {
     return mongoConnectionUrl;
@@ -70,5 +73,9 @@ public class MigrationAppSettings {
 
   public int getLoggingInterval() {
     return loggingInterval;
+  }
+
+  public int getSkipLimit() {
+    return skipLimit;
   }
 }

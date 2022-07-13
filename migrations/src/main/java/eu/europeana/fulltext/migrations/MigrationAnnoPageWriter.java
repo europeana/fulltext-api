@@ -4,6 +4,7 @@ import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Resource;
 import eu.europeana.fulltext.migrations.repository.MigrationRepository;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
@@ -33,7 +34,10 @@ public class MigrationAnnoPageWriter implements ItemWriter<AnnoPage> {
 
     // in a final step, we delete the old resources
     List<String> oldDbIds =
-        annoPages.stream().map(a -> a.getRes().getOldDbId()).collect(Collectors.toList());
+        annoPages.stream()
+            // prevent deletion of new Resources if this job is run multiple times
+            .filter(a -> !Objects.equals(a.getRes().getOldDbId(), a.getRes().getId()))
+            .map(a -> a.getRes().getOldDbId()).collect(Collectors.toList());
     repository.deleteResource(oldDbIds);
 
   }

@@ -4,19 +4,21 @@ import static eu.europeana.fulltext.migrations.MigrationConstants.BATCH_THREAD_E
 
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.migrations.config.MigrationAppSettings;
+import eu.europeana.fulltext.migrations.listeners.MigrationProgressListener;
+import eu.europeana.fulltext.migrations.listeners.MigrationSkipListener;
+import eu.europeana.fulltext.migrations.model.MigrationJobMetadata;
 import eu.europeana.fulltext.migrations.repository.MigrationRepository;
+import java.util.Date;
 import java.util.concurrent.atomic.AtomicLong;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.batch.core.ItemReadListener;
 import org.springframework.batch.core.Job;
-import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
-import org.springframework.batch.core.launch.JobLauncher;
-import org.springframework.batch.core.step.skip.SkipPolicy;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemStreamReader;
 import org.springframework.batch.item.support.SynchronizedItemStreamReader;
@@ -38,12 +40,10 @@ public class MigrationBatchConfig {
   private final MigrationRepository repository;
 
   private final MigrationAnnoPageProcessor processor;
+  private final MigrationSkipListener skipListener;
   private final MigrationAnnoPageWriter writer;
 
   private static final Logger logger = LogManager.getLogger(MigrationBatchConfig.class);
-
-  /** SkipPolicy to ignore all failures when executing jobs, as they can be handled later */
-  private static final SkipPolicy noopSkipPolicy = (Throwable t, int skipCount) -> true;
 
   public MigrationBatchConfig(
       JobBuilderFactory jobs,
@@ -52,6 +52,7 @@ public class MigrationBatchConfig {
       MigrationAppSettings appSettings,
       MigrationRepository repository,
       MigrationAnnoPageProcessor processor,
+      MigrationSkipListener skipListener,
       MigrationAnnoPageWriter writer) {
     this.jobs = jobs;
     this.steps = steps;
@@ -59,6 +60,7 @@ public class MigrationBatchConfig {
     this.appSettings = appSettings;
     this.repository = repository;
     this.processor = processor;
+    this.skipListener = skipListener;
     this.writer = writer;
   }
 
@@ -75,10 +77,9 @@ public class MigrationBatchConfig {
     return synchronizedItemStreamReader;
   }
 
-  private MigrationProgressLogger progressLogger(MigrationJobMetadata jobMetadata) {
-    return new MigrationProgressLogger(appSettings, jobMetadata, repository);
+  private MigrationProgressListener reportingListener(MigrationJobMetadata jobMetadata) {
+    return new MigrationProgressListener(appSettings, jobMetadata, repository);
   }
-
 
   private Step migrateAnnoPageStep(MigrationJobMetadata jobMetadata) {
     return this.steps
@@ -88,43 +89,34 @@ public class MigrationBatchConfig {
         .processor(processor)
         .writer(writer)
         .faultTolerant()
-        .skipPolicy(noopSkipPolicy)
-        .listener(
-            progressLogger(jobMetadata))
+        // skip all exceptions up to the configurable limit
+        .skip(Exception.class)
+        .skipLimit(appSettings.getSkipLimit())
+        .listener((ItemReadListener<? super AnnoPage>) reportingListener(jobMetadata))
+        .listener(skipListener)
         .taskExecutor(migrationTaskExecutor)
         .throttleLimit(appSettings.getBatchThrottleLimit())
         .build();
   }
 
-
+  @Bean
   private Job migrateAnnoPageJob() {
     MigrationJobMetadata jobMetadata = repository.getExistingMetadata();
 
     if (jobMetadata != null) {
       logger.info("Found existing job metadata. Will resume processing from: {}", jobMetadata);
     } else {
-      logger.info("No existing metadata found. Starting processing from scratch¬");
+      logger.info("No existing metadata found. Starting processing from scratch");
+      jobMetadata = new MigrationJobMetadata(null, new AtomicLong());
     }
 
-    jobMetadata = new MigrationJobMetadata(null, new AtomicLong());
     return jobs.get("migrateAnnoPageJob")
         .preventRestart()
+        .incrementer(
+            // ensure each job run is unique
+            (JobParameters p) ->
+                new JobParametersBuilder().addDate("startTime", new Date()).toJobParameters())
         .start(migrateAnnoPageStep(jobMetadata))
         .build();
-  }
-
-  @Bean
-  public JobExecution run(JobLauncher jobLauncher) {
-    JobExecution jobExecution = null;
-    try {
-      JobParameters jobParameters = new JobParametersBuilder()
-          .addLong("time", System.currentTimeMillis()).toJobParameters();
-
-      jobExecution = jobLauncher.run(migrateAnnoPageJob(), jobParameters);
-      logger.info("Exit Status: {}", jobExecution.getStatus());
-    } catch (Exception e) {
-      logger.error("Error running job {}", e.getMessage());
-    }
-    return jobExecution;
   }
 }

@@ -4,6 +4,7 @@ import org.springframework.batch.core.configuration.annotation.EnableBatchProces
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.context.ConfigurableApplicationContext;
 
 @EnableBatchProcessing
 @SpringBootApplication(
@@ -14,6 +15,7 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
     })
 public class MigrationApp {
   public static void main(String[] args) {
-    SpringApplication.run(MigrationApp.class, args);
+    ConfigurableApplicationContext context = SpringApplication.run(MigrationApp.class, args);
+    System.exit(SpringApplication.exit(context));
   }
 }

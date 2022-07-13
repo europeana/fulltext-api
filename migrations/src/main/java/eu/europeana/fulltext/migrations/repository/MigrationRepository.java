@@ -1,5 +1,6 @@
 package eu.europeana.fulltext.migrations.repository;
 
+import static dev.morphia.query.experimental.filters.Filters.exists;
 import static dev.morphia.query.experimental.filters.Filters.in;
 import static eu.europeana.fulltext.util.MorphiaUtils.Fields.*;
 import static eu.europeana.fulltext.util.MorphiaUtils.RESOURCE_COL;
@@ -13,12 +14,11 @@ import com.mongodb.client.model.WriteModel;
 import dev.morphia.Datastore;
 import dev.morphia.query.FindOptions;
 import dev.morphia.query.Query;
-import dev.morphia.query.Sort;
 import dev.morphia.query.experimental.filters.Filters;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Resource;
 import eu.europeana.fulltext.exception.DatabaseQueryException;
-import eu.europeana.fulltext.migrations.MigrationJobMetadata;
+import eu.europeana.fulltext.migrations.model.MigrationJobMetadata;
 import eu.europeana.fulltext.repository.AnnoPageRepository;
 import eu.europeana.fulltext.util.MorphiaUtils;
 import java.time.Instant;
@@ -118,7 +118,8 @@ public class MigrationRepository {
   public MigrationJobMetadata getExistingMetadata() {
     return datastore
         .find(MigrationJobMetadata.class)
-        .iterator(new FindOptions().limit(1))
+        .filter(exists("lastAnnoPageIdRef"))
+        .iterator()
         .tryNext();
   }
 

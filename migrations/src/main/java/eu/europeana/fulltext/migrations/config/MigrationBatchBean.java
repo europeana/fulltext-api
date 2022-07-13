@@ -24,7 +24,7 @@ public class MigrationBatchBean {
 
   /** Task executor used by the Spring Batch step for multi-threading */
   @Bean(BATCH_THREAD_EXECUTOR)
-  public TaskExecutor annoSyncTaskExecutor() {
+  public TaskExecutor migrationTaskExecutor() {
     ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
     taskExecutor.setCorePoolSize(config.getBatchCorePoolSize());
     taskExecutor.setMaxPoolSize(config.getBatchMaxPoolSize());

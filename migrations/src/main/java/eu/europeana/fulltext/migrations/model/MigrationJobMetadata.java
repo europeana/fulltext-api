@@ -1,45 +1,45 @@
-package eu.europeana.fulltext.migrations;
+package eu.europeana.fulltext.migrations.model;
 
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import org.bson.types.ObjectId;
 
 @Entity("MigrationJobMetadata")
 public class MigrationJobMetadata {
 
   @Id private ObjectId dbId;
+  private final AtomicReference<ObjectId> lastAnnoPageIdRef = new AtomicReference<>();
 
-  public MigrationJobMetadata(ObjectId lastAnnoPageId,
-      AtomicLong processedCount) {
-    this.lastAnnoPageId = lastAnnoPageId;
+  private final AtomicLong processedCount;
+
+  public MigrationJobMetadata(ObjectId lastAnnoPageId, AtomicLong processedCount) {
+    lastAnnoPageIdRef.set(lastAnnoPageId);
     this.processedCount = processedCount;
   }
 
-  private volatile ObjectId lastAnnoPageId;
-  private final AtomicLong processedCount;
-
   public ObjectId getLastAnnoPageId() {
-    return lastAnnoPageId;
+    return lastAnnoPageIdRef.get();
   }
 
   public void setLastAnnoPageId(ObjectId lastAnnoPageId) {
-    this.lastAnnoPageId = lastAnnoPageId;
+    lastAnnoPageIdRef.set(lastAnnoPageId);
   }
 
   public AtomicLong getProcessedCount() {
     return processedCount;
   }
 
-  public void setProcessedCount(long processedCount) {
-    this.processedCount.set(processedCount);
+  public long addProcessed(long processedCount) {
+    return this.processedCount.addAndGet(processedCount);
   }
 
   @Override
   public String toString() {
     return "MigrationJobMetadata{"
         + "lastAnnoPageId="
-        + lastAnnoPageId
+        + lastAnnoPageIdRef.get()
         + ", processedCount="
         + processedCount.get()
         + '}';
