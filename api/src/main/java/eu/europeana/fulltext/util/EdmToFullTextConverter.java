@@ -47,7 +47,7 @@ import org.apache.commons.lang3.StringUtils;
         annoPage.setSource(request.getSource());
       }
       annoPage.setRes(resource);
-      annoPage.setAns(getAnnotations(fulltext));
+      annoPage.setAns(getAnnotations(fulltext, request.getMedia(), request.getLanguage()));
       annoPage.setSource(request.getSource());
       // fail-safe check
       if (annoPage.getAns().size() != fulltext.size()) {
@@ -76,7 +76,8 @@ import org.apache.commons.lang3.StringUtils;
       return resource;
     }
 
-    private static List<Annotation> getAnnotations(EdmFullTextPackage fulltext) {
+    private static List<Annotation> getAnnotations(EdmFullTextPackage fulltext,
+        String mediaUrl, String language) {
       List<Annotation> annotationList = new ArrayList<>();
       for (EdmAnnotation sourceAnnotation : fulltext) {
         EdmTextBoundary boundary = (EdmTextBoundary) sourceAnnotation.getTextReference();
@@ -85,21 +86,18 @@ import org.apache.commons.lang3.StringUtils;
           EdmTimeBoundary tB = sourceAnnotation.getTargets().get(0);
           targets.add(new Target(tB.getStart(), tB.getEnd()));
         }
+        Annotation annotation = new Annotation();
         // for media don't add default to, from values
         if (sourceAnnotation.getType().equals(AnnotationType.MEDIA)) {
-          Annotation annotation = new Annotation();
-          annotation.setAnId(sourceAnnotation.getAnnoId());
           annotation.setDcType(sourceAnnotation.getType().getAbbreviation());
-          annotationList.add(annotation);
-        } else {
-          annotationList.add(
-              new Annotation(
-                  sourceAnnotation.getAnnoId(),
-                  sourceAnnotation.getType().getAbbreviation(),
-                  boundary.getFrom(),
-                  boundary.getTo(),
-                  targets));
+      } else {
+        annotation.setDcType(sourceAnnotation.getType().getAbbreviation());
+        annotation.setFrom(boundary.getFrom());
+        annotation.setTo(boundary.getTo());
+        annotation.setTgs(targets);
         }
+      annotation.setAnId(GeneralUtils.createAnnotationHash(annotation, mediaUrl, language));
+      annotationList.add(annotation);
       }
       return annotationList;
     }
