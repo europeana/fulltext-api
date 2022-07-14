@@ -5,6 +5,8 @@ import static dev.morphia.query.experimental.filters.Filters.in;
 import static eu.europeana.fulltext.util.MorphiaUtils.Fields.*;
 import static eu.europeana.fulltext.util.MorphiaUtils.RESOURCE_COL;
 import static eu.europeana.fulltext.util.MorphiaUtils.SET;
+import static eu.europeana.fulltext.util.MorphiaUtils.SET_ON_INSERT;
+import static eu.europeana.fulltext.util.MorphiaUtils.UNSET;
 import static eu.europeana.fulltext.util.MorphiaUtils.UPSERT_OPTS;
 
 import com.mongodb.DBRef;
@@ -24,6 +26,7 @@ import eu.europeana.fulltext.util.MorphiaUtils;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.springframework.lang.Nullable;
@@ -87,12 +90,19 @@ public class MigrationRepository {
         updateDoc.append(SOURCE, annoPage.getSource());
       }
 
+      // don't set translation=false in db, to conserve space
+      if(annoPage.isTranslation()){
+        updateDoc.append(TRANSLATION, annoPage.isTranslation());
+      }
+
       annoPageUpdates.add(
           new UpdateOneModel<>(
               new Document(
                   // dbId exists since this AnnoPage was retrieved with Morphia
                   DOC_ID, annoPage.getDbId()),
-              new Document(SET, updateDoc),
+              new Document(SET, updateDoc)
+                  // remove Morphia discriminator
+                  .append(UNSET, new Document(CLASSNAME, "")),
               UPSERT_OPTS));
     }
 
@@ -111,8 +121,51 @@ public class MigrationRepository {
         .delete(MorphiaUtils.MULTI_DELETE_OPTS);
   }
 
+  /**
+   * Saves the Resources in the list. Uses a BulkWrite query instead of datastore.save() as we don't
+   * want to save with the Morphia discriminator.
+   *
+   * @param resources list of resources to save
+   */
   public void save(List<Resource> resources) {
-    datastore.save(resources);
+    List<WriteModel<Resource>> resourceUpdates = new ArrayList<>();
+    for (Resource res : resources) {
+      Document updateDoc = new Document(DATASET_ID, res.getDsId())
+          .append(LOCAL_ID, res.getLcId())
+          .append(LANGUAGE, res.getLang())
+          .append(VALUE, res.getValue())
+          .append(RIGHTS, res.getRights())
+          .append(PAGE_ID, res.getPgId())
+          .append(CONTRIBUTED, res.isContributed());
+
+      // don't set translation=false in db, to conserve space
+      if(res.isTranslation()){
+        updateDoc.append(TRANSLATION, res.isTranslation());
+      }
+      resourceUpdates.add(
+          new UpdateOneModel<>(
+              new Document(
+                  // filter
+                  Map.of(
+                      DATASET_ID,
+                      res.getDsId(),
+                      LOCAL_ID,
+                      res.getLcId(),
+                      LANGUAGE,
+                      res.getLang(),
+                      DOC_ID,
+                      res.getId())),
+              // update doc
+              new Document(
+                      SET,
+                  updateDoc
+              )
+                  // only create _id for new records
+                  .append(SET_ON_INSERT, new Document("_id", res.getId())),
+              UPSERT_OPTS));
+    }
+
+    datastore.getMapper().getCollection(Resource.class).bulkWrite(resourceUpdates);
   }
 
   public MigrationJobMetadata getExistingMetadata() {
@@ -123,7 +176,7 @@ public class MigrationRepository {
         .tryNext();
   }
 
-  public MigrationJobMetadata save(MigrationJobMetadata jobMetadata){
-    return datastore.save(jobMetadata);
+  public void save(MigrationJobMetadata jobMetadata) {
+    datastore.save(jobMetadata);
   }
 }

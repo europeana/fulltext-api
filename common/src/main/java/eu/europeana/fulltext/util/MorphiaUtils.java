@@ -22,6 +22,7 @@ public final class MorphiaUtils {
 
     public static final String SET_ON_INSERT = "$setOnInsert";
     public static final String SET = "$set";
+    public static final String UNSET = "$unset";
     public static final String RESOURCE_COL = Resource.class.getSimpleName();
 
 
@@ -107,6 +108,7 @@ public final class MorphiaUtils {
         public static final String RIGHTS = "rights";
         public static final String VALUE = "value";
         public static final String CONTRIBUTED = "contributed";
+        public static final String TRANSLATION = "translation";
 
 
         private Fields() {

@@ -35,6 +35,8 @@ public class AnnoPage {
     @Indexed
     private Date deleted;
 
+    private boolean translation;
+
     @Reference
     private Resource res;
 
@@ -173,5 +175,13 @@ public class AnnoPage {
 
     public ObjectId getDbId(){
         return _id;
+    }
+
+    public boolean isTranslation() {
+        return translation;
+    }
+
+    public void setTranslation(boolean translation) {
+        this.translation = translation;
     }
 }

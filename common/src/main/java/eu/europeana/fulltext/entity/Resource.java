@@ -26,6 +26,7 @@ public class Resource {
     private String source;
     private String rights;
     private boolean contributed;
+    private boolean translation;
 
     // temp field added for migration; will be removed afterwards
     @Transient
@@ -129,5 +130,13 @@ public class Resource {
 
     public void setPgId(String pgId) {
         this.pgId = pgId;
+    }
+
+    public boolean isTranslation() {
+        return translation;
+    }
+
+    public void setTranslation(boolean translation) {
+        this.translation = translation;
     }
 }

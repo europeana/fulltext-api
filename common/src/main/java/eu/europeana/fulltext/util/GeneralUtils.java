@@ -209,4 +209,9 @@ public class GeneralUtils {
   public static String generateResourceId(String recordId, String language, String media) {
     return generateHash(recordId + language + media);
   }
+
+
+  public static String[] getAnnoPageObjectIds(List<? extends AnnoPage> annoPages) {
+    return annoPages.stream().map(a -> a.getDbId().toString()).toArray(String[]::new);
+  }
 }

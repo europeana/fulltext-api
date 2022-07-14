@@ -1,8 +1,11 @@
 package eu.europeana.fulltext.migrations;
 
+import static eu.europeana.fulltext.util.GeneralUtils.getAnnoPageObjectIds;
+
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.migrations.model.MigrationJobMetadata;
 import eu.europeana.fulltext.migrations.repository.MigrationRepository;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -40,15 +43,29 @@ public class MigrationAnnoPageReader extends AbstractPaginatedDataItemReader<Ann
   @Override
   protected Iterator<AnnoPage> doPageRead() {
     // calls to this method are synchronized in parent class, so we can update lastObjectId here
-    logger.debug("Reading from DB. lastObjectId={}", jobMetadata.getLastAnnoPageId());
+    if (logger.isDebugEnabled()) {
+      logger.debug("Reading from DB. lastObjectId={}", jobMetadata.getLastAnnoPageId());
+    }
     List<AnnoPage> annoPageIds = repository.getAnnoPages(limit, jobMetadata.getLastAnnoPageId());
     if (!CollectionUtils.isEmpty(annoPageIds)) {
       jobMetadata.setLastAnnoPageId(annoPageIds.get(annoPageIds.size() - 1).getDbId());
+
+      if (logger.isDebugEnabled()) {
+        logger.debug(
+            "Fetched {} records. set new lastObjectId={}; fetched records={}",
+            annoPageIds.size(),
+            jobMetadata.getLastAnnoPageId(),
+            Arrays.toString(getAnnoPageObjectIds(annoPageIds)));
+      }
+
       return annoPageIds.iterator();
     }
 
-    logger.debug(
-        "No results found during AnnoPage read. lastObjectId={}", jobMetadata.getLastAnnoPageId());
+    if (logger.isDebugEnabled()) {
+      logger.debug(
+          "No results found during AnnoPage read. lastObjectId={}",
+          jobMetadata.getLastAnnoPageId());
+    }
     return Collections.emptyIterator();
   }
 }

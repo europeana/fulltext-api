@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import org.bson.types.ObjectId;
 
-@Entity("MigrationJobMetadata")
+@Entity(value = "MigrationJobMetadata", useDiscriminator = false)
 public class MigrationJobMetadata {
 
   @Id private ObjectId dbId;

@@ -49,6 +49,7 @@ import org.apache.commons.lang3.StringUtils;
       annoPage.setRes(resource);
       annoPage.setAns(getAnnotations(fulltext, request.getMedia(), request.getLanguage()));
       annoPage.setSource(request.getSource());
+      annoPage.setTranslation(!request.isOriginalLang());
       // fail-safe check
       if (annoPage.getAns().size() != fulltext.size()) {
         throw new SubtitleConversionException(
@@ -73,6 +74,7 @@ import org.apache.commons.lang3.StringUtils;
       resource.setDsId(datasetId);
       resource.setLcId(localId);
       resource.setPgId(GeneralUtils.derivePageId(request.getMedia()));
+      resource.setTranslation(!request.isOriginalLang());
       return resource;
     }
 

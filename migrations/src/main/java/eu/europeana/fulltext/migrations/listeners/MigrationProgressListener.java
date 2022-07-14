@@ -1,5 +1,7 @@
 package eu.europeana.fulltext.migrations.listeners;
 
+import static eu.europeana.fulltext.util.GeneralUtils.getAnnoPageObjectIds;
+
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.migrations.config.MigrationAppSettings;
 import eu.europeana.fulltext.migrations.model.MigrationJobMetadata;
@@ -16,9 +18,6 @@ public class MigrationProgressListener extends ItemListenerSupport<AnnoPage, Ann
   private final int loggingInterval;
   private final MigrationJobMetadata jobMetadata;
   private final MigrationRepository repository;
-
-  // helps to prevent duplicate logging from multiple threads
-  private volatile long writeCount;
 
   public MigrationProgressListener(
       MigrationAppSettings appSettings,
@@ -41,7 +40,7 @@ public class MigrationProgressListener extends ItemListenerSupport<AnnoPage, Ann
 
   @Override
   public void afterWrite(List<? extends AnnoPage> item) {
-   writeCount = jobMetadata.addProcessed(item.size());
+    long writeCount = jobMetadata.addProcessed(item.size());
 
     if (writeCount > 0 && writeCount % loggingInterval == 0) {
       repository.save(jobMetadata);
@@ -54,7 +53,5 @@ public class MigrationProgressListener extends ItemListenerSupport<AnnoPage, Ann
     logger.warn("Error during write. ObjectIds={}", getAnnoPageObjectIds(annoPages), ex);
   }
 
-  private String[] getAnnoPageObjectIds(List<? extends AnnoPage> annoPages) {
-    return annoPages.stream().map(a -> a.getDbId().toString()).toArray(String[]::new);
-  }
+
 }
