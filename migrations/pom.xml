@@ -27,6 +27,12 @@
       <artifactId>common</artifactId>
       <version>0.8.2-SNAPSHOT</version>
     </dependency>
+
+    <dependency>
+      <groupId>org.springframework.batch</groupId>
+      <artifactId>spring-batch-core</artifactId>
+      <version>4.3.3</version>
+    </dependency>
   </dependencies>
 
   <build>
