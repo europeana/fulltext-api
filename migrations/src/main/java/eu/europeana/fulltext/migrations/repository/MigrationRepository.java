@@ -135,8 +135,7 @@ public class MigrationRepository {
           .append(LANGUAGE, res.getLang())
           .append(VALUE, res.getValue())
           .append(RIGHTS, res.getRights())
-          .append(PAGE_ID, res.getPgId())
-          .append(CONTRIBUTED, res.isContributed());
+          .append(PAGE_ID, res.getPgId());
 
       // don't set translation=false in db, to conserve space
       if(res.isTranslation()){
