@@ -38,6 +38,9 @@ public class MigrationAppSettings {
   @Value("${batch.skipLimit: 500}")
   private int skipLimit;
 
+  @Value("${mongo.fulltext.totalCount:0}")
+  private long totalCount;
+
 
   public String getMongoConnectionUrl() {
     return mongoConnectionUrl;
@@ -77,5 +80,9 @@ public class MigrationAppSettings {
 
   public int getSkipLimit() {
     return skipLimit;
+  }
+
+  public long getTotalCount(){
+    return totalCount;
   }
 }

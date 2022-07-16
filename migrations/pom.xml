@@ -12,6 +12,9 @@
   <groupId>eu.europeana.fulltext</groupId>
   <artifactId>migrations</artifactId>
 
+  <properties>
+    <spring.boot.mainclass>eu.europeana.fulltext.migrations.MigrationApp</spring.boot.mainclass>
+  </properties>
   <dependencies>
     <!-- Use Log4j2 as default logger -->
     <dependency>
@@ -33,4 +36,24 @@
     </dependency>
 
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>${spring-boot.version}</version>
+        <configuration>
+          <finalName>fulltext-migration</finalName>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>

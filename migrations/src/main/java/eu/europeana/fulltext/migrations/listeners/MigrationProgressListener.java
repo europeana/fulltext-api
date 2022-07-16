@@ -15,17 +15,24 @@ import org.springframework.batch.core.listener.ItemListenerSupport;
 public class MigrationProgressListener extends ItemListenerSupport<AnnoPage, AnnoPage> {
   private static final Logger logger = LogManager.getLogger(MigrationProgressListener.class);
 
-  private final int loggingInterval;
+  private final long loggingInterval;
   private final MigrationJobMetadata jobMetadata;
   private final MigrationRepository repository;
+  private final long totalDocs;
+
+  private final AtomicLong nextLoggingThreshold;
+
+  private final Object lock = new Object();
 
   public MigrationProgressListener(
       MigrationAppSettings appSettings,
       MigrationJobMetadata jobMetadata,
       MigrationRepository repository) {
-    this.loggingInterval = appSettings.getLoggingInterval();
+    this.totalDocs = appSettings.getTotalCount();
     this.jobMetadata = jobMetadata;
     this.repository = repository;
+    this.loggingInterval = appSettings.getLoggingInterval();
+    this.nextLoggingThreshold = new AtomicLong(this.loggingInterval);
   }
 
   @Override
@@ -42,9 +49,21 @@ public class MigrationProgressListener extends ItemListenerSupport<AnnoPage, Ann
   public void afterWrite(List<? extends AnnoPage> item) {
     long writeCount = jobMetadata.addProcessed(item.size());
 
-    if (writeCount > 0 && writeCount % loggingInterval == 0) {
-      repository.save(jobMetadata);
-      logger.info("Saved job metadata checkpoint: {}", jobMetadata);
+    if (writeCount > nextLoggingThreshold.get()) {
+      synchronized (lock) {
+        // prevent multiple threads from saving redundant data to db. Acquiring lock is cheaper than
+        // db request
+        if (writeCount > nextLoggingThreshold.get()) {
+          nextLoggingThreshold.set(nextLoggingThreshold.get() + loggingInterval);
+          repository.save(jobMetadata);
+          // potential race condition here, as jobMetadata.processedCount could have been changed
+          logger.info("Saved job metadata checkpoint: {}", jobMetadata);
+          if (totalDocs > 0) {
+            logger.info(
+                "{}% of {} records migrated", (writeCount / (double) totalDocs) * 100, totalDocs);
+          }
+        }
+      }
     }
   }
 
@@ -52,6 +71,4 @@ public class MigrationProgressListener extends ItemListenerSupport<AnnoPage, Ann
   public void onWriteError(Exception ex, List<? extends AnnoPage> annoPages) {
     logger.warn("Error during write. ObjectIds={}", getAnnoPageObjectIds(annoPages), ex);
   }
-
-
 }
