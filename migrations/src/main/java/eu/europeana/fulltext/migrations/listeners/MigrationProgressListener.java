@@ -58,9 +58,9 @@ public class MigrationProgressListener extends ItemListenerSupport<AnnoPage, Ann
           repository.save(jobMetadata);
           // potential race condition here, as jobMetadata.processedCount could have been changed
           logger.info("Saved job metadata checkpoint: {}", jobMetadata);
-          if (totalDocs > 0) {
+          if (totalDocs > 0 && logger.isInfoEnabled()) {
             logger.info(
-                "{}% of {} records migrated", (writeCount / (double) totalDocs) * 100, totalDocs);
+                "{}% of {} records migrated", String.format("%.2f",(writeCount / (double) totalDocs) * 100), totalDocs);
           }
         }
       }
