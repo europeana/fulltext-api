@@ -27,14 +27,6 @@
       <artifactId>common</artifactId>
       <version>0.8.2-SNAPSHOT</version>
     </dependency>
-
-    <!-- Adds Spring Batch support for Mongo JobRepository -->
-    <dependency>
-      <groupId>eu.europeana.api</groupId>
-      <artifactId>spring-batch-mongo</artifactId>
-      <version>${springbatch.mongo.version}</version>
-    </dependency>
-
   </dependencies>
 
   <build>

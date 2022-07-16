@@ -1,6 +1,5 @@
 package eu.europeana.fulltext.migrations.config;
 
-import static eu.europeana.fulltext.migrations.MigrationConstants.BATCH_DATASTORE_BEAN;
 import static eu.europeana.fulltext.migrations.MigrationConstants.FULLTEXT_DATASTORE_BEAN;
 import static eu.europeana.fulltext.util.MorphiaUtils.MAPPER_OPTIONS;
 
@@ -10,7 +9,6 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import dev.morphia.Datastore;
 import dev.morphia.Morphia;
-import eu.europeana.batch.entity.PackageMapper;
 import eu.europeana.fulltext.migrations.model.AtomicReferenceCodec;
 import eu.europeana.fulltext.migrations.model.AtomicReferenceCodecProvider;
 import org.apache.logging.log4j.LogManager;
@@ -58,17 +56,5 @@ public class MigrationDatasourceConfig {
     logger.info("Configuring fulltext database: {}", fulltextDatabase);
 
     return Morphia.createDatastore(mongoClient, fulltextDatabase, MAPPER_OPTIONS);
-  }
-
-  @Bean(BATCH_DATASTORE_BEAN)
-  public Datastore batchDatastore(MongoClient mongoClient) {
-    String batchDatabase = config.getBatchDatabase();
-
-    logger.info("Configuring Batch database: {}", batchDatabase);
-    Datastore datastore = Morphia.createDatastore(mongoClient, batchDatabase);
-    // Indexes aren't created unless Entity classes are explicitly mapped.
-    datastore.getMapper().mapPackage(PackageMapper.class.getPackageName());
-    datastore.ensureIndexes();
-    return datastore;
   }
 }

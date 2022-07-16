@@ -14,8 +14,6 @@ public class MigrationAppSettings {
   @Value("${mongo.fulltext.database}")
   private String fulltextDatabase;
 
-  @Value("${mongo.batch.database}")
-  private String batchDatabase;
 
   @Value("${batch.pageSize: 100}")
   private int pageSize;
@@ -48,10 +46,6 @@ public class MigrationAppSettings {
 
   public String getFulltextDatabase() {
     return fulltextDatabase;
-  }
-
-  public String getBatchDatabase() {
-    return batchDatabase;
   }
 
   public int getPageSize() {
