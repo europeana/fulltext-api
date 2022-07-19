@@ -207,12 +207,6 @@
             <version>1</version>
         </dependency>
 
-        <!-- Used for hash generation -->
-        <dependency>
-            <groupId>commons-codec</groupId>
-            <artifactId>commons-codec</artifactId>
-            <version>1.15</version>
-        </dependency>
 
         <!-- Fixes DNS resolution issues on Apple Silicon  -->
         <dependency>

@@ -83,6 +83,13 @@
             <version>${mongo-driver.version}</version>
         </dependency>
 
+        <!-- Used for hash generation -->
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.15</version>
+        </dependency>
+
     </dependencies>
 
 </project>

@@ -2,23 +2,23 @@ package eu.europeana.fulltext.util;
 
 import eu.europeana.fulltext.WebConstants;
 import eu.europeana.fulltext.entity.AnnoPage;
-import eu.europeana.fulltext.subtitles.edm.EdmAnnotation;
-import eu.europeana.fulltext.subtitles.edm.EdmReference;
-import eu.europeana.fulltext.subtitles.edm.EdmTimeBoundary;
+import eu.europeana.fulltext.entity.Annotation;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
+import org.springframework.util.CollectionUtils;
 
 public class GeneralUtils {
 
-  public static String DATE_FORMAT_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSSXX";
+  public static final String DATE_FORMAT_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSSXX";
   private GeneralUtils() {
     // private constructor to hide implicit one
   }
@@ -36,29 +36,40 @@ public class GeneralUtils {
   private static final Pattern ANNOTATION_ID_SUFFIX_PATTERN = Pattern.compile("/annotation/\\d+$");
 
   /**
-   * Generates Annotation ID. Hash of -> annotation.getType() + url of the target (mediaUrl +
-   * fragment) (if present) + url of the fulltextResource (fulltext resource url + fragment)
-   *
-   * <p>fragment is calculated based on the boundaries. See: {@link EdmTimeBoundary#getFragment()} ()}
-   * Or {@link EdmTimeBoundary#getFragment()}
-   *
-   * @param annotation
-   * @return
+   * Creates a hash for the specified annotation.
+   * This should normally be used for deriving the id of the annotation.
+   * @param annotation annotation to generate a hash for
+   * @param lang language of AnnoPage containing this Annotation
+   * @param tgtId media url of AnnoPage containing this Annotation
+   * @return hashed String for annotation
    */
-  public static String generateHash(EdmAnnotation annotation) {
-    StringBuilder hashInput = new StringBuilder(annotation.getType().name());
-    if (annotation.hasTargets()) {
-      EdmReference mr = annotation.getTargets().get(0);
-      hashInput.append(mr.getURL());
+  public static String createAnnotationHash(Annotation annotation, String tgtId, String lang) {
+    StringBuilder input =
+        new StringBuilder(tgtId)
+            .append(annotation.getDcType())
+            .append(lang)
+            .append(annotation.getFrom())
+            .append(annotation.getTo());
+
+    if (!CollectionUtils.isEmpty(annotation.getTgs())) {
+      if (annotation.isMedia()) {
+        input.append(
+            annotation.getTgs().stream()
+                .map(t -> t.getStart() + String.valueOf(t.getEnd()))
+                .collect(Collectors.joining()));
+      } else {
+        input.append(
+            annotation.getTgs().stream()
+                .map(t -> t.getY() + t.getY() + t.getW() + String.valueOf(t.getH()))
+                .collect(Collectors.joining()));
+      }
     }
 
-    hashInput.append(annotation.getTextReference().getURL());
-
-    return DigestUtils.md5Hex(hashInput.toString()).toLowerCase();
+    return generateHash(input.toString());
   }
 
-  public static String generateHash(String itemID) {
-    return DigestUtils.md5Hex(itemID).toLowerCase();
+  public static String generateHash(String itemString) {
+    return DigestUtils.md5Hex(itemString).toLowerCase();
   }
 
   /**
@@ -197,5 +208,10 @@ public class GeneralUtils {
 
   public static String generateResourceId(String recordId, String language, String media) {
     return generateHash(recordId + language + media);
+  }
+
+
+  public static String[] getAnnoPageObjectIds(List<? extends AnnoPage> annoPages) {
+    return annoPages.stream().map(a -> a.getDbId().toString()).toArray(String[]::new);
   }
 }
