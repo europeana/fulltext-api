@@ -321,11 +321,10 @@ public class FTWriteController extends BaseRestController {
 
     if (existingAnnoPage == null) {
       throw new AnnoPageDoesNotExistException(
-          "Annotation page does not exist for "
-              + GeneralUtils.getAnnoPageUrl(datasetId, localId, pageId, lang));
+              GeneralUtils.getAnnoPageUrl(datasetId, localId, pageId, lang));
     }
 
-    if(existingAnnoPage.isDeprecated()){
+    if (existingAnnoPage.isDeprecated()){
       throw new AnnoPageGoneException(String.format("/%s/%s/annopage/%s", datasetId, localId, pageId),
           lang);
     }
