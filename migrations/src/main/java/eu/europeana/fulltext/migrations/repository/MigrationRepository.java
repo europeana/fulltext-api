@@ -2,6 +2,7 @@ package eu.europeana.fulltext.migrations.repository;
 
 import static dev.morphia.query.experimental.filters.Filters.exists;
 import static dev.morphia.query.experimental.filters.Filters.in;
+import static dev.morphia.query.experimental.filters.Filters.lt;
 import static eu.europeana.fulltext.util.MorphiaUtils.Fields.*;
 import static eu.europeana.fulltext.util.MorphiaUtils.RESOURCE_COL;
 import static eu.europeana.fulltext.util.MorphiaUtils.SET;
@@ -25,6 +26,7 @@ import eu.europeana.fulltext.repository.AnnoPageRepository;
 import eu.europeana.fulltext.util.MorphiaUtils;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import org.bson.Document;
@@ -49,6 +51,18 @@ public class MigrationRepository {
     }
 
     return findQuery.iterator(new FindOptions().limit(count)).toList();
+  }
+
+
+  /**
+   * Get AnnoPages modified before the given date
+   * @return
+   */
+  public List<AnnoPage> getAnnoPagesModifiedBefore(Date date, int skip, int limit){
+    return datastore.find(AnnoPage.class)
+        .filter(lt(MODIFIED, date))
+        .iterator(new FindOptions().skip(skip).limit(limit))
+        .toList();
   }
 
   /**
