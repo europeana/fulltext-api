@@ -43,23 +43,31 @@ public class MigrationRepository {
     this.datastore = datastore;
   }
 
-  public List<AnnoPage> getAnnoPages(int count, @Nullable ObjectId objectId) {
+  public List<AnnoPage> getAnnoPages(
+      int count, @Nullable ObjectId objectId, boolean useProjection) {
 
     Query<AnnoPage> findQuery = datastore.find(AnnoPage.class);
     if (objectId != null) {
       findQuery.filter(Filters.gt("_id", objectId));
     }
 
-    return findQuery.iterator(new FindOptions().limit(count)).toList();
-  }
+    FindOptions findOpts = new FindOptions().limit(count);
 
+    if (useProjection) {
+      findOpts.projection().include(TARGET_ID, RESOURCE);
+    }
+
+    return findQuery.iterator(findOpts).toList();
+  }
 
   /**
    * Get AnnoPages modified before the given date
+   *
    * @return
    */
-  public List<AnnoPage> getAnnoPagesModifiedBefore(Date date, int skip, int limit){
-    return datastore.find(AnnoPage.class)
+  public List<AnnoPage> getAnnoPagesModifiedBefore(Date date, int skip, int limit) {
+    return datastore
+        .find(AnnoPage.class)
         .filter(lt(MODIFIED, date))
         .iterator(new FindOptions().skip(skip).limit(limit))
         .toList();
@@ -105,7 +113,7 @@ public class MigrationRepository {
       }
 
       // don't set translation=false in db, to conserve space
-      if(annoPage.isTranslation()){
+      if (annoPage.isTranslation()) {
         updateDoc.append(TRANSLATION, annoPage.isTranslation());
       }
 
@@ -144,15 +152,16 @@ public class MigrationRepository {
   public void save(List<Resource> resources) {
     List<WriteModel<Resource>> resourceUpdates = new ArrayList<>();
     for (Resource res : resources) {
-      Document updateDoc = new Document(DATASET_ID, res.getDsId())
-          .append(LOCAL_ID, res.getLcId())
-          .append(LANGUAGE, res.getLang())
-          .append(VALUE, res.getValue())
-          .append(RIGHTS, res.getRights())
-          .append(PAGE_ID, res.getPgId());
+      Document updateDoc =
+          new Document(DATASET_ID, res.getDsId())
+              .append(LOCAL_ID, res.getLcId())
+              .append(LANGUAGE, res.getLang())
+              .append(VALUE, res.getValue())
+              .append(RIGHTS, res.getRights())
+              .append(PAGE_ID, res.getPgId());
 
       // don't set translation=false in db, to conserve space
-      if(res.isTranslation()){
+      if (res.isTranslation()) {
         updateDoc.append(TRANSLATION, res.isTranslation());
       }
       resourceUpdates.add(
@@ -169,10 +178,7 @@ public class MigrationRepository {
                       DOC_ID,
                       res.getId())),
               // update doc
-              new Document(
-                      SET,
-                  updateDoc
-              )
+              new Document(SET, updateDoc)
                   // only create _id for new records
                   .append(SET_ON_INSERT, new Document("_id", res.getId())),
               UPSERT_OPTS));
@@ -191,5 +197,35 @@ public class MigrationRepository {
 
   public void save(MigrationJobMetadata jobMetadata) {
     datastore.save(jobMetadata);
+  }
+
+  public void updateResourcePgId(List<Resource> resources) {
+    List<WriteModel<Resource>> resourceUpdates = new ArrayList<>();
+
+    for (Resource res : resources) {
+      resourceUpdates.add(
+          new UpdateOneModel<>(
+              new Document(
+                  // filter
+                  Map.of(DOC_ID, res.getId())),
+              // update doc
+              new Document(SET, new Document(PAGE_ID, res.getPgId()))));
+    }
+    datastore.getMapper().getCollection(Resource.class).bulkWrite(resourceUpdates);
+  }
+
+  public void updateAnnoPageId(List<? extends AnnoPage> annoPages) {
+    List<WriteModel<AnnoPage>> annoPageUpdates = new ArrayList<>();
+
+    for (AnnoPage annoPage : annoPages) {
+      annoPageUpdates.add(
+          new UpdateOneModel<>(
+              new Document(
+                  // filter
+                  Map.of(DOC_ID, annoPage.getDbId())),
+              // update doc
+              new Document(SET, new Document(PAGE_ID, annoPage.getPgId()))));
+    }
+    datastore.getMapper().getCollection(AnnoPage.class).bulkWrite(annoPageUpdates);
   }
 }

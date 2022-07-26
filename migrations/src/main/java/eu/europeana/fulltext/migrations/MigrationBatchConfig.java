@@ -39,9 +39,9 @@ public class MigrationBatchConfig {
   private final MigrationAppSettings appSettings;
   private final MigrationRepository repository;
 
-  private final MigrationAnnoPageProcessor processor;
+  private final MigrationPageIdUpdateProcessor processor;
   private final MigrationSkipListener skipListener;
-  private final MigrationAnnoPageWriter writer;
+  private final MigrationPageIdUpdateWriter writer;
 
   private static final Logger logger = LogManager.getLogger(MigrationBatchConfig.class);
 
@@ -51,9 +51,9 @@ public class MigrationBatchConfig {
       @Qualifier(BATCH_THREAD_EXECUTOR) TaskExecutor migrationTaskExecutor,
       MigrationAppSettings appSettings,
       MigrationRepository repository,
-      MigrationAnnoPageProcessor processor,
+      MigrationPageIdUpdateProcessor processor,
       MigrationSkipListener skipListener,
-      MigrationAnnoPageWriter writer) {
+      MigrationPageIdUpdateWriter writer) {
     this.jobs = jobs;
     this.steps = steps;
     this.migrationTaskExecutor = migrationTaskExecutor;
@@ -66,7 +66,7 @@ public class MigrationBatchConfig {
 
   private ItemReader<AnnoPage> annoPageReader(MigrationJobMetadata jobMetadata) {
     return threadSafeReader(
-        new MigrationAnnoPageReader(appSettings.getPageSize(), repository, jobMetadata));
+        new MigrationAnnoPageIdReader(appSettings.getPageSize(), repository, jobMetadata));
   }
 
   /** Makes ItemReader thread-safe */

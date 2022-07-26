@@ -11,17 +11,19 @@ import java.util.Iterator;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bson.types.ObjectId;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.batch.item.data.AbstractPaginatedDataItemReader;
+import org.springframework.lang.Nullable;
 import org.springframework.util.CollectionUtils;
 
 public class MigrationAnnoPageReader extends AbstractPaginatedDataItemReader<AnnoPage> {
 
   private static final Logger logger = LogManager.getLogger(MigrationAnnoPageReader.class);
 
-  private final int limit;
-  private final MigrationRepository repository;
-  private final MigrationJobMetadata jobMetadata;
+  protected final int limit;
+  protected final MigrationRepository repository;
+  protected final MigrationJobMetadata jobMetadata;
 
   public MigrationAnnoPageReader(
       int limit, MigrationRepository repository, MigrationJobMetadata jobMetadata) {
@@ -36,7 +38,7 @@ public class MigrationAnnoPageReader extends AbstractPaginatedDataItemReader<Ann
     // Non-restartable, as we expect this to run in multi-threaded steps.
     // see: https://stackoverflow.com/a/20002493
     setSaveState(false);
-    setName(MigrationAnnoPageReader.class.getName());
+    setName(getClassName());
   }
 
   @NotNull
@@ -46,7 +48,8 @@ public class MigrationAnnoPageReader extends AbstractPaginatedDataItemReader<Ann
     if (logger.isDebugEnabled()) {
       logger.debug("Reading from DB. lastObjectId={}", jobMetadata.getLastAnnoPageId());
     }
-    List<AnnoPage> annoPageIds = repository.getAnnoPages(limit, jobMetadata.getLastAnnoPageId());
+
+    List<AnnoPage> annoPageIds = getAnnoPages(limit, jobMetadata.getLastAnnoPageId());
     if (!CollectionUtils.isEmpty(annoPageIds)) {
       jobMetadata.setLastAnnoPageId(annoPageIds.get(annoPageIds.size() - 1).getDbId());
 
@@ -67,5 +70,13 @@ public class MigrationAnnoPageReader extends AbstractPaginatedDataItemReader<Ann
           jobMetadata.getLastAnnoPageId());
     }
     return Collections.emptyIterator();
+  }
+
+  protected String getClassName(){
+    return MigrationAnnoPageReader.class.getName();
+  }
+
+  protected List<AnnoPage> getAnnoPages(int count, @Nullable ObjectId objectId){
+    return repository.getAnnoPages(count, objectId, false);
   }
 }
