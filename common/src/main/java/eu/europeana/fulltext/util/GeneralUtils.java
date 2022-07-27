@@ -160,9 +160,10 @@ public class GeneralUtils {
    * @return MD5 hash of media url truncated to the first 5 characters
    */
   public static String derivePageId(String mediaUrl) {
+    // truncate hash to reduce URL length.
     // Should not be changed as this method can be used in place of fetching the pageId from the
     // database.
-    return generateHash(mediaUrl);
+    return DigestUtils.sha1Hex(mediaUrl).substring(0,7);
   }
 
   public static boolean testProfileNotActive(String activeProfileString) {
