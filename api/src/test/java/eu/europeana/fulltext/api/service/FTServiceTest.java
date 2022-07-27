@@ -8,7 +8,7 @@ import eu.europeana.fulltext.api.model.v2.AnnotationPageV2;
 import eu.europeana.fulltext.api.model.v2.AnnotationV2;
 import eu.europeana.fulltext.api.model.v3.AnnotationPageV3;
 import eu.europeana.fulltext.api.model.v3.AnnotationV3;
-import eu.europeana.fulltext.exception.AnnoPageDoesNotExistException;
+import eu.europeana.fulltext.api.service.impl.SubtitleFulltextAdapter;
 import eu.europeana.fulltext.exception.ResourceDoesNotExistException;
 import eu.europeana.fulltext.repository.AnnoPageRepository;
 import eu.europeana.fulltext.repository.ResourceRepository;
@@ -33,7 +33,7 @@ import static org.unitils.reflectionassert.ReflectionAssert.assertReflectionEqua
  * TODO - add some FTResource handling test cases (prepared two FTResource objects already in the TestUtils class)
  */
 @TestPropertySource(locations = "classpath:fulltext-test.properties")
-@SpringBootTest(classes = {FTService.class, FTSettings.class, EDM2IIIFMapping.class, SubtitleService.class})
+@SpringBootTest(classes = {FTService.class, FTSettings.class, EDM2IIIFMapping.class, SubtitleFulltextAdapter.class})
 public class FTServiceTest {
 
 

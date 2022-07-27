@@ -1,7 +1,5 @@
 package eu.europeana.fulltext.api.service;
 
-import static eu.europeana.fulltext.util.GeneralUtils.getAnnoPageToString;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.result.UpdateResult;
@@ -18,27 +16,35 @@ import eu.europeana.fulltext.api.model.v2.AnnotationPageV2;
 import eu.europeana.fulltext.api.model.v2.AnnotationV2;
 import eu.europeana.fulltext.api.model.v3.AnnotationPageV3;
 import eu.europeana.fulltext.api.model.v3.AnnotationV3;
+import eu.europeana.fulltext.api.service.impl.SubtitleFulltextAdapter;
+import eu.europeana.fulltext.api.service.impl.TranscriptionFulltextAdapter;
+import eu.europeana.fulltext.edm.EdmFullTextPackage;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Resource;
-import eu.europeana.fulltext.exception.AnnoPageDoesNotExistException;
-import eu.europeana.fulltext.exception.AnnoPageGoneException;
-import eu.europeana.fulltext.exception.DatabaseQueryException;
-import eu.europeana.fulltext.exception.ResourceDoesNotExistException;
-import eu.europeana.fulltext.exception.SerializationException;
-import eu.europeana.fulltext.exception.SubtitleConversionException;
+import eu.europeana.fulltext.exception.*;
 import eu.europeana.fulltext.repository.AnnoPageRepository;
 import eu.europeana.fulltext.repository.ResourceRepository;
 import eu.europeana.fulltext.subtitles.AnnotationPreview;
+import eu.europeana.fulltext.subtitles.FulltextType;
+import eu.europeana.fulltext.util.AnnotationUtils;
+import eu.europeana.fulltext.util.EdmToFullTextConverter;
 import eu.europeana.fulltext.util.GeneralUtils;
+
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
+
+import static eu.europeana.fulltext.subtitles.FulltextType.SRT;
+import static eu.europeana.fulltext.subtitles.FulltextType.WEB_VTT;
+import static eu.europeana.fulltext.util.GeneralUtils.*;
 
 /**
  * @author Lúthien Created on 27-02-2018
@@ -47,19 +53,18 @@ import org.springframework.util.StringUtils;
 public class FTService {
 
     private static final String GENERATED_IN = "Generated in {} ms ";
-
+    private static final String ANNOPAGE_ID_FORMAT = "/%s/%s/annopage/%s";
+    private static final String ANNOPAGE_ID_LANG_FORMAT = "/%s/%s/annopage/%s";
     private static final String FETCHED_AGGREGATED = "Originals fetched in {} ms";
     private static final Logger LOG = LogManager.getLogger(FTService.class);
 
     private final ResourceRepository resourceRepository;
     private final AnnoPageRepository annoPageRepository;
-    private final SubtitleService subtitleService;
     private final FTSettings ftSettings;
-
     private final ObjectMapper mapper;
-    private final String ANNOPAGE_ID_FORMAT = "/%s/%s/annopage/%s";
-    private final String ANNOPAGE_ID_LANG_FORMAT = "/%s/%s/annopage/%s";
 
+    private static final Map<FulltextType, FulltextAdapter> fulltextAdapterMap =
+            Map.of(WEB_VTT, new SubtitleFulltextAdapter(), SRT, new TranscriptionFulltextAdapter());
 
     @Value("${spring.profiles.active:}")
     private String activeProfileString;
@@ -68,11 +73,9 @@ public class FTService {
      * Constructs an FTService object with autowired dependencies
      */
     public FTService(ResourceRepository resourceRepository, AnnoPageRepository annoPageRepository,
-        SubtitleService subtitleService, FTSettings ftSettings,
-        ObjectMapper mapper) {
+                     FTSettings ftSettings, ObjectMapper mapper) {
         this.resourceRepository = resourceRepository;
         this.annoPageRepository = annoPageRepository;
-        this.subtitleService = subtitleService;
         this.ftSettings = ftSettings;
         this.mapper = mapper;
     }
@@ -101,7 +104,7 @@ public class FTService {
     public AnnoPage fetchAnnoPage(String datasetId, String localId, String pageId, List<AnnotationType> textGranValues,
         String lang) throws AnnoPageDoesNotExistException, AnnoPageGoneException {
         AnnoPage result;
-        if (!StringUtils.hasLength(lang)) {
+        if (StringUtils.isEmpty(lang)) {
             result = annoPageRepository.findByPageId(datasetId, localId, pageId, textGranValues, true);
             if (result == null) {
                 throw new AnnoPageDoesNotExistException(
@@ -280,10 +283,9 @@ public class FTService {
      * @return true if it exists, otherwise false
      */
     public boolean doesAnnoPageExist(String datasetId, String localId, String pageId, String lang, boolean includeDeprecated) {
-        if (!StringUtils.hasLength(lang)) {
+        if (StringUtils.isEmpty(lang)) {
             return annoPageRepository.existsByPageId(datasetId, localId, pageId, includeDeprecated);
         }
-
        return annoPageRepository.existsByPageIdLang(datasetId, localId, pageId, lang, includeDeprecated);
     }
 
@@ -379,16 +381,32 @@ public class FTService {
         LOG.info("Saved annoPage to database - {} ", annoPage);
     }
 
+    /**
+     * Converts the Annotation preview to Annopage
+     * Gets the appropriate handler based on the fulltext Type to do the convert the input into EDMFulltextPackage
+     *
+     * @param annotationPreview
+     * @param isContributed
+     * @return
+     * @throws EuropeanaApiException
+     */
+    public AnnoPage createAnnoPage(AnnotationPreview annotationPreview, boolean isContributed) throws EuropeanaApiException {
+        EdmFullTextPackage fulltext = fulltextAdapterMap.get(annotationPreview.getFulltextType()).adapt(annotationPreview);
+        String recordId = annotationPreview.getRecordId();
+        return EdmToFullTextConverter.getAnnoPage(
+                getDsId(recordId), getLocalId(recordId), annotationPreview, fulltext, isContributed);
+    }
+
   public AnnoPage updateAnnoPage(
       AnnotationPreview annotationPreview, AnnoPage existingAnnoPage)
-      throws SubtitleConversionException {
+          throws EuropeanaApiException {
     AnnoPage annoPage = getAnnoPageToUpdate(annotationPreview, existingAnnoPage);
     resourceRepository.saveResource(annoPage.getRes());
     if (LOG.isDebugEnabled()) {
       LOG.debug("Updated Resource in db : id={}", annoPage.getRes().getId());
     }
 
-    if (subtitleService.isAnnoPageUpdateRequired(annotationPreview)) {
+    if (AnnotationUtils.isAnnoPageUpdateRequired(annotationPreview)) {
       UpdateResult results = annoPageRepository.updateAnnoPage(annoPage);
       if (LOG.isDebugEnabled()) {
         LOG.debug(
@@ -444,11 +462,10 @@ public class FTService {
     }
 
     private AnnoPage getAnnoPageToUpdate(
-        AnnotationPreview annotationPreview, AnnoPage existingAnnoPage)
-        throws SubtitleConversionException {
+        AnnotationPreview annotationPreview, AnnoPage existingAnnoPage) throws EuropeanaApiException {
         AnnoPage annoPageTobeUpdated = null;
         // if there is no subtitles ie; content was empty, only update rights in the resource
-        if (annotationPreview.getSubtitleItems().isEmpty()) {
+        if (StringUtils.isEmpty(annotationPreview.getAnnotationBody())) {
             annoPageTobeUpdated = existingAnnoPage;
             annoPageTobeUpdated.getRes().setRights(annotationPreview.getRights());
             // if new source value is present, add the value in annoPage
@@ -457,9 +474,9 @@ public class FTService {
             }
         } else { // process the subtitle list and update annotations in AnnoPage. Also, rights and value
             // in Resource
-            annoPageTobeUpdated = subtitleService.createAnnoPage(annotationPreview, false);
-            if (org.apache.commons.lang3.StringUtils.isEmpty(annoPageTobeUpdated.getSource())
-                && org.apache.commons.lang3.StringUtils.isNotEmpty(existingAnnoPage.getSource())) {
+            annoPageTobeUpdated = createAnnoPage(annotationPreview, false);
+            if (StringUtils.isEmpty(annoPageTobeUpdated.getSource())
+                && StringUtils.isNotEmpty(existingAnnoPage.getSource())) {
                 annoPageTobeUpdated.setSource(existingAnnoPage.getSource());
             }
         }

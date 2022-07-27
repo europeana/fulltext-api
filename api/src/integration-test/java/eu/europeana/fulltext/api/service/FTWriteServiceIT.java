@@ -136,7 +136,7 @@ class FTWriteServiceIT extends BaseIntegrationTest {
         new AnnotationPreview.Builder(
                 GeneralUtils.generateRecordId(annoPage.getDsId(), annoPage.getLcId()),
                 null,
-                new ArrayList<>())
+                "")
             .setLanguage(annoPage.getLang())
             .setSource("https://annotation/source/value")
             .setRights(rights)

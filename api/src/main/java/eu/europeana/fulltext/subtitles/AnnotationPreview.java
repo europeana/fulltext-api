@@ -1,9 +1,5 @@
 package eu.europeana.fulltext.subtitles;
 
-import com.dotsub.converter.model.SubtitleItem;
-import java.util.Collections;
-import java.util.List;
-
 public class AnnotationPreview {
 
   private final String source;
@@ -12,8 +8,8 @@ public class AnnotationPreview {
   private final String language;
   private final String rights;
   private final boolean originalLang;
-  private final SubtitleType subtitleType;
-  private List<SubtitleItem> subtitleItems;
+  private final FulltextType fulltextType;
+  private String annotationBody;
 
   private AnnotationPreview(
       String source,
@@ -22,16 +18,16 @@ public class AnnotationPreview {
       String language,
       String rights,
       boolean originalLang,
-      SubtitleType subtitleType,
-      List<SubtitleItem> subtitleItems) {
+      FulltextType fulltextType,
+      String annotationBody) {
     this.source = source;
     this.recordId = recordId;
     this.media = media;
     this.language = language;
     this.rights = rights;
     this.originalLang = originalLang;
-    this.subtitleType = subtitleType;
-    this.subtitleItems = subtitleItems;
+    this.fulltextType = fulltextType;
+    this.annotationBody = annotationBody;
   }
 
   public String getRecordId() {
@@ -50,16 +46,16 @@ public class AnnotationPreview {
     return rights;
   }
 
+  public String getAnnotationBody() {
+    return annotationBody;
+  }
+
   public boolean isOriginalLang() {
     return originalLang;
   }
 
-  public SubtitleType getSubtitleType() {
-    return subtitleType;
-  }
-
-  public List<SubtitleItem> getSubtitleItems() {
-    return subtitleItems;
+  public FulltextType getFulltextType() {
+    return fulltextType;
   }
 
   public String getSource() {
@@ -73,13 +69,13 @@ public class AnnotationPreview {
     private String language;
     private String rights;
     private boolean originalLang;
-    private SubtitleType subtitleType;
-    private final List<SubtitleItem> subtitleItems;
+    private FulltextType fulltextType;
+    private String annotationBody;
 
-    public Builder(String recordId, SubtitleType subtitleType, List<SubtitleItem> subtitleItems) {
+    public Builder(String recordId, FulltextType fulltextType, String annotationBody) {
       this.recordId = recordId;
-      this.subtitleType = subtitleType;
-      this.subtitleItems = Collections.unmodifiableList(subtitleItems);
+      this.fulltextType = fulltextType;
+      this.annotationBody = annotationBody;
     }
 
     public Builder setMedia(String media) {
@@ -102,8 +98,8 @@ public class AnnotationPreview {
       return this;
     }
 
-    public Builder setSubtitleType(SubtitleType subtitleType) {
-      this.subtitleType = subtitleType;
+    public Builder setFulltextType(FulltextType fulltextType) {
+      this.fulltextType = fulltextType;
       return this;
     }
 
@@ -114,7 +110,7 @@ public class AnnotationPreview {
 
     public AnnotationPreview build() {
       return new AnnotationPreview(
-          source, recordId, media, language, rights, originalLang, subtitleType, subtitleItems);
+          source, recordId, media, language, rights, originalLang, fulltextType, annotationBody);
     }
   }
 }

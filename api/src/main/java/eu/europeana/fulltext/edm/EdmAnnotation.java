@@ -1,7 +1,7 @@
-package eu.europeana.fulltext.subtitles.edm;
+package eu.europeana.fulltext.edm;
 
 import eu.europeana.fulltext.AnnotationType;
-import eu.europeana.fulltext.util.GeneralUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 
