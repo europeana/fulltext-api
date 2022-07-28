@@ -19,6 +19,8 @@ public class WebConstants {
 
   public static final String MOTIVATION_SUBTITLING = "subtitling";
   public static final String MOTIVATION_CAPTIONING = "captioning";
+  public static final String MOTIVATION_TRANSCRIBING = "transcribing";
+
 
   // Fulltext Urls constants
   public static final String PRESENTATION = "presentation";

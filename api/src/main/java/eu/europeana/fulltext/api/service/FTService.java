@@ -469,11 +469,11 @@ public class FTService {
             annoPageTobeUpdated = existingAnnoPage;
             annoPageTobeUpdated.getRes().setRights(annotationPreview.getRights());
             // if new source value is present, add the value in annoPage
-            if (org.apache.commons.lang3.StringUtils.isNotEmpty(annotationPreview.getSource())) {
+            if (StringUtils.isNotEmpty(annotationPreview.getSource())) {
                 annoPageTobeUpdated.setSource(annotationPreview.getSource());
             }
-        } else { // process the subtitle list and update annotations in AnnoPage. Also, rights and value
-            // in Resource
+        } else { // process the new content body and update annotations in AnnoPage.
+            // Also, rights and value in Resource
             annoPageTobeUpdated = createAnnoPage(annotationPreview, false);
             if (StringUtils.isEmpty(annoPageTobeUpdated.getSource())
                 && StringUtils.isNotEmpty(existingAnnoPage.getSource())) {

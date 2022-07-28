@@ -1,12 +1,9 @@
 package eu.europeana.fulltext.api.service.impl;
 
 import static eu.europeana.fulltext.AppConstants.defaultSubtitleConfig;
-import static eu.europeana.fulltext.subtitles.FulltextType.SRT;
-import static eu.europeana.fulltext.subtitles.FulltextType.WEB_VTT;
 
 import com.dotsub.converter.exception.FileFormatException;
 import com.dotsub.converter.importer.SubtitleImportHandler;
-import com.dotsub.converter.importer.impl.QtTextImportHandler;
 import com.dotsub.converter.importer.impl.WebVttImportHandler;
 import com.dotsub.converter.model.SubtitleItem;
 import eu.europeana.fulltext.AnnotationType;
@@ -28,21 +25,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.stereotype.Service;
 
-@Service
 public class SubtitleFulltextAdapter implements FulltextAdapter {
   private static final Logger logger = LogManager.getLogger(SubtitleFulltextAdapter.class);
   private static final Pattern PATTERN = Pattern.compile("[<][/]?[^<]+[/]?[>]");
-
-  // TODO not sure if this is required anymore. Will re-visit when we implement EA-3101
-  private static final Map<FulltextType, SubtitleImportHandler> subtitleHandlerMapping =
-      Map.of(WEB_VTT, new WebVttImportHandler(), SRT, new QtTextImportHandler());
-
 
   @Override
   public EdmFullTextPackage adapt(AnnotationPreview annotationPreview) throws InvalidFormatException, SubtitleParsingException {
@@ -109,10 +98,7 @@ public class SubtitleFulltextAdapter implements FulltextAdapter {
    */
   public List<SubtitleItem> parseSubtitle(InputStream text, FulltextType fulltextType)
       throws InvalidFormatException, SubtitleParsingException {
-    SubtitleImportHandler subtitleImportHandler = subtitleHandlerMapping.get(fulltextType);
-    if (subtitleImportHandler == null) {
-      throw new InvalidFormatException("Format not supported : " + fulltextType.getMimeType());
-    }
+    SubtitleImportHandler subtitleImportHandler = new WebVttImportHandler();
     try {
       return subtitleImportHandler.importFile(text, defaultSubtitleConfig);
     } catch (FileFormatException e) {
