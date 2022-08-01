@@ -8,6 +8,7 @@ import eu.europeana.fulltext.subtitles.external.AnnotationItem;
 import org.apache.commons.lang3.StringUtils;
 
 import static eu.europeana.fulltext.WebConstants.MOTIVATION_CAPTIONING;
+import static eu.europeana.fulltext.WebConstants.MOTIVATION_TRANSCRIBING;
 
 public class AnnotationUtils {
 
@@ -27,7 +28,6 @@ public class AnnotationUtils {
                             "Unsupported mimeType in Annotation id=%s body.format=%s",
                             item.getId(), item.getBody().getFormat()));
         }
-
         return new AnnotationPreview.Builder(
                 GeneralUtils.getRecordIdFromUri(item.getTarget().getScope()),
                 fulltextType,
@@ -36,8 +36,9 @@ public class AnnotationUtils {
                 .setMedia(item.getTarget().getSource())
                 .setLanguage(item.getBody().getLanguage())
                 .setRights(item.getBody().getEdmRights())
-                // If the motivation is “captioning”, then originalLang is true;
-                .setOriginalLang(MOTIVATION_CAPTIONING.equals(item.getMotivation()))
+                // If the motivation is “captioning” or "transcribing" , then originalLang is true;
+                // for the moment, we only have the original text and no translations yet for transcription and newspapers
+                .setOriginalLang(MOTIVATION_CAPTIONING.equals(item.getMotivation()) || MOTIVATION_TRANSCRIBING.equals(item.getMotivation()))
                 .build();
     }
 
@@ -53,6 +54,11 @@ public class AnnotationUtils {
             String content,
             FulltextType type) {
         String recordId = GeneralUtils.generateRecordId(datasetId, localId);
+        // if transcriptions ie; Fulltext Type is SRT, then original lang will be true
+        // for the moment, we only have the original text and no translations yet for transcription
+        if (type.equals(FulltextType.SRT)) {
+            originalLang = true;
+        }
         return new AnnotationPreview.Builder(recordId, type, content)
                 .setOriginalLang(originalLang)
                 .setLanguage(lang)

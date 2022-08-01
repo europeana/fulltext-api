@@ -418,7 +418,8 @@ public class AnnoPageRepository {
                 .append(TARGET_ID, annoPage.getTgtId())
                 .append(ANNOTATIONS, annoPage.getAns())
                 .append(MODIFIED, now)
-                .append(LANGUAGE, annoPage.getLang());
+                .append(LANGUAGE, annoPage.getLang())
+                .append(TRANSLATION, annoPage.isTranslation());
 
         // source isn't always set. Prevent null from being saved in db
         if (annoPage.getSource() != null) {

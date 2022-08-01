@@ -148,7 +148,7 @@ public class ResourceRepository {
                             .append(RIGHTS, res.getRights())
                             .append(PAGE_ID, res.getPgId())
                             .append(CONTRIBUTED, res.isContributed())
-                    )
+                            .append(TRANSLATION, res.isTranslation()))
                         // only create _id for new records
                         .append(SET_ON_INSERT, new Document("_id", res.getId())),
                     UPSERT_OPTS));
