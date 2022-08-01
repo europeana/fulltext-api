@@ -1,6 +1,7 @@
 package eu.europeana.fulltext.api.service;
 
 import static eu.europeana.fulltext.AppConstants.defaultSubtitleConfig;
+import static eu.europeana.fulltext.WebConstants.MOTIVATION_CAPTIONING;
 import static eu.europeana.fulltext.subtitles.SubtitleType.SRT;
 import static eu.europeana.fulltext.subtitles.SubtitleType.WEB_VTT;
 import static eu.europeana.fulltext.util.GeneralUtils.getDsId;
@@ -66,7 +67,7 @@ public class SubtitleService {
             fullTextResourceURI, null, preview.getLanguage(), preview.getRights(), uri);
     // add first annotation of type Media - this will not have any targets or text boundary
     EdmTextBoundary tb = new EdmTextBoundary(fullTextResourceURI);
-    page.add(new EdmAnnotation(null, tb, null, AnnotationType.MEDIA, null, null));
+    page.add(new EdmAnnotation(tb, null, AnnotationType.MEDIA, null, null));
 
     // add the subtitles as annotations
     SubtitleContext subtitleContext = new SubtitleContext();
@@ -80,7 +81,7 @@ public class SubtitleService {
       int end = start + item.getDuration();
       EdmTimeBoundary mr = new EdmTimeBoundary(preview.getMedia(), start, end);
       EdmTextBoundary tr = subtitleContext.newItem(processSubtitle(item.getContent()));
-      page.add(new EdmAnnotation(null, tr, mr, AnnotationType.CAPTION, null, null));
+      page.add(new EdmAnnotation(tr, mr, AnnotationType.CAPTION, null, null));
     }
     // ADD the resource in Fulltext page
     resource.setValue(subtitleContext.end());
@@ -140,6 +141,8 @@ public class SubtitleService {
         .setMedia(item.getTarget().getSource())
         .setLanguage(item.getBody().getLanguage())
         .setRights(item.getBody().getEdmRights())
+        // If the motivation is “captioning”, then originalLang is true;
+        .setOriginalLang(MOTIVATION_CAPTIONING.equals(item.getMotivation()))
         .build();
   }
 

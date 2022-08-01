@@ -7,7 +7,6 @@ import java.util.List;
 
 public class EdmAnnotation {
 
-  private final String annoId;
   private final EdmReference textReference;
   private final List<EdmTimeBoundary> targets = new ArrayList<>(1);
   private final AnnotationType type;
@@ -15,7 +14,6 @@ public class EdmAnnotation {
   private final Float confidence;
 
   public EdmAnnotation(
-      String annoId,
       EdmReference textReference,
       EdmTimeBoundary target,
       AnnotationType type,
@@ -28,11 +26,6 @@ public class EdmAnnotation {
     this.type = type;
     this.lang = lang;
     this.confidence = confidence;
-    this.annoId = (annoId != null ? annoId : GeneralUtils.generateHash(this));
-  }
-
-  public String getAnnoId() {
-    return annoId;
   }
 
   public EdmReference getTextReference() {

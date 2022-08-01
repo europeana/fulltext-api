@@ -33,7 +33,7 @@
         <module>common</module>
         <module>api</module>
         <module>loader</module>
-      <module>indexing</module>
+        <module>migrations</module>
     </modules>
 
     <properties>

@@ -544,13 +544,13 @@ public class AnnoPageRepository {
 
       List<Filter> filter =
           new ArrayList<>(
-              Arrays.asList(eq(DATASET_ID, datasetId), eq(LOCAL_ID, localId), eq(PAGE_ID, pageId), eq(DELETED, null)));
+              Arrays.asList(eq(DATASET_ID, datasetId), eq(LOCAL_ID, localId), eq(PAGE_ID, pageId)));
 
       if (StringUtils.isNotEmpty(lang)) {
           filter.add(eq(LANGUAGE, lang));
       }
 
-      if(!includeDeprecated){
+      if (!includeDeprecated) {
           filter.add(eq(DELETED, null));
       }
 

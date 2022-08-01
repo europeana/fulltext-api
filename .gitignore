@@ -1,4 +1,4 @@
-**/*.user.properties
+*.user.properties
 
 loader/logs
 logs
