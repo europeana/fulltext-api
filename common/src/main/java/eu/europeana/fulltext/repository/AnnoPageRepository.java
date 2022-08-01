@@ -418,12 +418,16 @@ public class AnnoPageRepository {
                 .append(TARGET_ID, annoPage.getTgtId())
                 .append(ANNOTATIONS, annoPage.getAns())
                 .append(MODIFIED, now)
-                .append(LANGUAGE, annoPage.getLang())
-                .append(TRANSLATION, annoPage.isTranslation());
+                .append(LANGUAGE, annoPage.getLang());
 
         // source isn't always set. Prevent null from being saved in db
         if (annoPage.getSource() != null) {
             updateDoc.append(SOURCE, annoPage.getSource());
+        }
+
+        // don't set translation=false in db, to conserve space
+        if (annoPage.isTranslation()) {
+            updateDoc.append(TRANSLATION, annoPage.isTranslation());
         }
 
         return new UpdateOneModel<>(

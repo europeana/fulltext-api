@@ -131,6 +131,20 @@ public class ResourceRepository {
                 // all AnnoPages should have a resource
                 throw new DatabaseQueryException("res is null for " + annoPage);
             }
+            Document updateDoc =new Document(
+                    SET,
+                    new Document(DATASET_ID, res.getDsId())
+                            .append(LOCAL_ID, res.getLcId())
+                            .append(LANGUAGE, res.getLang())
+                            .append(VALUE, res.getValue())
+                            .append(RIGHTS, res.getRights())
+                            .append(PAGE_ID, res.getPgId())
+                            .append(CONTRIBUTED, res.isContributed()));
+
+            // don't set translation=false in db, to conserve space
+            if (res.isTranslation()) {
+                updateDoc.append(TRANSLATION, res.isTranslation());
+            }
 
             resourceUpdates.add(
                 new UpdateOneModel<>(
@@ -138,17 +152,8 @@ public class ResourceRepository {
                         // filter
                         Map.of(
                             DATASET_ID, res.getDsId(), LOCAL_ID, res.getLcId(), LANGUAGE, res.getLang(), DOC_ID, res.getId())),
-                    // update doc
-                    new Document(
-                        SET,
-                        new Document(DATASET_ID, res.getDsId())
-                            .append(LOCAL_ID, res.getLcId())
-                            .append(LANGUAGE, res.getLang())
-                            .append(VALUE, res.getValue())
-                            .append(RIGHTS, res.getRights())
-                            .append(PAGE_ID, res.getPgId())
-                            .append(CONTRIBUTED, res.isContributed())
-                            .append(TRANSLATION, res.isTranslation()))
+                        // update doc
+                         updateDoc
                         // only create _id for new records
                         .append(SET_ON_INSERT, new Document("_id", res.getId())),
                     UPSERT_OPTS));
