@@ -218,15 +218,27 @@ public final class EDM2IIIFMapping {
     }
 
     static FTResource getFTResource(Resource resource){
-        return new FTResource(fts.getResourceBaseUrl() +
-                              resource.getDsId() + "/" +
-                              resource.getLcId() + "/" +
-                              resource.getId(),
+        return new FTResource(generateResourceId(resource),
                               resource.getLang(),
                               resource.getValue(),
                               resource.getSource(),
                               resource.getRights());
     }
+
+  private static String generateResourceId(Resource resource) {
+    String id =
+        fts.getResourceBaseUrl()
+            + resource.getDsId()
+            + "/"
+            + resource.getLcId()
+            + "/"
+            + resource.getPgId();
+
+    if (resource.isTranslation()) {
+      id = id + "?lang=" + resource.getLang();
+    }
+    return id;
+  }
 
     private static FTResource fetchFTResource(AnnoPage annoPage) {
         FTResource resource;
