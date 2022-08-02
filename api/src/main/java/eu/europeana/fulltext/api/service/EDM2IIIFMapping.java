@@ -251,10 +251,21 @@ public final class EDM2IIIFMapping {
         return s.toString();
     }
 
-    private static String getResourceIdBaseUrl(AnnoPage annoPage) {
-        return fts.getResourceBaseUrl() + annoPage.getDsId() + "/" + annoPage.getLcId() + "/" +
-               annoPage.getRes().getPgId() + "?" + LANGUAGE_PARAM + annoPage.getRes().getLang();
+  private static String getResourceIdBaseUrl(AnnoPage annoPage) {
+    String url =
+        fts.getResourceBaseUrl()
+            + annoPage.getDsId()
+            + "/"
+            + annoPage.getLcId()
+            + "/"
+            + annoPage.getRes().getPgId();
+
+    // EA-3073: Resource endpoint can return the original version without the lang parameter. Only append if this is a translation
+    if (annoPage.isTranslation()) {
+      url = url + "?" + LANGUAGE_PARAM + annoPage.getRes().getLang();
     }
+    return url;
+  }
 
     private static String getAnnoPageIdUrl(AnnoPage annoPage){
         return fts.getAnnoPageBaseUrl() + annoPage.getDsId() + "/" +
