@@ -18,12 +18,16 @@ public class ResourceDoesNotExistException extends EuropeanaApiException {
         super("Resource with id " + id + " does not exist");
     }
 
+    public ResourceDoesNotExistException(String id, String language) {
+        super("Resource with id " + id + " does not exist for language " + language);
+    }
+
     @Override
     public boolean doLog() {
         return false;
     }
 
-    //@Override
+    @Override
     public HttpStatus getResponseStatus() {
         return HttpStatus.NOT_FOUND;
     }

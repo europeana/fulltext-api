@@ -118,8 +118,8 @@ public class GeneralUtils {
    * @param annoPage
    * @return
    */
-  public static String getAnnoPageUrl(AnnoPage annoPage) {
-    return "/"
+  public static String getAnnoPageUrl(AnnoPage annoPage, boolean includeLang) {
+    String url =  "/"
         + WebConstants.PRESENTATION
         + "/"
         + annoPage.getDsId()
@@ -129,6 +129,12 @@ public class GeneralUtils {
         + WebConstants.ANNOPAGE
         + "/"
         + annoPage.getPgId();
+
+    if (includeLang){
+      url = url  + "?lang="
+          + annoPage.getLang();
+    }
+       return url;
   }
 
   public static String[] getAnnoPageToString(List<? extends AnnoPage> annoPages) {

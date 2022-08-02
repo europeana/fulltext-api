@@ -118,8 +118,8 @@ public class FTControllerTest {
         given(ftService.generateAnnotationV3(any(), eq("an2"))).willReturn(annv3_2);
         given(ftService.generateAnnotationV3(any(), eq("an3"))).willReturn(annv3_3);
 
-        given(ftService.fetchFTResource(any(), any(), eq("res1"))).willReturn(ftres_1);
-        given(ftService.fetchFTResource(any(), any(), eq("res2"))).willReturn(ftres_2);
+        given(ftService.fetchFTResource(any(), any(), eq("pg1"), any())).willReturn(ftres_1);
+        given(ftService.fetchFTResource(any(), any(), eq("pg2"), any())).willReturn(ftres_2);
 
         given(ftService.serialise(anpv2_1)).willReturn(JSONLD_ANP_V2_OUTPUT);
         given(ftService.serialise(annv2_1)).willReturn(JSONLD_ANN_V2_1_OUTPUT);

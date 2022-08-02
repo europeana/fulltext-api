@@ -364,20 +364,22 @@ public class FTRetrievalController {
      *
      * @param datasetId identifier of the dataset that contains the Annopage that refers to the Resource
      * @param localId   identifier of the record that contains the Annopage that refers to the Resource
-     * @param resId     identifier of the Resource
+     * @param pageId     identifier of the Resource
+     * @param lang       optional, in which language should the Resource be
      * @return response in json-ld format
      * @throws EuropeanaApiException when serialising to JsonLd fails
      */
     @ApiOperation(value = "Retrieve a full-text")
-    @GetMapping(value = "/presentation/{datasetId}/{localId}/{resId}",
+    @GetMapping(value = "/presentation/{datasetId}/{localId}/{pageId}",
         headers = ACCEPT_JSONLD,
         produces = MEDIA_TYPE_JSONLD + ';' + UTF_8)
     public ResponseEntity<String> resourceJsonLd(
         @PathVariable String datasetId,
         @PathVariable String localId,
-        @PathVariable String resId,
+        @PathVariable String pageId,
+        @RequestParam(value = "lang", required = false) String lang,
         HttpServletRequest request) throws EuropeanaApiException {
-        return resource(datasetId, localId, resId, request, false);
+        return resource(datasetId, localId, pageId, lang, request, false);
     }
 
     /**
@@ -385,34 +387,36 @@ public class FTRetrievalController {
      *
      * @param datasetId identifier of the dataset that contains the Annopage that refers to the Resource
      * @param localId   identifier of the record that contains the Annopage that refers to the Resource
-     * @param resId     identifier of the Resource
+     * @param pageId     identifier of the Resource
      * @return response in json format
      * @throws EuropeanaApiException when serialising to Json fails
      */
     @ApiOperation(value = "Retrieve a full-text")
-    @GetMapping(value = "/presentation/{datasetId}/{localId}/{resId}",
+    @GetMapping(value = "/presentation/{datasetId}/{localId}/{pageId}",
         headers = ACCEPT_JSON,
         produces = MEDIA_TYPE_JSON + ';' + UTF_8)
     public ResponseEntity<String> resourceJson(
         @PathVariable String datasetId,
         @PathVariable String localId,
-        @PathVariable String resId,
+        @PathVariable String pageId,
+        @RequestParam(value = "lang", required = false) String lang,
         HttpServletRequest request) throws EuropeanaApiException {
-        return resource(datasetId, localId, resId, request, true);
+        return resource(datasetId, localId, pageId, lang, request, true);
     }
 
     private ResponseEntity<String> resource(
-        String datasetId, String localId, String resId, HttpServletRequest request, boolean isJson) throws
+        String datasetId, String localId, String pageId, String lang,
+        HttpServletRequest request, boolean isJson) throws
         EuropeanaApiException {
-        LOG.debug("Retrieve Resource: {}/{}/{}", datasetId, localId, resId);
+        LOG.debug("Retrieve Resource: {}/{}/{}", datasetId, localId, pageId);
         HttpHeaders headers;
         FTResource resource;
 
-        resource = fts.fetchFTResource(datasetId, localId, resId);
+        resource = fts.fetchFTResource(datasetId, localId, pageId, lang);
         ZonedDateTime modified = CacheUtils.januarificator();
         String eTag = generateSimpleETag(datasetId
             + localId
-            + resId
+            + pageId
             + resource.getLanguage()
             + resource.getValue()
             + fts.getSettings().getAppVersion(), true);

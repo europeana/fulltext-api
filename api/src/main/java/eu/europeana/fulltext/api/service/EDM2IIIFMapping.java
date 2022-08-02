@@ -231,7 +231,8 @@ public final class EDM2IIIFMapping {
     private static FTResource fetchFTResource(AnnoPage annoPage) {
         FTResource resource;
         try {
-            resource = ftService.fetchFTResource(annoPage.getDsId(), annoPage.getLcId(), annoPage.getRes().getId());
+            resource = ftService.fetchFTResource(annoPage.getDsId(), annoPage.getLcId(), annoPage.getPgId(),
+                annoPage.getLang());
         } catch (ResourceDoesNotExistException e) {
             LOG.info("Error retrieving fulltext resource for annoPage {}", annoPage, e);
             resource = null;
@@ -252,12 +253,12 @@ public final class EDM2IIIFMapping {
 
     private static String getResourceIdBaseUrl(AnnoPage annoPage) {
         return fts.getResourceBaseUrl() + annoPage.getDsId() + "/" + annoPage.getLcId() + "/" +
-               annoPage.getRes().getId();
+               annoPage.getRes().getPgId() + "?" + LANGUAGE_PARAM + annoPage.getRes().getLang();
     }
 
-    protected static String getAnnoPageIdUrl(AnnoPage annoPage){
+    private static String getAnnoPageIdUrl(AnnoPage annoPage){
         return fts.getAnnoPageBaseUrl() + annoPage.getDsId() + "/" +
-               annoPage.getLcId() + FTDefinitions.ANNOPAGE_PATH + "/" + annoPage.getPgId();
+               annoPage.getLcId() + FTDefinitions.ANNOPAGE_PATH + "/" + annoPage.getPgId() + "?" + LANGUAGE_PARAM + annoPage.getLang();
     }
 
     private static String getAnnotationIdUrl(AnnoPage annoPage, Annotation annotation) {

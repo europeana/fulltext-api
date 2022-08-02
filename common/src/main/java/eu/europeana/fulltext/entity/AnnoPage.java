@@ -30,7 +30,7 @@ public class AnnoPage {
     private List<Annotation> ans;
     private Date             modified;
     private String           lang;
-    @Indexed
+    @Indexed(options = @IndexOptions(sparse = true))
     private String           source;
     @Indexed
     private Date deleted;
