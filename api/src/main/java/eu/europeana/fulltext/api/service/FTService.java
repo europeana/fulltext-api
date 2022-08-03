@@ -485,7 +485,6 @@ public class FTService {
      */
     public void checkForExistingDeprecatedAnnoPages(String datasetId, String localId, String pageId, String lang, boolean includeDeprecated)
             throws AnnoPageDoesNotExistException, AnnoPageGoneException {
-        List<AnnoPage> existingAnnoPages = new ArrayList<>();
         if (lang != null) {
             AnnoPage annoPage = getShellAnnoPageById(datasetId, localId, pageId, lang, includeDeprecated);
 
@@ -498,7 +497,7 @@ public class FTService {
                 throw new AnnoPageGoneException(String.format("/%s/%s/annopage/%s", datasetId, localId, pageId), lang);
             }
         } else {
-            existingAnnoPages.addAll(annoPageRepository.getAnnoPages(datasetId, localId, pageId, lang, includeDeprecated));
+            List<AnnoPage> existingAnnoPages = annoPageRepository.getAnnoPages(datasetId, localId, pageId, lang, includeDeprecated);
 
             if (existingAnnoPages.isEmpty()) {
                 throw new AnnoPageDoesNotExistException(
