@@ -1,4 +1,4 @@
-package eu.europeana.fulltext.indexing;
+package eu.europeana.fulltext.indexing.entity;
 
 import dev.morphia.annotations.Entity;
 

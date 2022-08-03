@@ -1,4 +1,4 @@
-package eu.europeana.fulltext.indexing.utils;
+package eu.europeana.fulltext.indexing.batch;
 
 import org.apache.solr.client.solrj.SolrServerException;
 

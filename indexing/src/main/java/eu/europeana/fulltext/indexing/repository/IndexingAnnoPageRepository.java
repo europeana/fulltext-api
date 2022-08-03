@@ -18,7 +18,6 @@ import eu.europeana.fulltext.entity.AnnoPage;
 import java.util.Date;
 import java.util.List;
 
-import eu.europeana.fulltext.indexing.DataIdWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -29,27 +28,13 @@ public class IndexingAnnoPageRepository {
   private Datastore datastore;
 
   /**
-   * Fetches all records modified after the specified date.
-   * Returns a list containing the unique dsId and lcId combinations from modified AnnoPages.
+   * Fetches the records after the date.
+   * @param date
+   * @return
    */
-// public List<DataIdWrapper> getRecordsModifiedAfter(Date date) {
-//   return datastore
-//           .aggregate(AnnoPage.class)
-//           //.match(gt(MODIFIED, date), eq(DELETED, null)) Replacing this one by the one below because we also need to know if there were modifications
-//           .match(gt(MODIFIED, date))
-//           .project(Projection.project().include(DATASET_ID).include(LOCAL_ID))
-//           .group(group(id().field(DATASET_ID).field(LOCAL_ID)))
-//           // _id created in group stage, containing dsId and lcId. We
-//           .replaceRoot(ReplaceRoot.replaceRoot(field(DOC_ID)))
-//           .execute(DataIdWrapper.class)
-//           .toList();
-// }
-
-  //this seems to be more efficient if we try to get big amounts of records
-  public MorphiaCursor<AnnoPage> getRecordsModifiedAfter_stream(Date date) {
+  public MorphiaCursor<AnnoPage> getRecordsModifiedAfterStream(Date date) {
     return datastore
             .find(AnnoPage.class)
-            //.match(gt(MODIFIED, date), eq(DELETED, null)) Replacing this one by the one below because we also need to know if there were modifications
             .filter(gt(MODIFIED, date))
             .iterator(
                     new FindOptions()
@@ -57,8 +42,14 @@ public class IndexingAnnoPageRepository {
                             .include(DATASET_ID, LOCAL_ID));
   }
 
-
-    public List<AnnoPage> getActive(String dsId, String lcId) {
+  /**
+   * Fetches list of AnnoPage matching dsId and lcId
+   * Fetches only the ones which are not deprecated or deleted
+   * @param dsId
+   * @param lcId
+   * @return
+   */
+  public List<AnnoPage> findActiveAnnoPage(String dsId, String lcId) {
     return datastore
             .find(AnnoPage.class)
             .filter(and(eq(DATASET_ID, dsId),eq(LOCAL_ID,lcId)), eq(DELETED, null))
@@ -69,9 +60,11 @@ public class IndexingAnnoPageRepository {
             .toList();
   }
 
-
   /**
    * Checks whether an active record exists for the dsId and lcId combination
+   * @param dsId
+   * @param lcId
+   * @return
    */
   public boolean existsActive(String dsId, String lcId){
     return datastore
@@ -80,8 +73,11 @@ public class IndexingAnnoPageRepository {
         .count() > 0;
   }
 
-
-  public MorphiaCursor<AnnoPage> getActive(){
+  /**
+   * Fetch all the active Annopages
+   * @return
+   */
+  public MorphiaCursor<AnnoPage> findActiveAnnoPage(){
     return datastore.find(AnnoPage.class)
         .filter(eq(DELETED, null))
         .iterator(
@@ -89,6 +85,10 @@ public class IndexingAnnoPageRepository {
                 .projection().include(DATASET_ID,LOCAL_ID, MODIFIED));
   }
 
+  /**
+   * fetch all the Annopage
+   * @return
+   */
   public MorphiaCursor<AnnoPage> getAll(){
     return datastore.find(AnnoPage.class)
         .iterator(
@@ -96,5 +96,4 @@ public class IndexingAnnoPageRepository {
                 .projection()
                 .include(DATASET_ID,LOCAL_ID));
   }
-
 }

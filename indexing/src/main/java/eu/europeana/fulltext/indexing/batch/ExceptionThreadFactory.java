@@ -1,4 +1,4 @@
-package eu.europeana.fulltext.indexing.utils;
+package eu.europeana.fulltext.indexing.batch;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
