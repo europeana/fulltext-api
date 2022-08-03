@@ -487,19 +487,28 @@ public class FTService {
             throws AnnoPageDoesNotExistException, AnnoPageGoneException {
         List<AnnoPage> existingAnnoPages = new ArrayList<>();
         if (lang != null) {
-            existingAnnoPages.add(getShellAnnoPageById(datasetId, localId, pageId, lang, includeDeprecated));
+            AnnoPage annoPage = getShellAnnoPageById(datasetId, localId, pageId, lang, includeDeprecated);
+
+            if (annoPage == null) {
+                throw new AnnoPageDoesNotExistException(
+                        GeneralUtils.getAnnoPageUrl(datasetId, localId, pageId, lang));
+            }
+
+            if (annoPage.isDeprecated()) {
+                throw new AnnoPageGoneException(String.format("/%s/%s/annopage/%s", datasetId, localId, pageId), lang);
+            }
         } else {
             existingAnnoPages.addAll(annoPageRepository.getAnnoPages(datasetId, localId, pageId, lang, includeDeprecated));
-        }
 
-        if (existingAnnoPages.size() == 0) {
-            throw new AnnoPageDoesNotExistException(
-                    GeneralUtils.getAnnoPageUrl(datasetId, localId, pageId, lang));
-        }
+            if (existingAnnoPages.isEmpty()) {
+                throw new AnnoPageDoesNotExistException(
+                        GeneralUtils.getAnnoPageUrl(datasetId, localId, pageId, lang));
+            }
 
-        boolean isAllDeprecated = existingAnnoPages.stream().allMatch(annoPage -> annoPage.isDeprecated());
-        if (isAllDeprecated) {
-            throw new AnnoPageGoneException(String.format("/%s/%s/annopage/%s", datasetId, localId, pageId), lang);
+            boolean isAllDeprecated = existingAnnoPages.stream().allMatch(annoPage -> annoPage.isDeprecated());
+            if (isAllDeprecated) {
+                throw new AnnoPageGoneException(String.format("/%s/%s/annopage/%s", datasetId, localId, pageId));
+            }
         }
     }
 
