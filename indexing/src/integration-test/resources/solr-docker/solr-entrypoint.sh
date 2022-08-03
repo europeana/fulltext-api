@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+shopt -s nullglob
 
 # Create new configset based off default one
 cp -r /opt/solr/server/solr/configsets/_default/ /opt/solr/server/solr/configsets/"$FULLTEXT_INDEXING_CORE"/

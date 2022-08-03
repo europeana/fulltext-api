@@ -1,7 +1,7 @@
 FROM library/solr:7.7
 
 # copy custom config settings
-COPY conf/ /opt/em-conf/
+COPY conf/ /opt/fulltext-conf/
 
 COPY solr-entrypoint.sh /solr-entrypoint.sh
 
