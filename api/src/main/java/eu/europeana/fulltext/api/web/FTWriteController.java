@@ -316,18 +316,9 @@ public class FTWriteController extends BaseRestController {
     /*
      * Check if there is a fulltext annotation page associated with the combination of DATASET_ID,
      * LOCAL_ID and the PAGE_ID and LANG (if provided), if not then return a HTTP 404
+     * If present, check if the annoPages are deprecated already, respond with HTTP 410
      */
-    AnnoPage existingAnnoPage = ftService.getShellAnnoPageById(datasetId, localId, pageId, lang, true);
-
-    if (existingAnnoPage == null) {
-      throw new AnnoPageDoesNotExistException(
-              GeneralUtils.getAnnoPageUrl(datasetId, localId, pageId, lang));
-    }
-
-    if (existingAnnoPage.isDeprecated()){
-      throw new AnnoPageGoneException(String.format("/%s/%s/annopage/%s", datasetId, localId, pageId),
-          lang);
-    }
+    ftService.checkForExistingDeprecatedAnnoPages(datasetId, localId, pageId, lang, true);
 
     /*
      * Deprecates the respective AnnotationPage(s) entry from MongoDB (if lang is omitted, the pages for

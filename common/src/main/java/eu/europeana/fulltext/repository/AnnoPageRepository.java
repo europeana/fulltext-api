@@ -389,16 +389,15 @@ public class AnnoPageRepository {
                 .collect(Collectors.toUnmodifiableList());
     }
 
-
-    public List<AnnoPage> getAnnoPages(String dsId, String lcId) {
+    public List<AnnoPage> getAnnoPages(String datasetId, String localId, String pageId, String lang, boolean includeDeprecated) {
         return datastore
-            .find(AnnoPage.class)
-            .filter(eq(DATASET_ID, dsId),
-                eq(LOCAL_ID, lcId),
-                eq(DELETED, null))
-            .iterator(new FindOptions().projection()
-                .include(DATASET_ID, LOCAL_ID, PAGE_ID, LANGUAGE, MODIFIED))
-            .toList();
+                .find(AnnoPage.class)
+                .filter(createFilterToGetAnnoPage(datasetId, localId, pageId, lang, includeDeprecated).toArray(new Filter[0]))
+                .iterator(
+                        new FindOptions()
+                                .projection()
+                                .include(DATASET_ID, LOCAL_ID, PAGE_ID, LANGUAGE, MODIFIED, DELETED))
+                .toList();
     }
 
     private UpdateOneModel<AnnoPage> createAnnoPageUpdate(
@@ -541,22 +540,9 @@ public class AnnoPageRepository {
    */
   public AnnoPage getShellAnnoPageById(
       String datasetId, String localId, String pageId, String lang, boolean includeDeprecated) {
-
-      List<Filter> filter =
-          new ArrayList<>(
-              Arrays.asList(eq(DATASET_ID, datasetId), eq(LOCAL_ID, localId), eq(PAGE_ID, pageId)));
-
-      if (StringUtils.isNotEmpty(lang)) {
-          filter.add(eq(LANGUAGE, lang));
-      }
-
-      if (!includeDeprecated) {
-          filter.add(eq(DELETED, null));
-      }
-
     return datastore
         .find(AnnoPage.class)
-        .filter(filter.toArray(new Filter[0]))
+        .filter(createFilterToGetAnnoPage(datasetId, localId, pageId, lang, includeDeprecated).toArray(new Filter[0]))
         .iterator(
             new FindOptions()
                 .limit(1)
@@ -578,4 +564,23 @@ public class AnnoPageRepository {
 
         return annoPages.stream().map(a -> a.getRes().getId()).collect(Collectors.toList());
     }
+
+  private List<Filter> createFilterToGetAnnoPage(String datasetId, String localId, String pageId, String lang, boolean includeDeprecated) {
+      List<Filter> filter =
+              new ArrayList<>(
+                      Arrays.asList(eq(DATASET_ID, datasetId), eq(LOCAL_ID, localId)));
+
+      if (StringUtils.isNotEmpty(pageId)) {
+          filter.add(eq(PAGE_ID, pageId));
+      }
+
+      if (StringUtils.isNotEmpty(lang)) {
+          filter.add(eq(LANGUAGE, lang));
+      }
+
+      if (!includeDeprecated) {
+          filter.add(eq(DELETED, null));
+      }
+      return filter;
+  }
 }

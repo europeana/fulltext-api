@@ -33,6 +33,7 @@ import eu.europeana.fulltext.util.GeneralUtils;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -201,7 +202,8 @@ public class FTService {
     public SummaryManifest collectionAnnoPageInfo(String datasetId, String localId) {
         Instant start = Instant.now();
         SummaryManifest apInfoSummaryManifest = new SummaryManifest(datasetId, localId);
-        List<AnnoPage> annoPages = annoPageRepository.getAnnoPages(datasetId, localId);
+        // fetch annopages with dsId and lcId
+        List<AnnoPage> annoPages = annoPageRepository.getAnnoPages(datasetId, localId, null, null, false);
         Instant finish = Instant.now();
         LOG.debug(FETCHED_AGGREGATED,  Duration.between(start, finish).toMillis());
 
@@ -464,6 +466,41 @@ public class FTService {
             }
         }
         return annoPageTobeUpdated;
+    }
+
+    /**
+     * Check if there is a fulltext annotation page associated with the combination of DATASET_ID,
+     * LOCAL_ID and the PAGE_ID and LANG (if provided), if not then return a HTTP 404
+     *
+     * If present, check if the annoPages are deprecated already, respond with HTTP 410
+     * NOTE : We may have multiple AnnoPages if lang is NOT provided,
+     *        hence respond with HTTP 410 only if all the AnnoPages are already deprecated.
+     * @param datasetId
+     * @param localId
+     * @param pageId
+     * @param lang
+     * @param includeDeprecated
+     * @throws AnnoPageDoesNotExistException
+     * @throws AnnoPageGoneException
+     */
+    public void checkForExistingDeprecatedAnnoPages(String datasetId, String localId, String pageId, String lang, boolean includeDeprecated)
+            throws AnnoPageDoesNotExistException, AnnoPageGoneException {
+        List<AnnoPage> existingAnnoPages = new ArrayList<>();
+        if (lang != null) {
+            existingAnnoPages.add(getShellAnnoPageById(datasetId, localId, pageId, lang, includeDeprecated));
+        } else {
+            existingAnnoPages.addAll(annoPageRepository.getAnnoPages(datasetId, localId, pageId, lang, includeDeprecated));
+        }
+
+        if(existingAnnoPages.isEmpty()) {
+            throw new AnnoPageDoesNotExistException(
+                    GeneralUtils.getAnnoPageUrl(datasetId, localId, pageId, lang));
+        }
+
+        boolean isAllDeprecated = existingAnnoPages.stream().allMatch(annoPage -> annoPage.isDeprecated());
+        if (isAllDeprecated) {
+            throw new AnnoPageGoneException(String.format("/%s/%s/annopage/%s", datasetId, localId, pageId), lang);
+        }
     }
 
     /**
