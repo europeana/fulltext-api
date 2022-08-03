@@ -492,7 +492,7 @@ public class FTService {
             existingAnnoPages.addAll(annoPageRepository.getAnnoPages(datasetId, localId, pageId, lang, includeDeprecated));
         }
 
-        if(existingAnnoPages.isEmpty()) {
+        if (existingAnnoPages.size() == 0) {
             throw new AnnoPageDoesNotExistException(
                     GeneralUtils.getAnnoPageUrl(datasetId, localId, pageId, lang));
         }
