@@ -65,6 +65,17 @@ public class FulltextColletionITTest extends AbstractIntegrationTest {
         boolean date = fulltextCollection.checkMetadata(GeneralUtils.generateRecordId(IntegrationTestUtils.TRANSCRIPTION_DSID, IntegrationTestUtils.TRANSCRIPTION_LCID));
     }
 
+    @Test
+    public void syncFulltextTest() throws Exception {
+        fulltextCollection.synchronizeFulltextContent(ZonedDateTime.ofInstant(Instant.EPOCH,ZoneOffset.UTC));
+        //fulltextCollection.synchronizeFulltextContent();
+        assertEquals(new ArrayList<String>(), fulltextCollection.isFulltextUpdated());
+    }
+
+    @Test
+    public void syncMetadata() throws IOException, SolrServerException {
+        fulltextCollection.synchronizeMetadataContent(ZonedDateTime.ofInstant(Instant.EPOCH,ZoneOffset.UTC));
+    }
 
     @Test
      void test_fulltext() throws IOException, SolrServerException {
@@ -105,17 +116,5 @@ public class FulltextColletionITTest extends AbstractIntegrationTest {
         List<String> documents = metadataCollection.getDocumentsModifiedAfter(streams);
     }
 
-
-    @Test
-    public void syncFulltextTest() throws Exception {
-        fulltextCollection.synchronizeFulltextContent(ZonedDateTime.ofInstant(Instant.EPOCH,ZoneOffset.UTC));
-        //fulltextCollection.synchronizeFulltextContent();
-        assertEquals(new ArrayList<String>(), fulltextCollection.isFulltextUpdated());
-    }
-
-    @Test
-    public void syncMetadata() throws IOException, SolrServerException {
-        fulltextCollection.synchronizeMetadataContent(ZonedDateTime.ofInstant(Instant.EPOCH,ZoneOffset.UTC));
-    }
 
 }
