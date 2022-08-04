@@ -1,23 +1,26 @@
 package eu.europeana.fulltext.indexing;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import eu.europeana.fulltext.indexing.repository.IndexingAnnoPageRepository;
 import java.io.IOException;
 import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
+
+import eu.europeana.fulltext.indexing.testutils.IntegrationTestUtils;
+import eu.europeana.fulltext.util.GeneralUtils;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.io.stream.TupleStream;
 import org.apache.solr.common.util.Pair;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 @SpringBootTest
-public class BasicTest extends AbstractIntegrationTest {
+public class FulltextColletionITTest extends AbstractIntegrationTest {
 
     @Autowired
     private IndexingAnnoPageRepository repository;
@@ -27,6 +30,41 @@ public class BasicTest extends AbstractIntegrationTest {
 
     @Autowired
     private FulltextCollection fulltextCollection;
+
+
+    @BeforeAll
+    void setup() throws Exception {
+        // add two annopage in indexing Repo
+        repository.saveAnnoPage(IntegrationTestUtils.createTranscriptionAnnoPage());
+        repository.saveAnnoPage(IntegrationTestUtils.createSubtitleAnnoPage());
+
+        // Now add the data in fulltext solr
+        fulltextCollection.setFulltext(GeneralUtils.generateRecordId(IntegrationTestUtils.TRANSCRIPTION_DSID, IntegrationTestUtils.TRANSCRIPTION_LCID));
+        fulltextCollection.setFulltext(GeneralUtils.generateRecordId(IntegrationTestUtils.SUBTITLE_DSID, IntegrationTestUtils.SUBTITLE_LCID));
+
+       // SolrServices.add(metadataCollection)
+
+    }
+
+    @AfterAll
+    void remove() throws SolrServerException, IOException {
+        repository.deleteAll();
+        fulltextCollection.deleteDocument(GeneralUtils.generateRecordId(IntegrationTestUtils.TRANSCRIPTION_DSID, IntegrationTestUtils.TRANSCRIPTION_LCID));
+        fulltextCollection.deleteDocument(GeneralUtils.generateRecordId(IntegrationTestUtils.SUBTITLE_DSID, IntegrationTestUtils.SUBTITLE_LCID));
+    }
+
+    @Test
+    void getLastUpdateMetadata_Test() throws SolrServerException, IOException {
+        ZonedDateTime date = fulltextCollection.getLastUpdateMetadata();
+        assertNotNull(date);
+    }
+
+    @Test
+    void checkMetadata_Test() throws SolrServerException, IOException {
+        // TODO add data in metadata collection
+        boolean date = fulltextCollection.checkMetadata(GeneralUtils.generateRecordId(IntegrationTestUtils.TRANSCRIPTION_DSID, IntegrationTestUtils.TRANSCRIPTION_LCID));
+    }
+
 
     @Test
      void test_fulltext() throws IOException, SolrServerException {

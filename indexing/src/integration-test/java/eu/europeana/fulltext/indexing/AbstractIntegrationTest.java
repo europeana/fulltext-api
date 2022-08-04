@@ -1,37 +1,19 @@
 package eu.europeana.fulltext.indexing;
 
-import eu.europeana.fulltext.indexing.repository.IndexingAnnoPageRepository;
 import eu.europeana.fulltext.indexing.testutils.MongoContainer;
 import eu.europeana.fulltext.indexing.testutils.SolrContainer;
-import org.junit.jupiter.api.BeforeEach;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.annotation.DirtiesContext;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Objects;
-import java.util.Optional;
 import javax.xml.bind.JAXBContext;
-import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.testcontainers.containers.output.ToStringConsumer;
 import org.testcontainers.containers.output.WaitingConsumer;
 
-//@ComponentScan(basePackageClasses = EntityManagementBasePackageMapper.class)
 @AutoConfigureMockMvc
 @DirtiesContext
 public class AbstractIntegrationTest {

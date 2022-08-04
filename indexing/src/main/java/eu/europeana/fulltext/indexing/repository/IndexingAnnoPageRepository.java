@@ -18,14 +18,24 @@ import eu.europeana.fulltext.entity.AnnoPage;
 import java.util.Date;
 import java.util.List;
 
+import eu.europeana.fulltext.util.MorphiaUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
+// TODO - can we not use AnnoPageRepository and add these methods there
 @Repository
 public class IndexingAnnoPageRepository {
 
+  @Value("${spring.profiles.active:}")
+  private String activeProfileString;
+
   @Autowired
   private Datastore datastore;
+
+  public AnnoPage saveAnnoPage(AnnoPage annoPage) {
+    return datastore.save(annoPage);
+  }
 
   /**
    * Fetches the records after the date.
@@ -96,4 +106,11 @@ public class IndexingAnnoPageRepository {
                 .projection()
                 .include(DATASET_ID,LOCAL_ID));
   }
+
+  /** Only for tests */
+  public void deleteAll() {
+    MorphiaUtils.validateDeletion(activeProfileString);
+    datastore.find(AnnoPage.class).delete(MorphiaUtils.MULTI_DELETE_OPTS);
+  }
+
 }
