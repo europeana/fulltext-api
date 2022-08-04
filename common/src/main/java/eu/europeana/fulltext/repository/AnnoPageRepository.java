@@ -389,10 +389,18 @@ public class AnnoPageRepository {
                 .collect(Collectors.toUnmodifiableList());
     }
 
-    public List<AnnoPage> getAnnoPages(String datasetId, String localId, String pageId, String lang, boolean includeDeprecated) {
+    /**
+     * Fetches List of AnnoPage.
+     * @param datasetId
+     * @param localId
+     * @param pageId
+     * @param includeDeprecated
+     * @return
+     */
+    public List<AnnoPage> getAnnoPages(String datasetId, String localId, String pageId, boolean includeDeprecated) {
         return datastore
                 .find(AnnoPage.class)
-                .filter(createFilterToGetAnnoPage(datasetId, localId, pageId, lang, includeDeprecated).toArray(new Filter[0]))
+                .filter(createFilterToGetAnnoPage(datasetId, localId, pageId, null, includeDeprecated).toArray(new Filter[0]))
                 .iterator(
                         new FindOptions()
                                 .projection()

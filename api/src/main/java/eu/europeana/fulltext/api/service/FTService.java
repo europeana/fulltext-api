@@ -203,7 +203,7 @@ public class FTService {
         Instant start = Instant.now();
         SummaryManifest apInfoSummaryManifest = new SummaryManifest(datasetId, localId);
         // fetch annopages with dsId and lcId
-        List<AnnoPage> annoPages = annoPageRepository.getAnnoPages(datasetId, localId, null, null, false);
+        List<AnnoPage> annoPages = annoPageRepository.getAnnoPages(datasetId, localId, null, false);
         Instant finish = Instant.now();
         LOG.debug(FETCHED_AGGREGATED,  Duration.between(start, finish).toMillis());
 
@@ -497,7 +497,7 @@ public class FTService {
                 throw new AnnoPageGoneException(String.format("/%s/%s/annopage/%s", datasetId, localId, pageId), lang);
             }
         } else {
-            List<AnnoPage> existingAnnoPages = annoPageRepository.getAnnoPages(datasetId, localId, pageId, lang, includeDeprecated);
+            List<AnnoPage> existingAnnoPages = annoPageRepository.getAnnoPages(datasetId, localId, pageId, includeDeprecated);
 
             if (existingAnnoPages.isEmpty()) {
                 throw new AnnoPageDoesNotExistException(
