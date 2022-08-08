@@ -33,14 +33,6 @@ public class IndexingApplication implements CommandLineRunner {
     SpringApplication.run(IndexingApplication.class, args);
   }
 
-
-  public void tests(){
-    //fulltextTest();
-    //metadataTest();
-    //synchFulltextTest();
-    //synchMetadata();
-  }
-
   @Override
   public void run(String... args) throws Exception {
     //use:
