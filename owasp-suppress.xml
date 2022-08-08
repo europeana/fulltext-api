@@ -148,6 +148,7 @@
         <packageUrl regex="true">^pkg:maven/org.springframework.plugin/spring-plugin-core@.*$</packageUrl>
         <cve>CVE-2022-22965</cve>
         <cve>CVE-2016-1000027</cve>
+        <cve>CVE-2018-11040</cve>
     </suppress>
     <suppress>
         <notes><![CDATA[
@@ -164,6 +165,7 @@
         <packageUrl regex="true">^pkg:maven/org.springframework.plugin/spring-plugin-metadata@.*$</packageUrl>
         <cve>CVE-2016-1000027</cve>
         <cve>CVE-2022-22965</cve>
+        <cve>CVE-2018-11040</cve>
     </suppress>
     <suppress>
         <notes><![CDATA[
