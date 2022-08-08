@@ -1,8 +1,6 @@
 package eu.europeana.fulltext.indexing.repository;
 
-import static dev.morphia.query.experimental.filters.Filters.and;
-import static dev.morphia.query.experimental.filters.Filters.eq;
-import static dev.morphia.query.experimental.filters.Filters.gt;
+import static dev.morphia.query.experimental.filters.Filters.*;
 import static eu.europeana.fulltext.util.MorphiaUtils.Fields.DATASET_ID;
 import static eu.europeana.fulltext.util.MorphiaUtils.Fields.DELETED;
 import static eu.europeana.fulltext.util.MorphiaUtils.Fields.LANGUAGE;
@@ -53,6 +51,29 @@ public class IndexingAnnoPageRepository {
     return datastore
             .find(AnnoPage.class)
             .filter(and(eq(DATASET_ID, dsId),eq(LOCAL_ID,lcId)), eq(DELETED, null))
+            .iterator(
+                    new FindOptions()
+                            .projection()
+                            .include(DATASET_ID, LOCAL_ID, TARGET_ID, LANGUAGE, MODIFIED, RESOURCE))
+            .toList();
+  }
+
+  //not working
+  public List<AnnoPage> findAnnoPage(String dsId, String lcId) {
+    return datastore
+            .find(AnnoPage.class)
+            .filter(and(eq(DATASET_ID, dsId),eq(LOCAL_ID,lcId)))
+            .iterator(
+                    new FindOptions()
+                            .projection()
+                            .include(DATASET_ID, LOCAL_ID, TARGET_ID, LANGUAGE, MODIFIED, RESOURCE, DELETED))
+            .toList();
+  }
+
+  public List<AnnoPage> findDeletedAnnoPage(String dsId, String lcId) {
+    return datastore
+            .find(AnnoPage.class)
+            .filter(and(eq(DATASET_ID, dsId),eq(LOCAL_ID,lcId)),  ne(DELETED, null))
             .iterator(
                     new FindOptions()
                             .projection()

@@ -70,7 +70,7 @@ public class DataSourceConfig {
   /**
    * Create fulltext client from solr nodes
    * (ideally it should be created from zookeeper nodes because it is expected it will be more than one node
-   * and it is more efficient but I sometimes get problems with the connection this way
+   * and it is more efficient but I sometimes get problems with the connection this way)
    *
    * @return Solr client for fulltext
    */
@@ -78,9 +78,11 @@ public class DataSourceConfig {
   public CloudSolrClient fulltextSolrClient(){
     LOG.info("Configuring fulltext solr client: {}", fulltextSolrUrl);
     // There is some issue connecting with zookeeper reported by Monica
-    if (StringUtils.isNotEmpty(fulltextZkUrl)) {
-      return new CloudSolrClient.Builder(Arrays.asList(fulltextZkUrl), java.util.Optional.empty()).build();
-    }
+/*    if (StringUtils.isNotEmpty(fulltextZkUrl)) {
+      CloudSolrClient client = new CloudSolrClient.Builder(Arrays.asList(fulltextZkUrl), java.util.Optional.empty()).build();
+      client.setDefaultCollection(fulltextCollection);
+      return  client;
+    }*/
     CloudSolrClient client = new CloudSolrClient.Builder(Arrays.asList(fulltextSolrUrl)).build();
     client.setDefaultCollection(fulltextCollection);
     return  client;

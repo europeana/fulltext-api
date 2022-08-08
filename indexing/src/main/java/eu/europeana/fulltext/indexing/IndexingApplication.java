@@ -1,5 +1,6 @@
 package eu.europeana.fulltext.indexing;
 
+import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.indexing.repository.IndexingAnnoPageRepository;
 import java.io.IOException;
 import java.time.*;
@@ -44,7 +45,8 @@ public class IndexingApplication implements CommandLineRunner {
   public void run(String... args) throws Exception {
     //use:
     //fulltextCollection.synchronizeFulltextContent();
-    //fulltextCollection.synchronizeMetadataContent();
+    //fulltextCollection.synchronizeMetadataContent();  //we can get teh last update in the fulltext collection, but it may be misleading as it could come from a new record added
+    List<String> toRepair = fulltextCollection.isFulltextUpdated();
 
     //for intensive check/repair if something goes wrong
     //List<String> toRepair = fulltextCollection.isFulltextUpdated();

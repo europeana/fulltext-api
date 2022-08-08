@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.io.stream.TupleStream;
+import org.apache.solr.client.solrj.response.schema.SchemaRepresentation;
 import org.apache.solr.common.util.Pair;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,8 +42,9 @@ public class BasicTest extends AbstractIntegrationTest {
         fulltextCollection.setMetadata(ids.get(1),metadataCollection);
         assertTrue(fulltextCollection.checkMetadata(ids.get(0)));
         assertTrue(fulltextCollection.checkMetadata(ids.get(1)));
-        fulltextCollection.setFulltext(ids.get(0));
-        fulltextCollection.setFulltext(ids.get(1));
+        SchemaRepresentation schema = fulltextCollection.getSchema();
+        fulltextCollection.setFulltext(ids.get(0), schema);
+        fulltextCollection.setFulltext(ids.get(1), schema);
         assertEquals(LocalDateTime.of(2018, Month.JULY,11,14,54,57,295),fulltextCollection.getLastUpdateMetadata());
         assertEquals(LocalDateTime.of(2018, Month.OCTOBER,23,9,5,35,490),fulltextCollection.getLastUpdateFulltext());
         assertTrue(fulltextCollection.existsByEuropeanaID(ids.get(0)));
@@ -63,8 +65,9 @@ public class BasicTest extends AbstractIntegrationTest {
         assertEquals(LocalDateTime.of(2018,Month.JULY,11,14,54,57,295000000),metadataCollection.getLastUpdateDate(ids.get(1)));
         LocalDateTime date = LocalDateTime.of(2022,Month.APRIL,28,15,00,04,0);
         ZonedDateTime dateZone = ZonedDateTime.of(date, ZoneOffset.UTC);
-        List<TupleStream> streams = metadataCollection.getDocumentsModifiedAfter(dateZone); //to check in Solr
-        List<String> documents = metadataCollection.getDocumentsModifiedAfter(streams);
+        List<TupleStream> streams = fulltextCollection.getAllDocuments();
+        //List<String> documents = metadataCollection.getDocumentsModifiedAfter(streams);
+
     }
 
 
@@ -77,7 +80,7 @@ public class BasicTest extends AbstractIntegrationTest {
 
     @Test
     public void syncMetadata() throws IOException, SolrServerException {
-        fulltextCollection.synchronizeMetadataContent(ZonedDateTime.ofInstant(Instant.EPOCH,ZoneOffset.UTC));
+        fulltextCollection.synchronizeMetadataContent();
     }
 
 }

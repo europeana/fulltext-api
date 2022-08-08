@@ -19,8 +19,8 @@
     </Root>
 
     <!-- Log Morphia queries    -->
-    <logger name="dev.morphia" level="TRACE"/>
-    <logger name="org.mongodb.driver" level="DEBUG"/>
-    <Logger name="eu.europeana.fulltext.indexing" level="DEBUG"/>
+    <logger name="dev.morphia" level="INFO"/>
+    <logger name="org.mongodb.driver" level="INFO"/>
+    <Logger name="eu.europeana.fulltext.indexing" level="INFO"/>
   </Loggers>
 </Configuration>

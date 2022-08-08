@@ -22,6 +22,8 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
 import org.apache.solr.client.solrj.io.Tuple;
+import org.apache.solr.client.solrj.io.stream.SolrStream;
+import org.apache.solr.client.solrj.io.stream.StreamContext;
 import org.apache.solr.client.solrj.io.stream.TupleStream;
 import org.apache.solr.client.solrj.request.schema.SchemaRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
@@ -29,6 +31,8 @@ import org.apache.solr.client.solrj.response.schema.SchemaRepresentation;
 import org.apache.solr.client.solrj.response.schema.SchemaResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.common.cloud.Replica;
+import org.apache.solr.common.params.ModifiableSolrParams;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.apache.solr.common.util.Pair;
@@ -53,18 +57,23 @@ public class FulltextCollection {
     private final String fulltextCollectionName;
     private Buffer<SolrInputDocument> bufferAdditions;
     private Buffer<String> bufferDeletions;
+    //PUT coreURLs heres
+    private final List<String> coreURLs;
+
 
     @Autowired
     private IndexingAnnoPageRepository repository;
 
     public FulltextCollection(
         @Qualifier(FULLTEXT_SOLR_BEAN) CloudSolrClient fulltextSolr,
-        MetadataCollection metadataCollection) {
+        MetadataCollection metadataCollection) throws IOException {
         this.fulltextSolr = fulltextSolr;
         this.fulltextCollectionName = fulltextSolr.getDefaultCollection();
         this.metadataCollection = metadataCollection;
         this.bufferAdditions = new Buffer<>(100,new AddService(fulltextSolr,fulltextCollectionName)); //TODO: take buffer capacity from properties
         this.bufferDeletions = new Buffer<>(100, new DeleteService(fulltextSolr,fulltextCollectionName)); //TODO: take buffer capacity from properties
+        this.coreURLs = getCoreURLs();
+
     }
 
     /**
@@ -76,13 +85,13 @@ public class FulltextCollection {
      * @throws IOException
      * @throws SolrServerException
      */
-    public void synchronizeMetadataContent() throws IOException, SolrServerException {
+ /*   public void synchronizeMetadataContent() throws IOException, SolrServerException {
         ZonedDateTime lastUpdate = getLastUpdateMetadata();
         if (lastUpdate != null) {
             LOG.info("Updating the fulltext collection from {}", lastUpdate);
             synchronizeMetadataContent(lastUpdate);
         }
-    }
+    }*/
 
     /**
      * Updates the metadata of the records contained in Fulltext collection.
@@ -93,28 +102,74 @@ public class FulltextCollection {
      * @throws IOException
      * @throws SolrServerException
      */
-    public void synchronizeMetadataContent(ZonedDateTime since) throws IOException, SolrServerException {
+/*    public void synchronizeMetadataContent(ZonedDateTime since) throws IOException, SolrServerException {
+        int count=0;
         List<TupleStream> streams = metadataCollection.getDocumentsModifiedAfter(since);
+        for (TupleStream solrStream: streams) {
+            try {
+                solrStream.open();
+                Tuple tuple = solrStream.read();
+                int total=0;
+                while (!tuple.EOF) {
+                    String europeanaId = tuple.getString(Constants.EUROPEANA_ID);
+                    LOG.info(++total + " " + europeanaId);
+                    try {
+                        // check if the data exists with this europeana Id in Fulltext Solr collection
+                        if (existsByEuropeanaID(europeanaId)) {
+                            setMetadata(europeanaId, metadataCollection);
+                            LOG.info(++count + " : " + europeanaId + " metadata updated");
+                        }
+                        tuple = solrStream.read();
+                    } catch (IOException | SolrServerException e) {
+                        LOG.error(" Error synchronising metadata content for " + europeanaId, e.getMessage());
+                    }
+                }
+            } catch (IOException  e){
+                LOG.error(e.getMessage());
+                solrStream.close();
+                commit();
+                throw e;
+            }
+        }
+        commit(); //necessary to send records that may be in the buffer, and then commit in Solr (commit in Solr is optional)
+    }*/
+
+    /**
+     * Updates the metadata of the records contained in Fulltext collection.
+     * It iterates over all the records contained in the Solr fulltext collection,
+     * and updates the metadata with the corresponding contents in the Solr metadata collection
+     * (even when it has not been updated as it seems to be faster this way).
+     * If there are no records in the fulltext collection, nothing is done.
+     * @throws IOException
+     * @throws SolrServerException
+     */
+    public void synchronizeMetadataContent() throws IOException, SolrServerException {
+        int count=0;
+        List<TupleStream> streams = getAllDocuments();
         for (TupleStream solrStream: streams) {
             try {
                 solrStream.open();
                 Tuple tuple = solrStream.read();
                 while (!tuple.EOF) {
                     String europeanaId = tuple.getString(Constants.EUROPEANA_ID);
-                    // check if the data exists with this europeana Id in Fulltext Solr collection
-                    if (existsByEuropeanaID(europeanaId)) {
+                    try {
                         setMetadata(europeanaId, metadataCollection);
+                        LOG.info(++count + " : " + europeanaId + " metadata updated");
+                        tuple = solrStream.read();
+                    } catch (IOException | SolrServerException e) {
+                        LOG.error(" Error synchronising metadata content for " + europeanaId, e.getMessage());
                     }
-                    tuple = solrStream.read();
                 }
-            } catch (Exception e) {
-                LOG.error(" Error synchronising metadata content ", e.getMessage());
-            } finally {
+            } catch (IOException  e){
+                LOG.error(e.getMessage());
                 solrStream.close();
+                commit();
+                throw e;
             }
         }
-        commit(); //necessary to send records that may be in the buffer, and then commit in Solr (commit is optional)
+        commit(); //necessary to send records that may be in the buffer, and then commit in Solr (commit in Solr is optional)
     }
+
 
     /**
      * Updates the fulltext content of the records in this collection.
@@ -145,22 +200,37 @@ public class FulltextCollection {
      * @throws Exception
      */
     public void synchronizeFulltextContent(ZonedDateTime since) throws Exception {
+        int count = 0;
         Set<String> idsProcessed = new HashSet<>();
-        MorphiaCursor<AnnoPage> cursorModified = repository.getRecordsModifiedAfterStream(Date.from(since.toInstant()));
-        while (cursorModified.hasNext()) {
-            AnnoPage ap = cursorModified.next();
-            String europeanaId = GeneralUtils.generateRecordId(ap.getDsId(), ap.getLcId());
-            if (!idsProcessed.contains(europeanaId)) {
-                if (!existsByEuropeanaID(europeanaId)) {
-                    setMetadata(europeanaId,metadataCollection);
-                    setFulltext(europeanaId);
-                } else if (!repository.existsActive(ap.getDsId(), ap.getLcId())) { //TODO: not tested
-                    deleteDocument(europeanaId);
-                } else {
-                    setFulltext(europeanaId);
+        try {
+            MorphiaCursor<AnnoPage> cursorModified = repository.getRecordsModifiedAfterStream(Date.from(since.toInstant())); //only date is not valid, it has to include time. E.g., 2022-08-05T09:49:34.141+00:00 instead of 2022-08-05
+            SchemaRepresentation schema = getSchema();
+            while (cursorModified.hasNext()) {
+                AnnoPage ap = cursorModified.next();
+                String europeanaId = GeneralUtils.generateRecordId(ap.getDsId(), ap.getLcId());
+                try {
+                    if (!idsProcessed.contains(europeanaId)) {
+                        boolean active = repository.existsActive(ap.getDsId(), ap.getLcId());
+                        boolean exists = existsByEuropeanaID(europeanaId);
+                        if (active && !exists) {        //add
+                            setMetadata(europeanaId, metadataCollection);
+                            setFulltext(europeanaId, schema);
+                        } else if (!active && exists) { //delete
+                            deleteDocument(europeanaId);
+                        } else if (active && exists) {   //update
+                            setFulltext(europeanaId, schema);
+                        }
+                        idsProcessed.add(europeanaId);
+                        LOG.info(++count + ":" + europeanaId + " fulltext processed");
+                    }
+                } catch (Exception e) {
+                    LOG.error(" Error synchronising fulltext content for " + europeanaId, e.getMessage());
                 }
-                idsProcessed.add(europeanaId);
             }
+        }catch (Exception e){
+            LOG.error(e.getMessage());
+            commit();
+            throw e;
         }
         commit(); //necessary to send records that may be in the buffer, and then commit in Solr (commit is optional)
     }
@@ -174,15 +244,28 @@ public class FulltextCollection {
      * @throws Exception
      */
     public void synchronizeFulltextContent(List<String> europeanaIds) throws Exception {
-        for (String europeana_id: europeanaIds){
-            if (!existsByEuropeanaID(europeana_id)) {
-                setMetadata(europeana_id,metadataCollection);
-                setFulltext(europeana_id);
-            } else if (!repository.existsActive(GeneralUtils.getDsId(europeana_id), GeneralUtils.getLocalId(europeana_id))) { //TODO: not tested
-                deleteDocument(europeana_id);
-            } else {
-                setFulltext(europeana_id);
+        try {
+            SchemaRepresentation schema = getSchema();
+            for (String europeanaId : europeanaIds) {
+                try {
+                    boolean active = repository.existsActive(GeneralUtils.getDsId(europeanaId), GeneralUtils.getLocalId(europeanaId)); //TODO: not tested
+                    boolean exists = existsByEuropeanaID(europeanaId);
+                    if (active && !exists) {        //add
+                        setMetadata(europeanaId, metadataCollection);
+                        setFulltext(europeanaId, schema);
+                    } else if (!active && exists) { //delete
+                        deleteDocument(europeanaId);
+                    } else if (active && exists) {   //update
+                        setFulltext(europeanaId, schema);
+                    }
+                } catch (Exception e) {
+                    LOG.error(" Error synchronising fulltext content for  " + europeanaId, e.getMessage());
+                }
             }
+        }catch (Exception e){
+            LOG.error(e.getMessage());
+            commit();
+            throw e;
         }
         commit(); //necessary to send records that may be in the buffer, and then commit in Solr (commit is optional)
     }
@@ -212,6 +295,7 @@ public class FulltextCollection {
             String europeanaId = GeneralUtils.generateRecordId(ap.getDsId(),ap.getLcId());
             if (!processed.contains(europeanaId)) {
                 processed.add(europeanaId);
+                LOG.info("Processing " +  europeanaId);
                 if (!isFulltextUpdated(europeanaId)){
                     toRepair.add(europeanaId); //document is not in the Solr collection or fulltext content is not updated
                 }
@@ -222,17 +306,21 @@ public class FulltextCollection {
     }
 
 
-    public boolean isLangSupported(String language) throws SolrServerException, IOException {
+    public boolean isLangSupported(String language, SchemaRepresentation schema) throws SolrServerException, IOException {
         if (language == null || language.isEmpty())
             return false;
-        SchemaRequest request = new SchemaRequest();
-        SchemaResponse response = request.process(fulltextSolr, fulltextCollectionName);
-        SchemaRepresentation schema = response.getSchemaRepresentation();
         if (!schema.getFields().stream().map(p -> p.get("name")).collect(Collectors.toList())
                 .contains(Constants.FULLTEXT + "." + language)) {
             return false;
         }
         return true;
+    }
+
+    public SchemaRepresentation getSchema() throws SolrServerException, IOException {
+        SchemaRequest request = new SchemaRequest();
+        SchemaResponse response = request.process(fulltextSolr, fulltextCollectionName);
+        SchemaRepresentation schema = response.getSchemaRepresentation();
+        return schema;
     }
 
 
@@ -389,7 +477,7 @@ public class FulltextCollection {
                             ZonedDateTime zonedDateTime = localDate.atStartOfDay(ZoneId.of("Z"));
                             isoDates.add(zonedDateTime.format(DateTimeFormatter.ISO_INSTANT));
                         } catch (DateTimeException e) {
-                            LOG.info("Not parsable date in record  {} : {}", europeanaId, d.toString());
+                            LOG.warn("Not parsable date in record  {} : {}", europeanaId, d.toString());
                         }
                         if (!isoDates.isEmpty()) {
                             Map<String, Object> atomicUpdates = new HashMap<>(1);
@@ -426,22 +514,30 @@ public class FulltextCollection {
      * @throws IOException
      * @throws SolrServerException
      */
-    protected void setFulltext(String europeanaId) throws IOException, SolrServerException {
+    protected void setFulltext(String europeanaId, SchemaRepresentation schema) throws IOException, SolrServerException {
         //TODO: thread
         try {
             Map<String, List<String>> langFtContent = new HashMap<>();
             SolrInputDocument newDocument = new SolrInputDocument();
             newDocument.addField(Constants.EUROPEANA_ID, europeanaId);
-            List<AnnoPage> listAp = repository.findActiveAnnoPage(GeneralUtils.getDsId(europeanaId), GeneralUtils.getLocalId(europeanaId)); //TODO: is this thread safe?
-            if (listAp.isEmpty()){
+            //List<AnnoPage> listAp = repository.findActiveAnnoPage(GeneralUtils.getDsId(europeanaId), GeneralUtils.getLocalId(europeanaId));
+
+            //best performance if this is possible
+            //List<AnnoPage> listAp = repository.findAnnoPage(GeneralUtils.getDsId(europeanaId), GeneralUtils.getLocalId(europeanaId)); //TODO: is this thread safe?
+            //List<AnnoPage> active = listAp.stream().filter(p -> p.getDeleted() != null).collect(Collectors.toList());
+            //List<AnnoPage> deleted = listAp.stream().filter(p -> p.getDeleted() == null).collect(Collectors.toList());
+
+            List<AnnoPage> active = repository.findActiveAnnoPage(GeneralUtils.getDsId(europeanaId), GeneralUtils.getLocalId(europeanaId)); //TODO: maybe better performance with only one query
+            List<AnnoPage> deleted = repository.findDeletedAnnoPage(GeneralUtils.getDsId(europeanaId), GeneralUtils.getLocalId(europeanaId));
+            if (active.isEmpty()){ //we have to have at least one active in this point of the code, but just in case
                 LOG.error("Error setting fulltext. Document with europeana_id {} is not in database", europeanaId);
                 throw new IllegalArgumentException("Document " + europeanaId + " is not in database");
             }
             Date modified = Date.from(Instant.EPOCH);
-            for (AnnoPage ap : listAp) {
+            for (AnnoPage ap : active) {
                 String fulltext = ap.getRes().getValue();
                 String lang = ap.getLang();
-                if (!isLangSupported(lang)) {
+                if (!isLangSupported(lang, schema)) {
                     LOG.warn("Record {} - language not supported: {} . Indexing in fulltext.", europeanaId, lang);
                     lang = "";
                 }
@@ -458,6 +554,16 @@ public class FulltextCollection {
                 }
                 listContents.add(content);
 
+            }
+            for (AnnoPage ap: deleted){
+                String lang = ap.getLang();
+                if (!isLangSupported(lang, schema)) {
+                    LOG.warn("Record {} - language not supported: {} . Indexing in fulltext.", europeanaId, lang);
+                    lang = "";
+                }
+                if (!langFtContent.containsKey(lang)){
+                    langFtContent.put(lang, new ArrayList<>()); //hopefully removes content (although not the field)
+                }
             }
             for (String lang : langFtContent.keySet()) {
                 Map<String, Object> atomicUpdates = new HashMap<>(1);
@@ -485,6 +591,7 @@ public class FulltextCollection {
                     LOG.info("{} should have been deleted in Solr fulltext collection.", europeanaId);
                     return false;
                 }
+                return true;
             }
             Date max_modified = ap_list.stream().map(p->p.getModified()).max(Date::compareTo).orElseThrow();
             ZonedDateTime lastUpdate_ap = ZonedDateTime.from(max_modified.toInstant().atZone(ZoneOffset.UTC));
@@ -492,7 +599,6 @@ public class FulltextCollection {
             if (lastUpdate_ft == null) {
                 LOG.info(" {} not found in the Solr fulltext collection", europeanaId);
                 return false;
-
             }
             if (lastUpdate_ft.isBefore(lastUpdate_ap)) {
                 LOG.info(" {} fulltext content is not updated", europeanaId);
@@ -500,6 +606,28 @@ public class FulltextCollection {
             }
             return true;
         } catch (SolrServerException | IOException e){
+            LOG.error(e.getMessage());
+            throw e;
+        }
+    }
+
+    public List<TupleStream> getAllDocuments() {
+        try {
+            List<TupleStream> streams = new ArrayList<>();
+            for (String coreURL : coreURLs) { //we have to iterate each core separately
+                ModifiableSolrParams params = new ModifiableSolrParams();
+                params.set(Constants.SOLR_QUERY, Constants.SOLR_QUERY_DEFAULT);
+                params.set(Constants.SOLR_QT, Constants.SOLR_EXPORT);
+                params.set(Constants.SOLR_SORT, Constants.EUROPEANA_ID + Constants.SOLR_SORT_ASC);
+                params.set(Constants.SOLR_FL, Constants.EUROPEANA_ID);
+
+                TupleStream solrStream = new SolrStream(coreURL, params);
+                StreamContext context = new StreamContext();
+                solrStream.setStreamContext(context);
+                streams.add(solrStream);
+            }
+            return streams;
+        }catch (IndexOutOfBoundsException  e){
             LOG.error(e.getMessage());
             throw e;
         }
@@ -543,6 +671,21 @@ public class FulltextCollection {
             return response.getResults().get(0);
         } catch (IOException | SolrServerException | NullPointerException e){
             LOG.error("Error retrieving record {}. {}", europeanaId , e.getMessage());
+            throw e;
+        }
+    }
+
+    private List<String> getCoreURLs() throws IOException {
+        try {
+            List<String> coreList = new ArrayList<String>();
+            for (Replica replica : fulltextSolr.getClusterStateProvider().getClusterState().getCollection(fulltextCollectionName).getReplicas()) {
+                String baseUrl = replica.getBaseUrl();
+                String coreName = replica.getCoreName();
+                coreList.add(baseUrl + "/" + coreName);
+            }
+            return coreList;
+        } catch (IOException e){
+            LOG.error(e.getMessage());
             throw e;
         }
     }
