@@ -10,6 +10,7 @@ import eu.europeana.fulltext.indexing.testutils.IntegrationTestUtils;
 import eu.europeana.fulltext.util.GeneralUtils;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.io.stream.TupleStream;
+import org.apache.solr.client.solrj.response.schema.SchemaRepresentation;
 import org.apache.solr.common.util.Pair;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -39,8 +40,9 @@ public class FulltextColletionITTest extends AbstractIntegrationTest {
         repository.saveAnnoPage(IntegrationTestUtils.createSubtitleAnnoPage());
 
         // Now add the data in fulltext solr
-        fulltextCollection.setFulltext(GeneralUtils.generateRecordId(IntegrationTestUtils.TRANSCRIPTION_DSID, IntegrationTestUtils.TRANSCRIPTION_LCID));
-        fulltextCollection.setFulltext(GeneralUtils.generateRecordId(IntegrationTestUtils.SUBTITLE_DSID, IntegrationTestUtils.SUBTITLE_LCID));
+        SchemaRepresentation schema = fulltextCollection.getSchema();
+        fulltextCollection.setFulltext(GeneralUtils.generateRecordId(IntegrationTestUtils.TRANSCRIPTION_DSID, IntegrationTestUtils.TRANSCRIPTION_LCID), schema);
+        fulltextCollection.setFulltext(GeneralUtils.generateRecordId(IntegrationTestUtils.SUBTITLE_DSID, IntegrationTestUtils.SUBTITLE_LCID), schema);
 
        // SolrServices.add(metadataCollection)
 
@@ -74,7 +76,7 @@ public class FulltextColletionITTest extends AbstractIntegrationTest {
 
     @Test
     public void syncMetadata() throws IOException, SolrServerException {
-        fulltextCollection.synchronizeMetadataContent(ZonedDateTime.ofInstant(Instant.EPOCH,ZoneOffset.UTC));
+        fulltextCollection.synchronizeMetadataContent();
     }
 
     @Test
@@ -90,8 +92,9 @@ public class FulltextColletionITTest extends AbstractIntegrationTest {
         fulltextCollection.setMetadata(ids.get(1),metadataCollection);
         assertTrue(fulltextCollection.checkMetadata(ids.get(0)));
         assertTrue(fulltextCollection.checkMetadata(ids.get(1)));
-        fulltextCollection.setFulltext(ids.get(0));
-        fulltextCollection.setFulltext(ids.get(1));
+        SchemaRepresentation schema = fulltextCollection.getSchema();
+        fulltextCollection.setFulltext(ids.get(0), schema);
+        fulltextCollection.setFulltext(ids.get(1), schema);
         assertEquals(LocalDateTime.of(2018, Month.JULY,11,14,54,57,295),fulltextCollection.getLastUpdateMetadata());
         assertEquals(LocalDateTime.of(2018, Month.OCTOBER,23,9,5,35,490),fulltextCollection.getLastUpdateFulltext());
         assertTrue(fulltextCollection.existsByEuropeanaID(ids.get(0)));
