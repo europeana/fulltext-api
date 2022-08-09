@@ -9,7 +9,7 @@ public class AnnotationPreview {
   private final String rights;
   private final boolean originalLang;
   private final FulltextType fulltextType;
-  private String annotationBody;
+  private final String annotationBody;
 
   private AnnotationPreview(
       String source,
@@ -64,13 +64,13 @@ public class AnnotationPreview {
 
   public static class Builder {
     private String source;
-    private String recordId;
+    private final String recordId;
     private String media;
     private String language;
     private String rights;
     private boolean originalLang;
-    private FulltextType fulltextType;
-    private String annotationBody;
+    private final FulltextType fulltextType;
+    private final String annotationBody;
 
     public Builder(String recordId, FulltextType fulltextType, String annotationBody) {
       this.recordId = recordId;
@@ -95,11 +95,6 @@ public class AnnotationPreview {
 
     public Builder setOriginalLang(boolean originalLang) {
       this.originalLang = originalLang;
-      return this;
-    }
-
-    public Builder setFulltextType(FulltextType fulltextType) {
-      this.fulltextType = fulltextType;
       return this;
     }
 

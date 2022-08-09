@@ -1,4 +1,4 @@
-package eu.europeana.fulltext.api.service.impl;
+package eu.europeana.fulltext.api.service;
 
 import static eu.europeana.fulltext.AppConstants.defaultSubtitleConfig;
 
@@ -8,7 +8,6 @@ import com.dotsub.converter.importer.impl.WebVttImportHandler;
 import com.dotsub.converter.model.SubtitleItem;
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.WebConstants;
-import eu.europeana.fulltext.api.service.FulltextAdapter;
 import eu.europeana.fulltext.exception.InvalidFormatException;
 import eu.europeana.fulltext.exception.SubtitleParsingException;
 import eu.europeana.fulltext.subtitles.AnnotationPreview;
@@ -29,12 +28,12 @@ import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class SubtitleFulltextAdapter implements FulltextAdapter {
-  private static final Logger logger = LogManager.getLogger(SubtitleFulltextAdapter.class);
+public class SubtitleFulltextConverter implements FulltextConverter {
+  private static final Logger logger = LogManager.getLogger(SubtitleFulltextConverter.class);
   private static final Pattern PATTERN = Pattern.compile("[<][/]?[^<]+[/]?[>]");
 
   @Override
-  public EdmFullTextPackage adapt(AnnotationPreview annotationPreview) throws InvalidFormatException, SubtitleParsingException {
+  public EdmFullTextPackage convert(AnnotationPreview annotationPreview) throws InvalidFormatException, SubtitleParsingException {
     // get the subtitles
     List<SubtitleItem> subtitleItems =
             parseSubtitle(

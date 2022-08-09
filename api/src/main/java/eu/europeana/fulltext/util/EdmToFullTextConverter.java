@@ -32,7 +32,7 @@ import org.apache.commons.lang3.StringUtils;
      * @param fulltext
      * @return
      */
-    public static AnnoPage getAnnoPage(
+    public static AnnoPage createAnnoPage(
         String datasetId, String localId, AnnotationPreview request, EdmFullTextPackage fulltext, boolean isContributed)
         throws MismatchInAnnotationException {
       Resource resource = getResource(fulltext.getResource(), request, datasetId, localId, isContributed);

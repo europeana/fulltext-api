@@ -36,7 +36,7 @@ public class AnnotationUtils {
                 .setMedia(item.getTarget().getSource())
                 .setLanguage(item.getBody().getLanguage())
                 .setRights(item.getBody().getEdmRights())
-                // If the motivation is “captioning” or "transcribing" , then originalLang is true;
+                // If the motivation is “captioning” or "transcribing" , then originalLang is true
                 // for the moment, we only have the original text and no translations yet for transcription and newspapers
                 .setOriginalLang(MOTIVATION_CAPTIONING.equals(item.getMotivation()) || MOTIVATION_TRANSCRIBING.equals(item.getMotivation()))
                 .build();

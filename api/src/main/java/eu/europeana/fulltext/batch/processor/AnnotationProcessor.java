@@ -1,7 +1,6 @@
 package eu.europeana.fulltext.batch.processor;
 
 import eu.europeana.fulltext.api.service.FTService;
-import eu.europeana.fulltext.api.service.impl.SubtitleFulltextAdapter;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.subtitles.AnnotationPreview;
 import eu.europeana.fulltext.subtitles.external.AnnotationItem;

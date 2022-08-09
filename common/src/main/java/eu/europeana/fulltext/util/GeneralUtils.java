@@ -19,6 +19,7 @@ import org.springframework.util.CollectionUtils;
 public class GeneralUtils {
 
   public static final String DATE_FORMAT_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSSXX";
+
   private GeneralUtils() {
     // private constructor to hide implicit one
   }
@@ -26,6 +27,8 @@ public class GeneralUtils {
   /** Matches spring.profiles.active property in test/resource application.properties file */
   public static final String ACTIVE_TEST_PROFILE = "test";
 
+  private static final String ANNO_SEARCH_QUERY_FMT =
+      "generated:[%s TO %s ] AND  (motivation:subtitling OR motivation:transcribing OR motivation:captioning)";
 
   /**
    * Regex used for validating annotation ids. '%s' will be replaced by allowed domains (via
@@ -36,8 +39,9 @@ public class GeneralUtils {
   private static final Pattern ANNOTATION_ID_SUFFIX_PATTERN = Pattern.compile("/annotation/\\d+$");
 
   /**
-   * Creates a hash for the specified annotation.
-   * This should normally be used for deriving the id of the annotation.
+   * Creates a hash for the specified annotation. This should normally be used for deriving the id
+   * of the annotation.
+   *
    * @param annotation annotation to generate a hash for
    * @param lang language of AnnoPage containing this Annotation
    * @param tgtId media url of AnnoPage containing this Annotation
@@ -170,13 +174,11 @@ public class GeneralUtils {
     return Arrays.stream(activeProfileString.split(",")).noneMatch(ACTIVE_TEST_PROFILE::equals);
   }
 
-  public static String[] getStringableListToString(List<? extends Object> list){
+  public static String[] getStringableListToString(List<? extends Object> list) {
     return list.stream().map(Object::toString).toArray(String[]::new);
-
   }
 
-  public static String getAnnoPageUrl(
-      String dsId, String lcId, String pgId, String lang) {
+  public static String getAnnoPageUrl(String dsId, String lcId, String pgId, String lang) {
     String path = String.format("/presentation/%s/%s/%s", dsId, lcId, pgId);
 
     if (StringUtils.isNotEmpty(lang)) {
@@ -186,7 +188,6 @@ public class GeneralUtils {
     return path;
   }
 
-
   public static String generateAnnotationSearchQuery(@Nullable Instant from, @NonNull Instant to) {
     /*
      * if 'from' is null, fetch from the earliest representable time
@@ -195,7 +196,7 @@ public class GeneralUtils {
     String fromString = from != null ? toSolrDateString(from) : "*";
     String toString = toSolrDateString(to);
 
-    return "generated:[" + fromString + " TO " + toString + "] AND  (motivation:subtitling)";
+    return String.format(ANNO_SEARCH_QUERY_FMT, fromString, toString);
   }
 
   private static String toSolrDateString(Instant instant) {
@@ -209,7 +210,6 @@ public class GeneralUtils {
   public static String generateResourceId(String recordId, String language, String media) {
     return generateHash(recordId + language + media);
   }
-
 
   public static String[] getAnnoPageObjectIds(List<? extends AnnoPage> annoPages) {
     return annoPages.stream().map(a -> a.getDbId().toString()).toArray(String[]::new);

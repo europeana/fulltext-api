@@ -132,17 +132,18 @@ public class FTWriteController extends BaseRestController {
     }
 
     AnnotationItem item = itemOptional.get();
+    String motivation = item.getMotivation();
 
     // motivation must be subtitling or transcribing
-    if (!MOTIVATION_SUBTITLING.equals(item.getMotivation()) && !MOTIVATION_TRANSCRIBING.equals(item.getMotivation())) {
+    if (!MOTIVATION_SUBTITLING.equals(motivation) && !MOTIVATION_TRANSCRIBING.equals(motivation)) {
       throw new UnsupportedAnnotationException(
           String.format(
               "Annotation motivation '%s' not supported for sync. Only subtitles or transcribing are supported",
-              item.getMotivation()));
+              motivation));
     }
 
     AnnotationPreview annotationPreview =
-            AnnotationUtils.createAnnotationPreview(itemOptional.get());
+            AnnotationUtils.createAnnotationPreview(item);
     AnnoPage annoPage = ftService.createAnnoPage(annotationPreview, true);
 
     // Morphia creates a new _id value if none exists, so we can't directly call save() – as this

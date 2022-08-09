@@ -16,8 +16,6 @@ import eu.europeana.fulltext.api.model.v2.AnnotationPageV2;
 import eu.europeana.fulltext.api.model.v2.AnnotationV2;
 import eu.europeana.fulltext.api.model.v3.AnnotationPageV3;
 import eu.europeana.fulltext.api.model.v3.AnnotationV3;
-import eu.europeana.fulltext.api.service.impl.SubtitleFulltextAdapter;
-import eu.europeana.fulltext.api.service.impl.TranscriptionFulltextAdapter;
 import eu.europeana.fulltext.edm.EdmFullTextPackage;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Resource;
@@ -63,8 +61,9 @@ public class FTService {
     private final FTSettings ftSettings;
     private final ObjectMapper mapper;
 
-    private static final Map<FulltextType, FulltextAdapter> fulltextAdapterMap =
-            Map.of(WEB_VTT, new SubtitleFulltextAdapter(), SRT, new TranscriptionFulltextAdapter());
+
+  private static final Map<FulltextType, FulltextConverter> fulltextConverterMap =
+        Map.of(WEB_VTT, new SubtitleFulltextConverter(), SRT, new TranscriptionFulltextConverter());
 
     @Value("${spring.profiles.active:}")
     private String activeProfileString;
@@ -391,9 +390,18 @@ public class FTService {
      * @throws EuropeanaApiException
      */
     public AnnoPage createAnnoPage(AnnotationPreview annotationPreview, boolean isContributed) throws EuropeanaApiException {
-        EdmFullTextPackage fulltext = fulltextAdapterMap.get(annotationPreview.getFulltextType()).adapt(annotationPreview);
+        FulltextConverter converter = fulltextConverterMap.get(annotationPreview.getFulltextType());
+
+    if (converter == null) {
+      throw new InvalidFormatException(
+          String.format(
+              "No converter implemented for FulltextType '%s'. Supported types are %s",
+              annotationPreview.getFulltextType().getMimeType(), fulltextConverterMap.keySet()));
+    }
+
+        EdmFullTextPackage fulltext = converter.convert(annotationPreview);
         String recordId = annotationPreview.getRecordId();
-        return EdmToFullTextConverter.getAnnoPage(
+        return EdmToFullTextConverter.createAnnoPage(
                 getDsId(recordId), getLocalId(recordId), annotationPreview, fulltext, isContributed);
     }
 

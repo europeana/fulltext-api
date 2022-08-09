@@ -4,7 +4,7 @@ import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.fulltext.edm.EdmFullTextPackage;
 import eu.europeana.fulltext.subtitles.AnnotationPreview;
 
-public interface FulltextAdapter {
+public interface FulltextConverter {
 
-    EdmFullTextPackage adapt(AnnotationPreview annotationPreview) throws EuropeanaApiException;
+    EdmFullTextPackage convert(AnnotationPreview annotationPreview) throws EuropeanaApiException;
 }
