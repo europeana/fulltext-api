@@ -42,7 +42,7 @@ public class DataSourceConfig {
   @Value("${solr.metadata.collection}")
   private String metadataCollection;
 
-  @Value("${solr.fulltext.zk.url}")
+  @Value("${solr.fulltext.zk.url:}")
   private String fulltextZkUrl;
 
   @Bean

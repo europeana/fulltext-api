@@ -10,6 +10,9 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>indexing</artifactId>
+  <properties>
+    <spring.boot.mainclass>eu.europeana.fulltext.indexing.IndexingApplication</spring.boot.mainclass>
+  </properties>
 
   <dependencies>
     <dependency>
@@ -92,5 +95,23 @@
 
   </dependencies>
 
-
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>${spring-boot.version}</version>
+        <configuration>
+          <finalName>fulltext-indexing</finalName>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>
