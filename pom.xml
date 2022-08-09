@@ -60,7 +60,7 @@
         <unitils.version>3.4.6</unitils.version>
         <swagger.version>3.0.0</swagger.version>
         <tomcat.version>9.0.58</tomcat.version>
-
+        <eclipse-jetty.version>11.0.11</eclipse-jetty.version>
     </properties>
 
     <dependencyManagement>
