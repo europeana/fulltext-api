@@ -69,8 +69,9 @@ public class FulltextColletionITTest extends AbstractIntegrationTest {
 
     @Test
     public void syncFulltextTest() throws Exception {
-        fulltextCollection.synchronizeFulltextContent(ZonedDateTime.ofInstant(Instant.EPOCH,ZoneOffset.UTC));
-        //fulltextCollection.synchronizeFulltextContent();
+        fulltextCollection.synchronizeFulltextContent();
+        //also from a specific date
+        //fulltextCollection.synchronizeFulltextContent(ZonedDateTime.ofInstant(Instant.EPOCH,ZoneOffset.UTC));
         assertEquals(new ArrayList<String>(), fulltextCollection.isFulltextUpdated());
     }
 

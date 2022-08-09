@@ -593,14 +593,14 @@ public class FulltextCollection {
                 }
                 return true;
             }
-            Date max_modified = ap_list.stream().map(p->p.getModified()).max(Date::compareTo).orElseThrow();
+            Date max_modified = ap_list.stream().map(p->p.getModified()).max(Date::compareTo).orElse(ap_list.get(0).getModified());
             ZonedDateTime lastUpdate_ap = ZonedDateTime.from(max_modified.toInstant().atZone(ZoneOffset.UTC));
-            ZonedDateTime lastUpdate_ft = this.getLastUpdateDates(europeanaId).second();
+            Pair<ZonedDateTime,ZonedDateTime> lastUpdate_ft = this.getLastUpdateDates(europeanaId);
             if (lastUpdate_ft == null) {
                 LOG.info(" {} not found in the Solr fulltext collection", europeanaId);
                 return false;
             }
-            if (lastUpdate_ft.isBefore(lastUpdate_ap)) {
+            if (lastUpdate_ft.second().isBefore(lastUpdate_ap)) {
                 LOG.info(" {} fulltext content is not updated", europeanaId);
                 return false;
             }

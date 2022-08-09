@@ -37,8 +37,8 @@ public class IndexingApplication implements CommandLineRunner {
   public void run(String... args) throws Exception {
     //use:
     //fulltextCollection.synchronizeFulltextContent();
-    //fulltextCollection.synchronizeMetadataContent();  //we can get teh last update in the fulltext collection, but it may be misleading as it could come from a new record added
-    List<String> toRepair = fulltextCollection.isFulltextUpdated();
+    //fulltextCollection.synchronizeMetadataContent();
+    //List<String> toRepair = fulltextCollection.isFulltextUpdated();
 
     //for intensive check/repair if something goes wrong
     //List<String> toRepair = fulltextCollection.isFulltextUpdated();
