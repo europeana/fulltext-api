@@ -221,11 +221,6 @@
         <!-- Override the spring-security-core and crypto to 5.7.2 which does not have any vulnerabilities like CVE-2022-22978 -->
         <dependency>
             <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-config</artifactId>
-            <version>5.7.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-crypto</artifactId>
             <version>5.7.2</version>
         </dependency>
