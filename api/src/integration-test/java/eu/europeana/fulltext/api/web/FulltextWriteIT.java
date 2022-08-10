@@ -1,5 +1,6 @@
 package eu.europeana.fulltext.api.web;
 
+import static eu.europeana.fulltext.AppConstants.CONTENT_TYPE_PLAIN;
 import static eu.europeana.fulltext.AppConstants.CONTENT_TYPE_VTT;
 import static eu.europeana.fulltext.api.IntegrationTestUtils.ANNOPAGE_FILMPORTAL_1197365_JSON;
 import static eu.europeana.fulltext.api.IntegrationTestUtils.SUBTITLE_VTT;
@@ -13,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -41,18 +43,20 @@ class FulltextWriteIT extends BaseIntegrationTest {
   }
 
   // TODO - check DB data in all test
+  // Fulltext type WEB_VTT test
   @Test
-  void fulltextSubmissionShouldBeSuccessful() throws Exception {
+  void fulltextVttSubmissionShouldBeSuccessful() throws Exception {
     String requestBody = IntegrationTestUtils.loadFile(SUBTITLE_VTT);
 
     String mediaUrl = "https://www.filmportal.de/node/1197365";
     String dsId = "08604";
     String lcId= "FDE2205EEE384218A8D986E5138F9691";
+    String lang = "nl";
     mockMvc
         .perform(
             post("/presentation/{dsId}/{lcId}/annopage", dsId, lcId)
                 .param(WebConstants.REQUEST_VALUE_MEDIA, mediaUrl)
-                .param(WebConstants.REQUEST_VALUE_LANG, "nl")
+                .param(WebConstants.REQUEST_VALUE_LANG, lang)
                 .param(
                     WebConstants.REQUEST_VALUE_RIGHTS,
                     "http://creativecommons.org/licenses/by-sa/4.0/")
@@ -64,8 +68,8 @@ class FulltextWriteIT extends BaseIntegrationTest {
             jsonPath(
                 "$.@id",
                 endsWith(
-                    String.format("/%s/%s/annopage/%s", dsId, lcId, GeneralUtils.derivePageId(mediaUrl)))))
-        .andExpect(jsonPath("$.language", is("nl")));
+                    String.format("/%s/%s/annopage/%s?lang=%s", dsId, lcId, GeneralUtils.derivePageId(mediaUrl), lang))))
+        .andExpect(jsonPath("$.language", is(lang)));
 
     // check that resource is saved with contributed=false
     AnnoPage retrievedAnnoPage =
@@ -111,7 +115,7 @@ class FulltextWriteIT extends BaseIntegrationTest {
         String updatedRights = annoPage.getRes().getRights() + "updated";
         mockMvc
             .perform(
-                put(GeneralUtils.getAnnoPageUrl(annoPage))
+                put(GeneralUtils.getAnnoPageUrl(annoPage, false))
                     .param(WebConstants.REQUEST_VALUE_LANG, annoPage.getLang())
                     .param(
                         WebConstants.REQUEST_VALUE_RIGHTS,
@@ -120,11 +124,12 @@ class FulltextWriteIT extends BaseIntegrationTest {
                     .accept(MediaType.APPLICATION_JSON))
 
             .andExpect(status().isOk())
+            .andDo(print())
             .andExpect(
                 jsonPath(
                     "$.@id",
                     endsWith(
-                        GeneralUtils.getAnnoPageUrl(annoPage))))
+                        GeneralUtils.getAnnoPageUrl(annoPage, true))))
             .andExpect(jsonPath("$.language", is(annoPage.getLang())))
             // rights should have been updated
             .andExpect(jsonPath("$.resources[0].resource.rights", is(updatedRights)));
@@ -149,7 +154,7 @@ class FulltextWriteIT extends BaseIntegrationTest {
         mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), AnnoPage.class);
     ftService.saveAnnoPage(annoPage);
     mockMvc
-        .perform(delete(GeneralUtils.getAnnoPageUrl(annoPage)).accept(MediaType.APPLICATION_JSON))
+        .perform(delete(GeneralUtils.getAnnoPageUrl(annoPage, false)).accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isNoContent());
   }
 
@@ -161,7 +166,7 @@ class FulltextWriteIT extends BaseIntegrationTest {
     ftService.saveAnnoPage(annoPage);
     mockMvc
         .perform(
-            delete(GeneralUtils.getAnnoPageUrl(annoPage))
+            delete(GeneralUtils.getAnnoPageUrl(annoPage, false))
                 .param(WebConstants.REQUEST_VALUE_LANG, annoPage.getLang())
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isNoContent());
@@ -253,14 +258,50 @@ class FulltextWriteIT extends BaseIntegrationTest {
         .andExpect(status().isOk());
 
 
+    String pgId1 = GeneralUtils.derivePageId(mediaUrl1);
+    String pgId2 = GeneralUtils.derivePageId(mediaUrl2);
     // check that the correct number of AnnoPage and Resource docs are created
-    assertTrue(ftService.doesAnnoPageExist(dsId, lcId, GeneralUtils.derivePageId(mediaUrl1), lang, false));
-    assertTrue(ftService.doesAnnoPageExist(dsId, lcId, GeneralUtils.derivePageId(mediaUrl2), lang, false));
+    assertTrue(ftService.doesAnnoPageExist(dsId, lcId, pgId1, lang, false));
+    assertTrue(ftService.doesAnnoPageExist(dsId, lcId, pgId2, lang, false));
 
-    String resourceId1 = GeneralUtils.generateResourceId(GeneralUtils.generateRecordId(dsId, lcId), lang, mediaUrl1);
-    assertTrue(ftService.resourceExists(dsId, lcId, resourceId1));
+    assertTrue(ftService.resourceExists(dsId, lcId, pgId1, lang));
+    assertTrue(ftService.resourceExists(dsId, lcId, pgId2, lang));
+  }
 
-    String resourceId2 = GeneralUtils.generateResourceId(GeneralUtils.generateRecordId(dsId, lcId), lang, mediaUrl2);
-    assertTrue(ftService.resourceExists(dsId, lcId, resourceId2));
+  // Fulltext type SRT test
+  @Test
+  void fulltextTranscriptionSubmissionShouldBeSuccessful() throws Exception {
+    String requestBody = "text body for testing";
+
+    String mediaUrl = "https://www.filmportal.de/node/1197365";
+    String dsId = "08604";
+    String lcId= "FDE2205EEE384218A8D986E5138F9691";
+    String lang = "nl";
+    mockMvc
+            .perform(
+                    post("/presentation/{dsId}/{lcId}/annopage", dsId, lcId)
+                            .param(WebConstants.REQUEST_VALUE_MEDIA, mediaUrl)
+                            .param(WebConstants.REQUEST_VALUE_LANG, lang)
+                            .param(
+                                    WebConstants.REQUEST_VALUE_RIGHTS,
+                                    "http://creativecommons.org/licenses/by-sa/4.0/")
+                            .accept(MediaType.APPLICATION_JSON)
+                            .contentType(CONTENT_TYPE_PLAIN)
+                            .content(requestBody))
+            .andExpect(status().isOk())
+        .andExpect(
+            jsonPath(
+                "$.@id",
+                endsWith(
+                    String.format("/%s/%s/annopage/%s?lang=%s", dsId, lcId, GeneralUtils.derivePageId(mediaUrl), lang))))
+            .andExpect(jsonPath("$.language", is(lang)));
+
+    // check that resource is saved with contributed=false
+    AnnoPage retrievedAnnoPage =
+            ftService.getAnnoPageByPgId(
+                    dsId, lcId, GeneralUtils.derivePageId(mediaUrl), lang, false);
+    assertNotNull(retrievedAnnoPage);
+    assertNotNull(retrievedAnnoPage.getRes());
+    assertFalse(retrievedAnnoPage.getRes().isContributed());
   }
 }

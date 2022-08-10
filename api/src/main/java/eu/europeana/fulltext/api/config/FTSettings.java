@@ -133,8 +133,12 @@ public class FTSettings implements InitializingBean {
     @Value("${fulltext.deployment:}")
     private String deploymentName;
 
+    @Value("${webclient.maxBufferMb:16}")
+    private int maxBufferMb;
+
     @Autowired
     private Environment environment;
+
 
 
 
@@ -326,5 +330,9 @@ public class FTSettings implements InitializingBean {
 
     public boolean annoSyncMailEnabled() {
         return annoSyncMailEnabled;
+    }
+
+    public int getMaxBufferMb() {
+        return maxBufferMb;
     }
 }

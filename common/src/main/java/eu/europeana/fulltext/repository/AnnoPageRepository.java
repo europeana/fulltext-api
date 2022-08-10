@@ -122,6 +122,23 @@ public class AnnoPageRepository {
     return datastore.find(AnnoPage.class).filter(filters.toArray(new Filter[0])).count() > 0;
     }
 
+  public boolean existsOriginalByPageId(
+      String datasetId, String localId, String pageId, boolean includeDeprecated) {
+    List<Filter> filters =
+        new ArrayList<>(
+            Arrays.asList(
+                eq(DATASET_ID, datasetId),
+                eq(LOCAL_ID, localId),
+                eq(PAGE_ID, pageId),
+                eq(TRANSLATION, null)));
+
+    if (!includeDeprecated) {
+      filters.add(eq(DELETED, null));
+    }
+
+    return datastore.find(AnnoPage.class).filter(filters.toArray(new Filter[0])).count() > 0;
+  }
+
     /**
      * Check if an  AnnoPage exists that matches the given parameters using DBCollection.count().
      *
@@ -206,7 +223,7 @@ public class AnnoPageRepository {
      * @param pageId    index (page number) of the Annopage object
      * @param annoTypes dcType values to filter annotations with
      * @param lang      language
-     * @param includeDeprecated
+     * @param includeDeprecated whether deprecated AnnoPages should be included in result
      * @return AnnoPage
      */
     public AnnoPage findByPageIdLang(
@@ -229,6 +246,36 @@ public class AnnoPageRepository {
         query = filterTextGranularity(query, annoTypes);
         return query.execute(AnnoPage.class).tryNext();
     }
+
+    /**
+     * Finds the original AnnoPage with the given parameters.
+     * Original means the "translation" field in the database is empty
+     * @param datasetId
+     * @param localId
+     * @param pageId
+     * @param annoTypes
+     * @param includeDeprecated
+     * @return
+     */
+    public AnnoPage findOriginalByPageId(String datasetId, String localId, String pageId,
+        List<AnnotationType> annoTypes, boolean includeDeprecated) {
+        List<Filter> filters =
+            new ArrayList<>(
+                Arrays.asList(eq(DATASET_ID, datasetId),
+                    eq(LOCAL_ID, localId),
+                    eq(PAGE_ID, pageId),
+                    eq(TRANSLATION, null)));
+
+        if(!includeDeprecated){
+            filters.add(eq(DELETED, null));
+        }
+
+        Aggregation<AnnoPage> query = datastore.aggregate(AnnoPage.class)
+            .match(filters.toArray(new Filter[0]));
+        query = filterTextGranularity(query, annoTypes);
+        return query.execute(AnnoPage.class).tryNext();
+    }
+
 
     /**
      * Find and return AnnoPage that contains an annotation that matches the given parameters
@@ -430,6 +477,11 @@ public class AnnoPageRepository {
         // source isn't always set. Prevent null from being saved in db
         if (annoPage.getSource() != null) {
             updateDoc.append(SOURCE, annoPage.getSource());
+        }
+
+        // don't set translation=false in db, to conserve space
+        if (annoPage.isTranslation()) {
+            updateDoc.append(TRANSLATION, annoPage.isTranslation());
         }
 
         return new UpdateOneModel<>(

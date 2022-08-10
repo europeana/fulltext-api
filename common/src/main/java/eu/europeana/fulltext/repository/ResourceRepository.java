@@ -36,23 +36,6 @@ public class ResourceRepository {
     @Autowired
     protected Datastore datastore;
 
-    /**
-     * Check if a Resource exists that matches the given parameters
-     * @param datasetId ID of the associated dataset
-     * @param localId   ID of the associated Annopage parent object
-     * @param resId     ID of the Resource document
-     * @return true if yes, otherwise false
-     */
-    public boolean resourceExists(String datasetId, String localId, String resId) {
-      return datastore.find(Resource.class)
-              .filter(
-                      eq(DATASET_ID, datasetId),
-                      eq(LOCAL_ID, localId),
-                      eq(DOC_ID, resId))
-              .count() > 0;
-    }
-
-
   /**
      * @return the total number of resources in the database
      */
@@ -60,22 +43,47 @@ public class ResourceRepository {
     return datastore.getMapper().getCollection(Resource.class).countDocuments();
   }
 
-    /**
-     * Find a Resource that matches the given parameters
-     * @param datasetId ID of the associated dataset
-     * @param localId   ID of the associated Annopage parent object
-     * @param resId     ID of the Resource document
-     * @return List containing matching Resource(s) (should be just one)
-     */
-    public Resource findByResId(String datasetId, String localId, String resId) {
-        return datastore.find(Resource.class)
-                .filter(
-                        eq(DATASET_ID, datasetId),
-                        eq(LOCAL_ID, localId),
-                        eq(DOC_ID, resId))
-                .first();
-    }
+  /**
+   * Find a resource that matches the specified parameters
+   */
+  public Resource findByPageIdLang(String datasetId, String localId, String pageId, String lang) {
+    return datastore.find(Resource.class)
+        .filter(
+            eq(DATASET_ID, datasetId),
+            eq(LOCAL_ID, localId),
+            eq(PAGE_ID, pageId),
+            eq(LANGUAGE, lang))
+        .first();
+  }
 
+  public Resource findOriginalByPageId(String datasetId, String localId, String pageId) {
+    return datastore.find(Resource.class)
+        .filter(
+            eq(DATASET_ID, datasetId),
+            eq(LOCAL_ID, localId),
+            eq(PAGE_ID, pageId),
+            eq(TRANSLATION, null))
+        .first();
+  }
+
+
+  /**
+   * Check if a Resource exists that matches the given parameters
+   * @param datasetId ID of the associated dataset
+   * @param localId   ID of the associated Annopage parent object
+   * @param pageId     ID of the associated AnnoPage page
+   * @param lang     language of the associated AnnoPage document
+   * @return true if yes, otherwise false
+   */
+  public boolean resourceExists(String datasetId, String localId, String pageId, String lang) {
+    return datastore.find(Resource.class)
+        .filter(
+            eq(DATASET_ID, datasetId),
+            eq(LOCAL_ID, localId),
+            eq(PAGE_ID, pageId),
+            eq(LANGUAGE, lang))
+        .count() > 0;
+  }
 
     /**
      * Saves a Resource to the database
@@ -132,23 +140,28 @@ public class ResourceRepository {
                 throw new DatabaseQueryException("res is null for " + annoPage);
             }
 
+            Document updateDoc = new Document(DATASET_ID, res.getDsId())
+                    .append(LOCAL_ID, res.getLcId())
+                    .append(LANGUAGE, res.getLang())
+                    .append(VALUE, res.getValue())
+                    .append(RIGHTS, res.getRights())
+                    .append(PAGE_ID, res.getPgId())
+                    .append(CONTRIBUTED, res.isContributed());
+
+            // don't set translation=false in db, to conserve space
+            if (res.isTranslation()) {
+                updateDoc.append(TRANSLATION, res.isTranslation());
+            }
+
             resourceUpdates.add(
                 new UpdateOneModel<>(
                     new Document(
                         // filter
                         Map.of(
                             DATASET_ID, res.getDsId(), LOCAL_ID, res.getLcId(), LANGUAGE, res.getLang(), DOC_ID, res.getId())),
-                    // update doc
-                    new Document(
-                        SET,
-                        new Document(DATASET_ID, res.getDsId())
-                            .append(LOCAL_ID, res.getLcId())
-                            .append(LANGUAGE, res.getLang())
-                            .append(VALUE, res.getValue())
-                            .append(RIGHTS, res.getRights())
-                            .append(PAGE_ID, res.getPgId())
-                            .append(CONTRIBUTED, res.isContributed())
-                    )
+                        // update doc
+                        new Document(
+                                SET, updateDoc)
                         // only create _id for new records
                         .append(SET_ON_INSERT, new Document("_id", res.getId())),
                     UPSERT_OPTS));

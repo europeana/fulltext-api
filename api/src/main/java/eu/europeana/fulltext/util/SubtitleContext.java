@@ -1,6 +1,6 @@
 package eu.europeana.fulltext.util;
 
-import eu.europeana.fulltext.subtitles.edm.EdmTextBoundary;
+import eu.europeana.fulltext.edm.EdmTextBoundary;
 
 /** Class handles the values of the subtitle and generates the Fulltext resource value */
 public class SubtitleContext {

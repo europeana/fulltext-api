@@ -4,11 +4,11 @@ import eu.europeana.api.commons.error.EuropeanaApiException;
 import org.springframework.http.HttpStatus;
 
 /**
- * Exception thrown when converting subtitles to Annotations / AnnoPage.
+ * Exception thrown when converting EDMFulltextPackage to Annotations / AnnoPage.
  */
-public class SubtitleConversionException extends EuropeanaApiException {
+public class MismatchInAnnotationException extends EuropeanaApiException {
 
-  public SubtitleConversionException(String msg) {
+  public MismatchInAnnotationException(String msg) {
     super(msg);
   }
 

@@ -39,25 +39,13 @@ public class AnnotationApiRestService {
   private static final Logger logger = LogManager.getLogger(AnnotationApiRestService.class);
 
   /** Date format used by Annotation API for to and from param in deleted endpoint */
-  DateTimeFormatter deletedDateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
+  private final DateTimeFormatter deletedDateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
 
   private final String wskey;
 
-  public AnnotationApiRestService(FTSettings settings) {
+  public AnnotationApiRestService(FTSettings settings, WebClient webClient) {
     this.wskey = settings.getAnnotationsApiKey();
-    this.webClient =
-        WebClient.builder()
-            .baseUrl(settings.getAnnotationsApiUrl())
-            // used for logging Netty requests / responses.
-            .clientConnector(
-                new ReactorClientHttpConnector(
-                    HttpClient.create()
-                        .followRedirect(true)
-                        .wiretap(
-                            HttpClient.class.getName(),
-                            LogLevel.TRACE,
-                            AdvancedByteBufFormat.TEXTUAL)))
-            .build();
+    this.webClient = webClient;
   }
 
   public List<AnnotationItem> getAnnotations(int page, int pageSize, Instant from, Instant to) {

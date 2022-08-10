@@ -45,14 +45,15 @@ public class Resource {
         this.rights = rights;
     }
 
-    public Resource(String id, String lang, String value, String rights, String dsId, String lcId) {
+    public Resource(String id, String lang, String value, String rights, String dsId, String lcId, String pgId) {
         this(id, lang, value, rights);
         this.dsId = dsId;
         this.lcId = lcId;
+        this.pgId = pgId;
     }
 
-    public Resource(String id, String lang, String value, String rights, String dsId, String lcId, String source) {
-        this(id, lang, value, rights, dsId, lcId);
+    public Resource(String id, String lang, String value, String rights, String dsId, String lcId, String pgId, String source) {
+        this(id, lang, value, rights, dsId, lcId, pgId);
         this.source = source;
     }
 
