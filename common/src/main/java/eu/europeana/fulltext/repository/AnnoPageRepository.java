@@ -472,6 +472,11 @@ public class AnnoPageRepository {
             updateDoc.append(SOURCE, annoPage.getSource());
         }
 
+        // don't set translation=false in db, to conserve space
+        if (annoPage.isTranslation()) {
+            updateDoc.append(TRANSLATION, annoPage.isTranslation());
+        }
+
         return new UpdateOneModel<>(
             new Document(
                 // filter

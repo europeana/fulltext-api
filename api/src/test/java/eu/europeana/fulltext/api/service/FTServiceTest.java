@@ -33,7 +33,7 @@ import static org.unitils.reflectionassert.ReflectionAssert.assertReflectionEqua
  * TODO - add some FTResource handling test cases (prepared two FTResource objects already in the TestUtils class)
  */
 @TestPropertySource(locations = "classpath:fulltext-test.properties")
-@SpringBootTest(classes = {FTService.class, FTSettings.class, EDM2IIIFMapping.class, SubtitleService.class})
+@SpringBootTest(classes = {FTService.class, FTSettings.class, EDM2IIIFMapping.class, SubtitleFulltextConverter.class})
 @Disabled("Disabled pending update of mocks")
 public class FTServiceTest {
 

@@ -1,5 +1,6 @@
 package eu.europeana.fulltext.api.web;
 
+import static eu.europeana.fulltext.AppConstants.CONTENT_TYPE_PLAIN;
 import static eu.europeana.fulltext.AppConstants.CONTENT_TYPE_VTT;
 import static eu.europeana.fulltext.api.IntegrationTestUtils.ANNOPAGE_FILMPORTAL_1197365_JSON;
 import static eu.europeana.fulltext.api.IntegrationTestUtils.SUBTITLE_VTT;
@@ -42,8 +43,9 @@ class FulltextWriteIT extends BaseIntegrationTest {
   }
 
   // TODO - check DB data in all test
+  // Fulltext type WEB_VTT test
   @Test
-  void fulltextSubmissionShouldBeSuccessful() throws Exception {
+  void fulltextVttSubmissionShouldBeSuccessful() throws Exception {
     String requestBody = IntegrationTestUtils.loadFile(SUBTITLE_VTT);
 
     String mediaUrl = "https://www.filmportal.de/node/1197365";
@@ -264,5 +266,42 @@ class FulltextWriteIT extends BaseIntegrationTest {
 
     assertTrue(ftService.resourceExists(dsId, lcId, pgId1, lang));
     assertTrue(ftService.resourceExists(dsId, lcId, pgId2, lang));
+  }
+
+  // Fulltext type SRT test
+  @Test
+  void fulltextTranscriptionSubmissionShouldBeSuccessful() throws Exception {
+    String requestBody = "text body for testing";
+
+    String mediaUrl = "https://www.filmportal.de/node/1197365";
+    String dsId = "08604";
+    String lcId= "FDE2205EEE384218A8D986E5138F9691";
+    String lang = "nl";
+    mockMvc
+            .perform(
+                    post("/presentation/{dsId}/{lcId}/annopage", dsId, lcId)
+                            .param(WebConstants.REQUEST_VALUE_MEDIA, mediaUrl)
+                            .param(WebConstants.REQUEST_VALUE_LANG, lang)
+                            .param(
+                                    WebConstants.REQUEST_VALUE_RIGHTS,
+                                    "http://creativecommons.org/licenses/by-sa/4.0/")
+                            .accept(MediaType.APPLICATION_JSON)
+                            .contentType(CONTENT_TYPE_PLAIN)
+                            .content(requestBody))
+            .andExpect(status().isOk())
+        .andExpect(
+            jsonPath(
+                "$.@id",
+                endsWith(
+                    String.format("/%s/%s/annopage/%s?lang=%s", dsId, lcId, GeneralUtils.derivePageId(mediaUrl), lang))))
+            .andExpect(jsonPath("$.language", is(lang)));
+
+    // check that resource is saved with contributed=false
+    AnnoPage retrievedAnnoPage =
+            ftService.getAnnoPageByPgId(
+                    dsId, lcId, GeneralUtils.derivePageId(mediaUrl), lang, false);
+    assertNotNull(retrievedAnnoPage);
+    assertNotNull(retrievedAnnoPage.getRes());
+    assertFalse(retrievedAnnoPage.getRes().isContributed());
   }
 }
