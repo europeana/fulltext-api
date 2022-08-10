@@ -1,6 +1,7 @@
 package eu.europeana.fulltext.util;
 
 import static eu.europeana.fulltext.WebConstants.MOTIVATION_CAPTIONING;
+import static eu.europeana.fulltext.WebConstants.MOTIVATION_TRANSCRIBING;
 
 import eu.europeana.fulltext.exception.MediaTypeNotSupportedException;
 import eu.europeana.fulltext.exception.SubtitleParsingException;
@@ -35,9 +36,9 @@ public class AnnotationUtils {
                 .setMedia(item.getTarget().getSource())
                 .setLanguage(item.getBody().getLanguage())
                 .setRights(item.getBody().getEdmRights())
-                // If the motivation is “captioning”, then originalLang is true
+                // If the motivation is “captioning” or "transcribing" , then originalLang is true
                 // for the moment, we only have the original text and no translations yet for transcription and newspapers
-                .setOriginalLang(MOTIVATION_CAPTIONING.equalsIgnoreCase(item.getMotivation()))
+                .setOriginalLang(MOTIVATION_CAPTIONING.equals(item.getMotivation()) || MOTIVATION_TRANSCRIBING.equals(item.getMotivation()))
                 .build();
     }
 
