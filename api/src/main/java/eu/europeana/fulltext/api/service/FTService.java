@@ -103,14 +103,11 @@ public class FTService {
     public AnnoPage fetchAnnoPage(String datasetId, String localId, String pageId, List<AnnotationType> textGranValues,
         String lang) throws AnnoPageDoesNotExistException, AnnoPageGoneException {
         AnnoPage result;
+        // if no lang is provided, fetch the original AnnoPage (ie. translation=false)
         if (StringUtils.isEmpty(lang)) {
-            result = annoPageRepository.findByPageId(datasetId, localId, pageId, textGranValues, true);
+            result = annoPageRepository.findOriginalByPageId(datasetId, localId, pageId, textGranValues, false);
             if (result == null) {
                 throw new AnnoPageDoesNotExistException(
-                    String.format(ANNOPAGE_ID_FORMAT, datasetId, localId, pageId));
-            }
-            else if(result.isDeprecated()){
-                throw new AnnoPageGoneException(
                     String.format(ANNOPAGE_ID_FORMAT, datasetId, localId, pageId));
             }
         } else {
@@ -171,24 +168,36 @@ public class FTService {
         return result;
     }
 
+  /**
+   * Handles fetching an Annotation page (aka AnnoPage) containing the Annotation with given annoId
+   *
+   * @param datasetId identifier of the dataset that contains the Annopage that refers to Resource
+   * @param localId identifier of the record that contains the Annopage that refers to Resource
+   * @param pageId Identifier of the item's page
+   * @param lang Language of the resource
+   * @return FTResource
+   * @throws ResourceDoesNotExistException when the Resource can't be found
+   */
+  public FTResource fetchFTResource(String datasetId, String localId, String pageId, String lang)
+      throws ResourceDoesNotExistException {
 
-    /**
-     * Handles fetching an Annotation page (aka AnnoPage) containing the Annotation with given annoId
-     *
-     * @param datasetId identifier of the dataset that contains the Annopage that refers to Resource
-     * @param localId   identifier of the record that contains the Annopage that refers to Resource
-     * @param resId     identifier of the Resource
-     * @return FTResource
-     * @throws ResourceDoesNotExistException when the Resource can't be found
-     */
-    public FTResource fetchFTResource(String datasetId, String localId, String resId)
-        throws ResourceDoesNotExistException {
-        Resource result = resourceRepository.findByResId(datasetId, localId, resId);
-        if (result == null) {
-            throw new ResourceDoesNotExistException(String.format("/%s/%s/%s", datasetId, localId, resId));
-        }
-        return generateFTResource(result);
+    Resource result;
+    if (StringUtils.isEmpty(lang)) {
+      result = resourceRepository.findOriginalByPageId(datasetId, localId, pageId);
+      if (result == null) {
+        throw new ResourceDoesNotExistException(
+            String.format("/%s/%s/%s", datasetId, localId, pageId));
+      }
+
+    } else {
+      result = resourceRepository.findByPageIdLang(datasetId, localId, pageId, lang);
+      if (result == null) {
+        throw new ResourceDoesNotExistException(
+            String.format("/%s/%s/%s?lang=%s", datasetId, localId, pageId, lang));
+      }
     }
+    return generateFTResource(result);
+  }
 
     // = = [ collect summary information ]= = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
@@ -209,7 +218,7 @@ public class FTService {
 
         for (AnnoPage annoPage : annoPages){
             SummaryCanvas summaryCanvas = new SummaryCanvas(makeSummaryCanvasID(datasetId, localId,
-                annoPage.getPgId()));
+                annoPage.getPgId(), annoPage.getLang()));
 
             // add original SummaryAnnoPage to the SummaryCanvas
             summaryCanvas.addAnnotation(
@@ -231,8 +240,8 @@ public class FTService {
             + ap.getPgId();
     }
 
-    private String makeSummaryCanvasID(String dsId, String lcId, String pgId) {
-        return ftSettings.getAnnoPageBaseUrl() + dsId + "/" + lcId + FTDefinitions.CANVAS_PATH + "/" + pgId;
+    private String makeSummaryCanvasID(String dsId, String lcId, String pgId, String lang) {
+        return ftSettings.getAnnoPageBaseUrl() + dsId + "/" + lcId + FTDefinitions.CANVAS_PATH + "/" + pgId + "?" + FTDefinitions.LANGUAGE_PARAM + lang;
     }
 
     @Deprecated
@@ -278,12 +287,13 @@ public class FTService {
      * @param datasetId Identifier of the dataset
      * @param localId   Identifier of the item
      * @param pageId    Identifier of the item's page
-     * @param lang      optional, in which language should the AnnoPage be
+     * @param lang      in which language should the AnnoPage be
      * @return true if it exists, otherwise false
      */
     public boolean doesAnnoPageExist(String datasetId, String localId, String pageId, String lang, boolean includeDeprecated) {
         if (StringUtils.isEmpty(lang)) {
-            return annoPageRepository.existsByPageId(datasetId, localId, pageId, includeDeprecated);
+            // if no lang is provided, check if an original AnnoPage exists (ie. translation=false)
+            return annoPageRepository.existsOriginalByPageId(datasetId, localId, pageId, includeDeprecated);
         }
        return annoPageRepository.existsByPageIdLang(datasetId, localId, pageId, lang, includeDeprecated);
     }
@@ -608,8 +618,8 @@ public class FTService {
         return resourceRepository.count();
     }
 
-    public boolean resourceExists(String datasetId, String localId, String resId) {
-        return resourceRepository.resourceExists(datasetId, localId, resId);
+    public boolean resourceExists(String datasetId, String localId, String pageId, String lang) {
+        return resourceRepository.resourceExists(datasetId, localId, pageId, lang);
     }
 
 

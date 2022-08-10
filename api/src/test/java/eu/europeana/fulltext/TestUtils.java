@@ -83,14 +83,14 @@ public class TestUtils {
         prepareAnnotationPages();
 
         // build example AnnoPage bean with all containing entities, to mock the Repository with
-        res_1 = new Resource("res1", "de",  KUCKEBACKENWOLLTE, EDMRIGHTS, DS_ID, LCL_ID, SOURCE_1);
-        res_2 = new Resource("res2", "de", WUERDEJANICHTAUFGEHEN, EDMRIGHTS, DS_ID, LCL_ID, SOURCE_2);
+        res_1 = new Resource("res1", "de",  KUCKEBACKENWOLLTE, EDMRIGHTS, DS_ID, LCL_ID, "pg1", SOURCE_1);
+        res_2 = new Resource("res2", "de", WUERDEJANICHTAUFGEHEN, EDMRIGHTS, DS_ID, LCL_ID, "pg1", SOURCE_2);
         tgt_1 = new Target(60,100,30,14);
         tgt_2 = new Target(95,102,53,15);
         tgt_3 = new Target(60,96,404,19);
         tgt_4 = new Target(59,138,133,25);
         ann_1 = new Annotation("an1", AnnotationType.WORD.getAbbreviation(), 0, 7, Arrays.asList(tgt_1));
-        ann_2 = new Annotation("an2", AnnotationType.WORD.getAbbreviation(), 9, 18, Arrays.asList(tgt_2), "en");
+        ann_2 = new Annotation("an2", AnnotationType.WORD.getAbbreviation(), 9, 18, Arrays.asList(tgt_2), "de");
         ann_3 = new Annotation("an3", AnnotationType.LINE.getAbbreviation(), 0, 214, Arrays.asList(tgt_3, tgt_4));
         anp_1 = new AnnoPage(DS_ID, LCL_ID, "pg1", "tg1", "de", res_1);
         anp_1.setAns(Arrays.asList(new Annotation[] {ann_1, ann_2, ann_3}));
@@ -134,9 +134,9 @@ public class TestUtils {
     }
 
     private static void buildAnnotationBodiesV2(){
-        anbv2_1 = createAnnotationBodyV2("0", "7", "res1");
-        anbv2_2 = createAnnotationFullBodyV2("9", "18", "en", "res1");
-        anbv2_3 = createAnnotationBodyV2("0", "214", "res1");
+        anbv2_1 = createAnnotationBodyV2("0", "7", "pg1", "de");
+        anbv2_2 = createAnnotationFullBodyV2("9", "18", "de", "pg1");
+        anbv2_3 = createAnnotationBodyV2("0", "214", "pg1", "de");
     }
 
     private static void buildAnnotationsV2(boolean includeContext){
@@ -153,9 +153,9 @@ public class TestUtils {
     }
 
     private static void buildAnnotationBodiesV3(){
-        anbv3_1 = createAnnotationBodyV3("0", "7", "res1");
-        anbv3_2 = createAnnotationBodyV3("9", "18", "en", "res1");
-        anbv3_3 = createAnnotationBodyV3("0", "214", "res1");
+        anbv3_1 = createAnnotationBodyV3("0", "7", "de", "pg1");
+        anbv3_2 = createAnnotationBodyV3("9", "18", "de", "pg1");
+        anbv3_3 = createAnnotationBodyV3("0", "214", "de", "pg1");
     }
 
     private static void buildAnnotationsV3(boolean includeContext){
@@ -172,25 +172,25 @@ public class TestUtils {
     }
 
     public static void buildFTResources(){
-        ftres_1 = createFTResource("res1", "de", KUCKEBACKENWOLLTE, SOURCE_1, EDMRIGHTS);
-        ftres_2 = createFTResource("res2", "de" , WUERDEJANICHTAUFGEHEN, SOURCE_2, EDMRIGHTS);
+        ftres_1 = createFTResource("pg1", "de", KUCKEBACKENWOLLTE, SOURCE_1, EDMRIGHTS);
+        ftres_2 = createFTResource("pg2", "de" , WUERDEJANICHTAUFGEHEN, SOURCE_2, EDMRIGHTS);
         ftres_2.setContext(MEDIA_TYPE_EDM_JSONLD);
     }
 
     private static AnnotationPageV2 createAnnotationPageV2(String pageId, String lang, AnnotationV2[] resources){
-        AnnotationPageV2 anp = new AnnotationPageV2(getAnnopageIdUrl(pageId));
+        AnnotationPageV2 anp = new AnnotationPageV2(getAnnopageIdUrl(pageId, lang));
         anp.setLanguage(lang);
         anp.setResources(resources);
         return anp;
     }
 
-    private static AnnotationBodyV2 createAnnotationBodyV2(String from, String to, String resId){
-        return new AnnotationBodyV2(getResourceIdUrl(from, to, resId));
+    private static AnnotationBodyV2 createAnnotationBodyV2(String from, String to, String pgId, String lang){
+        return new AnnotationBodyV2(getResourceIdUrl(from, to, pgId, lang));
     }
 
-    private static AnnotationFullBodyV2 createAnnotationFullBodyV2(String from, String to, String language, String resId){
-        AnnotationFullBodyV2 anb = new AnnotationFullBodyV2(getResourceIdUrl(from, to, resId));
-        anb.setFull(getResourceIdBaseUrl(resId));
+    private static AnnotationFullBodyV2 createAnnotationFullBodyV2(String from, String to, String language, String pgId){
+        AnnotationFullBodyV2 anb = new AnnotationFullBodyV2(getResourceIdUrl(from, to, pgId, language));
+        anb.setFull(getResourceIdBaseUrl(pgId, language));
         anb.setLanguage(language);
         return anb;
     }
@@ -207,19 +207,16 @@ public class TestUtils {
     }
 
     private static AnnotationPageV3 createAnnotationPageV3(String pageId, String lang, AnnotationV3[] items){
-        AnnotationPageV3 anp = new AnnotationPageV3(getAnnopageIdUrl(pageId));
+        AnnotationPageV3 anp = new AnnotationPageV3(getAnnopageIdUrl(pageId, lang));
         anp.setLanguage(lang);
         anp.setItems(items);
         return anp;
     }
 
-    private static AnnotationBodyV3 createAnnotationBodyV3(String from, String to, String resId){
-        return new AnnotationBodyV3(getResourceIdUrl(from, to, resId));
-    }
 
-    private static AnnotationBodyV3 createAnnotationBodyV3(String from, String to, String language, String resId){
-        AnnotationBodyV3 anb = new AnnotationBodyV3(getResourceIdUrl(from, to, resId), "SpecificResource");
-        anb.setSource(getResourceIdBaseUrl(resId));
+    private static AnnotationBodyV3 createAnnotationBodyV3(String from, String to, String language, String pageId){
+        AnnotationBodyV3 anb = new AnnotationBodyV3(getResourceIdUrl(from, to, pageId, language), "SpecificResource");
+        anb.setSource(getResourceIdBaseUrl(pageId, language));
         anb.setLanguage(language);
         return anb;
     }
@@ -235,16 +232,16 @@ public class TestUtils {
         return ann;
     }
 
-    private static FTResource createFTResource(String resId, String language, String value, String source, String edmRights){
-        return new FTResource(getResourceIdBaseUrl(resId), language, value, source, edmRights);
+    private static FTResource createFTResource(String pgId, String language, String value, String source, String edmRights){
+        return new FTResource(getResourceIdBaseUrl(pgId,language), language, value, source, edmRights);
     }
 
-    private static String getResourceIdUrl(String from, String to, String resId){
-        return getResourceIdBaseUrl(resId) + "#char=" + from + "," + to;
+    private static String getResourceIdUrl(String from, String to, String pgId, String lang){
+        return getResourceIdBaseUrl(pgId, lang) + "#char=" + from + "," + to;
     }
 
-    private static String getResourceIdBaseUrl(String resId){
-        return RESOURCEBASEURL + DS_ID + "/" + LCL_ID + "/" + resId;
+    private static String getResourceIdBaseUrl(String pageId, String lang){
+        return RESOURCEBASEURL + DS_ID + "/" + LCL_ID + "/" + pageId + "?lang=" + lang;
     }
 
     private static String getTargetIdUrl(String pageId, String x, String y, String w, String h){
@@ -259,8 +256,8 @@ public class TestUtils {
         return ANNOTATIONBASEURL + DS_ID + "/" + LCL_ID + "/" + annoId;
     }
 
-    private static String getAnnopageIdUrl(String pageId){
-        return IIIFBASEURL + DS_ID + "/" + LCL_ID + "/annopage/" + pageId;
+    private static String getAnnopageIdUrl(String pageId, String lang){
+        return IIIFBASEURL + DS_ID + "/" + LCL_ID + "/annopage/" + pageId + "?lang=" + lang;
     }
 
 }
