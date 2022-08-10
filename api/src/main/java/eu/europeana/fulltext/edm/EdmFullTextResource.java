@@ -1,4 +1,4 @@
-package eu.europeana.fulltext.subtitles.edm;
+package eu.europeana.fulltext.edm;
 
 public class EdmFullTextResource implements EdmReference {
 
