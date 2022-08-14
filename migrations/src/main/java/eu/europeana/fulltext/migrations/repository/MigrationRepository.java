@@ -1,5 +1,6 @@
 package eu.europeana.fulltext.migrations.repository;
 
+import static dev.morphia.query.experimental.filters.Filters.eq;
 import static dev.morphia.query.experimental.filters.Filters.exists;
 import static dev.morphia.query.experimental.filters.Filters.in;
 import static dev.morphia.query.experimental.filters.Filters.lt;
@@ -11,24 +12,32 @@ import static eu.europeana.fulltext.util.MorphiaUtils.UNSET;
 import static eu.europeana.fulltext.util.MorphiaUtils.UPSERT_OPTS;
 
 import com.mongodb.DBRef;
-import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.model.UpdateOneModel;
 import com.mongodb.client.model.WriteModel;
 import dev.morphia.Datastore;
+import dev.morphia.UpdateOptions;
 import dev.morphia.query.FindOptions;
 import dev.morphia.query.Query;
 import dev.morphia.query.experimental.filters.Filters;
 import eu.europeana.fulltext.entity.AnnoPage;
+import eu.europeana.fulltext.entity.Annotation;
 import eu.europeana.fulltext.entity.Resource;
 import eu.europeana.fulltext.exception.DatabaseQueryException;
+import eu.europeana.fulltext.migrations.config.MigrationAppSettings;
 import eu.europeana.fulltext.migrations.model.MigrationJobMetadata;
 import eu.europeana.fulltext.repository.AnnoPageRepository;
 import eu.europeana.fulltext.util.MorphiaUtils;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.springframework.lang.Nullable;
@@ -39,8 +48,12 @@ public class MigrationRepository {
 
   private final Datastore datastore;
 
-  public MigrationRepository(Datastore datastore) {
+  private final int tooManyAnnotationsThreshold;
+  private static final Logger logger = LogManager.getLogger(MigrationRepository.class);
+
+  public MigrationRepository(Datastore datastore, MigrationAppSettings settings) {
     this.datastore = datastore;
+    this.tooManyAnnotationsThreshold = settings.getTooManyAnnotationsThreshold();
   }
 
   public List<AnnoPage> getAnnoPages(
@@ -81,16 +94,18 @@ public class MigrationRepository {
    * @return
    * @throws DatabaseQueryException
    */
-  public BulkWriteResult upsertAnnoPages(List<? extends AnnoPage> annoPageList)
-      throws DatabaseQueryException {
+  public void upsertAnnoPages(List<? extends AnnoPage> annoPageList) throws DatabaseQueryException {
 
     List<WriteModel<AnnoPage>> annoPageUpdates = new ArrayList<>();
 
     Instant now = Instant.now();
 
+    List<AnnoPage> annoPagesWithManyAnnotations = new ArrayList<>();
+
     for (AnnoPage annoPage : annoPageList) {
 
       Resource res = annoPage.getRes();
+      boolean hasManyAnnotations = annoPage.getAns().size() > this.tooManyAnnotationsThreshold;
 
       if (res == null) {
         // all AnnoPages should have a resource
@@ -102,7 +117,6 @@ public class MigrationRepository {
               .append(LOCAL_ID, annoPage.getLcId())
               .append(PAGE_ID, annoPage.getPgId())
               .append(TARGET_ID, annoPage.getTgtId())
-              .append(ANNOTATIONS, annoPage.getAns())
               .append(MODIFIED, now)
               .append(LANGUAGE, annoPage.getLang())
               .append(RESOURCE, new DBRef(RESOURCE_COL, res.getId()));
@@ -117,6 +131,21 @@ public class MigrationRepository {
         updateDoc.append(TRANSLATION, annoPage.isTranslation());
       }
 
+      // AnnoPages with a large number of Annotations need to be updated differently, otherwise
+      // Mongo complains about update payload size
+      if (!hasManyAnnotations) {
+        updateDoc.append(ANNOTATIONS, annoPage.getAns());
+      } else {
+        if (logger.isDebugEnabled()) {
+          logger.debug(
+              "AnnoPage {} has {} annotations; these will be updated separately; threshold is {}",
+              annoPage.getDbId(),
+              annoPage.getAns().size(),
+              tooManyAnnotationsThreshold);
+        }
+        annoPagesWithManyAnnotations.add(annoPage);
+      }
+
       annoPageUpdates.add(
           new UpdateOneModel<>(
               new Document(
@@ -128,7 +157,72 @@ public class MigrationRepository {
               UPSERT_OPTS));
     }
 
-    return datastore.getMapper().getCollection(AnnoPage.class).bulkWrite(annoPageUpdates);
+    datastore.getMapper().getCollection(AnnoPage.class).bulkWrite(annoPageUpdates);
+    // then write Annotations separately for AnnoPages with too many
+    updateAnnotations(annoPagesWithManyAnnotations);
+  }
+
+  /**
+   * For AnnoPages whose annotations exceed the threshold, we update the AnnotationIds separately.
+   * Annotation updates are chunked
+   *
+   * <p>This method creates a list of UpdateOneModels as follows:
+   *
+   * <pre>
+   * {
+   *    updateOne: {
+   *      "filter":  { _id: <AnnoPage_ObjectId>},
+   *      "update": { "$set": { "ans.$[elem].anId": <new_AnnotationID> }},
+   *      "arrayFilters": [{ "elem.anId": <existing_AnnotationID> }]
+   *   }
+   * }
+   * </pre>
+   *
+   * @param annoPagesWithManyAnnotations
+   */
+  private void updateAnnotations(List<AnnoPage> annoPagesWithManyAnnotations) {
+    for (AnnoPage annoPage : annoPagesWithManyAnnotations) {
+      AtomicInteger counter = new AtomicInteger();
+      Stream<Annotation> annotationStream = annoPage.getAns().stream();
+      Document filter = new Document(DOC_ID, annoPage.getDbId());
+
+      // break up Annotation list in chunks
+      Collection<List<Annotation>> annotationChunks =
+          annotationStream
+              .collect(
+                  Collectors.groupingBy(
+                      it -> counter.getAndIncrement() / tooManyAnnotationsThreshold))
+              .values();
+
+      int chunkCount = 1;
+      // Write each chunk of Annotation updates separately
+      for (List<Annotation> annotations : annotationChunks) {
+        List<UpdateOneModel<AnnoPage>> annotationUpdate =
+            annotations.stream()
+                .map(
+                    annotation ->
+                        new UpdateOneModel<AnnoPage>(
+                            filter,
+                            new Document(
+                                SET, new Document("ans.$[elem].anId", annotation.getAnId())),
+                            new UpdateOptions()
+                                .arrayFilter(eq("elem.anId", annotation.getOldAnId()))))
+                .collect(Collectors.toList());
+
+        datastore.getMapper().getCollection(AnnoPage.class).bulkWrite(annotationUpdate);
+
+        if (logger.isDebugEnabled()) {
+          logger.debug(
+              "Updated annotations for AnnoPage {}; chunk {} of {}, chunkSize={}, annotations={} ",
+              annoPage.getDbId(),
+              chunkCount,
+              annotationChunks.size(),
+              annotations.size(),
+              annoPage.getAns().size());
+        }
+        chunkCount++;
+      }
+    }
   }
 
   /**

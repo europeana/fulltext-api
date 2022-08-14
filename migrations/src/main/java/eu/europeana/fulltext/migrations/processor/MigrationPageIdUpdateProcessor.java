@@ -1,4 +1,4 @@
-package eu.europeana.fulltext.migrations;
+package eu.europeana.fulltext.migrations.processor;
 
 import static eu.europeana.fulltext.util.GeneralUtils.derivePageId;
 

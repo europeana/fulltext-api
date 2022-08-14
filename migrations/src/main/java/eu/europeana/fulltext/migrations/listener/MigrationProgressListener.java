@@ -1,4 +1,4 @@
-package eu.europeana.fulltext.migrations.listeners;
+package eu.europeana.fulltext.migrations.listener;
 
 import static eu.europeana.fulltext.util.GeneralUtils.getAnnoPageObjectIds;
 

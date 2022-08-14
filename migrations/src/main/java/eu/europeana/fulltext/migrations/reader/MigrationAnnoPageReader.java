@@ -1,4 +1,4 @@
-package eu.europeana.fulltext.migrations;
+package eu.europeana.fulltext.migrations.reader;
 
 import static eu.europeana.fulltext.util.GeneralUtils.getAnnoPageObjectIds;
 
@@ -17,6 +17,11 @@ import org.springframework.batch.item.data.AbstractPaginatedDataItemReader;
 import org.springframework.lang.Nullable;
 import org.springframework.util.CollectionUtils;
 
+/**
+ * Thread-safe reader for fetching all AnnoPages in Mongo.
+ *
+ * Uses ObjectIds for pagination
+ */
 public class MigrationAnnoPageReader extends AbstractPaginatedDataItemReader<AnnoPage> {
 
   private static final Logger logger = LogManager.getLogger(MigrationAnnoPageReader.class);
@@ -53,8 +58,8 @@ public class MigrationAnnoPageReader extends AbstractPaginatedDataItemReader<Ann
     if (!CollectionUtils.isEmpty(annoPageIds)) {
       jobMetadata.setLastAnnoPageId(annoPageIds.get(annoPageIds.size() - 1).getDbId());
 
-      if (logger.isDebugEnabled()) {
-        logger.debug(
+      if (logger.isTraceEnabled()) {
+        logger.trace(
             "Fetched {} records. set new lastObjectId={}; fetched records={}",
             annoPageIds.size(),
             jobMetadata.getLastAnnoPageId(),
