@@ -20,7 +20,6 @@ import eu.europeana.fulltext.api.service.CacheUtils;
 import eu.europeana.fulltext.api.service.FTService;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.exception.AnnoPageDoesNotExistException;
-import eu.europeana.fulltext.exception.AnnoPageGoneException;
 import eu.europeana.fulltext.exception.InvalidUriException;
 import eu.europeana.fulltext.exception.MediaTypeNotSupportedException;
 import eu.europeana.fulltext.exception.SerializationException;
@@ -308,7 +307,7 @@ public class FTWriteController extends BaseRestController {
      * LOCAL_ID and the PAGE_ID and LANG (if provided), if not then return a HTTP 404
      * If present, check if the annoPages are deprecated already, respond with HTTP 410
      */
-    ftService.checkForExistingDeprecatedAnnoPages(datasetId, localId, pageId, lang, true);
+    ftService.checkForExistingAndDeprecatedAnnoPages(datasetId, localId, pageId, lang, true);
 
     /*
      * Deprecates the respective AnnotationPage(s) entry from MongoDB (if lang is omitted, the pages for

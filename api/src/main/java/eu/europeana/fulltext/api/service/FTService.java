@@ -518,7 +518,7 @@ public class FTService {
      * @throws AnnoPageDoesNotExistException
      * @throws AnnoPageGoneException
      */
-    public void checkForExistingDeprecatedAnnoPages(String datasetId, String localId, String pageId, String lang, boolean includeDeprecated)
+    public void checkForExistingAndDeprecatedAnnoPages(String datasetId, String localId, String pageId, String lang, boolean includeDeprecated)
             throws AnnoPageDoesNotExistException, AnnoPageGoneException {
         if (lang != null) {
             AnnoPage annoPage = getShellAnnoPageById(datasetId, localId, pageId, lang, includeDeprecated);
@@ -532,7 +532,7 @@ public class FTService {
                 throw new AnnoPageGoneException(String.format("/%s/%s/annopage/%s", datasetId, localId, pageId), lang);
             }
         } else {
-            List<AnnoPage> existingAnnoPages = annoPageRepository.getAnnoPages(datasetId, localId, pageId, includeDeprecated);
+            List<AnnoPage> existingAnnoPages = getAnnoPages(datasetId, localId, pageId, includeDeprecated);
 
             if (existingAnnoPages.isEmpty()) {
                 throw new AnnoPageDoesNotExistException(
@@ -560,6 +560,11 @@ public class FTService {
     public AnnoPage getShellAnnoPageById(String datasetId, String localId, String pageId, String lang, boolean includeDeprecated){
         return annoPageRepository.getShellAnnoPageById(datasetId, localId, pageId, lang, includeDeprecated);
     }
+
+    public List<AnnoPage> getAnnoPages(String datasetId, String localId, String pageId, boolean includeDeprecated){
+        return annoPageRepository.getAnnoPages(datasetId, localId, pageId, includeDeprecated);
+    }
+
 
     // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
