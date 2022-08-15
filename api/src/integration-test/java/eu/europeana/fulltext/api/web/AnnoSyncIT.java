@@ -168,7 +168,7 @@ class AnnoSyncIT extends BaseIntegrationTest {
         mapper.readValue(
             loadFileAndReplaceServerUrl(ANNOPAGE_VIMEO_208310501_JSON, serverBaseUrl),
             AnnoPage.class);
-    ftService.saveAnnoPage(annoPage);
+    ftService.upsertAnnoPage(List.of(annoPage));
 
     mockMvc
         .perform(

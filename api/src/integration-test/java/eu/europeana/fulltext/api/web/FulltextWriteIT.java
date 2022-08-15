@@ -31,6 +31,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.util.List;
+
 @SpringBootTest
 @AutoConfigureMockMvc
 class FulltextWriteIT extends BaseIntegrationTest {
@@ -85,7 +87,7 @@ class FulltextWriteIT extends BaseIntegrationTest {
     AnnoPage annoPage =
         mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), AnnoPage.class);
 
-    ftService.saveAnnoPage(annoPage);
+    ftService.upsertAnnoPage(List.of(annoPage));
     // manually deprecate AnnoPage
     ftService.deprecateAnnoPages(annoPage.getDsId(), annoPage.getLcId(), annoPage.getPgId(), annoPage.getLang());
 
@@ -110,7 +112,7 @@ class FulltextWriteIT extends BaseIntegrationTest {
     // add the anno page and resource first
     AnnoPage annoPage =
         mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), AnnoPage.class);
-    ftService.saveAnnoPage(annoPage);
+    ftService.upsertAnnoPage(List.of(annoPage));
 
         String updatedRights = annoPage.getRes().getRights() + "updated";
         mockMvc
@@ -152,7 +154,7 @@ class FulltextWriteIT extends BaseIntegrationTest {
     // add the anno page and resource first
     AnnoPage annoPage =
         mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), AnnoPage.class);
-    ftService.saveAnnoPage(annoPage);
+    ftService.upsertAnnoPage(List.of(annoPage));
     mockMvc
         .perform(delete(GeneralUtils.getAnnoPageUrl(annoPage, false)).accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isNoContent());
@@ -163,7 +165,7 @@ class FulltextWriteIT extends BaseIntegrationTest {
     // add the anno page and resource first
     AnnoPage annoPage =
         mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), AnnoPage.class);
-    ftService.saveAnnoPage(annoPage);
+    ftService.upsertAnnoPage(List.of(annoPage));
     mockMvc
         .perform(
             delete(GeneralUtils.getAnnoPageUrl(annoPage, false))

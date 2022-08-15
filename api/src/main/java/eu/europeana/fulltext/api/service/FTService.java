@@ -380,30 +380,6 @@ public class FTService {
     }
 
     /**
-     * Saves the given AnnoPage in the database.
-     * Only for IT testing
-     *
-     * As this method always saves the value of translation field even if it is false
-     * we are currently not saving false values to conserve space
-     *
-     * That creates a ambiguity while retrieving annopage for original languages
-     * for request without lang, as we retrun the original annopage when lang is not provided.
-     *
-     * #findOriginalByPageId() method query has filter of translation=null
-     *
-     * @param annoPage AnnoPage to save
-     */
-    public void saveAnnoPage(AnnoPage annoPage) {
-        if (!GeneralUtils.testProfileNotActive(activeProfileString)) {
-            annoPageRepository.saveAnnoPage(annoPage);
-            if (annoPage.getRes() != null) {
-                resourceRepository.saveResource(annoPage.getRes());
-            }
-            LOG.info("Saved annoPage to database - {} ", annoPage);
-        }
-    }
-
-    /**
      * Converts the Annotation preview to Annopage
      * Gets the appropriate handler based on the fulltext Type to do the convert the input into EDMFulltextPackage
      *
