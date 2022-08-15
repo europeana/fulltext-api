@@ -217,7 +217,10 @@ public class FTWriteController extends BaseRestController {
     // if AnnoPage was deprecated, this re-enables it
     createdAnnoPage.copyDbIdFrom(existingAnnoPage);
 
-    ftService.saveAnnoPage(createdAnnoPage);
+    // using upsert as that saves the translation field as null for false values.
+    // Also prevents null being saved in DB
+    // this will be an update for deprecated AnnoPages
+    ftService.upsertAnnoPage(List.of(createdAnnoPage));
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("Created new AnnoPage {}", createdAnnoPage);
