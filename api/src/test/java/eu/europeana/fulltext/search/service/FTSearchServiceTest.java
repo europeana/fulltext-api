@@ -30,10 +30,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -108,13 +105,13 @@ public class FTSearchServiceTest {
         );
 
         // default no AnnoPages are available for any record
-        given(fulltextRepo.doesAnnoPageExist(any(), any(), any(), any(), anyBoolean())).willReturn(
-                Boolean.FALSE
+        given(fulltextRepo.getAnnoPages(any(), any(), any(), anyBoolean())).willReturn(
+                Collections.emptyList()
         );
         // except for 1 record
-        given(fulltextRepo.doesAnnoPageExist(eq(RECORDID_HAS_RESULTS.getDatasetId()), eq(RECORDID_HAS_RESULTS.getLocalId()),
-                anyString(), any(), anyBoolean())).willReturn(
-                        Boolean.TRUE
+        given(fulltextRepo.getAnnoPages(eq(RECORDID_HAS_RESULTS.getDatasetId()), eq(RECORDID_HAS_RESULTS.getLocalId()),
+                any(), anyBoolean())).willReturn(
+                        Arrays.asList(new AnnoPage())
         );
     }
 
