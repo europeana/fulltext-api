@@ -394,10 +394,7 @@ public class FTService {
      * @param annoPage AnnoPage to save
      */
     public void saveAnnoPage(AnnoPage annoPage) {
-        if (GeneralUtils.testProfileNotActive(activeProfileString)) {
-            LOG.warn("Attempting to save AnnoPage from non-test code...");
-
-        } else {
+        if (!GeneralUtils.testProfileNotActive(activeProfileString)) {
             annoPageRepository.saveAnnoPage(annoPage);
             if (annoPage.getRes() != null) {
                 resourceRepository.saveResource(annoPage.getRes());
