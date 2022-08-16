@@ -22,7 +22,9 @@ import java.util.Collections;
  * @author Lúthien
  * Created on 27-02-2018
  */
-@SpringBootApplication(scanBasePackages = {"eu.europeana.fulltext.api", "eu.europeana.fulltext.search", "eu.europeana.fulltext.repository"})
+@SpringBootApplication(scanBasePackages = {"eu.europeana.fulltext.api", "eu.europeana.fulltext.search", "eu.europeana.fulltext.repository"},
+        exclude = {org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class,
+        org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration.class})
 @PropertySource(value = "classpath:build.properties")
 public class FTApplication extends SpringBootServletInitializer {
 
