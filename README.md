@@ -1,5 +1,5 @@
 # Full Text API
-### Europeana Newspapers Fulltext API 
+### Europeana Fulltext API 
 
 This project consists of 3 modules:
 

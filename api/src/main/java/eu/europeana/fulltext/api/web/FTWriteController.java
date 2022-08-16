@@ -2,8 +2,8 @@ package eu.europeana.fulltext.api.web;
 
 import static eu.europeana.fulltext.WebConstants.*;
 import static eu.europeana.fulltext.util.GeneralUtils.isValidAnnotationId;
-import static eu.europeana.fulltext.util.HttpUtils.REQUEST_VERSION_2;
-import static eu.europeana.fulltext.util.HttpUtils.addContentTypeToResponseHeader;
+import static eu.europeana.fulltext.util.RequestUtils.REQUEST_VERSION_2;
+import static eu.europeana.fulltext.util.RequestUtils.addContentTypeToResponseHeader;
 
 import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.api.commons.service.authorization.AuthorizationService;
