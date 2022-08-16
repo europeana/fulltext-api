@@ -418,8 +418,10 @@ public class AnnoPageRepository {
             .include(CLASSNAME)
             .include(TARGET_ID)
             .include(MODIFIED)
-                .include(ANNOTATIONS,
-                    filter(field(ANNOTATIONS),
+            .include(LANGUAGE) // EA-3123 lang and translation field is needed since multilingual behaviour is added
+            .include(TRANSLATION)
+            .include(ANNOTATIONS,
+                 filter(field(ANNOTATIONS),
                         ArrayExpressions.in(value("$$annotation.dcType"),
                         value(dcTypes))).as("annotation")));
     }
