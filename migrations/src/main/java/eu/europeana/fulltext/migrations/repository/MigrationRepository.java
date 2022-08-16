@@ -157,9 +157,10 @@ public class MigrationRepository {
               UPSERT_OPTS));
     }
 
-    datastore.getMapper().getCollection(AnnoPage.class).bulkWrite(annoPageUpdates);
-    // then write Annotations separately for AnnoPages with too many
+    // Try updating annotations first, so "modified" time isn't changed. In case update fails
     updateAnnotations(annoPagesWithManyAnnotations);
+    datastore.getMapper().getCollection(AnnoPage.class).bulkWrite(annoPageUpdates);
+
   }
 
   /**
