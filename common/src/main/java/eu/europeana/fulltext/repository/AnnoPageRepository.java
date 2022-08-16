@@ -418,8 +418,9 @@ public class AnnoPageRepository {
             .include(CLASSNAME)
             .include(TARGET_ID)
             .include(MODIFIED)
-            .include(LANGUAGE) // EA-3123 lang and translation field is needed since multilingual behaviour is added
+            .include(LANGUAGE) // EA-3123 lang, translation and deleted field is needed since multilingual behaviour and deprecation is added.
             .include(TRANSLATION)
+            .include(DELETED)
             .include(ANNOTATIONS,
                  filter(field(ANNOTATIONS),
                         ArrayExpressions.in(value("$$annotation.dcType"),
