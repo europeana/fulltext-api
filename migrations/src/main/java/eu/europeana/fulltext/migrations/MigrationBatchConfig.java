@@ -8,7 +8,7 @@ import eu.europeana.fulltext.migrations.listener.MigrationProgressListener;
 import eu.europeana.fulltext.migrations.listener.MigrationSkipListener;
 import eu.europeana.fulltext.migrations.model.MigrationJobMetadata;
 import eu.europeana.fulltext.migrations.processor.MigrationAnnoPageProcessor;
-import eu.europeana.fulltext.migrations.reader.MigrationAnnoPageModificationReader;
+import eu.europeana.fulltext.migrations.reader.MigrationAnnoPageReader;
 import eu.europeana.fulltext.migrations.repository.MigrationRepository;
 import eu.europeana.fulltext.migrations.writer.MigrationAnnoPageWriter;
 import java.util.Date;
@@ -69,8 +69,7 @@ public class MigrationBatchConfig {
 
   private ItemReader<AnnoPage> annoPageReader(MigrationJobMetadata jobMetadata) {
     return threadSafeReader(
-      // TODO: change back to MigrationAnnoPageReader before running against production db
-        new MigrationAnnoPageModificationReader(appSettings.getPageSize(), repository));
+        new MigrationAnnoPageReader(appSettings.getPageSize(), repository, jobMetadata));
   }
 
   /** Makes ItemReader thread-safe */
