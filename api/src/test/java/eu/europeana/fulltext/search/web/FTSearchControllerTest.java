@@ -11,6 +11,8 @@ import eu.europeana.fulltext.search.service.FTSearchService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
@@ -29,7 +31,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ContextConfiguration(classes = FTApplication.class)
-@WebMvcTest(FTSearchController.class)
+@WebMvcTest(value = FTSearchController.class,
+// disable security for this test
+    excludeAutoConfiguration = {
+        SecurityAutoConfiguration.class,
+        ManagementWebSecurityAutoConfiguration.class
+    })
 public class FTSearchControllerTest {
 
     @MockBean
@@ -46,6 +53,9 @@ public class FTSearchControllerTest {
 
     @BeforeEach
     public void setUp() throws Exception {
+        // enable search for this test
+        when(ftSettings.isSolrEnabled()).thenReturn(true);
+
         SearchResultV2 testResultV2 = new SearchResultV2(TEST_SEARCH_ID, false);
         SearchResultV3 testResultV3 = new SearchResultV3(TEST_SEARCH_ID, false);
 

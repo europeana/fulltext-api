@@ -1,15 +1,15 @@
 package eu.europeana.fulltext.api.web;
 
 
+import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.fulltext.api.config.FTSettings;
 import eu.europeana.fulltext.api.service.CacheUtils;
 import eu.europeana.fulltext.api.service.FTService;
-import eu.europeana.fulltext.api.service.exception.AnnoPageDoesNotExistException;
-import eu.europeana.fulltext.api.service.exception.ResourceDoesNotExistException;
-import eu.europeana.fulltext.api.service.exception.SerializationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
@@ -21,6 +21,7 @@ import static eu.europeana.fulltext.api.config.FTDefinitions.*;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.hasItems;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.startsWith;
 import static org.mockito.BDDMockito.eq;
 import static org.mockito.BDDMockito.given;
@@ -31,15 +32,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * Test the application's controller
  *
- * @author Lúthien
- * Created on 28-02-2018
- * TODO add tests for If-Modified-Since header and the CORS headers
+ * @author Lúthien Created on 28-02-2018 TODO add tests for If-Modified-Since header and the CORS
+ *     headers
  */
-
-@WebMvcTest(FTController.class)
-//@AutoConfigureMockMvc
+@WebMvcTest(
+    value = FTRetrievalController.class,
+    // disable security for this test
+    excludeAutoConfiguration = {
+      SecurityAutoConfiguration.class,
+      ManagementWebSecurityAutoConfiguration.class
+    })
 public class FTControllerTest {
-
 
     private static final String JSONLD_ANP_V2_OUTPUT = "{AnnotationPage_V2 : JSONLD}";
     private static final String JSONLD_ANP_V3_OUTPUT = "{AnnotationPage_V3 : JSONLD}";
@@ -102,7 +105,7 @@ public class FTControllerTest {
 //    private CacheUtils cacheUtils;
 
     @BeforeEach
-    public void setup() throws AnnoPageDoesNotExistException, SerializationException, ResourceDoesNotExistException {
+    public void setup() throws EuropeanaApiException {
 
         given(ftService.fetchAnnoPage(any(), any(), any(), any(), any())).willReturn(anp_1);
         given(ftService.generateAnnoPageV2(anp_1, false)).willReturn(anpv2_1);
@@ -115,8 +118,8 @@ public class FTControllerTest {
         given(ftService.generateAnnotationV3(any(), eq("an2"))).willReturn(annv3_2);
         given(ftService.generateAnnotationV3(any(), eq("an3"))).willReturn(annv3_3);
 
-        given(ftService.fetchFTResource(any(), any(), eq("res1"))).willReturn(ftres_1);
-        given(ftService.fetchFTResource(any(), any(), eq("res2"))).willReturn(ftres_2);
+        given(ftService.fetchFTResource(any(), any(), eq("pg1"), any())).willReturn(ftres_1);
+        given(ftService.fetchFTResource(any(), any(), eq("pg2"), any())).willReturn(ftres_2);
 
         given(ftService.serialise(anpv2_1)).willReturn(JSONLD_ANP_V2_OUTPUT);
         given(ftService.serialise(annv2_1)).willReturn(JSONLD_ANN_V2_1_OUTPUT);
@@ -130,8 +133,8 @@ public class FTControllerTest {
         given(ftService.serialise(ftres_1)).willReturn(JSON_RES_1_OUTPUT);
         given(ftService.serialise(ftres_2)).willReturn(JSON_RES_2_OUTPUT);
 
-        given(ftService.doesAnnoPageExist(any(), any(), startsWith("a"), any())).willReturn(true);
-        given(ftService.doesAnnoPageExist(any(), any(), startsWith("z"), any())).willReturn(false);
+        given(ftService.doesAnnoPageExist(any(), any(), startsWith("a"), any(), anyBoolean())).willReturn(true);
+        given(ftService.doesAnnoPageExist(any(), any(), startsWith("z"), any(), anyBoolean())).willReturn(false);
 
         given(ftSettings.getAppVersion()).willReturn("v1.0-test");
         given(ftService.getSettings()).willReturn(ftSettings);
@@ -154,9 +157,9 @@ public class FTControllerTest {
                 "iseealittle" + "sillypetbesideaman" + "an1", CacheUtils.dateToZonedUTC(lastModifiedDate),
                 "3" + ftSettings.getAppVersion(), true);
         dieKuckeBackenWollteETag = CacheUtils.generateSimpleETag(
-                "esgabeinefraures1" + "de" + KUCKEBACKENWOLLTE + ftSettings.getAppVersion(), true);
+                "esgabeinefraupg1" + "de" + KUCKEBACKENWOLLTE + ftSettings.getAppVersion(), true);
         dasTeigWollteNichtAufgehenETag = CacheUtils.generateSimpleETag(
-                "aberdasteigres2" + "de" + WUERDEJANICHTAUFGEHEN + ftSettings.getAppVersion(), true);
+                "aberdasteigpg2" + "de" + WUERDEJANICHTAUFGEHEN + ftSettings.getAppVersion(), true);
         multiTeigWollteNichtAufgehenETag = THE_WRONG_ETAG + "," + dasTeigWollteNichtAufgehenETag + "," + ANOTHER_WRONG_ETAG;
     }
 
@@ -559,12 +562,14 @@ public class FTControllerTest {
      */
     @Test
     public void testGetFTResource() throws Exception {
-        this.mockMvc.perform(get("/presentation/esgab/einefrau/res1"))
+        this.mockMvc.perform(get("/presentation/esgab/einefrau/pg1")
+                .param("lang", "de"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(JSON_RES_1_OUTPUT))
                 .andDo(print());
 
-        this.mockMvc.perform(get("/presentation/aberdas/teig/res2"))
+        this.mockMvc.perform(get("/presentation/aberdas/teig/pg2")
+                .param("lang", "de"))
                 .andExpect(content().json(JSON_RES_2_OUTPUT))
                 .andDo(print());
     }
@@ -574,13 +579,14 @@ public class FTControllerTest {
      */
     @Test
     public void testGetFTResourceJsonOrLd() throws Exception {
-        this.mockMvc.perform(get("/presentation/esgab/einefrau/res1")
+        this.mockMvc.perform(get("/presentation/esgab/einefrau/pg1")
+                .param("lang", "de")
                 .header(HEADER_ACCEPT, "application/ld+json"))
                 .andExpect(header().string(HEADER_CONTENTTYPE, containsString(MEDIA_TYPE_JSONLD)))
                 .andExpect(status().isOk())
                 .andDo(print());
 
-        this.mockMvc.perform(get("/presentation/aberdas/teig/res2")
+        this.mockMvc.perform(get("/presentation/aberdas/teig/pg2")
                 .header(HEADER_ACCEPT, "application/json"))
                 .andExpect(header().string(HEADER_CONTENTTYPE, containsString(MEDIA_TYPE_JSON)))
                 .andExpect(status().isOk())
@@ -594,7 +600,8 @@ public class FTControllerTest {
     public void testIfNoneMatchFTResource() throws Exception {
 
         // matching ETag: should return HTTP 304. Also tests if the controller returns the regular headers
-        this.mockMvc.perform(get("/presentation/esgab/einefrau/res1")
+        this.mockMvc.perform(get("/presentation/esgab/einefrau/pg1")
+                .param("lang", "de")
                 .header(HEADER_ACCEPT, "application/json")
                 .header(HEADER_IFNONEMATCH, dieKuckeBackenWollteETag))
                 .andExpect(header().string(HEADER_ETAG, containsString(dieKuckeBackenWollteETag)))
@@ -607,7 +614,8 @@ public class FTControllerTest {
                 .andDo(print());
 
         // ditto for "*"
-        this.mockMvc.perform(get("/presentation/aberdas/teig/res2")
+        this.mockMvc.perform(get("/presentation/aberdas/teig/pg2")
+                .param("lang", "de")
                 .header(HEADER_ACCEPT, "application/ld+json")
                 .header(HEADER_IFNONEMATCH, ANY))
                 .andExpect(content().string(""))
@@ -615,7 +623,8 @@ public class FTControllerTest {
                 .andDo(print());
 
         // and ditto for multiple ETags if it contains the matching one
-        this.mockMvc.perform(get("/presentation/aberdas/teig/res2")
+        this.mockMvc.perform(get("/presentation/aberdas/teig/pg2")
+                .param("lang", "de")
                 .header(HEADER_ACCEPT, "application/json")
                 .header(HEADER_IFNONEMATCH, multiTeigWollteNichtAufgehenETag))
                 .andExpect(header().string(HEADER_ETAG, containsString(dasTeigWollteNichtAufgehenETag)))
@@ -624,7 +633,8 @@ public class FTControllerTest {
                 .andDo(print());
 
         // but when the ETag does not match, expect a regular response. Check the regular headers again as well.
-        this.mockMvc.perform(get("/presentation/esgab/einefrau/res1")
+        this.mockMvc.perform(get("/presentation/esgab/einefrau/pg1")
+                .param("lang", "de")
                 .header(HEADER_ACCEPT, "application/json")
                 .header(HEADER_IFNONEMATCH, THE_WRONG_ETAG))
                 .andExpect(header().string(HEADER_ETAG, containsString(dieKuckeBackenWollteETag)))
@@ -638,7 +648,8 @@ public class FTControllerTest {
 
 
         // TWO wrong ETags ... why not?
-        this.mockMvc.perform(get("/presentation/aberdas/teig/res2")
+        this.mockMvc.perform(get("/presentation/aberdas/teig/pg2")
+                .param("lang", "de")
                 .header(HEADER_ACCEPT, "application/ld+json")
                 .header(HEADER_IFNONEMATCH, ANOTHER_WRONG_ETAG + "," + THE_WRONG_ETAG))
                 .andExpect(content().json(JSON_RES_2_OUTPUT))
@@ -654,7 +665,8 @@ public class FTControllerTest {
     public void testIfMatchFTResource() throws Exception {
 
         // matching ETag: should return HTTP 200 + regular JSON content. Also tests if the controller returns the regular headers
-        this.mockMvc.perform(get("/presentation/esgab/einefrau/res1")
+        this.mockMvc.perform(get("/presentation/esgab/einefrau/pg1")
+                .param("lang", "de")
                 .header(HEADER_ACCEPT, "application/json")
                 .header(HEADER_IFMATCH, dieKuckeBackenWollteETag))
                 .andExpect(header().string(HEADER_ETAG, containsString(dieKuckeBackenWollteETag)))
@@ -667,21 +679,24 @@ public class FTControllerTest {
                 .andDo(print());
 
         // ditto for "*"
-        this.mockMvc.perform(get("/presentation/aberdas/teig/res2")
+        this.mockMvc.perform(get("/presentation/aberdas/teig/pg2")
+                .param("lang", "de")
                 .header(HEADER_ACCEPT, "application/json")
                 .header(HEADER_IFMATCH, ANY))
                 .andExpect(content().json(JSON_RES_2_OUTPUT))
                 .andExpect(status().isOk());
 
         // and ditto for multiple ETags if it contains the matching one
-        this.mockMvc.perform(get("/presentation/aberdas/teig/res2")
+        this.mockMvc.perform(get("/presentation/aberdas/teig/pg2")
+                .param("lang", "de")
                 .header(HEADER_ACCEPT, "application/json")
                 .header(HEADER_IFMATCH, multiTeigWollteNichtAufgehenETag))
                 .andExpect(content().json(JSON_RES_2_OUTPUT))
                 .andExpect(status().isOk());
 
         // but when the ETag does not match, expect a HTTP 412 without the regular headers.
-        this.mockMvc.perform(get("/presentation/esgab/einefrau/res1")
+        this.mockMvc.perform(get("/presentation/esgab/einefrau/pg1")
+                .param("lang", "de")
                 .header(HEADER_ACCEPT, "application/ld+json")
                 .header(HEADER_IFMATCH, THE_WRONG_ETAG))
                 .andExpect(header().string(HEADER_ETAG, nullValue()))
@@ -700,7 +715,8 @@ public class FTControllerTest {
     public void testIfModifiedSinceFTResource() throws Exception {
 
         // content is changed after date set in if-modified-since: return regular content plus the whole header zoo
-        this.mockMvc.perform(get("/presentation/esgab/einefrau/res1")
+        this.mockMvc.perform(get("/presentation/esgab/einefrau/pg1")
+                .param("lang", "de")
                 .header(HEADER_ACCEPT, "application/json")
                 .header(HEADER_IFMODIFIEDSINCE, BEFORETHEBEGINNING))
                 .andExpect(header().string(HEADER_ETAG, containsString(dieKuckeBackenWollteETag)))
@@ -713,7 +729,8 @@ public class FTControllerTest {
                 .andDo(print());
 
         // content was last changed before date set in if-modified-since: return nothing with status HTTP 304
-        this.mockMvc.perform(get("/presentation/aberdas/teig/res2")
+        this.mockMvc.perform(get("/presentation/aberdas/teig/pg2")
+                .param("lang", "de")
                 .header(HEADER_ACCEPT, "application/json")
                 .header(HEADER_IFMODIFIEDSINCE, AFTERTHEBEGINNING))
                 .andExpect(header().string(HEADER_ETAG, nullValue()))
@@ -729,7 +746,8 @@ public class FTControllerTest {
 
     @Test
     public void testCorsGet() throws Exception {
-        mockMvc.perform(get("/presentation/esgab/einefrau/res1")
+        mockMvc.perform(get("/presentation/esgab/einefrau/pg1")
+                .param("lang", "de")
                 .header(HttpHeaders.ORIGIN, "https://test.com"))
                 .andExpect(status().isOk())
                 .andExpect(header().exists(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN))
@@ -738,7 +756,8 @@ public class FTControllerTest {
 
     @Test
     public void testCorsPreFlight() throws Exception {
-        mockMvc.perform(options("/presentation/esgab/einefrau/res1")
+        mockMvc.perform(options("/presentation/esgab/einefrau/pg1")
+                .param("lang", "de")
                 .header(HttpHeaders.ORIGIN, "https://test.com")
                 .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET")
                 .header(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS, HttpHeaders.AUTHORIZATION))

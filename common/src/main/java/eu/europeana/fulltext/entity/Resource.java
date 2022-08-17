@@ -2,11 +2,17 @@ package eu.europeana.fulltext.entity;
 
 import dev.morphia.annotations.*;
 
-/**
- * Created by luthien on 31/05/2018.
- */
+/** Created by luthien on 31/05/2018. */
 @Entity(value = "Resource", useDiscriminator = false)
-@Indexes(@Index(fields = { @Field("dsId"), @Field("lcId"), @Field("_id") }, options = @IndexOptions(unique = true)))
+@Indexes({
+  @Index(
+      fields = {@Field("dsId"), @Field("lcId"), @Field("pgId"), @Field("lang")},
+      options = @IndexOptions(unique = true)),
+    // only index contributed Resources
+  @Index(
+      fields = {@Field("contributed")},
+      options = @IndexOptions(partialFilter = "{contributed: {$eq: true}}"))
+})
 public class Resource {
 
     @Id
@@ -15,9 +21,16 @@ public class Resource {
     private String lcId;  // IIIF_API_BASE_URL/      /{lcId}/annopage/
     private String lang;
     private String value;
+    private String pgId;
 
     private String source;
     private String rights;
+    private boolean contributed;
+    private boolean translation;
+
+    // temp field added for migration; will be removed afterwards
+    @Transient
+    private String oldDbId;
 
     /**
      * Empty constructor required for serialisation
@@ -32,14 +45,15 @@ public class Resource {
         this.rights = rights;
     }
 
-    public Resource(String id, String lang, String value, String rights, String dsId, String lcId) {
+    public Resource(String id, String lang, String value, String rights, String dsId, String lcId, String pgId) {
         this(id, lang, value, rights);
         this.dsId = dsId;
         this.lcId = lcId;
+        this.pgId = pgId;
     }
 
-    public Resource(String id, String lang, String value, String rights, String dsId, String lcId, String source) {
-        this(id, lang, value, rights, dsId, lcId);
+    public Resource(String id, String lang, String value, String rights, String dsId, String lcId, String pgId, String source) {
+        this(id, lang, value, rights, dsId, lcId, pgId);
         this.source = source;
     }
 
@@ -94,4 +108,36 @@ public class Resource {
     public String getRights() { return rights; }
 
     public void setRights(String rights) { this.rights = rights; }
+
+    public boolean isContributed() {
+        return contributed;
+    }
+
+    public void setContributed(boolean contributed) {
+        this.contributed = contributed;
+    }
+
+    public String getOldDbId() {
+        return oldDbId;
+    }
+
+    public void setOldDbId(String oldDbId) {
+        this.oldDbId = oldDbId;
+    }
+
+    public String getPgId() {
+        return pgId;
+    }
+
+    public void setPgId(String pgId) {
+        this.pgId = pgId;
+    }
+
+    public boolean isTranslation() {
+        return translation;
+    }
+
+    public void setTranslation(boolean translation) {
+        this.translation = translation;
+    }
 }

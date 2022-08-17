@@ -1,5 +1,6 @@
 package eu.europeana.fulltext;
 
+import eu.europeana.fulltext.util.RequestUtils;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.mock.web.MockHttpServletRequest;

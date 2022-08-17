@@ -1,5 +1,4 @@
-**/fulltext.user.properties
-**/loader.user.properties
+*.user.properties
 
 loader/logs
 logs
@@ -29,3 +28,5 @@ dist/
 nbdist/
 .nb-gradle/
 /common/.mvn/
+
+.DS_Store

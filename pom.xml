@@ -33,6 +33,7 @@
         <module>common</module>
         <module>api</module>
         <module>loader</module>
+        <module>migrations</module>
     </modules>
 
     <properties>
@@ -40,7 +41,6 @@
         <maven.compiler.release>${java.version}</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-
         <api-commons.version>0.3.16-SNAPSHOT</api-commons.version>
         <!-- upgraded to 2.5.9 as 2.6.x is not compatible with swagger (springfox-swagger-ui)-->
         <!-- org.apache.tomcat.embed version 9.0.56 is included uptill 2.6.3 which is vulnerable. See : CVE-2022-23181  -->
@@ -49,7 +49,7 @@
         <io-informatics.version>0.1.1</io-informatics.version>
         <morphia.version>2.2.6</morphia.version>
         <mongo-driver.version>4.5.1</mongo-driver.version>
-        <snappy.version>1.1.7.2</snappy.version>
+        <snappy.version>1.1.8.4</snappy.version>
         <commons-lang3.version>3.9</commons-lang3.version>
         <commons-io.version>2.4</commons-io.version>
         <log4j2.version>2.17.1</log4j2.version>
@@ -60,6 +60,9 @@
         <unitils.version>3.4.6</unitils.version>
         <swagger.version>3.0.0</swagger.version>
         <tomcat.version>9.0.58</tomcat.version>
+        <springbatch.mongo.version>1.0.5</springbatch.mongo.version>
+        <mock-webserver.version>4.9.0</mock-webserver.version>
+        <testcontainers.version>1.16.0</testcontainers.version>
         <eclipse-jetty.version>11.0.11</eclipse-jetty.version>
     </properties>
 
@@ -73,42 +76,144 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
+            <dependency>
+                <groupId>eu.europeana.api.commons</groupId>
+                <artifactId>commons-web</artifactId>
+                <version>${api-commons.version}</version>
+                <exclusions>
+                    <!-- exclude Swagger dependency as it clashes with version in project
+                     TODO: remove Swagger from api-commons -->
+                    <exclusion>
+                        <groupId>io.springfox</groupId>
+                        <artifactId>springfox-swagger2</artifactId>
+                    </exclusion>
+                    <!-- Transitive dependency from commons-definitions. Mongo version there
+                     clashes with fulltext version -->
+                    <exclusion>
+                        <groupId>org.mongodb</groupId>
+                        <artifactId>mongo-java-driver</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>eu.europeana.api.commons</groupId>
+                <artifactId>commons-error</artifactId>
+                <version>${api-commons.version}</version>
+                <exclusions>
+                    <!-- Transitive dependency from commons-definitions. Mongo version there
+                     clashes with fulltext version -->
+                    <exclusion>
+                        <groupId>org.mongodb</groupId>
+                        <artifactId>mongo-java-driver</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>commons-collections</artifactId>
+                        <groupId>commons-collections</groupId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
         </dependencies>
     </dependencyManagement>
-
     <build>
         <plugins>
             <plugin>
-                <!-- This will be active when running the verify or install goal
-                     To skip (e.g. during debugging) use 'mvn clean package')-->
-                <groupId>org.owasp</groupId>
-                <artifactId>dependency-check-maven</artifactId>
-                <version>6.5.0</version>
-                <configuration>
-                    <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
-                    <failBuildOnCVSS>7</failBuildOnCVSS>
-                    <suppressionFiles>
-                        <suppressionFile>owasp-suppress.xml</suppressionFile>
-                    </suppressionFiles>
-                </configuration>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>3.0.0-M5</version>
                 <executions>
                     <execution>
                         <goals>
-                            <goal>check</goal>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-
-            <!-- Tmp added to see compilation errors after upgrading dependencies, see
-            https://stackoverflow.com/questions/62583298/exception-in-thread-main-java-lang-assertionerror-->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <forceJavacCompilerUse>true</forceJavacCompilerUse>
+                    <classesDirectory>${project.build.directory}/classes</classesDirectory>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <id>add-integration-test-source</id>
+                        <!-- Normally this would be attached to the generate-test-source phase,
+                          however we attach to generate-sources so that the git-code-format plugin can pick
+                          up integration test source files (see plugin config above) -->
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-test-source</goal>
+                        </goals>
+                        <configuration>
+                            <!-- Configures the source directory of our integration tests -->
+                            <sources>
+                                <source>src/integration-test/java</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>add-integration-test-resources</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>add-test-resource</goal>
+                        </goals>
+                        <configuration>
+                            <!-- Configures the resource directory of our integration tests -->
+                            <resources>
+                                <resource>
+                                    <filtering>true</filtering>
+                                    <directory>src/integration-test/resources</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>depcheck</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <!-- This will be active when running the verify or install goal
+                             To skip (e.g. during debugging) use 'mvn clean package')-->
+                        <groupId>org.owasp</groupId>
+                        <artifactId>dependency-check-maven</artifactId>
+                        <version>6.5.0</version>
+                        <configuration>
+                            <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
+                            <failBuildOnCVSS>7</failBuildOnCVSS>
+                            <suppressionFiles>
+                                <suppressionFile>owasp-suppress.xml</suppressionFile>
+                            </suppressionFiles>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!-- Tmp added to see compilation errors after upgrading dependencies, see
+                    https://stackoverflow.com/questions/62583298/exception-in-thread-main-java-lang-assertionerror-->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <forceJavacCompilerUse>true</forceJavacCompilerUse>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

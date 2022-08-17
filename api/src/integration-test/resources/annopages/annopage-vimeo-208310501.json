@@ -1,0 +1,167 @@
+{
+  "@context": "http://www.europeana.eu/schemas/context/collection.jsonld",
+  "dsId": "08623",
+  "lcId": "12434",
+  "pgId": "1",
+  "tgtId": "https://vimeo.com/208310501",
+  "ans": [
+    {
+      "anId": "75521443ca030b221d7f5b594702a077",
+      "dcType": "M",
+      "media": true,
+      "topLevel": true
+    },
+    {
+      "anId": "5df4787406cdb3b6ed440613886d809c",
+      "dcType": "C",
+      "from": 0,
+      "to": 78,
+      "tgs": [
+        {
+          "start": 6000,
+          "end": 9000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "2fda1424c33c3ee588d0ff73aaf13abd",
+      "dcType": "C",
+      "from": 79,
+      "to": 131,
+      "tgs": [
+        {
+          "start": 29600,
+          "end": 33800
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "c943e61536293a62d21b31ecdd08c7ec",
+      "dcType": "C",
+      "from": 132,
+      "to": 230,
+      "tgs": [
+        {
+          "start": 53400,
+          "end": 57500
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "41ea33209436380291aca257a7dcd3ac",
+      "dcType": "C",
+      "from": 231,
+      "to": 293,
+      "tgs": [
+        {
+          "start": 57500,
+          "end": 60500
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "70611b10e3c55d930b344cb2aee4799b",
+      "dcType": "C",
+      "from": 294,
+      "to": 316,
+      "tgs": [
+        {
+          "start": 60500,
+          "end": 63000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "ca8b27cbb4fe7cd9506ee93ed4c1ada0",
+      "dcType": "C",
+      "from": 317,
+      "to": 368,
+      "tgs": [
+        {
+          "start": 63000,
+          "end": 68000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "42890a86e16539dd77e5e0f8e4efd740",
+      "dcType": "C",
+      "from": 369,
+      "to": 375,
+      "tgs": [
+        {
+          "start": 115000,
+          "end": 116000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "b098b72c5288537d4729b213a8caa6c6",
+      "dcType": "C",
+      "from": 376,
+      "to": 474,
+      "tgs": [
+        {
+          "start": 134500,
+          "end": 145000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "ccf0aff17a4c6227d1a9a1977a553499",
+      "dcType": "C",
+      "from": 475,
+      "to": 507,
+      "tgs": [
+        {
+          "start": 190100,
+          "end": 195000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "e85db8035ae4be0809f53653cd8b4473",
+      "dcType": "C",
+      "from": 508,
+      "to": 602,
+      "tgs": [
+        {
+          "start": 284000,
+          "end": 290000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    }
+  ],
+  "modified": "2022-04-12T15:04:07.696+0100",
+  "lang": "de",
+  "source": "http://test-annotation-host/annotation/53707",
+  "res": {
+    "id": "66c51352943c0da8b663d2a3bbc33e78",
+    "dsId": "08623",
+    "lcId": "12434",
+    "pgId": "1",
+    "lang": "de",
+    "value": "Deutschland. Lüneburg. Besuch des belgischen Königs. Empfang durch den Kaiser.\nDer König übergibt eine Flagge an die Militärschule.\n„Als Symbol für Ehre und Pflicht steht diese Flagge für die herausragenden militärischen Tugenden,\ndie unsere Offiziere und ehemaligen Offiziere an den Tag legen\nsowie für die Dienste,\ndie sie Belgien und seiner Kolonie erwiesen haben.“\nVeurne\nDer König nimmt an der feierlichen Verleihung des Kriegskreuzes von Herrn Poincaré in Veurne teil.\nDer König bei den Niagarafällen.\nDer König und Herr Millerand nahmen am 43. Turnfest teil, bei dem 651 Vereine vertreten waren.",
+    "rights": "http://creativecommons.org/publicdomain/mark/1.0/"
+  }
+}

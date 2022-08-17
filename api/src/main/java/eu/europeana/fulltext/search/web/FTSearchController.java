@@ -1,5 +1,8 @@
 package eu.europeana.fulltext.search.web;
 
+import static eu.europeana.fulltext.util.RequestUtils.ACCEPT_VERSION_INVALID;
+import static eu.europeana.fulltext.util.RequestUtils.getRequestVersion;
+
 import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.api.config.FTSettings;
@@ -7,6 +10,7 @@ import eu.europeana.fulltext.api.service.ControllerUtils;
 import eu.europeana.fulltext.api.service.exception.InvalidVersionException;
 import eu.europeana.fulltext.search.config.SearchConfig;
 import eu.europeana.fulltext.search.exception.InvalidParameterException;
+import eu.europeana.fulltext.search.exception.SearchDisabledException;
 import eu.europeana.fulltext.search.model.query.EuropeanaId;
 import eu.europeana.fulltext.search.model.response.SearchResult;
 import eu.europeana.fulltext.search.service.FTSearchService;
@@ -24,8 +28,6 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
-import static eu.europeana.fulltext.RequestUtils.*;
-
 /**
  * Rest controller that handles search requests
  *
@@ -42,8 +44,8 @@ public class FTSearchController {
 
     private static final Logger LOG = LogManager.getLogger(FTSearchController.class);
 
-    private FTSearchService searchService;
-    private FTSettings settings;
+    private final FTSearchService searchService;
+    private final FTSettings settings;
 
     public FTSearchController(FTSearchService searchService, FTSettings settings) {
         this.searchService = searchService;
@@ -73,6 +75,10 @@ public class FTSearchController {
                                     HttpServletRequest request) throws EuropeanaApiException {
 
         // validate the format
+        if(!settings.isSolrEnabled()){
+            throw new SearchDisabledException();
+        }
+
         String requestVersion = getRequestVersion(request, versionParam);
         if (StringUtils.isEmpty(requestVersion)) {
             throw new InvalidVersionException(ACCEPT_VERSION_INVALID);

@@ -1,0 +1,96 @@
+{
+  "@context": "http://www.europeana.eu/schemas/context/collection.jsonld",
+  "dsId": "08609",
+  "lcId": "6a3cbb8b_d521_409f_8e97_a98ed4de33c4",
+  "pgId": "1",
+  "tgtId": "http://repozytorium.fn.org.pl/?q=node/9927",
+  "ans": [
+    {
+      "anId": "b081c48f4dec2b0e4407ac6840e29917",
+      "dcType": "M",
+      "media": true,
+      "topLevel": true
+    },
+    {
+      "anId": "281be0a524feb01c09481070f42cc702",
+      "dcType": "C",
+      "from": 0,
+      "to": 66,
+      "tgs": [
+        {
+          "start": 973,
+          "end": 7000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "2826e71467f1a1d746446d7aa7b8a501",
+      "dcType": "C",
+      "from": 67,
+      "to": 161,
+      "tgs": [
+        {
+          "start": 7000,
+          "end": 13700
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "b8c4392e1c8ee4b40e74f3d2edfd5544",
+      "dcType": "C",
+      "from": 162,
+      "to": 195,
+      "tgs": [
+        {
+          "start": 31042,
+          "end": 36000
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "7c53182f709d0ec6859680b6a89f53fc",
+      "dcType": "C",
+      "from": 196,
+      "to": 218,
+      "tgs": [
+        {
+          "start": 48000,
+          "end": 53500
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    },
+    {
+      "anId": "f27150b2583ee46015f9c2b67ad08b69",
+      "dcType": "C",
+      "from": 219,
+      "to": 223,
+      "tgs": [
+        {
+          "start": 56000,
+          "end": 58500
+        }
+      ],
+      "media": true,
+      "topLevel": false
+    }
+  ],
+  "modified": "2022-04-12T15:04:07.696+0100",
+  "lang": "de",
+  "res": {
+    "id": "ee38d6e5a2ee2b8933f71f839d7d000c",
+    "dsId": "08609",
+    "lcId": "6a3cbb8b_d521_409f_8e97_a98ed4de33c4",
+    "lang": "de",
+    "pgId": "1",
+    "value": "Im Rennen um die Teilnahme\nan den Warschauer Wintermeisterschaften\nkonnte Józef Kapiak den ersten Platz erringen.\nDer allgemeine Favorit Napierała wurde Zweiter.\nDie Reifen der Sieger aus Piastów\nDie Sieger des Rennens\nEnde",
+    "rights": "http://rightsstatements.org/vocab/InC/1.0/"
+  }
+}

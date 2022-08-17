@@ -1,0 +1,22 @@
+{
+  "@context": "http://www.w3.org/ns/anno.jsonld",
+  "id": "http://test-annotation-host/annotation/53707",
+  "type": "Annotation",
+  "motivation": "subtitling",
+  "created": "2021-10-04T16:52:30",
+  "creator": {
+    "id": "http://data.europeana.eu/user/aa20f5f8-7521-4913-aaba-3e99bcf176d9",
+    "type": "Person"
+  },
+  "generated": "2021-10-04T16:52:30",
+  "body": {
+    "value": "WEBVTT Kind: subtitles; Language: es\n\n00:00.000 --> 00:03.000\nDeutsches Filminstitut\n\n00:03.982 --> 00:08.000\nSALEM Número 6\nest. 1886\n\n00:08.000 --> 00:09.000\npresenta\n\n\n00:09.012 --> 00:13.000\nEl mejor cigarrillo de mi vida\nCapítulo 15\nInsel-Film\n\n00:19.000 --> 00:23.000\nMiren este anuncio de Salem - \n\"El mejor cigarrillo de mi vida\"\n\n00:23.500 --> 00:25.400\nPues yo también tengo una historia para contar.\n\n00:26.400 --> 00:29.100\nAcababa de prepararme un baño.\n\n00:32.000 --> 00:34.000\nEl agua ya estaba preparada.\n\n00:40.700 --> 00:42.000\nSólo faltaba el secador de pelo.\n\n01:11.000 --> 01:14.197\nIba a secarme el cabello recién lavado en la bañera.\n\n01:15.000 --> 01:18.000\nSé que eso no se debe hacer ...\n\n01:18.000 --> 01:20.000\npero no siempre se puede pensar en todo.\n\n01:28.424 --> 01:32.000\nEstaba disfrutando tanto del agua caliente\ny de la espuma.\n\n01:41.825 --> 01:44.000\nEl cigarrillo después...\n\n01:45.500 --> 01:48.500\nfue el mejor cigarrillo de mi vida.\n\n01:56.000 --> 02:00.000\nEl SALEM Número 6 es un cigarrillo muy muy bueno.\n\n02:04.700 --> 02:05.962\nTan aromático.\n\n02:07.000 --> 02:08.268\nTan fragante.\n\n02:10.000 --> 02:13.000\nY sin embargo: \nbajo en nicotina.\n\n02:13.150 --> 02:18.000\nDeseamos que sea también el mejor cigarrillo de SU vida.\n\n02:21.000 --> 02:26.000\nSALEM Número 6\nest. 1886\n\n02:29.485 --> 02:32.485\nUna producción de Insel-Film\n",
+    "edmRights": "http://creativecommons.org/licenses/by-sa/4.0/",
+    "format": "text/vtt",
+    "language": "es"
+  },
+  "target": {
+    "scope": "http://data.europeana.eu/item/08604/EAAE870171E24F05A64CE364D750631A",
+    "source": "https://www.filmportal.de/sites/default/files/video/Salem06_x264.mp4"
+  }
+}

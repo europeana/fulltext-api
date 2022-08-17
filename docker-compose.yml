@@ -1,0 +1,28 @@
+version: "3.9"
+
+# To start mongo, run: docker-compose up -d
+# Then use the following settings in fulltext.user.properties
+#
+#  ###############
+#  mongo.connectionUrl = mongodb://admin:password@localhost:27017
+#  mongo.fulltext.database = fulltext
+#  mongo.batch.database = spring-batch-repo
+#
+#
+#  To stop afterwards, run: docker-compose down
+
+services:
+  db:
+    build:
+      context: ./api/src/integration-test/resources/mongo-docker
+      dockerfile: Dockerfile
+    container_name: fulltext-write-mongo
+    ports:
+      - "27017:27017"
+    environment:
+      - ROOT_USERNAME=admin
+      - ROOT_PASSWORD=password
+      - MONGO_INITDB_DATABASE=admin
+      # Databases for Fulltext and Spring Batch
+      - FULLTEXT_DB=fulltext
+      - BATCH_DB=spring-batch-repo

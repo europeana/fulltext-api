@@ -50,6 +50,22 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+
+        <!-- WebClient used for Annotation syncing -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+
+        <!-- For creating email template -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
 
         <!-- Including non-vulnerable tomcat dependency.
         spring-boot-starter-tomcat Includes version 9.0.56, which is vulnerable See : CVE-2022-23181
@@ -101,6 +117,14 @@
             <artifactId>log4j-jul</artifactId>
             <version>${log4j2.version}</version>
         </dependency>
+
+        <!-- Adds better web container support for log4j  -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-web</artifactId>
+            <version>${log4j2.version}</version>
+        </dependency>
+
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -200,24 +224,6 @@
             <version>2.0.1.Final</version>
         </dependency>
 
-        <dependency>
-            <groupId>eu.europeana.api.commons</groupId>
-            <artifactId>commons-error</artifactId>
-            <version>${api-commons.version}</version>
-            <exclusions>
-                <!-- Transitive dependency from commons-definitions. Mongo version there
-                 clashes with fulltext version -->
-                <exclusion>
-                    <groupId>org.mongodb</groupId>
-                    <artifactId>mongo-java-driver</artifactId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>commons-collections</artifactId>
-                    <groupId>commons-collections</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
         <!-- Override the spring-security-core and crypto to 5.7.2 which does not have any vulnerabilities like CVE-2022-22978 -->
         <dependency>
             <groupId>org.springframework.security</groupId>
@@ -249,19 +255,47 @@
             <version>${swagger.version}</version>
         </dependency>
 
+        <!-- Adds Spring Batch support for Mongo JobRepository -->
+        <dependency>
+            <groupId>eu.europeana.api</groupId>
+            <artifactId>spring-batch-mongo</artifactId>
+            <version>${springbatch.mongo.version}</version>
+        </dependency>
+
+        <!-- Used for subtitle conversion-->
+        <dependency>
+            <groupId>com.dotsub.converter</groupId>
+            <artifactId>subtitle-converter</artifactId>
+            <version>1</version>
+        </dependency>
+
+
+        <!-- Fixes DNS resolution issues on Apple Silicon  -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-resolver-dns-native-macos</artifactId>
+            <version>4.1.69.Final</version>
+            <classifier>osx-aarch_64</classifier>
+        </dependency>
+
+        <dependency>
+            <groupId>eu.europeana.api.commons</groupId>
+            <artifactId>commons-web</artifactId>
+        </dependency>
+
         <!-- Test stuff -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
             <exclusions>
-                <!-- exclude junit 4 -->
                 <exclusion>
-                    <groupId>junit</groupId>
-                    <artifactId>junit</artifactId>
+                    <groupId>org.junit.vintage</groupId>
+                    <artifactId>junit-vintage-engine</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
+
         <!-- junit 5 -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -282,7 +316,32 @@
             <scope>test</scope>
         </dependency>
 
+        <!--testcontainers for integration testing-->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <version>${testcontainers.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${testcontainers.version}</version>
+            <scope>test</scope>
+        </dependency>
 
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>${mock-webserver.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>mockwebserver</artifactId>
+            <version>${mock-webserver.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

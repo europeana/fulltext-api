@@ -11,11 +11,11 @@ import eu.europeana.fulltext.api.model.v2.AnnotationV2;
 import eu.europeana.fulltext.api.model.v3.AnnotationBodyV3;
 import eu.europeana.fulltext.api.model.v3.AnnotationPageV3;
 import eu.europeana.fulltext.api.model.v3.AnnotationV3;
-import eu.europeana.fulltext.api.service.exception.ResourceDoesNotExistException;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Annotation;
 import eu.europeana.fulltext.entity.Resource;
 import eu.europeana.fulltext.entity.Target;
+import eu.europeana.fulltext.exception.ResourceDoesNotExistException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -218,20 +218,33 @@ public final class EDM2IIIFMapping {
     }
 
     static FTResource getFTResource(Resource resource){
-        return new FTResource(fts.getResourceBaseUrl() +
-                              resource.getDsId() + "/" +
-                              resource.getLcId() + "/" +
-                              resource.getId(),
+        return new FTResource(generateResourceId(resource),
                               resource.getLang(),
                               resource.getValue(),
                               resource.getSource(),
                               resource.getRights());
     }
 
+  private static String generateResourceId(Resource resource) {
+    String id =
+        fts.getResourceBaseUrl()
+            + resource.getDsId()
+            + "/"
+            + resource.getLcId()
+            + "/"
+            + resource.getPgId();
+
+    if (resource.isTranslation()) {
+      id = id + "?lang=" + resource.getLang();
+    }
+    return id;
+  }
+
     private static FTResource fetchFTResource(AnnoPage annoPage) {
         FTResource resource;
         try {
-            resource = ftService.fetchFTResource(annoPage.getDsId(), annoPage.getLcId(), annoPage.getRes().getId());
+            resource = ftService.fetchFTResource(annoPage.getDsId(), annoPage.getLcId(), annoPage.getPgId(),
+                annoPage.getLang());
         } catch (ResourceDoesNotExistException e) {
             LOG.info("Error retrieving fulltext resource for annoPage {}", annoPage, e);
             resource = null;
@@ -250,14 +263,25 @@ public final class EDM2IIIFMapping {
         return s.toString();
     }
 
-    private static String getResourceIdBaseUrl(AnnoPage annoPage) {
-        return fts.getResourceBaseUrl() + annoPage.getDsId() + "/" + annoPage.getLcId() + "/" +
-               annoPage.getRes().getId();
-    }
+  private static String getResourceIdBaseUrl(AnnoPage annoPage) {
+    String url =
+        fts.getResourceBaseUrl()
+            + annoPage.getDsId()
+            + "/"
+            + annoPage.getLcId()
+            + "/"
+            + annoPage.getRes().getPgId();
 
-    protected static String getAnnoPageIdUrl(AnnoPage annoPage){
+    // EA-3073: Resource endpoint can return the original version without the lang parameter. Only append if this is a translation
+    if (annoPage.isTranslation()) {
+      url = url + "?" + LANGUAGE_PARAM + annoPage.getRes().getLang();
+    }
+    return url;
+  }
+
+    private static String getAnnoPageIdUrl(AnnoPage annoPage){
         return fts.getAnnoPageBaseUrl() + annoPage.getDsId() + "/" +
-               annoPage.getLcId() + FTDefinitions.ANNOPAGE_PATH + "/" + annoPage.getPgId();
+               annoPage.getLcId() + FTDefinitions.ANNOPAGE_PATH + "/" + annoPage.getPgId() + "?" + LANGUAGE_PARAM + annoPage.getLang();
     }
 
     private static String getAnnotationIdUrl(AnnoPage annoPage, Annotation annotation) {
