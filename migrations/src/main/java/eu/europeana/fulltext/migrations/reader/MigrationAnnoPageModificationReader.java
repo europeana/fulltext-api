@@ -1,4 +1,4 @@
-package eu.europeana.fulltext.migrations;
+package eu.europeana.fulltext.migrations.reader;
 
 import static eu.europeana.fulltext.util.GeneralUtils.getAnnoPageObjectIds;
 import static java.time.LocalDate.of;
@@ -16,13 +16,17 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.batch.item.data.AbstractPaginatedDataItemReader;
 
+/**
+ * Reader that only fetches AnnoPages last modified before July 1st 2022.
+ * This is used to process records that were skipped / unsuccessful during the initial migration run
+ */
 public class MigrationAnnoPageModificationReader extends AbstractPaginatedDataItemReader<AnnoPage> {
 
   private static final Logger logger =
       LogManager.getLogger(MigrationAnnoPageModificationReader.class);
   private final MigrationRepository repository;
 
-  // hard-coded date before the start of the migration run
+  // hard-coded date before the start of the first migration run
     private final Date maxModificationDate =
         Date.from(of(2022, Month.JULY,
    1).atStartOfDay(ZoneId.of("UTC+1")).toInstant());
@@ -50,8 +54,8 @@ public class MigrationAnnoPageModificationReader extends AbstractPaginatedDataIt
 
     List<AnnoPage> records = repository.getAnnoPagesModifiedBefore(maxModificationDate, skip, pageSize);
 
-    if (logger.isDebugEnabled()) {
-      logger.debug(
+    if (logger.isTraceEnabled()) {
+      logger.trace(
           "Fetched {} records. skip={}, pageSize={}, annoPageIds={}",
           records.size(),
           skip,

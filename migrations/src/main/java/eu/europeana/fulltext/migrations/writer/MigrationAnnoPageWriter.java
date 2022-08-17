@@ -1,4 +1,4 @@
-package eu.europeana.fulltext.migrations;
+package eu.europeana.fulltext.migrations.writer;
 
 import static eu.europeana.fulltext.util.GeneralUtils.getAnnoPageObjectIds;
 
@@ -28,8 +28,8 @@ public class MigrationAnnoPageWriter implements ItemWriter<AnnoPage> {
   @Override
   public void write(@NotNull List<? extends AnnoPage> annoPages) throws Exception {
 
-    if (logger.isDebugEnabled()) {
-      logger.debug(
+    if (logger.isTraceEnabled()) {
+      logger.trace(
           "AnnoPage write starting..., objectIds={}",
           Arrays.toString(getAnnoPageObjectIds(annoPages)));
     }

@@ -4,10 +4,13 @@ import static eu.europeana.fulltext.migrations.MigrationConstants.BATCH_THREAD_E
 
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.migrations.config.MigrationAppSettings;
-import eu.europeana.fulltext.migrations.listeners.MigrationProgressListener;
-import eu.europeana.fulltext.migrations.listeners.MigrationSkipListener;
+import eu.europeana.fulltext.migrations.listener.MigrationProgressListener;
+import eu.europeana.fulltext.migrations.listener.MigrationSkipListener;
 import eu.europeana.fulltext.migrations.model.MigrationJobMetadata;
+import eu.europeana.fulltext.migrations.processor.MigrationAnnoPageProcessor;
+import eu.europeana.fulltext.migrations.reader.MigrationAnnoPageReader;
 import eu.europeana.fulltext.migrations.repository.MigrationRepository;
+import eu.europeana.fulltext.migrations.writer.MigrationAnnoPageWriter;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicLong;
 import org.apache.logging.log4j.LogManager;
@@ -39,11 +42,11 @@ public class MigrationBatchConfig {
   private final MigrationAppSettings appSettings;
   private final MigrationRepository repository;
 
-  private final MigrationPageIdUpdateProcessor processor;
+  private final MigrationAnnoPageProcessor processor;
   private final MigrationSkipListener skipListener;
-  private final MigrationPageIdUpdateWriter writer;
 
   private static final Logger logger = LogManager.getLogger(MigrationBatchConfig.class);
+  private final MigrationAnnoPageWriter writer;
 
   public MigrationBatchConfig(
       JobBuilderFactory jobs,
@@ -51,9 +54,9 @@ public class MigrationBatchConfig {
       @Qualifier(BATCH_THREAD_EXECUTOR) TaskExecutor migrationTaskExecutor,
       MigrationAppSettings appSettings,
       MigrationRepository repository,
-      MigrationPageIdUpdateProcessor processor,
+      MigrationAnnoPageProcessor processor,
       MigrationSkipListener skipListener,
-      MigrationPageIdUpdateWriter writer) {
+      MigrationAnnoPageWriter writer) {
     this.jobs = jobs;
     this.steps = steps;
     this.migrationTaskExecutor = migrationTaskExecutor;
@@ -66,7 +69,7 @@ public class MigrationBatchConfig {
 
   private ItemReader<AnnoPage> annoPageReader(MigrationJobMetadata jobMetadata) {
     return threadSafeReader(
-        new MigrationAnnoPageIdReader(appSettings.getPageSize(), repository, jobMetadata));
+        new MigrationAnnoPageReader(appSettings.getPageSize(), repository, jobMetadata));
   }
 
   /** Makes ItemReader thread-safe */

@@ -36,6 +36,15 @@ public class MigrationAppSettings {
   @Value("${batch.skipLimit: 500}")
   private int skipLimit;
 
+  /**
+   * Threshold for AnnoPage annotation count above which annotations are updated in chunks,
+   *
+   * <p>Some AnnoPages have >70k annotations, which results in a large json size when we update
+   * everything in one query. Mongo doesn't like that.
+   */
+  @Value("${batch.tooManyAnnotationsThreshold: 5000}")
+  private int tooManyAnnotationsThreshold;
+
   @Value("${mongo.fulltext.totalCount:0}")
   private long totalCount;
 
@@ -78,5 +87,9 @@ public class MigrationAppSettings {
 
   public long getTotalCount(){
     return totalCount;
+  }
+
+  public int getTooManyAnnotationsThreshold() {
+    return tooManyAnnotationsThreshold;
   }
 }
