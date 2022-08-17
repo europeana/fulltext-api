@@ -408,13 +408,14 @@ public class FTService {
       AnnotationPreview annotationPreview, AnnoPage existingAnnoPage)
           throws EuropeanaApiException {
     AnnoPage annoPage = getAnnoPageToUpdate(annotationPreview, existingAnnoPage);
+    System.out.println(annoPage.isDeprecated());
     resourceRepository.saveResource(annoPage.getRes());
     if (LOG.isDebugEnabled()) {
       LOG.debug("Updated Resource in db : id={}", annoPage.getRes().getId());
     }
 
     if (AnnotationUtils.isAnnoPageUpdateRequired(annotationPreview)) {
-      UpdateResult results = annoPageRepository.updateAnnoPage(annoPage);
+      UpdateResult results = annoPageRepository.updateAnnoPage(existingAnnoPage, annoPage);
       if (LOG.isDebugEnabled()) {
         LOG.debug(
             "Updated annoPage in db : dsId={}, lcId={}, pgId={}, lang={}, matched={}, modified={}",
@@ -473,6 +474,13 @@ public class FTService {
         AnnoPage annoPageTobeUpdated = null;
         // if there is no subtitles ie; content was empty, only update rights in the resource
         if (StringUtils.isEmpty(annotationPreview.getAnnotationBody())) {
+            // if existing AnnoPage is deprecated then Resource will be null
+            // hence we can not update the rights of the resource
+            // User needs to send the annotation body for the deprecated AnnoPages update
+            if(existingAnnoPage.isDeprecated()) {
+                throw new AnnoPageGoneException(String.format("/%s/%s/annopage/%s", existingAnnoPage.getDsId(), existingAnnoPage.getLcId(), existingAnnoPage.getPgId()),
+                        existingAnnoPage.getLang()); // lang will be always present for update request
+            }
             annoPageTobeUpdated = existingAnnoPage;
             annoPageTobeUpdated.getRes().setRights(annotationPreview.getRights());
             // if new source value is present, add the value in annoPage

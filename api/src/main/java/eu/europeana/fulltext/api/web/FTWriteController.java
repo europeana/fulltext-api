@@ -256,6 +256,9 @@ public class FTWriteController extends BaseRestController {
      */
     AnnoPage annoPage = ftService.getAnnoPageByPgId(datasetId, localId, pageId, lang, true);
 
+    System.out.println(datasetId + "  " +localId);
+    System.out.println(pageId + "  " +lang);
+
     if (annoPage == null) {
       throw new AnnoPageDoesNotExistException(
           "Annotation page does not exist for "
