@@ -7,12 +7,8 @@ import static dev.morphia.query.experimental.filters.Filters.eq;
 import static dev.morphia.query.experimental.filters.Filters.in;
 import static dev.morphia.query.experimental.updates.UpdateOperators.set;
 import static dev.morphia.query.experimental.updates.UpdateOperators.unset;
+import static eu.europeana.fulltext.util.MorphiaUtils.*;
 import static eu.europeana.fulltext.util.MorphiaUtils.Fields.*;
-import static eu.europeana.fulltext.util.MorphiaUtils.MULTI_UPDATE_OPTS;
-import static eu.europeana.fulltext.util.MorphiaUtils.RESOURCE_COL;
-import static eu.europeana.fulltext.util.MorphiaUtils.SET;
-import static eu.europeana.fulltext.util.MorphiaUtils.SET_ON_INSERT;
-import static eu.europeana.fulltext.util.MorphiaUtils.UPSERT_OPTS;
 
 import com.mongodb.DBRef;
 import com.mongodb.bulk.BulkWriteResult;
@@ -32,6 +28,7 @@ import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Resource;
 import eu.europeana.fulltext.exception.DatabaseQueryException;
 import eu.europeana.fulltext.util.MorphiaUtils;
+
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -391,7 +388,6 @@ public class AnnoPageRepository {
         for (AnnoPage annoPage : annoPageList) {
             annoPageUpdates.add(createAnnoPageUpdate(now, annoPage));
         }
-
         return annoPageCollection.bulkWrite(annoPageUpdates);
     }
 
@@ -475,7 +471,9 @@ public class AnnoPageRepository {
                 .append(TARGET_ID, annoPage.getTgtId())
                 .append(ANNOTATIONS, annoPage.getAns())
                 .append(MODIFIED, now)
-                .append(LANGUAGE, annoPage.getLang());
+                .append(LANGUAGE, annoPage.getLang())
+                // link resources for new and deprecated documents
+                .append(RESOURCE, new DBRef(RESOURCE_COL, res.getId()));
 
         // source isn't always set. Prevent null from being saved in db
         if (annoPage.getSource() != null) {
@@ -500,10 +498,8 @@ public class AnnoPageRepository {
                     PAGE_ID,
                     annoPage.getPgId())),
             new Document(SET, updateDoc)
-                // Only link resource for new documents. Resource ref should not change otherwise
-                .append(
-                    SET_ON_INSERT,
-                    new Document(RESOURCE, new DBRef(RESOURCE_COL, res.getId()))),
+                  // unset deleted field always when we add/update annopage
+                 .append(UNSET, new Document(DELETED, "")),
             UPSERT_OPTS);
     }
 
