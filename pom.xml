@@ -41,8 +41,7 @@
         <maven.compiler.release>${java.version}</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-
-        <api-commons.version>0.3.14-SNAPSHOT</api-commons.version>
+        <api-commons.version>0.3.16-SNAPSHOT</api-commons.version>
         <!-- upgraded to 2.5.9 as 2.6.x is not compatible with swagger (springfox-swagger-ui)-->
         <!-- org.apache.tomcat.embed version 9.0.56 is included uptill 2.6.3 which is vulnerable. See : CVE-2022-23181  -->
         <spring-boot.version>2.5.9</spring-boot.version>
@@ -64,7 +63,7 @@
         <springbatch.mongo.version>1.0.5</springbatch.mongo.version>
         <mock-webserver.version>4.9.0</mock-webserver.version>
         <testcontainers.version>1.16.0</testcontainers.version>
-
+        <eclipse-jetty.version>11.0.11</eclipse-jetty.version>
     </properties>
 
     <dependencyManagement>

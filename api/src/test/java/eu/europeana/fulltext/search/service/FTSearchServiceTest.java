@@ -96,11 +96,11 @@ public class FTSearchServiceTest {
     @BeforeEach
     public void setupMocks() throws EuropeanaApiException {
         // default we return empty Solr results
-        given(solrRepo.getHighlightsWithOffsets(any(EuropeanaId.class), anyString(), anyInt(), anyObject())).willReturn(
+        given(solrRepo.getHighlightsWithOffsets(any(EuropeanaId.class), anyString(), anyInt(), any())).willReturn(
                 SOLR_EMPTY_RESPONSE
         );
         // but we do return results when recordId = /x/y and query = flandre
-        given(solrRepo.getHighlightsWithOffsets(eq(RECORDID_HAS_RESULTS), eq(QUERY_HAS_RESULTS), anyInt(), anyObject())).willReturn(
+        given(solrRepo.getHighlightsWithOffsets(eq(RECORDID_HAS_RESULTS), eq(QUERY_HAS_RESULTS), anyInt(), any())).willReturn(
                 SOLR_RESPONSE
         );
 
