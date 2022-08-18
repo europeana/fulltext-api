@@ -347,10 +347,9 @@ public class AnnoPageRepository {
                 .append(MODIFIED, annoPage.getModified())
                 .append(SOURCE, annoPage.getSource());
 
-        // if existing annopage is deprecated, update the deleted and resource field
+        // if annopage is deprecated then update resource ref as well
         if (existingAnnoPage.isDeprecated()) {
-            updateDoc.append(UNSET, new Document(DELETED, ""))
-                    .append(RESOURCE, new DBRef(RESOURCE_COL, annoPage.getRes().getId()));
+            updateDoc.append(RESOURCE, new DBRef(RESOURCE_COL, annoPage.getRes().getId()));
         }
 
         return collection.updateOne(
@@ -364,13 +363,8 @@ public class AnnoPageRepository {
                     annoPage.getPgId(),
                     LANGUAGE,
                     annoPage.getLang())),
-            new Document(
-                SET,
-                new Document(ANNOTATIONS, annoPage.getAns())
-                    .append(MODIFIED, annoPage.getModified())
-                    .append(SOURCE, annoPage.getSource())
-                    // unset deleted field always when we update annopage
-                    .append(UNSET, new Document(DELETED, ""))));
+            new Document(SET, updateDoc)
+                  .append(UNSET, new Document(DELETED, ""))); // while updating, annopage should not be deprecated
     }
 
     /**
