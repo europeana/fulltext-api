@@ -133,8 +133,12 @@ public class FTSettings implements InitializingBean {
     @Value("${fulltext.deployment:}")
     private String deploymentName;
 
+    @Value("${webclient.maxBufferMb:16}")
+    private int maxBufferMb;
+
     @Autowired
     private Environment environment;
+
 
 
 
@@ -214,7 +218,7 @@ public class FTSettings implements InitializingBean {
     private void setupTextGranularity() throws InvalidParameterException {
         if (StringUtils.isBlank(searchTextGranularity)) {
             LOG.info("No default text granularity for search found in configuration files");
-            defaultSearchTextGranularity = Arrays.asList(AnnotationType.BLOCK, AnnotationType.LINE, AnnotationType.WORD);
+            defaultSearchTextGranularity = Arrays.asList(AnnotationType.LINE);
         } else {
             defaultSearchTextGranularity = ControllerUtils.validateTextGranularity(searchTextGranularity,
                     FTSearchController.ALLOWED_ANNOTATION_TYPES);
@@ -326,5 +330,9 @@ public class FTSettings implements InitializingBean {
 
     public boolean annoSyncMailEnabled() {
         return annoSyncMailEnabled;
+    }
+
+    public int getMaxBufferMb() {
+        return maxBufferMb;
     }
 }

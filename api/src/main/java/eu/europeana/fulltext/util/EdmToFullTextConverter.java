@@ -6,13 +6,13 @@ import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Annotation;
 import eu.europeana.fulltext.entity.Resource;
 import eu.europeana.fulltext.entity.Target;
-import eu.europeana.fulltext.exception.SubtitleConversionException;
+import eu.europeana.fulltext.exception.MismatchInAnnotationException;
 import eu.europeana.fulltext.subtitles.AnnotationPreview;
-import eu.europeana.fulltext.subtitles.edm.EdmAnnotation;
-import eu.europeana.fulltext.subtitles.edm.EdmFullTextPackage;
-import eu.europeana.fulltext.subtitles.edm.EdmFullTextResource;
-import eu.europeana.fulltext.subtitles.edm.EdmTextBoundary;
-import eu.europeana.fulltext.subtitles.edm.EdmTimeBoundary;
+import eu.europeana.fulltext.edm.EdmAnnotation;
+import eu.europeana.fulltext.edm.EdmFullTextPackage;
+import eu.europeana.fulltext.edm.EdmFullTextResource;
+import eu.europeana.fulltext.edm.EdmTextBoundary;
+import eu.europeana.fulltext.edm.EdmTimeBoundary;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
@@ -32,9 +32,9 @@ import org.apache.commons.lang3.StringUtils;
      * @param fulltext
      * @return
      */
-    public static AnnoPage getAnnoPage(
+    public static AnnoPage createAnnoPage(
         String datasetId, String localId, AnnotationPreview request, EdmFullTextPackage fulltext, boolean isContributed)
-        throws SubtitleConversionException {
+        throws MismatchInAnnotationException {
       Resource resource = getResource(fulltext.getResource(), request, datasetId, localId, isContributed);
       AnnoPage annoPage = new AnnoPage();
       annoPage.setDsId(datasetId);
@@ -52,7 +52,7 @@ import org.apache.commons.lang3.StringUtils;
       annoPage.setTranslation(!request.isOriginalLang());
       // fail-safe check
       if (annoPage.getAns().size() != fulltext.size()) {
-        throw new SubtitleConversionException(
+        throw new MismatchInAnnotationException(
             "Mismatch in Annotations while converting from EDM to fulltext. "
                 + "Annotations obtained - "
                 + fulltext.size()
@@ -89,8 +89,8 @@ import org.apache.commons.lang3.StringUtils;
           targets.add(new Target(tB.getStart(), tB.getEnd()));
         }
         Annotation annotation = new Annotation();
-        // for media don't add default to, from values
-        if (sourceAnnotation.getType().equals(AnnotationType.MEDIA)) {
+        // for top level annotation MEDIA or PAGE, don't add default to, from values
+        if (isTopLevel(sourceAnnotation)) {
           annotation.setDcType(sourceAnnotation.getType().getAbbreviation());
       } else {
         annotation.setDcType(sourceAnnotation.getType().getAbbreviation());
@@ -115,5 +115,10 @@ import org.apache.commons.lang3.StringUtils;
     private static String getFulltextResourceId(String fulltextResourceUri, String itemID) {
       return StringUtils.substringAfter(
           fulltextResourceUri, WebConstants.FULLTEXT_BASE_URL + itemID + "/");
+    }
+
+    public static boolean isTopLevel(EdmAnnotation annotation) {
+      return (annotation.getType().equals(AnnotationType.MEDIA) ||
+              annotation.getType().equals(AnnotationType.PAGE));
     }
 }

@@ -1,12 +1,10 @@
 package eu.europeana.fulltext.api.web;
 
-import static eu.europeana.fulltext.WebConstants.MOTIVATION_SUBTITLING;
-import static eu.europeana.fulltext.WebConstants.REQUEST_VALUE_SOURCE;
+import static eu.europeana.fulltext.WebConstants.*;
 import static eu.europeana.fulltext.util.GeneralUtils.isValidAnnotationId;
-import static eu.europeana.fulltext.util.HttpUtils.REQUEST_VERSION_2;
-import static eu.europeana.fulltext.util.HttpUtils.addContentTypeToResponseHeader;
+import static eu.europeana.fulltext.util.RequestUtils.REQUEST_VERSION_2;
+import static eu.europeana.fulltext.util.RequestUtils.addContentTypeToResponseHeader;
 
-import com.dotsub.converter.model.SubtitleItem;
 import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.api.commons.service.authorization.AuthorizationService;
 import eu.europeana.api.commons.web.controller.BaseRestController;
@@ -20,28 +18,21 @@ import eu.europeana.fulltext.api.model.AnnotationWrapper;
 import eu.europeana.fulltext.api.service.AnnotationApiRestService;
 import eu.europeana.fulltext.api.service.CacheUtils;
 import eu.europeana.fulltext.api.service.FTService;
-import eu.europeana.fulltext.api.service.SubtitleService;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.exception.AnnoPageDoesNotExistException;
-import eu.europeana.fulltext.exception.AnnoPageGoneException;
-import eu.europeana.fulltext.exception.InvalidFormatException;
 import eu.europeana.fulltext.exception.InvalidUriException;
 import eu.europeana.fulltext.exception.MediaTypeNotSupportedException;
 import eu.europeana.fulltext.exception.SerializationException;
-import eu.europeana.fulltext.exception.SubtitleParsingException;
 import eu.europeana.fulltext.exception.UnsupportedAnnotationException;
 import eu.europeana.fulltext.subtitles.AnnotationPreview;
-import eu.europeana.fulltext.subtitles.AnnotationPreview.Builder;
 import eu.europeana.fulltext.subtitles.DeleteAnnoSyncResponse;
 import eu.europeana.fulltext.subtitles.DeleteAnnoSyncResponse.Status;
-import eu.europeana.fulltext.subtitles.SubtitleType;
+import eu.europeana.fulltext.subtitles.FulltextType;
 import eu.europeana.fulltext.subtitles.external.AnnotationItem;
+import eu.europeana.fulltext.util.AnnotationUtils;
 import eu.europeana.fulltext.util.GeneralUtils;
 import io.swagger.annotations.ApiOperation;
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -69,7 +60,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class FTWriteController extends BaseRestController {
 
   private final FTSettings appSettings;
-  private final SubtitleService subtitleService;
   private final AnnotationApiRestService annotationsApiRestService;
 
   private final FTService ftService;
@@ -82,13 +72,11 @@ public class FTWriteController extends BaseRestController {
 
   public FTWriteController(
       FTSettings appSettings,
-      SubtitleService subtitleHandlerService,
       AnnotationApiRestService annotationsApiRestService,
       FTService ftService,
       AuthorizationService ftAuthorizationService,
       AbstractRequestPathMethodService requestPathMethodService) {
     this.appSettings = appSettings;
-    this.subtitleService = subtitleHandlerService;
     this.annotationsApiRestService = annotationsApiRestService;
     this.ftService = ftService;
     annotationIdPattern =
@@ -143,18 +131,19 @@ public class FTWriteController extends BaseRestController {
     }
 
     AnnotationItem item = itemOptional.get();
-    // motivation must be subtitling
+    String motivation = item.getMotivation();
 
-    if (!MOTIVATION_SUBTITLING.equals(item.getMotivation())) {
+    // motivation must be subtitling or transcribing
+    if (!MOTIVATION_SUBTITLING.equals(motivation) && !MOTIVATION_TRANSCRIBING.equals(motivation)) {
       throw new UnsupportedAnnotationException(
           String.format(
-              "Annotation motivation '%s' not supported for sync. Only subtitles are supported",
-              item.getMotivation()));
+              "Annotation motivation '%s' not supported for sync. Only subtitles or transcribing are supported",
+              motivation));
     }
 
     AnnotationPreview annotationPreview =
-        subtitleService.createAnnotationPreview(itemOptional.get());
-    AnnoPage annoPage = subtitleService.createAnnoPage(annotationPreview, true);
+            AnnotationUtils.createAnnotationPreview(item);
+    AnnoPage annoPage = ftService.createAnnoPage(annotationPreview, true);
 
     // Morphia creates a new _id value if none exists, so we can't directly call save() – as this
     // could be an update.
@@ -214,20 +203,23 @@ public class FTWriteController extends BaseRestController {
           .build();
     }
 
-    SubtitleType type = SubtitleType.getValueByMimetype(request.getContentType());
+    FulltextType type = FulltextType.getValueByMimetype(request.getContentType());
     if (type == null) {
       throw new MediaTypeNotSupportedException(
           "The content type " + request.getContentType() + " is not supported");
     }
     AnnotationPreview annotationPreview =
-        createAnnotationPreview(
+        AnnotationUtils.createAnnotationPreview(
             datasetId, localId, lang, originalLang, rights, source, media, content, type);
-    AnnoPage createdAnnoPage = subtitleService.createAnnoPage(annotationPreview, false);
+    AnnoPage createdAnnoPage = ftService.createAnnoPage(annotationPreview, false);
 
     // if AnnoPage was deprecated, this re-enables it
     createdAnnoPage.copyDbIdFrom(existingAnnoPage);
 
-    ftService.saveAnnoPage(createdAnnoPage);
+    // using upsert as that saves the translation field as null for false values.
+    // Also prevents null being saved in DB
+    // this will be an update for deprecated AnnoPages
+    ftService.upsertAnnoPage(List.of(createdAnnoPage));
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("Created new AnnoPage {}", createdAnnoPage);
@@ -270,16 +262,16 @@ public class FTWriteController extends BaseRestController {
               + GeneralUtils.getAnnoPageUrl(datasetId, localId, pageId, lang));
     }
     // determine type
-    SubtitleType type = null;
+    FulltextType type = null;
     if (!StringUtils.isEmpty(content)) {
-      type = SubtitleType.getValueByMimetype(request.getContentType());
+      type = FulltextType.getValueByMimetype(request.getContentType());
       if (type == null) {
         throw new MediaTypeNotSupportedException(
             "The content type " + request.getContentType() + " is not supported");
       }
     }
     AnnotationPreview annotationPreview =
-        createAnnotationPreview(
+        AnnotationUtils.createAnnotationPreview(
             datasetId,
             localId,
             lang,
@@ -316,18 +308,9 @@ public class FTWriteController extends BaseRestController {
     /*
      * Check if there is a fulltext annotation page associated with the combination of DATASET_ID,
      * LOCAL_ID and the PAGE_ID and LANG (if provided), if not then return a HTTP 404
+     * If present, check if the annoPages are deprecated already, respond with HTTP 410
      */
-    AnnoPage existingAnnoPage = ftService.getShellAnnoPageById(datasetId, localId, pageId, lang, true);
-
-    if (existingAnnoPage == null) {
-      throw new AnnoPageDoesNotExistException(
-              GeneralUtils.getAnnoPageUrl(datasetId, localId, pageId, lang));
-    }
-
-    if (existingAnnoPage.isDeprecated()){
-      throw new AnnoPageGoneException(String.format("/%s/%s/annopage/%s", datasetId, localId, pageId),
-          lang);
-    }
+    ftService.checkForExistingAndDeprecatedAnnoPages(datasetId, localId, pageId, lang, true);
 
     /*
      * Deprecates the respective AnnotationPage(s) entry from MongoDB (if lang is omitted, the pages for
@@ -344,34 +327,7 @@ public class FTWriteController extends BaseRestController {
     return noContentResponse(request);
   }
 
-  // Creates Annotation preview object along with subtitles Items
-  private AnnotationPreview createAnnotationPreview(
-      String datasetId,
-      String localId,
-      String lang,
-      boolean originalLang,
-      String rights,
-      String source,
-      String media,
-      String content,
-      SubtitleType type)
-      throws InvalidFormatException, SubtitleParsingException {
-    // process subtitles if content is not empty
-    List<SubtitleItem> subtitleItems = new ArrayList<>();
-    if (!StringUtils.isEmpty(content)) {
-      subtitleItems =
-          subtitleService.parseSubtitle(
-              new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)), type);
-    }
-    String recordId = GeneralUtils.generateRecordId(datasetId, localId);
-    return new Builder(recordId, type, subtitleItems)
-        .setOriginalLang(originalLang)
-        .setLanguage(lang)
-        .setRights(rights)
-        .setMedia(media)
-        .setSource(source)
-        .build();
-  }
+
 
   protected ResponseEntity<String> generateResponse(
       HttpServletRequest request, AnnoPage annoPage, HttpStatus status)

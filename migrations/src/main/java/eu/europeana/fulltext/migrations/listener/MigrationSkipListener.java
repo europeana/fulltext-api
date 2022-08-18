@@ -1,4 +1,4 @@
-package eu.europeana.fulltext.migrations.listeners;
+package eu.europeana.fulltext.migrations.listener;
 
 import eu.europeana.fulltext.entity.AnnoPage;
 import org.apache.logging.log4j.LogManager;

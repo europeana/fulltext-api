@@ -25,7 +25,7 @@
     </Root>
 
 
-    <Logger name="eu.europeana.fulltext.migrations" level="INFO" additivity="false">
+    <Logger name="eu.europeana.fulltext.migrations" level="DEBUG" additivity="false">
       <AppenderRef ref="Console"/>
       <AppenderRef ref="RollingFile"/>
     </Logger>

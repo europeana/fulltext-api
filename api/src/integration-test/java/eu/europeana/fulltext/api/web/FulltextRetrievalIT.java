@@ -14,6 +14,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 
+import java.util.List;
+
 @SpringBootTest
 @AutoConfigureMockMvc
 class FulltextRetrievalIT extends BaseIntegrationTest {
@@ -23,7 +25,7 @@ class FulltextRetrievalIT extends BaseIntegrationTest {
     AnnoPage annoPage =
         mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), AnnoPage.class);
 
-    ftService.saveAnnoPage(annoPage);
+    ftService.upsertAnnoPage(List.of(annoPage));
     // manually deprecate AnnoPage
     ftService.deprecateAnnoPages(
         annoPage.getDsId(), annoPage.getLcId(), annoPage.getPgId(), annoPage.getLang());

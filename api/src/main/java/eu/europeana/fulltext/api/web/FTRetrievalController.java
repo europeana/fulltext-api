@@ -8,6 +8,7 @@ import eu.europeana.fulltext.api.model.FTResource;
 import eu.europeana.fulltext.api.service.CacheUtils;
 import eu.europeana.fulltext.api.service.ControllerUtils;
 import eu.europeana.fulltext.api.service.FTService;
+import eu.europeana.fulltext.api.service.exception.InvalidVersionException;
 import eu.europeana.fulltext.exception.InvalidRequestParamException;
 import eu.europeana.fulltext.exception.SerializationException;
 import eu.europeana.fulltext.entity.AnnoPage;
@@ -26,7 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.time.ZonedDateTime;
 import java.util.*;
 
-import static eu.europeana.fulltext.util.HttpUtils.*;
+import static eu.europeana.fulltext.util.RequestUtils.*;
 import static eu.europeana.fulltext.api.config.FTDefinitions.*;
 import static eu.europeana.fulltext.api.service.CacheUtils.generateETag;
 import static eu.europeana.fulltext.api.service.CacheUtils.generateSimpleETag;
@@ -160,9 +161,10 @@ public class FTRetrievalController {
         HttpServletRequest request,
         boolean isJson) throws EuropeanaApiException {
         LOG.debug("Retrieve Annopage: {}/{}/{} with language {}", datasetId, localId, pageId, lang);
+        // validate the format
         String requestVersion = getRequestVersion(request, versionParam);
-        if (ACCEPT_VERSION_INVALID.equals(requestVersion)) {
-            return new ResponseEntity<>(ACCEPT_VERSION_INVALID, HttpStatus.NOT_ACCEPTABLE);
+        if (StringUtils.isEmpty(requestVersion)) {
+            throw new InvalidVersionException(ACCEPT_VERSION_INVALID);
         }
         AnnotationWrapper annotationPage;
 
@@ -227,7 +229,7 @@ public class FTRetrievalController {
         @PathVariable String pageId,
         @RequestParam(value = "lang", required = false) String lang,
         @RequestParam(value = "format", required = false) String versionParam,
-        HttpServletRequest request) {
+        HttpServletRequest request) throws EuropeanaApiException {
         return getAnnoPageHead(datasetId, localId, pageId, lang, versionParam, true, request);
     }
 
@@ -251,7 +253,7 @@ public class FTRetrievalController {
         @PathVariable String pageId,
         @RequestParam(value = "lang", required = false) String lang,
         @RequestParam(value = "format", required = false) String versionParam,
-        HttpServletRequest request) {
+        HttpServletRequest request) throws EuropeanaApiException {
         return getAnnoPageHead(datasetId, localId, pageId, lang, versionParam, false, request);
     }
 
@@ -262,10 +264,11 @@ public class FTRetrievalController {
         String lang,
         String versionParam,
         boolean isJson,
-        HttpServletRequest request) {
+        HttpServletRequest request) throws InvalidVersionException {
+        // validate the format
         String requestVersion = getRequestVersion(request, versionParam);
-        if (ACCEPT_VERSION_INVALID.equals(requestVersion)) {
-            return new ResponseEntity<>(ACCEPT_VERSION_INVALID, HttpStatus.NOT_ACCEPTABLE);
+        if (StringUtils.isEmpty(requestVersion)) {
+            throw new InvalidVersionException(ACCEPT_VERSION_INVALID);
         }
         HttpHeaders headers = new HttpHeaders();
         addContentTypeToResponseHeader(headers, requestVersion, isJson);
@@ -326,9 +329,10 @@ public class FTRetrievalController {
         HttpServletRequest request,
         boolean isJson) throws EuropeanaApiException {
         LOG.debug("Retrieve Annotation: {}/{}/{}", datasetId, localId, annoID);
+        // validate the format
         String requestVersion = getRequestVersion(request, versionParam);
-        if (ACCEPT_VERSION_INVALID.equals(requestVersion)) {
-            return new ResponseEntity<>(ACCEPT_VERSION_INVALID, HttpStatus.NOT_ACCEPTABLE);
+        if (StringUtils.isEmpty(requestVersion)) {
+            throw new InvalidVersionException(ACCEPT_VERSION_INVALID);
         }
 
         HttpHeaders headers;
@@ -364,20 +368,22 @@ public class FTRetrievalController {
      *
      * @param datasetId identifier of the dataset that contains the Annopage that refers to the Resource
      * @param localId   identifier of the record that contains the Annopage that refers to the Resource
-     * @param resId     identifier of the Resource
+     * @param pageId     identifier of the Resource
+     * @param lang       optional, in which language should the Resource be
      * @return response in json-ld format
      * @throws EuropeanaApiException when serialising to JsonLd fails
      */
     @ApiOperation(value = "Retrieve a full-text")
-    @GetMapping(value = "/presentation/{datasetId}/{localId}/{resId}",
+    @GetMapping(value = "/presentation/{datasetId}/{localId}/{pageId}",
         headers = ACCEPT_JSONLD,
         produces = MEDIA_TYPE_JSONLD + ';' + UTF_8)
     public ResponseEntity<String> resourceJsonLd(
         @PathVariable String datasetId,
         @PathVariable String localId,
-        @PathVariable String resId,
+        @PathVariable String pageId,
+        @RequestParam(value = "lang", required = false) String lang,
         HttpServletRequest request) throws EuropeanaApiException {
-        return resource(datasetId, localId, resId, request, false);
+        return resource(datasetId, localId, pageId, lang, request, false);
     }
 
     /**
@@ -385,34 +391,36 @@ public class FTRetrievalController {
      *
      * @param datasetId identifier of the dataset that contains the Annopage that refers to the Resource
      * @param localId   identifier of the record that contains the Annopage that refers to the Resource
-     * @param resId     identifier of the Resource
+     * @param pageId     identifier of the Resource
      * @return response in json format
      * @throws EuropeanaApiException when serialising to Json fails
      */
     @ApiOperation(value = "Retrieve a full-text")
-    @GetMapping(value = "/presentation/{datasetId}/{localId}/{resId}",
+    @GetMapping(value = "/presentation/{datasetId}/{localId}/{pageId}",
         headers = ACCEPT_JSON,
         produces = MEDIA_TYPE_JSON + ';' + UTF_8)
     public ResponseEntity<String> resourceJson(
         @PathVariable String datasetId,
         @PathVariable String localId,
-        @PathVariable String resId,
+        @PathVariable String pageId,
+        @RequestParam(value = "lang", required = false) String lang,
         HttpServletRequest request) throws EuropeanaApiException {
-        return resource(datasetId, localId, resId, request, true);
+        return resource(datasetId, localId, pageId, lang, request, true);
     }
 
     private ResponseEntity<String> resource(
-        String datasetId, String localId, String resId, HttpServletRequest request, boolean isJson) throws
+        String datasetId, String localId, String pageId, String lang,
+        HttpServletRequest request, boolean isJson) throws
         EuropeanaApiException {
-        LOG.debug("Retrieve Resource: {}/{}/{}", datasetId, localId, resId);
+        LOG.debug("Retrieve Resource: {}/{}/{}", datasetId, localId, pageId);
         HttpHeaders headers;
         FTResource resource;
 
-        resource = fts.fetchFTResource(datasetId, localId, resId);
+        resource = fts.fetchFTResource(datasetId, localId, pageId, lang);
         ZonedDateTime modified = CacheUtils.januarificator();
         String eTag = generateSimpleETag(datasetId
             + localId
-            + resId
+            + pageId
             + resource.getLanguage()
             + resource.getValue()
             + fts.getSettings().getAppVersion(), true);
@@ -432,6 +440,21 @@ public class FTRetrievalController {
 
     // --- utils ---
 
+    private void addContentTypeToResponseHeader(HttpHeaders headers, String version, boolean isJson) {
+        if ("3".equalsIgnoreCase(version)) {
+            if (isJson) {
+                headers.add(CONTENT_TYPE, MEDIA_TYPE_IIIF_JSON_V3);
+            } else {
+                headers.add(CONTENT_TYPE, MEDIA_TYPE_IIIF_JSONLD_V3);
+            }
+        } else {
+            if (isJson) {
+                headers.add(CONTENT_TYPE, MEDIA_TYPE_IIIF_JSON_V2);
+            } else {
+                headers.add(CONTENT_TYPE, MEDIA_TYPE_IIIF_JSONLD_V2);
+            }
+        }
+    }
 
     /**
      * For testing retrieving the version from the pom file

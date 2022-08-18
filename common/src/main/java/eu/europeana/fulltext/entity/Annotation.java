@@ -20,6 +20,12 @@ public class Annotation {
     private Integer      to;
     private List<Target> tgs;
 
+    /**
+     * Temp field added for database migration
+     */
+    @Transient
+    private String oldAnId;
+
     /*
      * These two boolean parameters facilitate processing the Annotation during the loading process, to avoid having to
      * check dcType all the time.
@@ -132,4 +138,11 @@ public class Annotation {
                 getDcType() == AnnotationType.PAGE.getAbbreviation());
     }
 
+    public String getOldAnId() {
+        return oldAnId;
+    }
+
+    public void setOldAnId(String oldAnId) {
+        this.oldAnId = oldAnId;
+    }
 }

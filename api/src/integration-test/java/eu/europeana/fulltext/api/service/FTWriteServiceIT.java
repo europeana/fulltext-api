@@ -14,6 +14,7 @@ import eu.europeana.fulltext.api.BaseIntegrationTest;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Annotation;
 import eu.europeana.fulltext.entity.Target;
+import eu.europeana.fulltext.exception.DatabaseQueryException;
 import eu.europeana.fulltext.subtitles.AnnotationPreview;
 import eu.europeana.fulltext.util.GeneralUtils;
 import java.io.IOException;
@@ -75,7 +76,7 @@ class FTWriteServiceIT extends BaseIntegrationTest {
 
     AnnoPage annoPage1 =
         mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), AnnoPage.class);
-    service.saveAnnoPage(annoPage1);
+    service.upsertAnnoPage(List.of(annoPage1));
 
     assertEquals(1, service.countAnnoPage());
 
@@ -108,7 +109,7 @@ class FTWriteServiceIT extends BaseIntegrationTest {
   void shouldDropCollection() throws Exception {
     AnnoPage annoPage =
         mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), AnnoPage.class);
-    service.saveAnnoPage(annoPage);
+    service.upsertAnnoPage(List.of(annoPage));
     assertEquals(1, service.countAnnoPage());
 
     service.dropCollections();
@@ -126,7 +127,7 @@ class FTWriteServiceIT extends BaseIntegrationTest {
     // add the anno page and resource
     AnnoPage annoPage =
         mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), AnnoPage.class);
-    service.saveAnnoPage(annoPage);
+    service.upsertAnnoPage(List.of(annoPage));
     assertEquals(1, service.countAnnoPage());
     assertEquals(1, service.countResource());
 
@@ -136,7 +137,7 @@ class FTWriteServiceIT extends BaseIntegrationTest {
         new AnnotationPreview.Builder(
                 GeneralUtils.generateRecordId(annoPage.getDsId(), annoPage.getLcId()),
                 null,
-                new ArrayList<>())
+                "")
             .setLanguage(annoPage.getLang())
             .setSource("https://annotation/source/value")
             .setRights(rights)
@@ -156,7 +157,7 @@ class FTWriteServiceIT extends BaseIntegrationTest {
   }
 
   @Test
-  void deprecateAnnoPageWithLangSuccessful() throws IOException {
+  void deprecateAnnoPageWithLangSuccessful() throws Exception {
 
     assertEquals(0, service.countAnnoPage());
     assertEquals(0, service.countResource());
@@ -164,7 +165,7 @@ class FTWriteServiceIT extends BaseIntegrationTest {
     // add the anno page and resource
     AnnoPage annoPage =
         mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), AnnoPage.class);
-    service.saveAnnoPage(annoPage);
+    service.upsertAnnoPage(List.of(annoPage));
     assertEquals(1, service.countAnnoPage());
     assertEquals(1, service.countResource());
 
@@ -181,18 +182,18 @@ class FTWriteServiceIT extends BaseIntegrationTest {
   }
 
   @Test
-  void deprecateAnnoPageWithoutLangSuccessful() throws IOException {
+  void deprecateAnnoPageWithoutLangSuccessful() throws Exception {
 
     assertEquals(0, service.countAnnoPage());
     assertEquals(0, service.countResource());
 
     AnnoPage annoPage =
         mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), AnnoPage.class);
-    service.saveAnnoPage(annoPage);
+    service.upsertAnnoPage(List.of(annoPage));
     // add the anno page and resource with same dsId, lcId, pgId but different lang
     AnnoPage annoPage2 =
         mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_EN_JSON), AnnoPage.class);
-    service.saveAnnoPage(annoPage2);
+    service.upsertAnnoPage(List.of(annoPage2));
 
     assertEquals(2, service.countAnnoPage());
     assertEquals(2, service.countResource());
@@ -218,12 +219,12 @@ class FTWriteServiceIT extends BaseIntegrationTest {
     AnnoPage annoPage1 =
         mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), AnnoPage.class);
     annoPage1.setSource(source1);
-    ftService.saveAnnoPage(annoPage1);
+    service.upsertAnnoPage(List.of(annoPage1));
 
     AnnoPage annoPage2 =
         mapper.readValue(loadFile(ANNOPAGE_VIMEO_208310501_JSON), AnnoPage.class);
     annoPage2.setSource(source2);
-    ftService.saveAnnoPage(annoPage2);
+    service.upsertAnnoPage(List.of(annoPage2));
 
     ftService.deprecateAnnoPagesWithSources(List.of(source1, source2));
 

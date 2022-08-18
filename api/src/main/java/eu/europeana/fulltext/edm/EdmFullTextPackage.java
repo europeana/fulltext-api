@@ -1,4 +1,4 @@
-package eu.europeana.fulltext.subtitles.edm;
+package eu.europeana.fulltext.edm;
 
 import java.util.ArrayList;
 

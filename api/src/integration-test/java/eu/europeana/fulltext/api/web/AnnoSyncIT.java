@@ -126,6 +126,8 @@ class AnnoSyncIT extends BaseIntegrationTest {
   @Test
   void annoSyncShouldFetchNewAnnoPage() throws Exception {
     String annotationId = serverBaseUrl + "/annotation/53696";
+    // matches language in /resources/annotations/53696.json
+    String lang = "es";
 
     String expectedTgtId = "https://vimeo.com/524898134";
     mockMvc
@@ -138,8 +140,8 @@ class AnnoSyncIT extends BaseIntegrationTest {
             jsonPath(
                 "$.@id",
                 endsWith(
-                    "/08604/node_1680982/annopage/" + GeneralUtils.derivePageId(expectedTgtId))))
-        .andExpect(jsonPath("$.language", is("es")))
+                    "/08604/node_1680982/annopage/" + GeneralUtils.derivePageId(expectedTgtId) + "?lang=" + lang)))
+        .andExpect(jsonPath("$.language", is(lang)))
         .andExpect(jsonPath("$.source", is(annotationId)));
 
     // check that AnnoPage is saved in db
@@ -166,7 +168,7 @@ class AnnoSyncIT extends BaseIntegrationTest {
         mapper.readValue(
             loadFileAndReplaceServerUrl(ANNOPAGE_VIMEO_208310501_JSON, serverBaseUrl),
             AnnoPage.class);
-    ftService.saveAnnoPage(annoPage);
+    ftService.upsertAnnoPage(List.of(annoPage));
 
     mockMvc
         .perform(

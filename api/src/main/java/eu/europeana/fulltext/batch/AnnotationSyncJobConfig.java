@@ -18,12 +18,14 @@ import java.time.Duration;
 import java.time.Instant;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.batch.core.ItemProcessListener;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.explore.JobExplorer;
+import org.springframework.batch.core.listener.ItemListenerSupport;
 import org.springframework.batch.core.step.skip.SkipPolicy;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -96,11 +98,13 @@ public class AnnotationSyncJobConfig {
         .reader(itemReaderConfig.createAnnotationReader(from, to))
         .processor(annotationProcessor)
         .writer(annoPageWriter)
+        .listener(
+            (ItemProcessListener<? super AnnotationItem, ? super AnnoPage>)
+                updateListener)
         .faultTolerant()
         .skipPolicy(noopSkipPolicy)
         .taskExecutor(annoSyncTaskExecutor)
         .throttleLimit(appSettings.getAnnoSyncThrottleLimit())
-        .listener(updateListener)
         .build();
   }
 
@@ -110,8 +114,6 @@ public class AnnotationSyncJobConfig {
         .<String, String>chunk(appSettings.getAnnotationItemsPageSize())
         .reader(itemReaderConfig.createDeletedAnnotationReader(from, to))
         .writer(annoPageDeletionWriter)
-        .faultTolerant()
-        .skipPolicy(noopSkipPolicy)
         .taskExecutor(annoSyncTaskExecutor)
         .throttleLimit(appSettings.getAnnoSyncThrottleLimit())
         .build();

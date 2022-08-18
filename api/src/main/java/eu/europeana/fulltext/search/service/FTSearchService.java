@@ -75,9 +75,10 @@ public class FTSearchService {
         Map<String, List<String>> solrResult = solrRepo.getHighlightsWithOffsets(europeanaId, query, pageSize, result.getDebug());
         if (solrResult.isEmpty()) {
             LOG.debug("Solr returned empty result in {} ms", System.currentTimeMillis() - start);
-            // check if there are 0 hits because the record doesn't exist
-            if (!fulltextRepo.doesAnnoPageExist(europeanaId.getDatasetId(), europeanaId.getLocalId(), "1", null, false)) {
-                LOG.debug("No results from Mongo");
+            // check if there Annopage exists by dsId and lcId in Mongo
+            List<AnnoPage> existingAnnoPages = fulltextRepo.getAnnoPages(europeanaId.getDatasetId(), europeanaId.getLocalId(), null, false);
+            if (existingAnnoPages.isEmpty()) {
+                LOG.debug("No record for europeana Id {} in Mongo", europeanaId);
                 throw new RecordDoesNotExistException(europeanaId);
             }
         } else {

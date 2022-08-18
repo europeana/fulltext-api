@@ -1,4 +1,4 @@
-package eu.europeana.fulltext.migrations;
+package eu.europeana.fulltext.migrations.processor;
 
 import static eu.europeana.fulltext.util.GeneralUtils.createAnnotationHash;
 import static eu.europeana.fulltext.util.GeneralUtils.derivePageId;
@@ -22,6 +22,8 @@ public class MigrationAnnoPageProcessor implements ItemProcessor<AnnoPage, AnnoP
     annoPage.setPgId(pageId);
 
     for (Annotation a : annoPage.getAns()) {
+      // keep track of old annotationId in case we need to update it directly
+      a.setOldAnId(a.getAnId());
       String annoId = createAnnotationHash(a, annoPage.getTgtId(), annoPage.getLang());
       a.setAnId(annoId);
     }

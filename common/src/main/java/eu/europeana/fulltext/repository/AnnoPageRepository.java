@@ -7,12 +7,8 @@ import static dev.morphia.query.experimental.filters.Filters.eq;
 import static dev.morphia.query.experimental.filters.Filters.in;
 import static dev.morphia.query.experimental.updates.UpdateOperators.set;
 import static dev.morphia.query.experimental.updates.UpdateOperators.unset;
+import static eu.europeana.fulltext.util.MorphiaUtils.*;
 import static eu.europeana.fulltext.util.MorphiaUtils.Fields.*;
-import static eu.europeana.fulltext.util.MorphiaUtils.MULTI_UPDATE_OPTS;
-import static eu.europeana.fulltext.util.MorphiaUtils.RESOURCE_COL;
-import static eu.europeana.fulltext.util.MorphiaUtils.SET;
-import static eu.europeana.fulltext.util.MorphiaUtils.SET_ON_INSERT;
-import static eu.europeana.fulltext.util.MorphiaUtils.UPSERT_OPTS;
 
 import com.mongodb.DBRef;
 import com.mongodb.bulk.BulkWriteResult;
@@ -32,6 +28,7 @@ import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Resource;
 import eu.europeana.fulltext.exception.DatabaseQueryException;
 import eu.europeana.fulltext.util.MorphiaUtils;
+
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -122,6 +119,23 @@ public class AnnoPageRepository {
     return datastore.find(AnnoPage.class).filter(filters.toArray(new Filter[0])).count() > 0;
     }
 
+  public boolean existsOriginalByPageId(
+      String datasetId, String localId, String pageId, boolean includeDeprecated) {
+    List<Filter> filters =
+        new ArrayList<>(
+            Arrays.asList(
+                eq(DATASET_ID, datasetId),
+                eq(LOCAL_ID, localId),
+                eq(PAGE_ID, pageId),
+                eq(TRANSLATION, null)));
+
+    if (!includeDeprecated) {
+      filters.add(eq(DELETED, null));
+    }
+
+    return datastore.find(AnnoPage.class).filter(filters.toArray(new Filter[0])).count() > 0;
+  }
+
     /**
      * Check if an  AnnoPage exists that matches the given parameters using DBCollection.count().
      *
@@ -206,7 +220,7 @@ public class AnnoPageRepository {
      * @param pageId    index (page number) of the Annopage object
      * @param annoTypes dcType values to filter annotations with
      * @param lang      language
-     * @param includeDeprecated
+     * @param includeDeprecated whether deprecated AnnoPages should be included in result
      * @return AnnoPage
      */
     public AnnoPage findByPageIdLang(
@@ -229,6 +243,36 @@ public class AnnoPageRepository {
         query = filterTextGranularity(query, annoTypes);
         return query.execute(AnnoPage.class).tryNext();
     }
+
+    /**
+     * Finds the original AnnoPage with the given parameters.
+     * Original means the "translation" field in the database is empty
+     * @param datasetId
+     * @param localId
+     * @param pageId
+     * @param annoTypes
+     * @param includeDeprecated
+     * @return
+     */
+    public AnnoPage findOriginalByPageId(String datasetId, String localId, String pageId,
+        List<AnnotationType> annoTypes, boolean includeDeprecated) {
+        List<Filter> filters =
+            new ArrayList<>(
+                Arrays.asList(eq(DATASET_ID, datasetId),
+                    eq(LOCAL_ID, localId),
+                    eq(PAGE_ID, pageId),
+                    eq(TRANSLATION, null)));
+
+        if(!includeDeprecated){
+            filters.add(eq(DELETED, null));
+        }
+
+        Aggregation<AnnoPage> query = datastore.aggregate(AnnoPage.class)
+            .match(filters.toArray(new Filter[0]));
+        query = filterTextGranularity(query, annoTypes);
+        return query.execute(AnnoPage.class).tryNext();
+    }
+
 
     /**
      * Find and return AnnoPage that contains an annotation that matches the given parameters
@@ -344,7 +388,6 @@ public class AnnoPageRepository {
         for (AnnoPage annoPage : annoPageList) {
             annoPageUpdates.add(createAnnoPageUpdate(now, annoPage));
         }
-
         return annoPageCollection.bulkWrite(annoPageUpdates);
     }
 
@@ -371,8 +414,11 @@ public class AnnoPageRepository {
             .include(CLASSNAME)
             .include(TARGET_ID)
             .include(MODIFIED)
-                .include(ANNOTATIONS,
-                    filter(field(ANNOTATIONS),
+            .include(LANGUAGE) // EA-3123 lang, translation and deleted field is needed since multilingual behaviour and deprecation is added.
+            .include(TRANSLATION)
+            .include(DELETED)
+            .include(ANNOTATIONS,
+                 filter(field(ANNOTATIONS),
                         ArrayExpressions.in(value("$$annotation.dcType"),
                         value(dcTypes))).as("annotation")));
     }
@@ -389,16 +435,23 @@ public class AnnoPageRepository {
                 .collect(Collectors.toUnmodifiableList());
     }
 
-
-    public List<AnnoPage> getAnnoPages(String dsId, String lcId) {
+    /**
+     * Fetches List of AnnoPage.
+     * @param datasetId
+     * @param localId
+     * @param pageId
+     * @param includeDeprecated
+     * @return
+     */
+    public List<AnnoPage> getAnnoPages(String datasetId, String localId, String pageId, boolean includeDeprecated) {
         return datastore
-            .find(AnnoPage.class)
-            .filter(eq(DATASET_ID, dsId),
-                eq(LOCAL_ID, lcId),
-                eq(DELETED, null))
-            .iterator(new FindOptions().projection()
-                .include(DATASET_ID, LOCAL_ID, PAGE_ID, LANGUAGE, MODIFIED))
-            .toList();
+                .find(AnnoPage.class)
+                .filter(createFilterToGetAnnoPage(datasetId, localId, pageId, null, includeDeprecated).toArray(new Filter[0]))
+                .iterator(
+                        new FindOptions()
+                                .projection()
+                                .include(DATASET_ID, LOCAL_ID, PAGE_ID, LANGUAGE, MODIFIED, DELETED))
+                .toList();
     }
 
     private UpdateOneModel<AnnoPage> createAnnoPageUpdate(
@@ -418,11 +471,18 @@ public class AnnoPageRepository {
                 .append(TARGET_ID, annoPage.getTgtId())
                 .append(ANNOTATIONS, annoPage.getAns())
                 .append(MODIFIED, now)
-                .append(LANGUAGE, annoPage.getLang());
+                .append(LANGUAGE, annoPage.getLang())
+                // link resources for new and deprecated documents
+                .append(RESOURCE, new DBRef(RESOURCE_COL, res.getId()));
 
         // source isn't always set. Prevent null from being saved in db
         if (annoPage.getSource() != null) {
             updateDoc.append(SOURCE, annoPage.getSource());
+        }
+
+        // don't set translation=false in db, to conserve space
+        if (annoPage.isTranslation()) {
+            updateDoc.append(TRANSLATION, annoPage.isTranslation());
         }
 
         return new UpdateOneModel<>(
@@ -438,10 +498,8 @@ public class AnnoPageRepository {
                     PAGE_ID,
                     annoPage.getPgId())),
             new Document(SET, updateDoc)
-                // Only link resource for new documents. Resource ref should not change otherwise
-                .append(
-                    SET_ON_INSERT,
-                    new Document(RESOURCE, new DBRef(RESOURCE_COL, res.getId()))),
+                  // unset deleted field always when we add/update annopage
+                 .append(UNSET, new Document(DELETED, "")),
             UPSERT_OPTS);
     }
 
@@ -541,22 +599,9 @@ public class AnnoPageRepository {
    */
   public AnnoPage getShellAnnoPageById(
       String datasetId, String localId, String pageId, String lang, boolean includeDeprecated) {
-
-      List<Filter> filter =
-          new ArrayList<>(
-              Arrays.asList(eq(DATASET_ID, datasetId), eq(LOCAL_ID, localId), eq(PAGE_ID, pageId)));
-
-      if (StringUtils.isNotEmpty(lang)) {
-          filter.add(eq(LANGUAGE, lang));
-      }
-
-      if (!includeDeprecated) {
-          filter.add(eq(DELETED, null));
-      }
-
     return datastore
         .find(AnnoPage.class)
-        .filter(filter.toArray(new Filter[0]))
+        .filter(createFilterToGetAnnoPage(datasetId, localId, pageId, lang, includeDeprecated).toArray(new Filter[0]))
         .iterator(
             new FindOptions()
                 .limit(1)
@@ -578,4 +623,23 @@ public class AnnoPageRepository {
 
         return annoPages.stream().map(a -> a.getRes().getId()).collect(Collectors.toList());
     }
+
+  private List<Filter> createFilterToGetAnnoPage(String datasetId, String localId, String pageId, String lang, boolean includeDeprecated) {
+      List<Filter> filter =
+              new ArrayList<>(
+                      Arrays.asList(eq(DATASET_ID, datasetId), eq(LOCAL_ID, localId)));
+
+      if (StringUtils.isNotEmpty(pageId)) {
+          filter.add(eq(PAGE_ID, pageId));
+      }
+
+      if (StringUtils.isNotEmpty(lang)) {
+          filter.add(eq(LANGUAGE, lang));
+      }
+
+      if (!includeDeprecated) {
+          filter.add(eq(DELETED, null));
+      }
+      return filter;
+  }
 }
