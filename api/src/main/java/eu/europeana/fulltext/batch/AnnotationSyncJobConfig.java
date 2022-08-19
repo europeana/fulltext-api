@@ -13,6 +13,8 @@ import eu.europeana.fulltext.batch.repository.AnnoSyncJobMetadataRepo;
 import eu.europeana.fulltext.batch.writer.AnnoPageDeprecationWriter;
 import eu.europeana.fulltext.batch.writer.AnnoPageUpsertWriter;
 import eu.europeana.fulltext.entity.AnnoPage;
+import eu.europeana.fulltext.exception.AnnotationApiNotFoundException;
+import eu.europeana.fulltext.exception.MongoConnnectionException;
 import eu.europeana.fulltext.subtitles.external.AnnotationItem;
 import java.time.Duration;
 import java.time.Instant;
@@ -25,7 +27,6 @@ import org.springframework.batch.core.configuration.annotation.EnableBatchProces
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.explore.JobExplorer;
-import org.springframework.batch.core.listener.ItemListenerSupport;
 import org.springframework.batch.core.step.skip.SkipPolicy;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -102,6 +103,9 @@ public class AnnotationSyncJobConfig {
             (ItemProcessListener<? super AnnotationItem, ? super AnnoPage>)
                 updateListener)
         .faultTolerant()
+        .retryLimit(appSettings.getRetryLimit())
+        .retry(AnnotationApiNotFoundException.class) // retry if Annotaions Api is down for some reason
+        .retry(MongoConnnectionException.class) // retry if MongoDb is down for some reason
         .skipPolicy(noopSkipPolicy)
         .taskExecutor(annoSyncTaskExecutor)
         .throttleLimit(appSettings.getAnnoSyncThrottleLimit())

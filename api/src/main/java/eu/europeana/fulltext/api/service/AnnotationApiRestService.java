@@ -66,6 +66,10 @@ public class AnnotationApiRestService {
                         .build())
             .accept(MediaType.APPLICATION_JSON)
             .retrieve()
+                .onStatus(
+                        HttpStatus.NOT_FOUND::equals,
+                        errorResponse ->
+                                errorResponse.bodyToMono(String.class).map(AnnotationApiNotFoundException::new))
             .bodyToMono(AnnotationSearchResponse.class)
             .block();
 

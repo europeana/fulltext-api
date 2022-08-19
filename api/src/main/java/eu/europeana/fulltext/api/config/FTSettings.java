@@ -136,11 +136,11 @@ public class FTSettings implements InitializingBean {
     @Value("${webclient.maxBufferMb:16}")
     private int maxBufferMb;
 
+    @Value("${annotations.retry:3}")
+    private int retryLimit;
+
     @Autowired
     private Environment environment;
-
-
-
 
     public boolean isAuthEnabled() {
         return authEnabled;
@@ -176,6 +176,10 @@ public class FTSettings implements InitializingBean {
 
     public String getAnnotationsApiKey() {
         return annotationsApiKey;
+    }
+
+    public int getRetryLimit() {
+        return retryLimit;
     }
 
     public String getAnnotationsApiUrl() {
