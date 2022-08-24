@@ -8,6 +8,7 @@ import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Annotation;
 import eu.europeana.fulltext.search.config.SearchConfig;
 import eu.europeana.fulltext.search.exception.RecordDoesNotExistException;
+import eu.europeana.fulltext.search.exception.SearchEngineDatabaseMismatch;
 import eu.europeana.fulltext.search.model.query.EuropeanaId;
 import eu.europeana.fulltext.search.model.query.SolrHit;
 import eu.europeana.fulltext.search.model.response.Debug;
@@ -16,6 +17,7 @@ import eu.europeana.fulltext.search.model.response.HitFactory;
 import eu.europeana.fulltext.search.model.response.SearchResult;
 import eu.europeana.fulltext.search.model.response.SearchResultFactory;
 import eu.europeana.fulltext.search.repository.SolrRepo;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.common.util.NamedList;
@@ -98,11 +100,12 @@ public class FTSearchService {
                 .collect(Collectors.groupingBy(SolrHit::getImageId));
 
         long start = System.currentTimeMillis();
+        List<String> targetIds = new ArrayList<>(solrHitsByImageId.keySet());
         try (MorphiaCursor<AnnoPage> annoPageCursor = fulltextRepo.fetchAnnoPageFromTargetId(europeanaId.getDatasetId(),
-                europeanaId.getLocalId(), new ArrayList<>(solrHitsByImageId.keySet()), annoTypes, false)) {
+                europeanaId.getLocalId(), targetIds, annoTypes, false)) {
             if (annoPageCursor == null || !annoPageCursor.hasNext()) {
-                LOG.debug("No results from Mongo");
-                throw new RecordDoesNotExistException(europeanaId);
+                LOG.error("Solr record {} with targetIds {} not found in Mongo!", europeanaId, targetIds);
+                throw new SearchEngineDatabaseMismatch();
             } else {
                 LOG.debug("Retrieved AnnoPages for {} in {} ms", europeanaId, System.currentTimeMillis() - start);
             }
@@ -187,7 +190,8 @@ public class FTSearchService {
             // parse snippets data
             String snippetTxt = snippetsTxt.get(i);
             int imageIdEnd = snippetTxt.indexOf('}');
-            String imageId = snippetTxt.substring(1, imageIdEnd);
+            // the imageIds sent by Solr can contain encoded characters such as &amp; so we need to decode/unescape
+            String imageId = StringEscapeUtils.unescapeXml(snippetTxt.substring(1, imageIdEnd));
             String snippet = snippetTxt.substring(imageIdEnd + 2);
 
             // parse offsets data
