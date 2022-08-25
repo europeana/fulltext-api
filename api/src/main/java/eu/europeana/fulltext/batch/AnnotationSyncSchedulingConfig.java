@@ -2,7 +2,6 @@ package eu.europeana.fulltext.batch;
 
 import static eu.europeana.fulltext.AppConstants.ANNO_SYNC_TASK_SCHEDULER;
 
-import eu.europeana.batch.config.MongoBatchConfigurer;
 import eu.europeana.fulltext.api.config.FTSettings;
 import java.time.Duration;
 import java.time.Instant;
@@ -30,18 +29,16 @@ public class AnnotationSyncSchedulingConfig implements InitializingBean {
   private final int annoSyncInitialDelay;
   private final int annoSyncInterval;
 
-  private boolean annoSyncEnabled;
+  private final boolean annoSyncEnabled;
 
   public AnnotationSyncSchedulingConfig(
       AnnotationSyncJobConfig annoSyncJobConfig,
       @Qualifier(ANNO_SYNC_TASK_SCHEDULER) TaskScheduler annoSyncTaskScheduler,
-      MongoBatchConfigurer mongoBatchConfigurer,
-      FTSettings appSettings)
-      throws Exception {
+      JobLauncher launcher,
+      FTSettings appSettings) {
     this.annoSyncJobConfig = annoSyncJobConfig;
     this.annoSyncTaskScheduler = annoSyncTaskScheduler;
-    // use default jobLauncher
-    this.jobLauncher = mongoBatchConfigurer.getJobLauncher();
+    this.jobLauncher = launcher;
     this.annoSyncInitialDelay = appSettings.getAnnoSyncInitialDelay();
     this.annoSyncInterval = appSettings.getAnnoSyncInterval();
     this.annoSyncEnabled = appSettings.isAnnoSyncEnabled();

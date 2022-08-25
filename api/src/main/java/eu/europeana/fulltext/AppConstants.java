@@ -11,7 +11,6 @@ public class AppConstants {
 
   // Bean names
   public static final String FULLTEXT_DATASTORE_BEAN = "fulltextDatastore";
-  public static final String SPRINGBATCH_DATASTORE_BEAN = "springBatchDatastore";
   public static final String ANNO_SYNC_TASK_EXECUTOR = "annoSyncTaskExecutor";
   public static final String JOB_LAUNCHER_TASK_EXECUTOR = "jobLauncherTaskExecutor";
   public static final String ANNO_SYNC_TASK_SCHEDULER = "annoSyncTaskScheduler";

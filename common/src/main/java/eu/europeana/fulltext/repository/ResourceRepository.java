@@ -30,60 +30,60 @@ import static eu.europeana.fulltext.util.MorphiaUtils.UPSERT_OPTS;
 @Repository
 public class ResourceRepository {
 
-  @Value("${spring.profiles.active:}")
+    @Value("${spring.profiles.active:}")
     private String activeProfileString;
 
     @Autowired
     protected Datastore datastore;
 
-  /**
+    /**
      * @return the total number of resources in the database
      */
-  public long count() {
-    return datastore.getMapper().getCollection(Resource.class).countDocuments();
-  }
+    public long count() {
+        return datastore.getMapper().getCollection(Resource.class).countDocuments();
+    }
 
-  /**
-   * Find a resource that matches the specified parameters
-   */
-  public Resource findByPageIdLang(String datasetId, String localId, String pageId, String lang) {
-    return datastore.find(Resource.class)
-        .filter(
-            eq(DATASET_ID, datasetId),
-            eq(LOCAL_ID, localId),
-            eq(PAGE_ID, pageId),
-            eq(LANGUAGE, lang))
-        .first();
-  }
+    /**
+    * Find a resource that matches the specified parameters
+    */
+    public Resource findByPageIdLang(String datasetId, String localId, String pageId, String lang) {
+        return datastore.find(Resource.class)
+            .filter(
+                eq(DATASET_ID, datasetId),
+                eq(LOCAL_ID, localId),
+                eq(PAGE_ID, pageId),
+                eq(LANGUAGE, lang))
+            .first();
+    }
 
-  public Resource findOriginalByPageId(String datasetId, String localId, String pageId) {
-    return datastore.find(Resource.class)
-        .filter(
-            eq(DATASET_ID, datasetId),
-            eq(LOCAL_ID, localId),
-            eq(PAGE_ID, pageId),
-            eq(TRANSLATION, null))
-        .first();
-  }
+    public Resource findOriginalByPageId(String datasetId, String localId, String pageId) {
+        return datastore.find(Resource.class)
+            .filter(
+                eq(DATASET_ID, datasetId),
+                eq(LOCAL_ID, localId),
+                eq(PAGE_ID, pageId),
+                eq(TRANSLATION, null))
+            .first();
+    }
 
 
-  /**
-   * Check if a Resource exists that matches the given parameters
-   * @param datasetId ID of the associated dataset
-   * @param localId   ID of the associated Annopage parent object
-   * @param pageId     ID of the associated AnnoPage page
-   * @param lang     language of the associated AnnoPage document
-   * @return true if yes, otherwise false
-   */
-  public boolean resourceExists(String datasetId, String localId, String pageId, String lang) {
-    return datastore.find(Resource.class)
-        .filter(
-            eq(DATASET_ID, datasetId),
-            eq(LOCAL_ID, localId),
-            eq(PAGE_ID, pageId),
-            eq(LANGUAGE, lang))
-        .count() > 0;
-  }
+    /**
+    * Check if a Resource exists that matches the given parameters
+    * @param datasetId ID of the associated dataset
+    * @param localId   ID of the associated Annopage parent object
+    * @param pageId     ID of the associated AnnoPage page
+    * @param lang     language of the associated AnnoPage document
+    * @return true if yes, otherwise false
+    */
+    public boolean resourceExists(String datasetId, String localId, String pageId, String lang) {
+        return datastore.find(Resource.class)
+            .filter(
+                eq(DATASET_ID, datasetId),
+                eq(LOCAL_ID, localId),
+                eq(PAGE_ID, pageId),
+                eq(LANGUAGE, lang))
+            .count() > 0;
+    }
 
     /**
      * Saves a Resource to the database

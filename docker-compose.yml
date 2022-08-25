@@ -23,6 +23,4 @@ services:
       - ROOT_USERNAME=admin
       - ROOT_PASSWORD=password
       - MONGO_INITDB_DATABASE=admin
-      # Databases for Fulltext and Spring Batch
       - FULLTEXT_DB=fulltext
-      - BATCH_DB=spring-batch-repo
