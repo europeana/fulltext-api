@@ -2,8 +2,10 @@ package eu.europeana.fulltext.api.web;
 
 import static eu.europeana.fulltext.WebConstants.*;
 import static eu.europeana.fulltext.util.GeneralUtils.isValidAnnotationId;
+import static eu.europeana.fulltext.util.RequestUtils.PROFILE_TEXT;
 import static eu.europeana.fulltext.util.RequestUtils.REQUEST_VERSION_2;
 import static eu.europeana.fulltext.util.RequestUtils.addContentTypeToResponseHeader;
+import static eu.europeana.fulltext.util.RequestUtils.extractProfiles;
 
 import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.api.commons.service.authorization.AuthorizationService;
@@ -98,11 +100,14 @@ public class FTWriteController extends BaseRestController {
       value = "/fulltext/annosync",
       produces = {HttpHeaders.CONTENT_TYPE_JSONLD, MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<String> syncAnnotations(
-      @RequestParam(value = REQUEST_VALUE_SOURCE) String source, HttpServletRequest request)
+      @RequestParam(value = REQUEST_VALUE_SOURCE) String source, HttpServletRequest request,
+      @RequestParam(value = "profile", required = false) String profileParam
+      )
       throws ApplicationAuthenticationException, EuropeanaApiException {
     if (appSettings.isAuthEnabled()) {
       verifyWriteAccess(Operations.UPDATE, request);
     }
+    List<String> profiles = extractProfiles(profileParam);
 
     // check that sourceUrl is valid, and points to a europeana.eu domain
     if (!isValidAnnotationId(source, annotationIdPattern)) {
@@ -149,7 +154,7 @@ public class FTWriteController extends BaseRestController {
     // could be an update.
     ftService.upsertAnnoPage(List.of(annoPage));
 
-    return generateResponse(request, annoPage, HttpStatus.ACCEPTED);
+    return generateResponse(request, annoPage, profiles, HttpStatus.ACCEPTED);
   }
 
   @ApiOperation(
@@ -169,6 +174,7 @@ public class FTWriteController extends BaseRestController {
           boolean originalLang,
       @RequestParam(value = WebConstants.REQUEST_VALUE_RIGHTS) String rights,
       @RequestParam(value = WebConstants.REQUEST_VALUE_SOURCE, required = false) String source,
+      @RequestParam(value = "profile", required = false) String profileParam,
       @RequestBody String content,
       HttpServletRequest request)
       throws ApplicationAuthenticationException, EuropeanaApiException {
@@ -176,6 +182,8 @@ public class FTWriteController extends BaseRestController {
     if (appSettings.isAuthEnabled()) {
       verifyWriteAccess(Operations.CREATE, request);
     }
+    List<String> profiles = extractProfiles(profileParam);
+
     /*
      * Check if there is a fulltext annotation page associated with the combination of DATASET_ID,
      * LOCAL_ID and the media URL, if so then return a HTTP 301 with the URL of the Annotation Page
@@ -224,7 +232,7 @@ public class FTWriteController extends BaseRestController {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Created new AnnoPage {}", createdAnnoPage);
     }
-    return generateResponse(request, createdAnnoPage, HttpStatus.OK);
+    return generateResponse(request, createdAnnoPage, profiles, HttpStatus.OK);
   }
 
   @ApiOperation(value = "Replaces existing fulltext for a media resource with a new document")
@@ -243,6 +251,7 @@ public class FTWriteController extends BaseRestController {
           boolean originalLang,
       @RequestParam(value = WebConstants.REQUEST_VALUE_RIGHTS) String rights,
       @RequestParam(value = WebConstants.REQUEST_VALUE_SOURCE, required = false) String source,
+      @RequestParam(value = "profile", required = false) String profileParam,
       @RequestBody(required = false) String content,
       HttpServletRequest request)
       throws ApplicationAuthenticationException, EuropeanaApiException {
@@ -250,6 +259,7 @@ public class FTWriteController extends BaseRestController {
     if (appSettings.isAuthEnabled()) {
       verifyWriteAccess(Operations.UPDATE, request);
     }
+    List<String> profiles = extractProfiles(profileParam);
     /*
      * Check if there is a fulltext annotation page associated with the combination of DATASET_ID,
      * LOCAL_ID and the PAGE_ID and LANG, if not then return a HTTP 404
@@ -287,7 +297,7 @@ public class FTWriteController extends BaseRestController {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Replaced AnnoPage {}", updatedAnnoPage);
     }
-    return generateResponse(request, updatedAnnoPage, HttpStatus.OK);
+    return generateResponse(request, updatedAnnoPage, profiles, HttpStatus.OK);
   }
 
   @ApiOperation(value = "Deprecates the full-text associated to a media resource\n")
@@ -330,12 +340,11 @@ public class FTWriteController extends BaseRestController {
 
 
   protected ResponseEntity<String> generateResponse(
-      HttpServletRequest request, AnnoPage annoPage, HttpStatus status)
+      HttpServletRequest request, AnnoPage annoPage, List<String> profiles,
+      HttpStatus status)
       throws SerializationException {
 
-    AnnotationWrapper annotationWrapper = ftService.generateAnnoPageV2(annoPage, true);
-    // no context in json responses
-    annotationWrapper.setContext(null);
+    AnnotationWrapper annotationWrapper = ftService.generateAnnoPageV2(annoPage, profiles.contains(PROFILE_TEXT));
 
     ZonedDateTime modified = CacheUtils.dateToZonedUTC(annoPage.getModified());
     String requestVersion = REQUEST_VERSION_2;
@@ -349,7 +358,7 @@ public class FTWriteController extends BaseRestController {
 
     org.springframework.http.HttpHeaders headers =
         CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
-    addContentTypeToResponseHeader(headers, requestVersion, true);
+    addContentTypeToResponseHeader(headers, requestVersion, false);
     // overwrite Allow header populated in CacheUtils.generateHeaders
     headers.set(HttpHeaders.ALLOW, getMethodsForRequestPattern(request, requestPathMethodService));
 
