@@ -60,10 +60,10 @@
         <unitils.version>3.4.6</unitils.version>
         <swagger.version>3.0.0</swagger.version>
         <tomcat.version>9.0.58</tomcat.version>
-        <springbatch.mongo.version>1.0.5</springbatch.mongo.version>
         <mock-webserver.version>4.9.0</mock-webserver.version>
         <testcontainers.version>1.16.0</testcontainers.version>
         <eclipse-jetty.version>11.0.11</eclipse-jetty.version>
+        <spring-batch.version>4.3.3</spring-batch.version>
     </properties>
 
     <dependencyManagement>
