@@ -4,6 +4,8 @@ import static dev.morphia.query.experimental.filters.Filters.eq;
 import static dev.morphia.query.experimental.filters.Filters.exists;
 import static dev.morphia.query.experimental.filters.Filters.in;
 import static dev.morphia.query.experimental.filters.Filters.lt;
+import static eu.europeana.fulltext.migrations.MigrationConstants.FULLTEXT_DEST_DATASTORE;
+import static eu.europeana.fulltext.migrations.MigrationConstants.FULLTEXT_SRC_DATASTORE;
 import static eu.europeana.fulltext.util.MorphiaUtils.Fields.*;
 import static eu.europeana.fulltext.util.MorphiaUtils.RESOURCE_COL;
 import static eu.europeana.fulltext.util.MorphiaUtils.SET;
@@ -18,6 +20,7 @@ import dev.morphia.Datastore;
 import dev.morphia.UpdateOptions;
 import dev.morphia.query.FindOptions;
 import dev.morphia.query.Query;
+import dev.morphia.query.Sort;
 import dev.morphia.query.experimental.filters.Filters;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Annotation;
@@ -40,34 +43,38 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bson.Document;
 import org.bson.types.ObjectId;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
 @Component
 public class MigrationRepository {
 
-  private final Datastore datastore;
+  private final Datastore sourceDataStore;
+  private final Datastore destinationDataStore;
 
   private final int tooManyAnnotationsThreshold;
   private static final Logger logger = LogManager.getLogger(MigrationRepository.class);
 
-  public MigrationRepository(Datastore datastore, MigrationAppSettings settings) {
-    this.datastore = datastore;
+  public MigrationRepository(@Qualifier(FULLTEXT_SRC_DATASTORE) Datastore sourceDataStore, @Qualifier(FULLTEXT_DEST_DATASTORE) Datastore destinationDataStore,
+      MigrationAppSettings settings) {
+    this.sourceDataStore = sourceDataStore;
+    this.destinationDataStore = destinationDataStore;
     this.tooManyAnnotationsThreshold = settings.getTooManyAnnotationsThreshold();
   }
 
   public List<AnnoPage> getAnnoPages(
       int count, @Nullable ObjectId objectId, boolean useProjection) {
 
-    Query<AnnoPage> findQuery = datastore.find(AnnoPage.class);
+    Query<AnnoPage> findQuery = sourceDataStore.find(AnnoPage.class);
     if (objectId != null) {
-      findQuery.filter(Filters.gt("_id", objectId));
+      findQuery.filter(Filters.gt(DOC_ID, objectId));
     }
 
     FindOptions findOpts = new FindOptions().limit(count);
 
     if (useProjection) {
-      findOpts.projection().include(TARGET_ID, RESOURCE);
+      findOpts.projection().include(TARGET_ID, RESOURCE).sort(Sort.ascending(DOC_ID));
     }
 
     return findQuery.iterator(findOpts).toList();
@@ -79,7 +86,7 @@ public class MigrationRepository {
    * @return
    */
   public List<AnnoPage> getAnnoPagesModifiedBefore(Date date, int skip, int limit) {
-    return datastore
+    return sourceDataStore
         .find(AnnoPage.class)
         .filter(lt(MODIFIED, date))
         .iterator(new FindOptions().skip(skip).limit(limit))
@@ -159,7 +166,7 @@ public class MigrationRepository {
 
     // Try updating annotations first, so "modified" time isn't changed. In case update fails
     updateAnnotations(annoPagesWithManyAnnotations);
-    datastore.getMapper().getCollection(AnnoPage.class).bulkWrite(annoPageUpdates);
+    destinationDataStore.getMapper().getCollection(AnnoPage.class).bulkWrite(annoPageUpdates);
 
   }
 
@@ -210,7 +217,7 @@ public class MigrationRepository {
                                 .arrayFilter(eq("elem.anId", annotation.getOldAnId()))))
                 .collect(Collectors.toList());
 
-        datastore.getMapper().getCollection(AnnoPage.class).bulkWrite(annotationUpdate);
+        destinationDataStore.getMapper().getCollection(AnnoPage.class).bulkWrite(annotationUpdate);
 
         if (logger.isDebugEnabled()) {
           logger.debug(
@@ -232,7 +239,7 @@ public class MigrationRepository {
    * @param resourceIds _ids of Resources to delete
    */
   public void deleteResource(List<String> resourceIds) {
-    datastore
+    destinationDataStore
         .find(Resource.class)
         .filter(in(DOC_ID, resourceIds))
         .delete(MorphiaUtils.MULTI_DELETE_OPTS);
@@ -279,11 +286,11 @@ public class MigrationRepository {
               UPSERT_OPTS));
     }
 
-    datastore.getMapper().getCollection(Resource.class).bulkWrite(resourceUpdates);
+    destinationDataStore.getMapper().getCollection(Resource.class).bulkWrite(resourceUpdates);
   }
 
   public MigrationJobMetadata getExistingMetadata() {
-    return datastore
+    return destinationDataStore
         .find(MigrationJobMetadata.class)
         .filter(exists("lastAnnoPageIdRef"))
         .iterator()
@@ -291,7 +298,7 @@ public class MigrationRepository {
   }
 
   public void save(MigrationJobMetadata jobMetadata) {
-    datastore.save(jobMetadata);
+    destinationDataStore.save(jobMetadata);
   }
 
   public void updateResourcePgId(List<Resource> resources) {
@@ -306,7 +313,7 @@ public class MigrationRepository {
               // update doc
               new Document(SET, new Document(PAGE_ID, res.getPgId()))));
     }
-    datastore.getMapper().getCollection(Resource.class).bulkWrite(resourceUpdates);
+    destinationDataStore.getMapper().getCollection(Resource.class).bulkWrite(resourceUpdates);
   }
 
   public void updateAnnoPageId(List<? extends AnnoPage> annoPages) {
@@ -321,6 +328,6 @@ public class MigrationRepository {
               // update doc
               new Document(SET, new Document(PAGE_ID, annoPage.getPgId()))));
     }
-    datastore.getMapper().getCollection(AnnoPage.class).bulkWrite(annoPageUpdates);
+    destinationDataStore.getMapper().getCollection(AnnoPage.class).bulkWrite(annoPageUpdates);
   }
 }
