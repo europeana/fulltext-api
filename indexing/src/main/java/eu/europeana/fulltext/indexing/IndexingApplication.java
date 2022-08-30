@@ -10,38 +10,33 @@ import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.io.stream.TupleStream;
 import org.apache.solr.common.util.Pair;
+import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.context.ConfigurableApplicationContext;
 
-@SpringBootApplication
-public class IndexingApplication implements CommandLineRunner {
-
-  @Autowired
-  private IndexingAnnoPageRepository repository;
-
-  @Autowired
-  private MetadataCollection metadataCollection;
-
-  @Autowired
-  private FulltextCollection fulltextCollection;
-
-  private static final Logger logger = LogManager.getLogger(IndexingApplication.class);
-
+@EnableBatchProcessing
+@SpringBootApplication(
+    scanBasePackages = "eu.europeana.fulltext",
+    exclude = {SecurityAutoConfiguration.class})
+public class IndexingApplication {
   public static void main(String[] args) {
-    SpringApplication.run(IndexingApplication.class, args);
+    ConfigurableApplicationContext context = SpringApplication.run(IndexingApplication.class, args);
+    System.exit(SpringApplication.exit(context));
   }
 
-  @Override
-  public void run(String... args) throws Exception {
-    //use:
-    //fulltextCollection.synchronizeFulltextContent();
-    //fulltextCollection.synchronizeMetadataContent();
-    //List<String> toRepair = fulltextCollection.isFulltextUpdated();
 
-    //for intensive check/repair if something goes wrong
-    //List<String> toRepair = fulltextCollection.isFulltextUpdated();
-    //fulltextCollection.synchronizeFulltextContent(toRepair);
+  public void run(String... args) throws Exception {
+    // use:
+    // fulltextCollection.synchronizeFulltextContent();
+    // fulltextCollection.synchronizeMetadataContent();
+    // List<String> toRepair = fulltextCollection.isFulltextUpdated();
+
+    // for intensive check/repair if something goes wrong
+    // List<String> toRepair = fulltextCollection.isFulltextUpdated();
+    //    fulltextCollection.synchronizeFulltextContent(toRepair);
   }
 }

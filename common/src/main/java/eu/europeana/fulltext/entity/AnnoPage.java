@@ -157,6 +157,10 @@ public class AnnoPage {
         return deleted != null;
     }
 
+    public boolean isActive(){
+        return deleted == null;
+    }
+
     public String toString() {
         return "/" + this.dsId + "/" + this.getLcId() + "/" + this.getPgId();
     }

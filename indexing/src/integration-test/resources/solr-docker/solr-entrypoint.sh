@@ -6,7 +6,7 @@ shopt -s nullglob
 cp -r /opt/solr/server/solr/configsets/_default/ /opt/solr/server/solr/configsets/"$FULLTEXT_INDEXING_CORE"/
 
 # Overwrite Files copied to /opt/fulltext-conf in Dockerfile
-cp -r /opt/fulltext-conf/* /opt/solr/server/solr/configsets/"$FULLTEXT_INDEXING_CORE"/conf/
+cp -r /opt/fulltext-conf/*  /opt/solr/server/solr/configsets/"$FULLTEXT_INDEXING_CORE"/conf/
 
 mkdir -p /opt/solr/contrib/lib/
 

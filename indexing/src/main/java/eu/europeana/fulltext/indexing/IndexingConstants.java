@@ -1,6 +1,6 @@
 package eu.europeana.fulltext.indexing;
 
-public class Constants {
+public class IndexingConstants {
   public static final String METADATA_SOLR_BEAN = "metadataSolr";
   public static final String FULLTEXT_SOLR_BEAN = "fulltextSolr";
 
@@ -30,4 +30,7 @@ public class Constants {
   public static final String METADATA_DATE_FORMAT  = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 
 
+  // Bean names
+  public static final String BATCH_THREAD_EXECUTOR = "batchThreadExecutor";
+  public static final String FULLTEXT_INDEX_JOB = "fulltextIndexJob";
 }

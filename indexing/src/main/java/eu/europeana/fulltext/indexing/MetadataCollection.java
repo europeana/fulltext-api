@@ -1,8 +1,8 @@
 package eu.europeana.fulltext.indexing;
 
-import static eu.europeana.fulltext.indexing.Constants.METADATA_SOLR_BEAN;
+import static eu.europeana.fulltext.indexing.IndexingConstants.METADATA_SOLR_BEAN;
 
-import eu.europeana.fulltext.indexing.service.SolrServices;
+import eu.europeana.fulltext.indexing.solr.SolrServices;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -49,12 +49,15 @@ public class MetadataCollection {
             List<TupleStream> streams = new ArrayList<>();
             for (String coreURL : coreURLs) { //we have to iterate each core separately
                 ModifiableSolrParams params = new ModifiableSolrParams();
-                params.set(Constants.SOLR_QUERY, Constants.SOLR_QUERY_DEFAULT);
-                params.set(Constants.SOLR_QT, Constants.SOLR_EXPORT);
-                params.set(Constants.SOLR_SORT, Constants.EUROPEANA_ID + Constants.SOLR_SORT_ASC);
-                params.set(Constants.SOLR_FL, Constants.EUROPEANA_ID);
-                String formattedDate = lastTimestampUpdateMetadata.format(DateTimeFormatter.ofPattern(Constants.METADATA_DATE_FORMAT));
-                params.set(Constants.SOLR_FQ, Constants.TIMESTAMP_UPDATE_METADATA + ":{" + formattedDate + " TO NOW]");
+                params.set(IndexingConstants.SOLR_QUERY, IndexingConstants.SOLR_QUERY_DEFAULT);
+                params.set(IndexingConstants.SOLR_QT, IndexingConstants.SOLR_EXPORT);
+                params.set(
+                    IndexingConstants.SOLR_SORT, IndexingConstants.EUROPEANA_ID + IndexingConstants.SOLR_SORT_ASC);
+                params.set(IndexingConstants.SOLR_FL, IndexingConstants.EUROPEANA_ID);
+                String formattedDate = lastTimestampUpdateMetadata.format(DateTimeFormatter.ofPattern(
+                    IndexingConstants.METADATA_DATE_FORMAT));
+                params.set(
+                    IndexingConstants.SOLR_FQ, IndexingConstants.TIMESTAMP_UPDATE_METADATA + ":{" + formattedDate + " TO NOW]");
 
                 TupleStream solrStream = new SolrStream(coreURL, params);
                 StreamContext context = new StreamContext();
@@ -81,7 +84,7 @@ public class MetadataCollection {
                 solrStream.open();
                 Tuple tuple = solrStream.read();
                 while (!tuple.EOF) {
-                    ids.add(tuple.getString(Constants.EUROPEANA_ID));
+                    ids.add(tuple.getString(IndexingConstants.EUROPEANA_ID));
                     tuple = solrStream.read();
                 }
             } catch (IOException e) {
@@ -105,7 +108,7 @@ public class MetadataCollection {
         try {
             SolrDocument document = SolrServices.get(metadataSolr, metadataCollectionName, europeanaId);
             if (document != null) {
-                return  ((Date)document.getFieldValue(Constants.TIMESTAMP_UPDATE_METADATA)).toInstant()
+                return  ((Date)document.getFieldValue(IndexingConstants.TIMESTAMP_UPDATE_METADATA)).toInstant()
                         .atZone(ZoneOffset.UTC); //dates in Solr are always in format ISO8601 and UTC
 
             }
@@ -128,8 +131,9 @@ public class MetadataCollection {
      */
     protected SolrDocument getDocument(String europeanaId) throws IOException, SolrServerException {
         SolrQuery query = new SolrQuery();
-        query.set(Constants.SOLR_QUERY, Constants.EUROPEANA_ID + ":\"" + europeanaId + "\"");
-        query.set(Constants.SOLR_FL, Constants.ALL); //retrieve all the fields
+        query.set(
+            IndexingConstants.SOLR_QUERY, IndexingConstants.EUROPEANA_ID + ":\"" + europeanaId + "\"");
+        query.set(IndexingConstants.SOLR_FL, IndexingConstants.ALL); //retrieve all the fields
         try {
             QueryResponse response = SolrServices.query(metadataSolr, metadataCollectionName, query);
             if (response != null && response.getResults().size() > 0){

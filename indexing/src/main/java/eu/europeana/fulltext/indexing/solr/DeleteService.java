@@ -1,4 +1,4 @@
-package eu.europeana.fulltext.indexing.service;
+package eu.europeana.fulltext.indexing.solr;
 
 import eu.europeana.fulltext.indexing.batch.BatchProcessor;
 import org.apache.logging.log4j.LogManager;

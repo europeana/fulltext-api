@@ -33,6 +33,7 @@ services:
       dockerfile: Dockerfile
     container_name: solr
     ports:
-      - 8983:8983
+      - "8983:8983"
+      - "9983:9983"
     environment:
       - FULLTEXT_INDEXING_CORE=fulltext
