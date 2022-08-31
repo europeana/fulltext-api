@@ -1,15 +1,15 @@
 package eu.europeana.fulltext.indexing.processor;
 
 import eu.europeana.fulltext.entity.AnnoPage;
-import eu.europeana.fulltext.exception.MongoRecordException;
 import eu.europeana.fulltext.indexing.IndexingConstants;
-import eu.europeana.fulltext.indexing.batch.IndexingAction;
-import eu.europeana.fulltext.indexing.batch.IndexingWrapper;
+import eu.europeana.fulltext.indexing.model.IndexingAction;
+import eu.europeana.fulltext.indexing.model.IndexingWrapper;
 import eu.europeana.fulltext.indexing.model.AnnoPageRecordId;
 import eu.europeana.fulltext.indexing.repository.IndexingAnnoPageRepository;
 import eu.europeana.fulltext.indexing.solr.FulltextSolrService;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -57,10 +57,11 @@ public class IndexingFulltextUpdateProcessor
 
     // if this dsId / lcId combination is new, Solr document would have been created in the previous
     // processor. Otherwise, create a new Solr doc
-    SolrInputDocument doc =
-        indexingWrapper.getSolrDocument() == null
-            ? new SolrInputDocument(IndexingConstants.EUROPEANA_ID, europeanaId)
-            : indexingWrapper.getSolrDocument();
+    if(indexingWrapper.getSolrDocument() == null){
+      indexingWrapper.setSolrDocument(new SolrInputDocument(IndexingConstants.EUROPEANA_ID, europeanaId));
+    }
+
+    SolrInputDocument doc = indexingWrapper.getSolrDocument();
 
     List<AnnoPage> annoPages =
         repository.getAnnoPagesWithProjection(recordId.getDsId(), recordId.getLcId());
@@ -71,13 +72,8 @@ public class IndexingFulltextUpdateProcessor
     Map<Boolean, List<AnnoPage>> annoPageMap =
         annoPages.stream().collect(Collectors.groupingBy(AnnoPage::isActive));
 
-    if (annoPageMap.get(Boolean.TRUE).isEmpty()) {
-      // we have to have at least one active in this point of the code, but just in case
-      throw new MongoRecordException("Document " + europeanaId + " is not in database");
-    }
-
     Date modified = Date.from(Instant.EPOCH);
-    for (AnnoPage ap : annoPageMap.get(Boolean.TRUE)) {
+    for (AnnoPage ap : annoPageMap.getOrDefault(Boolean.TRUE, Collections.emptyList())) {
       String fulltext = ap.getRes().getValue();
       String lang = ap.getLang();
       if (!isLangSupported(lang, fulltextSolr.getSchema())) {
@@ -100,7 +96,7 @@ public class IndexingFulltextUpdateProcessor
     }
 
     // handle deleted AnnoPages
-    for (AnnoPage ap : annoPageMap.get(Boolean.FALSE)) {
+    for (AnnoPage ap : annoPageMap.getOrDefault(Boolean.FALSE, Collections.emptyList())) {
       String lang = ap.getLang();
       if (logger.isTraceEnabled() && !isLangSupported(lang, fulltextSolr.getSchema())) {
         logger.trace(

@@ -1,15 +1,7 @@
 package eu.europeana.fulltext.indexing;
 
-import eu.europeana.fulltext.entity.AnnoPage;
-import eu.europeana.fulltext.indexing.repository.IndexingAnnoPageRepository;
-import java.io.IOException;
-import java.time.*;
-import java.util.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.io.stream.TupleStream;
-import org.apache.solr.common.util.Pair;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -22,21 +14,39 @@ import org.springframework.context.ConfigurableApplicationContext;
 @SpringBootApplication(
     scanBasePackages = "eu.europeana.fulltext",
     exclude = {SecurityAutoConfiguration.class})
-public class IndexingApplication {
-  public static void main(String[] args) {
-    ConfigurableApplicationContext context = SpringApplication.run(IndexingApplication.class, args);
-    System.exit(SpringApplication.exit(context));
+public class IndexingApplication implements CommandLineRunner {
+
+  private static final Logger logger = LogManager.getLogger(IndexingApplication.class);
+
+  @Autowired private IndexingBatchConfig batchConfig;
+
+  private static final String FULLTEXT_INDEX_ARG = "fulltextIndex";
+  private static final String METADATA_SYNC_ARG = "metadataSync";
+
+  private static String job = "";
+
+  @Override
+  public void run(String... args) throws Exception {
+
+    if (FULLTEXT_INDEX_ARG.equalsIgnoreCase(job)) {
+      batchConfig.indexFulltext();
+    } else if (METADATA_SYNC_ARG.equalsIgnoreCase(job)) {
+      batchConfig.syncMetadataJob();
+    }
   }
 
+  public static void main(String[] args) {
+    job = args[0];
+    if (!FULLTEXT_INDEX_ARG.equalsIgnoreCase(job) && !METADATA_SYNC_ARG.equalsIgnoreCase(job)) {
+      logger.error(
+          "Unsupported argument '{}'. Supported arguments are '{}' and '{}'",
+          job,
+          FULLTEXT_INDEX_ARG,
+          METADATA_SYNC_ARG);
+      System.exit(1);
+    }
 
-  public void run(String... args) throws Exception {
-    // use:
-    // fulltextCollection.synchronizeFulltextContent();
-    // fulltextCollection.synchronizeMetadataContent();
-    // List<String> toRepair = fulltextCollection.isFulltextUpdated();
-
-    // for intensive check/repair if something goes wrong
-    // List<String> toRepair = fulltextCollection.isFulltextUpdated();
-    //    fulltextCollection.synchronizeFulltextContent(toRepair);
+    ConfigurableApplicationContext context = SpringApplication.run(IndexingApplication.class, args);
+    System.exit(SpringApplication.exit(context));
   }
 }

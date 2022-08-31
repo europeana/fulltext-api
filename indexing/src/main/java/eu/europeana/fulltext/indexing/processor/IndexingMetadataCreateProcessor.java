@@ -8,8 +8,8 @@ import static eu.europeana.fulltext.indexing.IndexingConstants.TIMESTAMP;
 import static eu.europeana.fulltext.indexing.IndexingConstants.VERSION;
 
 import eu.europeana.fulltext.exception.SolrDocumentException;
-import eu.europeana.fulltext.indexing.batch.IndexingAction;
-import eu.europeana.fulltext.indexing.batch.IndexingWrapper;
+import eu.europeana.fulltext.indexing.model.IndexingAction;
+import eu.europeana.fulltext.indexing.model.IndexingWrapper;
 import eu.europeana.fulltext.indexing.solr.MetadataSolrService;
 import java.time.DateTimeException;
 import java.time.LocalDate;
@@ -29,7 +29,12 @@ import org.springframework.stereotype.Component;
 public class IndexingMetadataCreateProcessor
     implements ItemProcessor<IndexingWrapper, IndexingWrapper> {
 
-  private MetadataSolrService metadataSolr;
+  private final MetadataSolrService metadataSolr;
+
+  public IndexingMetadataCreateProcessor(
+      MetadataSolrService metadataSolr) {
+    this.metadataSolr = metadataSolr;
+  }
 
   @Override
   public IndexingWrapper process(IndexingWrapper indexingWrapper) throws Exception {
@@ -41,7 +46,7 @@ public class IndexingMetadataCreateProcessor
     String europeanaId = indexingWrapper.getRecordId().toEuropeanaId();
     // check if document exists on Metadata Collection.
     SolrDocument existingDocument = metadataSolr.getDocument(europeanaId);
-    if (existingDocument == null) {
+    if (existingDocument == null || existingDocument.isEmpty()) {
       throw new SolrDocumentException(europeanaId + " does not exist in metadata collection");
     }
 

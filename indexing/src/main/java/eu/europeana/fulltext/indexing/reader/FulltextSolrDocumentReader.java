@@ -3,13 +3,16 @@ package eu.europeana.fulltext.indexing.reader;
 import eu.europeana.fulltext.indexing.IndexingConstants;
 import eu.europeana.fulltext.indexing.solr.FulltextSolrService;
 import eu.europeana.fulltext.indexing.solr.SolrSearchCursorIterator;
+import java.util.Collections;
 import java.util.Iterator;
-import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.common.SolrDocumentList;
 import org.springframework.batch.item.data.AbstractPaginatedDataItemReader;
 
+/**
+ * Reader for fetching "europeana_ids" from Fulltext Solr.
+ */
 public class FulltextSolrDocumentReader extends AbstractPaginatedDataItemReader<String> {
 
   private SolrSearchCursorIterator solrIterator;
@@ -30,7 +33,7 @@ public class FulltextSolrDocumentReader extends AbstractPaginatedDataItemReader<
           .iterator();
     }
 
-    return null;
+    return Collections.emptyIterator();
   }
 
   @Override

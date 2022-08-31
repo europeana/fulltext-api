@@ -3,9 +3,11 @@ package eu.europeana.fulltext.indexing.config;
 import static eu.europeana.fulltext.indexing.IndexingConstants.BATCH_THREAD_EXECUTOR;
 
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
+@Configuration
 public class IndexingBatchBean {
   private final IndexingAppSettings config;
 

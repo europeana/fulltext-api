@@ -1,7 +1,5 @@
-package eu.europeana.fulltext.indexing.batch;
+package eu.europeana.fulltext.indexing.model;
 
-import eu.europeana.fulltext.indexing.model.AnnoPageRecordId;
-import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrInputDocument;
 
 public class IndexingWrapper {
@@ -30,5 +28,14 @@ public class IndexingWrapper {
 
   public void setSolrDocument(SolrInputDocument solrDocument) {
     this.solrDocument = solrDocument;
+  }
+
+  @Override
+  public String toString() {
+    return "IndexingWrapper{" +
+        "action=" + action +
+        ", recordId=" + recordId +
+        ", solrDocument=" + solrDocument +
+        '}';
   }
 }

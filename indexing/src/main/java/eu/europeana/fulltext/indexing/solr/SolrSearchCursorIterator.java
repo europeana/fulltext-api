@@ -65,11 +65,6 @@ public class SolrSearchCursorIterator implements Iterator<SolrDocumentList> {
     previousCursorMark = cursorMark;
     cursorMark = response.getNextCursorMark();
 
-    if (Objects.equals(previousCursorMark, cursorMark)) {
-      // no more elements to iterate on Solr
-      throw new NoSuchElementException("No more documents can be retrieved for search query");
-    }
-
     if (log.isDebugEnabled()) {
       log.debug(
           "Performed Solr search query in {}ms: numFound={}, cursorMark={}, q={}",

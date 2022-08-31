@@ -1,14 +1,9 @@
 package eu.europeana.fulltext.indexing.processor;
 
-import eu.europeana.fulltext.indexing.IndexingConstants;
-import eu.europeana.fulltext.indexing.batch.IndexingAction;
-import eu.europeana.fulltext.indexing.batch.IndexingWrapper;
+import eu.europeana.fulltext.indexing.model.IndexingAction;
+import eu.europeana.fulltext.indexing.model.IndexingWrapper;
 import eu.europeana.fulltext.indexing.model.AnnoPageRecordId;
 import eu.europeana.fulltext.util.GeneralUtils;
-import java.util.List;
-import java.util.stream.Collectors;
-import org.apache.solr.common.SolrDocument;
-import org.apache.solr.common.SolrDocumentList;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.stereotype.Component;
 
@@ -23,7 +18,7 @@ public class MetadataSyncActionProcessor implements ItemProcessor<String, Indexi
   private AnnoPageRecordId createAnnoPageRecordId(String europeanaId) {
 
     String dsId = GeneralUtils.getDsId(europeanaId);
-    String lcId = GeneralUtils.getDsId(europeanaId);
+    String lcId = GeneralUtils.getLocalId(europeanaId);
 
     return new AnnoPageRecordId(dsId, lcId);
   }

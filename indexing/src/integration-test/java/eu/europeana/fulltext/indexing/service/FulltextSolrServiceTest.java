@@ -2,6 +2,7 @@ package eu.europeana.fulltext.indexing.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import eu.europeana.fulltext.indexing.IndexingConstants;
 import eu.europeana.fulltext.indexing.solr.FulltextSolrService;
 import java.time.Instant;
 import java.util.Optional;
@@ -19,7 +20,8 @@ class FulltextSolrServiceTest {
 
   @Test
   void shouldFetchLastModifiedDate() throws Exception {
-    Optional<Instant> lastUpdateTime = solrService.getLastUpdateTime();
+    Optional<Instant> lastUpdateTime = solrService.getMostRecentValue(
+        IndexingConstants.TIMESTAMP_UPDATE_FULLTEXT);
     assertTrue(lastUpdateTime.isPresent());
   }
 

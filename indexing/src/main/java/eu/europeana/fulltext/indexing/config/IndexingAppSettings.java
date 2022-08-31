@@ -48,6 +48,15 @@ public class IndexingAppSettings {
   @Value("${batch.metadataSync.pageSize: 5000}")
   private int metadataSolrSyncPageSize;
 
+  @Value("${mongo.fulltext.ensureIndices: false}")
+  private boolean ensureFulltextIndices;
+
+  @Value("${batch.skipLimit: 500}")
+  private int skipLimit;
+
+  @Value("${batch.fulltext.commitWithinMs: 30000}")
+  private int commitWithinMs;
+
   public String getMongoConnectionUrl() {
     return mongoConnectionUrl;
   }
@@ -98,5 +107,16 @@ public class IndexingAppSettings {
 
   public int getMetadataSolrSyncPageSize() {
     return metadataSolrSyncPageSize;
+  }
+
+  public boolean ensureFulltextIndices() {
+    return ensureFulltextIndices;
+  }
+
+  public int getSkipLimit() {
+    return skipLimit;  }
+
+  public int getCommitWithinMs() {
+    return commitWithinMs;
   }
 }

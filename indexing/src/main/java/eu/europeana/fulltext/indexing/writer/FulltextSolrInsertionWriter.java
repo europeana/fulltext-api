@@ -1,7 +1,7 @@
 package eu.europeana.fulltext.indexing.writer;
 
-import eu.europeana.fulltext.indexing.batch.IndexingAction;
-import eu.europeana.fulltext.indexing.batch.IndexingWrapper;
+import eu.europeana.fulltext.indexing.model.IndexingAction;
+import eu.europeana.fulltext.indexing.model.IndexingWrapper;
 import eu.europeana.fulltext.indexing.solr.FulltextSolrService;
 import java.util.List;
 import java.util.stream.Collectors;

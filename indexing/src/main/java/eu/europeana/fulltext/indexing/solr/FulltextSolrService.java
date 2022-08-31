@@ -5,7 +5,6 @@ import static eu.europeana.fulltext.indexing.IndexingConstants.FULLTEXT_SOLR_BEA
 import static eu.europeana.fulltext.indexing.IndexingConstants.SOLR_QUERY_DEFAULT;
 
 import eu.europeana.fulltext.exception.SolrServiceException;
-import eu.europeana.fulltext.indexing.IndexingConstants;
 import eu.europeana.fulltext.indexing.config.IndexingAppSettings;
 import java.io.IOException;
 import java.time.Instant;
@@ -34,12 +33,7 @@ public class FulltextSolrService implements InitializingBean {
   private static final Logger log = LogManager.getLogger(FulltextSolrService.class);
 
   private final SolrClient fulltextSolr;
-
-  private final SolrQuery lastUpdateTimeQuery =
-      new SolrQuery(SOLR_QUERY_DEFAULT)
-          .addField(IndexingConstants.TIMESTAMP_UPDATE_METADATA)
-          .setRows(1)
-          .setSort(IndexingConstants.TIMESTAMP_UPDATE_METADATA, SolrQuery.ORDER.desc);
+  private final int commitWithinMs;
 
   private SchemaRepresentation schema;
 
@@ -49,41 +43,18 @@ public class FulltextSolrService implements InitializingBean {
       @Qualifier(FULLTEXT_SOLR_BEAN) SolrClient fulltextSolr, IndexingAppSettings settings) {
     this.fulltextSolr = fulltextSolr;
     this.metadataSolrSyncPageSize = settings.getMetadataSolrSyncPageSize();
+    this.commitWithinMs = settings.getCommitWithinMs();
   }
 
   /**
-   * Gets the most recent "timestamp_update" value from all documents in the Fulltext collection
+   * Gets the most recent value for the specified timestampField, from all documents in the Fulltext
+   * collection
    *
    * @return Optional with the last update time
    * @throws SolrServiceException on Solr error
    */
-  public Optional<Instant> getLastUpdateTime() throws SolrServiceException {
-    QueryResponse response;
-    try {
-      response = fulltextSolr.query(lastUpdateTimeQuery);
-      if (log.isDebugEnabled()) {
-        log.debug(
-            "Performed Fulltext Solr search query in {}ms:  query={}",
-            response.getElapsedTime(),
-            lastUpdateTimeQuery);
-      }
-    } catch (IOException | SolrServerException ex) {
-      throw new SolrServiceException(
-          String.format(
-              "Error while searching Fulltext Solr for lastUpdateTime. query=%s",
-              lastUpdateTimeQuery.toString()),
-          ex);
-    }
-
-    if (response == null || CollectionUtils.isEmpty(response.getResults())) {
-      return Optional.empty();
-    }
-
-    Date fieldValue =
-        (Date)
-            response.getResults().get(0).getFieldValue(IndexingConstants.TIMESTAMP_UPDATE_METADATA);
-
-    return Optional.of(fieldValue.toInstant());
+  public Optional<Instant> getMostRecentValue(String timestampField) throws SolrServiceException {
+    return SolrUtils.getMostRecentValue(fulltextSolr, timestampField);
   }
 
   /**
@@ -112,7 +83,7 @@ public class FulltextSolrService implements InitializingBean {
   public void writeToSolr(List<SolrInputDocument> documents) throws SolrServiceException {
 
     try {
-      UpdateResponse response = fulltextSolr.add(documents);
+      UpdateResponse response = fulltextSolr.add(documents, commitWithinMs);
       if (log.isDebugEnabled()) {
         log.debug(
             "Wrote {} docs to Fulltext Solr in {}ms", documents.size(), response.getElapsedTime());
@@ -123,8 +94,12 @@ public class FulltextSolrService implements InitializingBean {
   }
 
   public void deleteFromSolr(List<String> europeanaIds) throws SolrServiceException {
+    if (europeanaIds == null || europeanaIds.isEmpty()) {
+      return;
+    }
+
     try {
-      UpdateResponse response = fulltextSolr.deleteById(europeanaIds);
+      UpdateResponse response = fulltextSolr.deleteById(europeanaIds, commitWithinMs);
       if (log.isDebugEnabled()) {
         log.debug(
             "Wrote {} docs to Fulltext Solr in {}ms",

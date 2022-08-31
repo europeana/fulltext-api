@@ -1,5 +1,6 @@
 package eu.europeana.fulltext.indexing.config;
 
+import static dev.morphia.Morphia.createDatastore;
 import static eu.europeana.fulltext.indexing.IndexingConstants.FULLTEXT_SOLR_BEAN;
 import static eu.europeana.fulltext.indexing.IndexingConstants.METADATA_SOLR_BEAN;
 import static eu.europeana.fulltext.util.MorphiaUtils.MAPPER_OPTIONS;
@@ -7,6 +8,7 @@ import static eu.europeana.fulltext.util.MorphiaUtils.MAPPER_OPTIONS;
 import com.mongodb.client.MongoClients;
 import dev.morphia.Datastore;
 import dev.morphia.Morphia;
+import eu.europeana.fulltext.entity.FulltextPackageMapper;
 import java.util.List;
 import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
@@ -34,10 +36,19 @@ public class IndexingDataSourceConfig {
   @Bean
   public Datastore fulltextDatastore() {
     LOG.info("Configuring fulltext database: {}", settings.getFulltextDatabase());
-    return Morphia.createDatastore(
+
+    var datastore = Morphia.createDatastore(
         MongoClients.create(settings.getMongoConnectionUrl()),
         settings.getFulltextDatabase(),
         MAPPER_OPTIONS);
+
+    if (settings.ensureFulltextIndices()) {
+      // Create indices for Entity classes.(Just for Testing!!)
+      datastore.getMapper().mapPackage(FulltextPackageMapper.class.getPackageName());
+      datastore.ensureIndexes();
+    }
+
+    return datastore;
   }
 
   // TODO: maybe replace by metis solr utils

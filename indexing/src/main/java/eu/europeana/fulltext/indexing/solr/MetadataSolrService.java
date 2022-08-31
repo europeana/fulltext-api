@@ -6,6 +6,9 @@ import static eu.europeana.fulltext.indexing.IndexingConstants.METADATA_SOLR_BEA
 import eu.europeana.fulltext.exception.SolrServiceException;
 import eu.europeana.fulltext.indexing.IndexingConstants;
 import java.io.IOException;
+import java.time.Instant;
+import java.util.Map;
+import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrClient;
@@ -50,6 +53,18 @@ public class MetadataSolrService {
           ex);
     }
 
-    return null;
+    return new SolrDocument();
+  }
+
+
+  /**
+   * Gets the most recent value for the specified timestampField, from all documents in the Metadata
+   * collection
+   *
+   * @return Optional with the last update time
+   * @throws SolrServiceException on Solr error
+   */
+  public Optional<Instant> getMostRecentValue(String timestampField) throws SolrServiceException {
+    return SolrUtils.getMostRecentValue(metadataSolr, timestampField);
   }
 }
