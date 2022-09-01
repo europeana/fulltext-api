@@ -339,4 +339,8 @@ public class FTSettings implements InitializingBean {
     public int getMaxBufferMb() {
         return maxBufferMb;
     }
+
+    public int getSkipLimit() {
+        return batchSkipLimit;
+    }
 }

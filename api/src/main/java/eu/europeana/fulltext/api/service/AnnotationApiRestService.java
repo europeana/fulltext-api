@@ -6,10 +6,10 @@ import static eu.europeana.fulltext.AppConstants.ANNOTATION_SEARCH_PATH;
 import eu.europeana.fulltext.api.config.FTSettings;
 import eu.europeana.fulltext.exception.AnnotationApiGoneException;
 import eu.europeana.fulltext.exception.AnnotationApiNotFoundException;
+import eu.europeana.fulltext.exception.AnnotationApiRequestException;
 import eu.europeana.fulltext.subtitles.external.AnnotationItem;
 import eu.europeana.fulltext.subtitles.external.AnnotationSearchResponse;
 import eu.europeana.fulltext.util.GeneralUtils;
-import io.netty.handler.logging.LogLevel;
 import java.net.URI;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -23,15 +23,10 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.client.reactive.ReactorClientHttpConnector;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriBuilder;
 import reactor.core.Exceptions;
-import reactor.netty.http.client.HttpClient;
-import reactor.netty.transport.logging.AdvancedByteBufFormat;
 
 @Service
 public class AnnotationApiRestService {
@@ -69,7 +64,8 @@ public class AnnotationApiRestService {
                 .onStatus(
                         HttpStatus.NOT_FOUND::equals,
                         errorResponse ->
-                                errorResponse.bodyToMono(String.class).map(AnnotationApiNotFoundException::new))
+                                errorResponse.bodyToMono(String.class).map(
+                                    AnnotationApiRequestException::new))
             .bodyToMono(AnnotationSearchResponse.class)
             .block();
 
