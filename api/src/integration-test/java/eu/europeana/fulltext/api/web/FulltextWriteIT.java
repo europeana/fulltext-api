@@ -14,7 +14,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -23,6 +22,7 @@ import eu.europeana.fulltext.api.BaseIntegrationTest;
 import eu.europeana.fulltext.api.IntegrationTestUtils;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.util.GeneralUtils;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -30,8 +30,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
-import java.util.List;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -123,10 +121,10 @@ class FulltextWriteIT extends BaseIntegrationTest {
                         WebConstants.REQUEST_VALUE_RIGHTS,
                         updatedRights)
                     .param(WebConstants.REQUEST_VALUE_SOURCE, "https:annotation/source/value")
+                    .param(WebConstants.REQUEST_VALUE_PROFILE, "text")
                     .accept(MediaType.APPLICATION_JSON))
 
             .andExpect(status().isOk())
-            .andDo(print())
             .andExpect(
                 jsonPath(
                     "$.@id",
@@ -134,7 +132,7 @@ class FulltextWriteIT extends BaseIntegrationTest {
                         GeneralUtils.getAnnoPageUrl(annoPage, true))))
             .andExpect(jsonPath("$.language", is(annoPage.getLang())))
             // rights should have been updated
-            .andExpect(jsonPath("$.resources[0].resource.rights", is(updatedRights)));
+            .andExpect(jsonPath("$.resources[0].resource.edmRights", is(updatedRights)));
   }
 
   @Test

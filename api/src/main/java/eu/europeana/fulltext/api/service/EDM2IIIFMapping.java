@@ -106,7 +106,7 @@ public final class EDM2IIIFMapping {
                     anb.setLanguage(ftResource.getLanguage());
                     anb.setValue(ftResource.getValue());
                     anb.setSource(ftResource.getSource());
-                    anb.setRights(ftResource.getRights());
+                    anb.setEdmRights(ftResource.getRights());
                 }
             }
         }
@@ -165,7 +165,7 @@ public final class EDM2IIIFMapping {
                     anb.setLanguage(ftResource.getLanguage());
                     anb.setValue(ftResource.getValue());
                     anb.setSource(ftResource.getSource());
-                    anb.setRights(ftResource.getRights());
+                    anb.setEdmRights(ftResource.getRights());
                 }
             }
         }
