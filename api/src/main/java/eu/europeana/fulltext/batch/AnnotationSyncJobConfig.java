@@ -13,6 +13,8 @@ import eu.europeana.fulltext.batch.repository.AnnoSyncJobMetadataRepo;
 import eu.europeana.fulltext.batch.writer.AnnoPageDeprecationWriter;
 import eu.europeana.fulltext.batch.writer.AnnoPageUpsertWriter;
 import eu.europeana.fulltext.entity.AnnoPage;
+import eu.europeana.fulltext.exception.AnnotationApiRequestException;
+import eu.europeana.fulltext.exception.MongoConnnectionException;
 import eu.europeana.fulltext.subtitles.external.AnnotationItem;
 import java.time.Duration;
 import java.time.Instant;
@@ -25,7 +27,6 @@ import org.springframework.batch.core.configuration.annotation.EnableBatchProces
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.explore.JobExplorer;
-import org.springframework.batch.core.listener.ItemListenerSupport;
 import org.springframework.batch.core.step.skip.SkipPolicy;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -42,7 +43,6 @@ public class AnnotationSyncJobConfig {
 
   private final JobBuilderFactory jobBuilderFactory;
   private final StepBuilderFactory stepBuilderFactory;
-  private final JobExplorer jobExplorer;
 
   private final ItemReaderConfig itemReaderConfig;
 
@@ -59,14 +59,10 @@ public class AnnotationSyncJobConfig {
 
   private final AnnoSyncJobMetadataRepo annoSyncJobMetaRepository;
 
-  /** SkipPolicy to ignore all failures when executing jobs, as they can be handled later */
-  private static final SkipPolicy noopSkipPolicy = (Throwable t, int skipCount) -> true;
-
   public AnnotationSyncJobConfig(
       FTSettings appSettings,
       JobBuilderFactory jobBuilderFactory,
       StepBuilderFactory stepBuilderFactory,
-      JobExplorer jobExplorer,
       ItemReaderConfig itemReaderConfig,
       AnnotationProcessor annotationProcessor,
       AnnoPageUpsertWriter annoPageWriter,
@@ -79,7 +75,6 @@ public class AnnotationSyncJobConfig {
     this.appSettings = appSettings;
     this.jobBuilderFactory = jobBuilderFactory;
     this.stepBuilderFactory = stepBuilderFactory;
-    this.jobExplorer = jobExplorer;
     this.itemReaderConfig = itemReaderConfig;
     this.annotationProcessor = annotationProcessor;
     this.annoPageWriter = annoPageWriter;
@@ -98,11 +93,14 @@ public class AnnotationSyncJobConfig {
         .reader(itemReaderConfig.createAnnotationReader(from, to))
         .processor(annotationProcessor)
         .writer(annoPageWriter)
-        .listener(
-            (ItemProcessListener<? super AnnotationItem, ? super AnnoPage>)
-                updateListener)
+        .listener((ItemProcessListener<? super AnnotationItem, ? super AnnoPage>) updateListener)
         .faultTolerant()
-        .skipPolicy(noopSkipPolicy)
+        .retryLimit(appSettings.getRetryLimit())
+        .retry(
+            AnnotationApiRequestException.class) // retry if Annotaions Api is down for some reason
+        .retry(MongoConnnectionException.class) // retry if MongoDb is down for some reason
+        .skipLimit(appSettings.getSkipLimit())
+        .skip(Exception.class)
         .taskExecutor(annoSyncTaskExecutor)
         .throttleLimit(appSettings.getAnnoSyncThrottleLimit())
         .build();
@@ -114,6 +112,13 @@ public class AnnotationSyncJobConfig {
         .<String, String>chunk(appSettings.getAnnotationItemsPageSize())
         .reader(itemReaderConfig.createDeletedAnnotationReader(from, to))
         .writer(annoPageDeletionWriter)
+        .faultTolerant()
+        .retryLimit(appSettings.getRetryLimit())
+        .retry(
+            AnnotationApiRequestException.class) // retry if Annotaions Api is down for some reason
+        .retry(MongoConnnectionException.class) // retry if MongoDb is down for some reason
+        .skipLimit(appSettings.getSkipLimit())
+        .skip(Exception.class)
         .taskExecutor(annoSyncTaskExecutor)
         .throttleLimit(appSettings.getAnnoSyncThrottleLimit())
         .build();
