@@ -60,6 +60,7 @@ public class IndexingFulltextUpdateProcessor
     List<AnnoPage> annoPages =
         repository.getAnnoPagesWithProjection(recordId.getDsId(), recordId.getLcId());
 
+    // only necessary when Solr is the source
     if (annoPages.isEmpty()) {
       logger.info("No AnnoPage exists in Fulltext database for {}; Will delete Fulltext doc in Solr", recordId);
       // mark for deletion (will be handled in the writer)

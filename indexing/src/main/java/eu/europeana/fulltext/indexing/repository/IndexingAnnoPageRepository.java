@@ -75,7 +75,7 @@ public class IndexingAnnoPageRepository extends AnnoPageRepository {
     Aggregation<AnnoPage> query = datastore.aggregate(AnnoPage.class);
 
     List<Filter> match = new ArrayList<>();
-    match.add(lt(MODIFIED, to));
+//    match.add(lt(MODIFIED, to));
     from.ifPresent(instant -> match.add(gt(MODIFIED, instant)));
 
     query

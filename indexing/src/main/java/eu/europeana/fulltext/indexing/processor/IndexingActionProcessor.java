@@ -1,22 +1,18 @@
 package eu.europeana.fulltext.indexing.processor;
 
+import eu.europeana.fulltext.indexing.model.AnnoPageRecordId;
 import eu.europeana.fulltext.indexing.model.IndexingAction;
 import eu.europeana.fulltext.indexing.model.IndexingWrapper;
-import eu.europeana.fulltext.indexing.model.AnnoPageRecordId;
 import eu.europeana.fulltext.indexing.repository.IndexingAnnoPageRepository;
 import eu.europeana.fulltext.indexing.solr.FulltextSolrService;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.stereotype.Component;
 
 @Component
-  public class IndexingActionProcessor implements ItemProcessor<AnnoPageRecordId, IndexingWrapper> {
+public class IndexingActionProcessor implements ItemProcessor<AnnoPageRecordId, IndexingWrapper> {
 
   private final IndexingAnnoPageRepository repository;
   private final FulltextSolrService fulltextSolrService;
-  private static final Logger logger = LogManager.getLogger(IndexingActionProcessor.class);
-
 
   public IndexingActionProcessor(
       IndexingAnnoPageRepository repository, FulltextSolrService fulltextSolrService) {

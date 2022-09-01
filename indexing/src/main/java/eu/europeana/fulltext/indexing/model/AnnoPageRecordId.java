@@ -1,7 +1,6 @@
 package eu.europeana.fulltext.indexing.model;
 
 import dev.morphia.annotations.Entity;
-import eu.europeana.fulltext.indexing.reader.AnnoPageRecordIdReader;
 
 /** Wrapper for AnnoPage DatasetID and LocalId combination */
 @Entity

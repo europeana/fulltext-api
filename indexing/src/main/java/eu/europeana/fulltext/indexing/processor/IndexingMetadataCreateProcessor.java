@@ -25,6 +25,9 @@ import org.apache.solr.common.SolrInputDocument;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.stereotype.Component;
 
+/**
+ * Retrieves data from MetadataSolr
+ */
 @Component
 public class IndexingMetadataCreateProcessor
     implements ItemProcessor<IndexingWrapper, IndexingWrapper> {
