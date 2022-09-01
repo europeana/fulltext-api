@@ -7,6 +7,5 @@ mongo -- "$MONGO_INITDB_DATABASE" <<EOF
 
 
 db.getSiblingDB('$FULLTEXT_DB').createCollection('temp');
-db.getSiblingDB('$BATCH_DB').createCollection('temp');
 
 EOF

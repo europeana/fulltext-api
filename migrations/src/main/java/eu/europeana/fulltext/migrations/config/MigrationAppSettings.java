@@ -8,11 +8,20 @@ import org.springframework.context.annotation.PropertySource;
 @PropertySource("classpath:migrations.properties")
 @PropertySource(value = "classpath:migrations.user.properties", ignoreResourceNotFound = true)
 public class MigrationAppSettings {
-  @Value("${mongo.connectionUrl}")
-  private String mongoConnectionUrl;
+  @Value("${mongo.source.connectionUrl}")
+  private String mongoSrcConnectionUrl;
 
-  @Value("${mongo.fulltext.database}")
-  private String fulltextDatabase;
+  @Value("${mongo.source.fulltext.database}")
+  private String fulltextSrcDatabase;
+
+  @Value("${mongo.dest.connectionUrl:}")
+  private String mongoDestConnectionUrl;
+
+  @Value("${mongo.dest.fulltext.database:}")
+  private String fulltextDestDatabase;
+
+  @Value("${mongo.useSameDb}")
+  private boolean useSameDb;
 
 
   @Value("${batch.pageSize: 100}")
@@ -49,12 +58,12 @@ public class MigrationAppSettings {
   private long totalCount;
 
 
-  public String getMongoConnectionUrl() {
-    return mongoConnectionUrl;
+  public String getMongoSrcConnectionUrl() {
+    return mongoSrcConnectionUrl;
   }
 
-  public String getFulltextDatabase() {
-    return fulltextDatabase;
+  public String getFulltextSrcDatabase() {
+    return fulltextSrcDatabase;
   }
 
   public int getPageSize() {
@@ -91,5 +100,17 @@ public class MigrationAppSettings {
 
   public int getTooManyAnnotationsThreshold() {
     return tooManyAnnotationsThreshold;
+  }
+
+  public String getMongoDestConnectionUrl() {
+    return mongoDestConnectionUrl;
+  }
+
+  public String getFulltextDestDatabase() {
+    return fulltextDestDatabase;
+  }
+
+  public boolean useSameDb() {
+    return useSameDb;
   }
 }

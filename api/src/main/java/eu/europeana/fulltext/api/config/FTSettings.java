@@ -76,9 +76,6 @@ public class FTSettings implements InitializingBean {
     @Value("${mongo.fulltext.ensureIndices: false}")
     private boolean ensureFulltextIndices;
 
-    @Value("${mongo.batch.database}")
-    private String batchDatabase;
-
     @Value("${annotations.serviceurl}")
     private String annotationsApiUrl;
 
@@ -156,10 +153,6 @@ public class FTSettings implements InitializingBean {
 
     public String getApiKeyUrl() {
         return apiKeyUrl;
-    }
-
-    public String getBatchDatabase() {
-        return batchDatabase;
     }
 
     public String getMongoConnectionUrl() {

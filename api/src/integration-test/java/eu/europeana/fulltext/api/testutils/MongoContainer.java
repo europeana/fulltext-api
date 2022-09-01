@@ -8,7 +8,6 @@ import org.testcontainers.images.builder.ImageFromDockerfile;
 public class MongoContainer extends GenericContainer<MongoContainer> {
 
   private final String fulltextDb;
-  private final String batchDb;
   private final String adminUsername = "admin";
   private final String adminPassword = "password";
 
@@ -18,20 +17,18 @@ public class MongoContainer extends GenericContainer<MongoContainer> {
    * Creates a new Mongo container instance
    *
    * @param fulltextDb fulltext database
-   * @param batchDb batch database
    */
-  public MongoContainer(String fulltextDb, String batchDb) {
+  public MongoContainer(String fulltextDb) {
 
     this(
         new ImageFromDockerfile()
             // in test/resources directory
             .withFileFromClasspath("Dockerfile", "mongo-docker/Dockerfile")
             .withFileFromClasspath("init-mongo.sh", "mongo-docker/init-mongo.sh"),
-        fulltextDb,
-        batchDb);
+        fulltextDb);
   }
 
-  public MongoContainer(ImageFromDockerfile dockerImageName, String fulltextDb, String batchDb) {
+  public MongoContainer(ImageFromDockerfile dockerImageName, String fulltextDb) {
     super(dockerImageName);
 
     if (useFixedPorts) {
@@ -42,12 +39,10 @@ public class MongoContainer extends GenericContainer<MongoContainer> {
 
     this.withEnv("ROOT_USERNAME", adminUsername)
         .withEnv("ROOT_PASSWORD", adminPassword)
-        .withEnv("FULLTEXT_DB", fulltextDb)
-        .withEnv("BATCH_DB", batchDb);
+        .withEnv("FULLTEXT_DB", fulltextDb);
 
     this.waitingFor(Wait.forLogMessage("(?i).*waiting for connections.*", 1));
     this.fulltextDb = fulltextDb;
-    this.batchDb = batchDb;
   }
 
   public String getConnectionUrl() {
@@ -64,7 +59,4 @@ public class MongoContainer extends GenericContainer<MongoContainer> {
     return fulltextDb;
   }
 
-  public String getBatchDb() {
-    return batchDb;
-  }
 }
