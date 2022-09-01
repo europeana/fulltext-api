@@ -4,7 +4,7 @@ import org.apache.solr.common.SolrInputDocument;
 
 public class IndexingWrapper {
 
-  private final IndexingAction action;
+  private IndexingAction action;
   private final AnnoPageRecordId recordId;
 
   private SolrInputDocument solrDocument;
@@ -30,12 +30,21 @@ public class IndexingWrapper {
     this.solrDocument = solrDocument;
   }
 
+
+  public void setAction(IndexingAction action) {
+    this.action = action;
+  }
+
   @Override
   public String toString() {
-    return "IndexingWrapper{" +
-        "action=" + action +
-        ", recordId=" + recordId +
-        ", solrDocument=" + solrDocument +
-        '}';
+    return "{"
+        + "action="
+        + action
+        + ", recordId="
+        + recordId
+        + ", solrDocument="
+        + solrDocument
+        + '}';
   }
+
 }

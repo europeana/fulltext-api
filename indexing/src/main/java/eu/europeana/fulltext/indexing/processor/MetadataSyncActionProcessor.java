@@ -12,7 +12,9 @@ public class MetadataSyncActionProcessor implements ItemProcessor<String, Indexi
 
   @Override
   public IndexingWrapper process(String europeanaId) throws Exception {
-    return new IndexingWrapper(IndexingAction.UPDATE, createAnnoPageRecordId(europeanaId));
+    // if Metadata has changed, setting "CREATE" here means the existing data is overwritten
+    // in Fulltext Solr and recreated
+    return new IndexingWrapper(IndexingAction.CREATE, createAnnoPageRecordId(europeanaId));
   }
 
   private AnnoPageRecordId createAnnoPageRecordId(String europeanaId) {

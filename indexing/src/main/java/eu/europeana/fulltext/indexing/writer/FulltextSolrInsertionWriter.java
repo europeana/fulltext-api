@@ -30,6 +30,8 @@ public class FulltextSolrInsertionWriter implements ItemWriter<IndexingWrapper> 
             .map(IndexingWrapper::getSolrDocument)
             .collect(Collectors.toList());
 
-    solrService.writeToSolr(docsToWrite);
+    if (!docsToWrite.isEmpty()) {
+      solrService.writeToSolr(docsToWrite);
+    }
   }
 }

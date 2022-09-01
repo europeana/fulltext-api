@@ -31,8 +31,7 @@ public class IndexingMetadataCreateProcessor
 
   private final MetadataSolrService metadataSolr;
 
-  public IndexingMetadataCreateProcessor(
-      MetadataSolrService metadataSolr) {
+  public IndexingMetadataCreateProcessor(MetadataSolrService metadataSolr) {
     this.metadataSolr = metadataSolr;
   }
 
@@ -50,19 +49,21 @@ public class IndexingMetadataCreateProcessor
       throw new SolrDocumentException(europeanaId + " does not exist in metadata collection");
     }
 
-    indexingWrapper.setSolrDocument(createDoc(existingDocument, europeanaId));
+    SolrInputDocument fulltextDoc = indexingWrapper.getSolrDocument();
+
+    // merge fields from Fulltext and Metadata docs
+    mergeDocs(existingDocument, fulltextDoc, europeanaId);
     return indexingWrapper;
   }
 
-  private SolrInputDocument createDoc(SolrDocument existingDocument, String europeanaId)
+  private void mergeDocs(SolrDocument metadaDoc, SolrInputDocument fulltextDoc, String europeanaId)
       throws SolrDocumentException {
-    SolrInputDocument doc = new SolrInputDocument();
 
-    doc.addField(EUROPEANA_ID, europeanaId);
+    fulltextDoc.setField(EUROPEANA_ID, europeanaId);
 
-    for (String field : existingDocument.getFieldNames()) {
+    for (String field : metadaDoc.getFieldNames()) {
       if (field.equals(PROXY_ISSUED)) {
-        Collection<Object> listIssuedDates = existingDocument.getFieldValues(PROXY_ISSUED);
+        Collection<Object> listIssuedDates = metadaDoc.getFieldValues(PROXY_ISSUED);
         List<String> isoDates = new ArrayList<>();
         for (Object d : listIssuedDates) {
           try {
@@ -75,21 +76,19 @@ public class IndexingMetadataCreateProcessor
             throw new SolrDocumentException(
                 String.format("Not parsable date in record  %s : %s", europeanaId, d));
           }
-          doc.addField(ISSUED, Map.of("set", isoDates));
+          fulltextDoc.addField(ISSUED, Map.of("set", isoDates));
         }
       }
       if (field.equals(IS_FULLTEXT)) {
-        doc.addField(field, Map.of("set", true));
+        fulltextDoc.addField(field, Map.of("set", true));
       }
       if (!field.equals(EUROPEANA_ID)
           && !field.equals(TIMESTAMP)
           && !field.equals(VERSION)
           && !field.equals(IS_FULLTEXT)) {
         // _version_ and timestamp are automatically added by Solr
-        doc.addField(field, Map.of("set", existingDocument.getFieldValue(field)));
+        fulltextDoc.addField(field, Map.of("set", metadaDoc.getFieldValue(field)));
       }
     }
-
-    return doc;
   }
 }

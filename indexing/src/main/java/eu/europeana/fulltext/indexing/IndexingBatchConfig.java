@@ -140,13 +140,14 @@ public class IndexingBatchConfig {
     CompositeItemProcessor<AnnoPageRecordId, IndexingWrapper> processor =
         new CompositeItemProcessor<>();
     processor.setDelegates(
-        List.of(indexingActionProcessor, metadataCreateProcessor, fulltextUpdateProcessor));
+        List.of(indexingActionProcessor, fulltextUpdateProcessor, metadataCreateProcessor));
     return processor;
   }
 
   private ItemProcessor<String, IndexingWrapper> compositeMetadataSyncProcessor() {
     CompositeItemProcessor<String, IndexingWrapper> processor = new CompositeItemProcessor<>();
-    processor.setDelegates(List.of(metadataSyncActionProcessor, fulltextUpdateProcessor));
+    processor.setDelegates(
+        List.of(metadataSyncActionProcessor, fulltextUpdateProcessor, metadataCreateProcessor));
     return processor;
   }
 

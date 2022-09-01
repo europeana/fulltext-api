@@ -24,7 +24,7 @@ import org.springframework.batch.item.ItemProcessor;
 import org.springframework.stereotype.Component;
 
 /**
- * Processor that copies Fulltext Resources to Solr. Expects to run after {@link
+ * Processor that copies Fulltext Resources to Solr. Expects to run BEFORE {@link
  * IndexingMetadataCreateProcessor}
  */
 @Component
@@ -55,16 +55,17 @@ public class IndexingFulltextUpdateProcessor
 
     Map<String, List<String>> langFtContent = new HashMap<>();
 
-    // if this dsId / lcId combination is new, Solr document would have been created in the previous
-    // processor. Otherwise, create a new Solr doc
-    if(indexingWrapper.getSolrDocument() == null){
-      indexingWrapper.setSolrDocument(new SolrInputDocument(IndexingConstants.EUROPEANA_ID, europeanaId));
-    }
-
-    SolrInputDocument doc = indexingWrapper.getSolrDocument();
+    SolrInputDocument doc =  new SolrInputDocument(IndexingConstants.EUROPEANA_ID, europeanaId);
 
     List<AnnoPage> annoPages =
         repository.getAnnoPagesWithProjection(recordId.getDsId(), recordId.getLcId());
+
+    if (annoPages.isEmpty()) {
+      logger.info("No AnnoPage exists in Fulltext database for {}; Will delete Fulltext doc in Solr", recordId);
+      // mark for deletion (will be handled in the writer)
+      indexingWrapper.setAction(IndexingAction.DELETE);
+      return indexingWrapper;
+    }
 
     // creates a mapping between AnnoPage deprecation status and AnnoPages.
     // True -> Active
@@ -115,6 +116,7 @@ public class IndexingFulltextUpdateProcessor
 
     doc.addField(IndexingConstants.TIMESTAMP_UPDATE_FULLTEXT, Map.of("set", modified));
 
+    indexingWrapper.setSolrDocument(doc);
     return indexingWrapper;
   }
 

@@ -27,6 +27,8 @@ public class FulltextSolrDeletionWriter implements ItemWriter<IndexingWrapper> {
             .map(w -> w.getRecordId().toEuropeanaId())
             .collect(Collectors.toList());
 
-    fulltextSolr.deleteFromSolr(europeanaIds);
+    if (!europeanaIds.isEmpty()) {
+      fulltextSolr.deleteFromSolr(europeanaIds);
+    }
   }
 }

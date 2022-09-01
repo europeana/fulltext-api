@@ -15,12 +15,14 @@ import static eu.europeana.fulltext.util.MorphiaUtils.Fields.RESOURCE;
 import static eu.europeana.fulltext.util.MorphiaUtils.Fields.TARGET_ID;
 
 import dev.morphia.aggregation.experimental.Aggregation;
+import dev.morphia.aggregation.experimental.AggregationOptions;
 import dev.morphia.aggregation.experimental.stages.Group;
 import dev.morphia.aggregation.experimental.stages.ReplaceRoot;
 import dev.morphia.aggregation.experimental.stages.Sort;
 import dev.morphia.query.MorphiaCursor;
 import dev.morphia.query.experimental.filters.Filter;
 import eu.europeana.fulltext.entity.AnnoPage;
+import eu.europeana.fulltext.indexing.config.IndexingAppSettings;
 import eu.europeana.fulltext.indexing.model.AnnoPageRecordId;
 import eu.europeana.fulltext.repository.AnnoPageRepository;
 import java.time.Instant;
@@ -61,6 +63,7 @@ public class IndexingAnnoPageRepository extends AnnoPageRepository {
   /**
    * Gets the record ids (dsId + lcId combination) of AnnoPages modified within the specified
    * duration
+   *
    * @param from least recent modification timestamp to fetch
    * @param to most recent modification timestamp
    * @return MongoCursor for iterating over results. Callers are responsible for closing the cursor

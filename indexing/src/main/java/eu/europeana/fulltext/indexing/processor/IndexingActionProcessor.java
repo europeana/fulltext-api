@@ -26,10 +26,6 @@ import org.springframework.stereotype.Component;
 
   @Override
   public IndexingWrapper process(AnnoPageRecordId recordId) throws Exception {
-    if (logger.isTraceEnabled()) {
-      logger.trace("Creating action for {}", recordId);
-    }
-
     boolean active = repository.existsActive(recordId.getDsId(), recordId.getLcId());
     boolean exists = fulltextSolrService.existsByEuropeanaId(recordId.toEuropeanaId());
     IndexingWrapper actionWrapper = null;

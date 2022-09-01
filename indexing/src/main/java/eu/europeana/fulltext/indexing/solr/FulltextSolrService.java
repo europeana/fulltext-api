@@ -2,13 +2,11 @@ package eu.europeana.fulltext.indexing.solr;
 
 import static eu.europeana.fulltext.indexing.IndexingConstants.EUROPEANA_ID;
 import static eu.europeana.fulltext.indexing.IndexingConstants.FULLTEXT_SOLR_BEAN;
-import static eu.europeana.fulltext.indexing.IndexingConstants.SOLR_QUERY_DEFAULT;
 
 import eu.europeana.fulltext.exception.SolrServiceException;
 import eu.europeana.fulltext.indexing.config.IndexingAppSettings;
 import java.io.IOException;
 import java.time.Instant;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
@@ -86,7 +84,7 @@ public class FulltextSolrService implements InitializingBean {
       UpdateResponse response = fulltextSolr.add(documents, commitWithinMs);
       if (log.isDebugEnabled()) {
         log.debug(
-            "Wrote {} docs to Fulltext Solr in {}ms", documents.size(), response.getElapsedTime());
+            "Wrote {} docs to Fulltext Solr in {}ms; commitWithinMs={}", documents.size(), response.getElapsedTime(), commitWithinMs);
       }
     } catch (SolrServerException | IOException e) {
       throw new SolrServiceException("Exception during Solr insertion", e);
@@ -125,14 +123,13 @@ public class FulltextSolrService implements InitializingBean {
   /**
    * Creates a Solr iterator for getting all documents in the Fulltext Solr collection.
    *
-   * <p>Only populates the "europeana_id" field
+   * Populates all fields
    */
   public SolrSearchCursorIterator createFulltextSyncIterator() {
     return new SolrSearchCursorIterator(
         fulltextSolr,
         new SolrQuery("*:*")
             .setRows(metadataSolrSyncPageSize)
-            .addField(EUROPEANA_ID)
             .setSort(EUROPEANA_ID, ORDER.asc));
   }
 }

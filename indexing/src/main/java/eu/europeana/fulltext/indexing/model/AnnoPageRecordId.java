@@ -32,6 +32,6 @@ public class AnnoPageRecordId {
 
   @Override
   public String toString() {
-    return "AnnoPageRecordId{" + "dsId='" + dsId + '\'' + ", lcId='" + lcId + '\'' + '}';
+    return "{" + "dsId='" + dsId + '\'' + ", lcId='" + lcId + '\'' + '}';
   }
 }

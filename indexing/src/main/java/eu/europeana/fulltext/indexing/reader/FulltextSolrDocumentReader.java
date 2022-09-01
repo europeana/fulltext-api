@@ -11,7 +11,7 @@ import org.apache.solr.common.SolrDocumentList;
 import org.springframework.batch.item.data.AbstractPaginatedDataItemReader;
 
 /**
- * Reader for fetching "europeana_ids" from Fulltext Solr.
+ * Reader for fetching documents from Fulltext Solr.
  */
 public class FulltextSolrDocumentReader extends AbstractPaginatedDataItemReader<String> {
 

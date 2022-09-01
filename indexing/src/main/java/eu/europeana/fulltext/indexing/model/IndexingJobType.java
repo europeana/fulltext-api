@@ -1,7 +1,5 @@
 package eu.europeana.fulltext.indexing.model;
 
-import java.util.Arrays;
-
 public enum IndexingJobType {
   FULLTEXT_INDEXING("fulltext_indexing"),
   METADATA_SYNC("metadata_sync");
@@ -12,14 +10,8 @@ public enum IndexingJobType {
     this.value = value;
   }
 
-  public String getValue() {
+  public String value() {
     return value;
   }
 
-  public static IndexingJobType getTypeByValue(String value) {
-    return Arrays.stream(IndexingJobType.values())
-        .filter(type -> type.value.equalsIgnoreCase(value))
-        .findFirst()
-        .orElse(null);
-  }
 }

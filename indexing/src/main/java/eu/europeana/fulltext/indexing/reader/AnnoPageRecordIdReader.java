@@ -34,10 +34,6 @@ public class AnnoPageRecordIdReader extends AbstractPaginatedDataItemReader<Anno
   @NotNull
   @Override
   protected Iterator<AnnoPageRecordId> doPageRead() {
-    if (logger.isTraceEnabled()) {
-      logger.trace("Reading Item {} from cursor", page);
-    }
-
     if (cursor != null && cursor.hasNext()){
       // Note: cursor.next reuses the same object reference, so we have to copy the values
       AnnoPageRecordId next = cursor.next();
