@@ -100,9 +100,9 @@ public class FulltextSolrService implements InitializingBean {
       UpdateResponse response = fulltextSolr.deleteById(europeanaIds, commitWithinMs);
       if (log.isDebugEnabled()) {
         log.debug(
-            "Wrote {} docs to Fulltext Solr in {}ms",
+            "Deleted {} docs from Fulltext Solr in {}ms; commitWithinMs={}",
             europeanaIds.size(),
-            response.getElapsedTime());
+            response.getElapsedTime(), commitWithinMs);
       }
     } catch (SolrServerException | IOException e) {
       throw new SolrServiceException("Exception during Solr deletion", e);

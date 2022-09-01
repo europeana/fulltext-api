@@ -179,8 +179,14 @@ public class IndexingBatchConfig {
         .reader(fulltextSolrReader())
         .processor(compositeMetadataSyncProcessor())
         .listener(metadataSyncListener)
-        .writer(fulltextSolrInsertionWriter)
+        .writer(compositeFulltextSyncWriter())
         .listener(fulltextIndexingListener)
+        .faultTolerant()
+        // skip all exceptions up to the configurable limit
+        .skip(Exception.class)
+        .skipLimit(appSettings.getSkipLimit())
+        .taskExecutor(indexingTaskExecutor)
+        .throttleLimit(appSettings.getBatchThrottleLimit())
         .build();
   }
 
