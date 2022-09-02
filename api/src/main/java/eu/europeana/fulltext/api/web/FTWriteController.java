@@ -21,11 +21,7 @@ import eu.europeana.fulltext.api.service.AnnotationApiRestService;
 import eu.europeana.fulltext.api.service.CacheUtils;
 import eu.europeana.fulltext.api.service.FTService;
 import eu.europeana.fulltext.entity.AnnoPage;
-import eu.europeana.fulltext.exception.AnnoPageDoesNotExistException;
-import eu.europeana.fulltext.exception.InvalidUriException;
-import eu.europeana.fulltext.exception.MediaTypeNotSupportedException;
-import eu.europeana.fulltext.exception.SerializationException;
-import eu.europeana.fulltext.exception.UnsupportedAnnotationException;
+import eu.europeana.fulltext.exception.*;
 import eu.europeana.fulltext.subtitles.AnnotationPreview;
 import eu.europeana.fulltext.subtitles.DeleteAnnoSyncResponse;
 import eu.europeana.fulltext.subtitles.DeleteAnnoSyncResponse.Status;
@@ -265,12 +261,22 @@ public class FTWriteController extends BaseRestController {
      * LOCAL_ID and the PAGE_ID and LANG, if not then return a HTTP 404
      */
     AnnoPage annoPage = ftService.getAnnoPageByPgId(datasetId, localId, pageId, lang, true);
-
     if (annoPage == null) {
       throw new AnnoPageDoesNotExistException(
           "Annotation page does not exist for "
               + GeneralUtils.getAnnoPageUrl(datasetId, localId, pageId, lang));
     }
+
+    // TODO still need to decide the appropriate order of thing for updating deprecated annopage
+    //  Till then if AnnoPage is deprecated, content is mandatory in the request to update resource
+    // if existing AnnoPage is deprecated then - resource is deleted from the Resource Collection and DBRef for resource as well
+    // hence we can not update the rights of the resource
+    // User needs to send the annotation body for the deprecated AnnoPages update
+    if (annoPage.isDeprecated() && StringUtils.isEmpty(content)) {
+      throw new AnnoPageGoneException(String.format("/%s/%s/annopage/%s", datasetId, localId, pageId),
+              lang, "Send content to update the deprecated Annopage");
+    }
+
     // determine type
     FulltextType type = null;
     if (!StringUtils.isEmpty(content)) {
@@ -292,7 +298,6 @@ public class FTWriteController extends BaseRestController {
             content,
             type);
 
-    // if AnnoPage is deprecated, this re-enables it
     AnnoPage updatedAnnoPage = ftService.updateAnnoPage(annotationPreview, annoPage);
     if (LOG.isDebugEnabled()) {
       LOG.debug("Replaced AnnoPage {}", updatedAnnoPage);

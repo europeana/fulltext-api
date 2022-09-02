@@ -414,7 +414,7 @@ public class FTService {
     }
 
     if (AnnotationUtils.isAnnoPageUpdateRequired(annotationPreview)) {
-      UpdateResult results = annoPageRepository.updateAnnoPage(annoPage);
+      UpdateResult results = annoPageRepository.updateAnnoPage(existingAnnoPage, annoPage);
       if (LOG.isDebugEnabled()) {
         LOG.debug(
             "Updated annoPage in db : dsId={}, lcId={}, pgId={}, lang={}, matched={}, modified={}",
