@@ -1,9 +1,12 @@
 package eu.europeana.fulltext.api.service;
 
 import static eu.europeana.fulltext.AppConstants.defaultSubtitleConfig;
+import static eu.europeana.fulltext.subtitles.FulltextType.*;
 
 import com.dotsub.converter.exception.FileFormatException;
 import com.dotsub.converter.importer.SubtitleImportHandler;
+import com.dotsub.converter.importer.impl.DfxpImportHandler;
+import com.dotsub.converter.importer.impl.SrtImportHandler;
 import com.dotsub.converter.importer.impl.WebVttImportHandler;
 import com.dotsub.converter.model.SubtitleItem;
 import eu.europeana.fulltext.AnnotationType;
@@ -24,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,6 +35,10 @@ import org.apache.logging.log4j.Logger;
 public class SubtitleFulltextConverter implements FulltextConverter {
   private static final Logger logger = LogManager.getLogger(SubtitleFulltextConverter.class);
   private static final Pattern PATTERN = Pattern.compile("[<][/]?[^<]+[/]?[>]");
+
+  private static final Map<FulltextType, SubtitleImportHandler> subtitleImportHandlerMap = Map.of(WEB_VTT, new WebVttImportHandler(),
+          SUB_RIP, new SrtImportHandler(), TTML, new DfxpImportHandler());
+
 
   @Override
   public EdmFullTextPackage convert(AnnotationPreview annotationPreview) throws InvalidFormatException, SubtitleParsingException {
@@ -97,9 +105,14 @@ public class SubtitleFulltextConverter implements FulltextConverter {
    */
   public List<SubtitleItem> parseSubtitle(InputStream text, FulltextType fulltextType)
       throws InvalidFormatException, SubtitleParsingException {
-    SubtitleImportHandler subtitleImportHandler = new WebVttImportHandler();
     try {
-      return subtitleImportHandler.importFile(text, defaultSubtitleConfig);
+      List<SubtitleItem> result = subtitleImportHandlerMap.get(fulltextType).importFile(text, defaultSubtitleConfig);
+      // if the result is null, then the data was not parsed and is invalid
+      // This is to avoid empty Fulltext being created
+      if (result.isEmpty()) {
+        throw new SubtitleParsingException("Please provide proper data!! Text passed is not parseable.");
+      }
+      return result;
     } catch (FileFormatException e) {
       throw new InvalidFormatException(
           "Please provide proper format!! File does not match the expected format - "

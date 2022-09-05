@@ -5,7 +5,9 @@ import java.util.Arrays;
 /** Enum for supported Mime Types along with the handler */
 public enum FulltextType {
   WEB_VTT("text/vtt"),
-  SRT("text/plain");
+  SUB_RIP("application/x-subrip"),
+  TTML("application/ttml+xml"),
+  PLAIN("text/plain");
 
   private final String mimeType;
 
