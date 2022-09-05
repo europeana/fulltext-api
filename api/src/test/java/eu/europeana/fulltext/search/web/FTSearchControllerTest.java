@@ -86,7 +86,7 @@ public class FTSearchControllerTest {
                 .param("q", "ster")
                 // EA-2181: only 2 and 3 currently supported
                 .param("format", "5"))
-                .andExpect(status().isNotAcceptable());
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -94,7 +94,7 @@ public class FTSearchControllerTest {
         mockMvc.perform(get("/presentation/9200355/BibliographicResource_3000096341989/search")
                 .accept("application/json;profile=\"invalidProfile\"")
                 .param("q", "ster"))
-                .andExpect(status().isNotAcceptable());
+                .andExpect(status().isBadRequest());
     }
 
     @Test
