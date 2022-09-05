@@ -106,12 +106,9 @@ public class SubtitleFulltextConverter implements FulltextConverter {
   public List<SubtitleItem> parseSubtitle(InputStream text, FulltextType fulltextType)
       throws InvalidFormatException, SubtitleParsingException {
     try {
-      System.out.println("HERE TESTING" +fulltextType);
-
       List<SubtitleItem> result = subtitleImportHandlerMap.get(fulltextType).importFile(text, defaultSubtitleConfig);
       // if the result is null, then the data was not parsed and is invalid
       // This is to avoid empty Fulltext being created
-      System.out.println("HERE TESTING" +result);
       if (result.isEmpty()) {
         throw new SubtitleParsingException("Please provide proper data!! Text passed is not parseable.");
       }
