@@ -31,7 +31,6 @@ import eu.europeana.fulltext.util.GeneralUtils;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -220,7 +219,7 @@ public class FTService {
 
         for (AnnoPage annoPage : annoPages){
             SummaryCanvas summaryCanvas = new SummaryCanvas(makeSummaryCanvasID(datasetId, localId,
-                annoPage.getPgId(), annoPage.getLang()));
+                annoPage.getPgId()));
 
             // add original SummaryAnnoPage to the SummaryCanvas
             summaryCanvas.addAnnotation(
@@ -242,8 +241,8 @@ public class FTService {
             + ap.getPgId();
     }
 
-    private String makeSummaryCanvasID(String dsId, String lcId, String pgId, String lang) {
-        return ftSettings.getAnnoPageBaseUrl() + dsId + "/" + lcId + FTDefinitions.CANVAS_PATH + "/" + pgId + "?" + FTDefinitions.LANGUAGE_PARAM + lang;
+    private String makeSummaryCanvasID(String dsId, String lcId, String pgId) {
+        return ftSettings.getAnnoPageBaseUrl() + dsId + "/" + lcId + FTDefinitions.CANVAS_PATH + "/" + pgId;
     }
 
     @Deprecated
