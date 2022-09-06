@@ -1,6 +1,5 @@
 package eu.europeana.fulltext.indexing.config;
 
-import static dev.morphia.Morphia.createDatastore;
 import static eu.europeana.fulltext.indexing.IndexingConstants.FULLTEXT_SOLR_BEAN;
 import static eu.europeana.fulltext.indexing.IndexingConstants.METADATA_SOLR_BEAN;
 import static eu.europeana.fulltext.util.MorphiaUtils.MAPPER_OPTIONS;
@@ -9,6 +8,7 @@ import com.mongodb.client.MongoClients;
 import dev.morphia.Datastore;
 import dev.morphia.Morphia;
 import eu.europeana.fulltext.entity.FulltextPackageMapper;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
@@ -16,12 +16,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
-import org.apache.solr.client.solrj.impl.LBHttpSolrClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.Arrays;
 
 @Configuration
 public class IndexingDataSourceConfig {
@@ -86,15 +82,11 @@ public class IndexingDataSourceConfig {
   private SolrClient initSolrClient() {
     String fulltextSolrUrl = settings.getFulltextSolrUrl();
 
-    LOG.info("Configuring indexing solr client at the url: {}", fulltextSolrUrl);
-
-    if (fulltextSolrUrl.contains(",")) {
-      LBHttpSolrClient.Builder builder = new LBHttpSolrClient.Builder();
-      return builder.withBaseSolrUrls(fulltextSolrUrl).build();
-    } else {
-      HttpSolrClient.Builder builder = new HttpSolrClient.Builder();
-      return builder.withBaseSolrUrl(fulltextSolrUrl).build();
-    }
+    LOG.info("Configuring Fulltext solr client: {}", fulltextSolrUrl);
+    CloudSolrClient client =
+        new CloudSolrClient.Builder(List.of(fulltextSolrUrl)).build();
+    client.setDefaultCollection(settings.getFulltextCollection());
+    return client;
   }
 
   private SolrClient initSolrCloudClient() {
