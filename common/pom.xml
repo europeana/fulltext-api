@@ -36,6 +36,7 @@
         <dependency>
             <groupId>eu.europeana.api.commons</groupId>
             <artifactId>commons-error</artifactId>
+            <version>${api-commons.version}</version>
         </dependency>
 
         <dependency>
