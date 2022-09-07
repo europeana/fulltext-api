@@ -56,7 +56,7 @@ public class AnnotationUtils {
         String recordId = GeneralUtils.generateRecordId(datasetId, localId);
         // if transcriptions ie; Fulltext Type is SRT, then original lang will be true
         // for the moment, we only have the original text and no translations yet for transcription
-        if (type != null && type.equals(FulltextType.SRT)) {
+        if (type != null && type.equals(FulltextType.PLAIN)) {
             originalLang = true;
         }
         return new AnnotationPreview.Builder(recordId, type, content)

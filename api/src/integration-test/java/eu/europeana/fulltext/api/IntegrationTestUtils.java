@@ -28,7 +28,7 @@ public class IntegrationTestUtils {
       throw new IOException("Input file could not be loaded");
     }
 
-    return IOUtils.toString(resourceAsStream, StandardCharsets.UTF_8).replace("\n", "");
+    return IOUtils.toString(resourceAsStream, StandardCharsets.UTF_8);
   }
 
   /**

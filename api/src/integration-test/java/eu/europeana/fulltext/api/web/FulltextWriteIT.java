@@ -95,7 +95,7 @@ class FulltextWriteIT extends BaseIntegrationTest {
         .perform(
             post("/presentation/{dsId}/{lcId}/annopage", annoPage.getDsId(), annoPage.getLcId())
                 .param(WebConstants.REQUEST_VALUE_MEDIA, annoPage.getTgtId())
-                .param(WebConstants.REQUEST_VALUE_LANG, annoPage.getLcId())
+                .param(WebConstants.REQUEST_VALUE_LANG, annoPage.getLang())
                 .param(
                     WebConstants.REQUEST_VALUE_RIGHTS,
                     "http://creativecommons.org/licenses/by-sa/4.0/")

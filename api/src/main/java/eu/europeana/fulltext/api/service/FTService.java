@@ -40,8 +40,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import static eu.europeana.fulltext.subtitles.FulltextType.SRT;
-import static eu.europeana.fulltext.subtitles.FulltextType.WEB_VTT;
+import static eu.europeana.fulltext.subtitles.FulltextType.*;
 import static eu.europeana.fulltext.util.GeneralUtils.*;
 
 /**
@@ -63,7 +62,8 @@ public class FTService {
 
 
   private static final Map<FulltextType, FulltextConverter> fulltextConverterMap =
-        Map.of(WEB_VTT, new SubtitleFulltextConverter(), SRT, new TranscriptionFulltextConverter());
+        Map.of(WEB_VTT, new SubtitleFulltextConverter(), SUB_RIP, new SubtitleFulltextConverter(), TTML, new SubtitleFulltextConverter(),
+                PLAIN, new TranscriptionFulltextConverter());
 
     @Value("${spring.profiles.active:}")
     private String activeProfileString;
