@@ -23,7 +23,7 @@
     </repositories>
 
     <artifactId>fulltext</artifactId>
-    <version>0.8.2-SNAPSHOT</version>
+    <version>0.9.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Europeana Newspapers Fulltext</name>
