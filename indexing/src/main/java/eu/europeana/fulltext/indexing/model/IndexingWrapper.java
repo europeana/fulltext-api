@@ -1,21 +1,27 @@
 package eu.europeana.fulltext.indexing.model;
 
+import java.util.HashSet;
+import java.util.Set;
 import org.apache.solr.common.SolrInputDocument;
 
 public class IndexingWrapper {
 
-  private IndexingAction action;
   private final AnnoPageRecordId recordId;
-
+  private final Set<IndexingAction> actions = new HashSet<>();
   private SolrInputDocument solrDocument;
 
-  public IndexingWrapper(IndexingAction action, AnnoPageRecordId recordId) {
-    this.action = action;
+  public IndexingWrapper(AnnoPageRecordId recordId, IndexingAction... actions) {
     this.recordId = recordId;
+    this.actions.addAll(Set.of(actions));
   }
 
-  public IndexingAction getAction() {
-    return action;
+  public IndexingWrapper(AnnoPageRecordId recordId, SolrInputDocument document, IndexingAction... actions) {
+   this(recordId, actions);
+   this.setSolrDocument(document);
+  }
+
+  public Set<IndexingAction> getActions() {
+    return actions;
   }
 
   public AnnoPageRecordId getRecordId() {
@@ -31,15 +37,16 @@ public class IndexingWrapper {
   }
 
 
-  public void setAction(IndexingAction action) {
-    this.action = action;
+  public void markForDeletion() {
+actions.remove(IndexingAction.WRITE_DOCUMENT);
+actions.add(IndexingAction.DELETE_DOCUMENT);
   }
 
   @Override
   public String toString() {
     return "{"
         + "action="
-        + action
+        + actions
         + ", recordId="
         + recordId
         + ", solrDocument="

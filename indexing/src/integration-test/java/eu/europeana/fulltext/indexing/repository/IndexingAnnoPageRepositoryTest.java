@@ -7,7 +7,6 @@ import eu.europeana.fulltext.indexing.model.AnnoPageRecordId;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -28,7 +27,7 @@ public class IndexingAnnoPageRepositoryTest {
     Instant to = Instant.now();
 
     try (MorphiaCursor<AnnoPageRecordId> cursor =
-        repository.getAnnoPageRecordIdByModificationTime(Optional.of(from), to)) {
+        repository.getAnnoPageRecordIdByModificationTime(Optional.of(from))) {
 
       while (cursor.hasNext()) {
         System.out.println(cursor.next());

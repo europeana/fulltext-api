@@ -12,10 +12,6 @@ mkdir -p /opt/solr/contrib/lib/
 
 cp -r /opt/fulltext-plugins/*.jar /opt/solr/contrib/lib/
 
-# remove conf files to save space
-rm -rf /opt/fulltext-conf/
-rm -rf /opt/fulltext-plugins/
-
 # Set access rights for fulltext configset
 chown -R solr:solr /opt/solr/server/solr/configsets/"$FULLTEXT_INDEXING_CORE"
 

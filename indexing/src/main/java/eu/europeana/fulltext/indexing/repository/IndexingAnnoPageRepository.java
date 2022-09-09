@@ -4,7 +4,6 @@ import static dev.morphia.aggregation.experimental.expressions.Expressions.field
 import static dev.morphia.aggregation.experimental.stages.Group.id;
 import static dev.morphia.query.experimental.filters.Filters.eq;
 import static dev.morphia.query.experimental.filters.Filters.gt;
-import static dev.morphia.query.experimental.filters.Filters.lt;
 import static eu.europeana.fulltext.util.MorphiaUtils.Fields.DATASET_ID;
 import static eu.europeana.fulltext.util.MorphiaUtils.Fields.DELETED;
 import static eu.europeana.fulltext.util.MorphiaUtils.Fields.LANGUAGE;
@@ -15,14 +14,12 @@ import static eu.europeana.fulltext.util.MorphiaUtils.Fields.RESOURCE;
 import static eu.europeana.fulltext.util.MorphiaUtils.Fields.TARGET_ID;
 
 import dev.morphia.aggregation.experimental.Aggregation;
-import dev.morphia.aggregation.experimental.AggregationOptions;
 import dev.morphia.aggregation.experimental.stages.Group;
 import dev.morphia.aggregation.experimental.stages.ReplaceRoot;
 import dev.morphia.aggregation.experimental.stages.Sort;
 import dev.morphia.query.MorphiaCursor;
 import dev.morphia.query.experimental.filters.Filter;
 import eu.europeana.fulltext.entity.AnnoPage;
-import eu.europeana.fulltext.indexing.config.IndexingAppSettings;
 import eu.europeana.fulltext.indexing.model.AnnoPageRecordId;
 import eu.europeana.fulltext.repository.AnnoPageRepository;
 import java.time.Instant;
@@ -61,21 +58,21 @@ public class IndexingAnnoPageRepository extends AnnoPageRepository {
   }
 
   /**
-   * Gets the record ids (dsId + lcId combination) of AnnoPages modified within the specified
-   * duration
+   * Gets the record ids (dsId + lcId combination) of AnnoPages modified after the specified timestamp
    *
    * @param from least recent modification timestamp to fetch
-   * @param to most recent modification timestamp
    * @return MongoCursor for iterating over results. Callers are responsible for closing the cursor
    */
   public MorphiaCursor<AnnoPageRecordId> getAnnoPageRecordIdByModificationTime(
-      Optional<Instant> from, Instant to) {
+      Optional<Instant> from) {
 
-    // Aggregatation Stages
+    // Aggregation Stages
     Aggregation<AnnoPage> query = datastore.aggregate(AnnoPage.class);
 
     List<Filter> match = new ArrayList<>();
-//    match.add(lt(MODIFIED, to));
+
+    // match stage only included if a timestamp is specified, otherwise we aggregate on all records
+    // in db
     from.ifPresent(instant -> match.add(gt(MODIFIED, instant)));
 
     query

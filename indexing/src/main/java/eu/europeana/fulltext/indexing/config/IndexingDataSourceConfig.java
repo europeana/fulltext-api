@@ -16,6 +16,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -75,18 +76,16 @@ public class IndexingDataSourceConfig {
     if (StringUtils.isNotBlank(settings.getFulltextZkUrl())) {
       return initSolrCloudClient();
     } else {
-      return initSolrClient();
+      return initHttpSolrClient();
     }
   }
 
-  private SolrClient initSolrClient() {
+  private SolrClient initHttpSolrClient() {
     String fulltextSolrUrl = settings.getFulltextSolrUrl();
 
     LOG.info("Configuring Fulltext solr client: {}", fulltextSolrUrl);
-    CloudSolrClient client =
-        new CloudSolrClient.Builder(List.of(fulltextSolrUrl)).build();
-    client.setDefaultCollection(settings.getFulltextCollection());
-    return client;
+    HttpSolrClient.Builder builder = new HttpSolrClient.Builder();
+    return builder.withBaseSolrUrl(fulltextSolrUrl).build();
   }
 
   private SolrClient initSolrCloudClient() {

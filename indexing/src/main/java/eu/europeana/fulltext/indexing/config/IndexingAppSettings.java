@@ -39,7 +39,7 @@ public class IndexingAppSettings {
   @Value("${batch.throttleLimit: 5}")
   private int batchThrottleLimit;
 
-  @Value("${batch.step.executor.queueSize: 5}")
+  @Value("${batch.executor.queueSize: 5}")
   private int batchQueueSize;
 
   @Value("${batch.pageSize: 100}")

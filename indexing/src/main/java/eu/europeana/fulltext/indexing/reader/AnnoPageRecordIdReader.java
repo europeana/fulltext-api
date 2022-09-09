@@ -21,14 +21,12 @@ public class AnnoPageRecordIdReader extends AbstractPaginatedDataItemReader<Anno
   private static final Logger logger = LogManager.getLogger(AnnoPageRecordIdReader.class);
   private final IndexingAnnoPageRepository repository;
   private final Instant from;
-  private final Instant to;
 
   private MorphiaCursor<AnnoPageRecordId> cursor;
 
-  public AnnoPageRecordIdReader(IndexingAnnoPageRepository repository, Instant from, Instant to) {
+  public AnnoPageRecordIdReader(IndexingAnnoPageRepository repository, Instant from) {
     this.repository = repository;
     this.from = from;
-    this.to = to;
   }
 
   @NotNull
@@ -57,7 +55,7 @@ public class AnnoPageRecordIdReader extends AbstractPaginatedDataItemReader<Anno
     setName(AnnoPageRecordIdReader.class.getName());
 
     if (cursor == null) {
-      cursor = repository.getAnnoPageRecordIdByModificationTime(Optional.ofNullable(from), to);
+      cursor = repository.getAnnoPageRecordIdByModificationTime(Optional.ofNullable(from));
       if (logger.isDebugEnabled()) {
         logger.debug("Created Mongo Cursor for retrieving AnnoPage recordIds");
       }

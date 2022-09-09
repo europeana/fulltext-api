@@ -19,11 +19,9 @@ public class FulltextSolrDeletionWriter implements ItemWriter<IndexingWrapper> {
 
   @Override
   public void write(List<? extends IndexingWrapper> list) throws Exception {
-    // For this writer, we only handle records flagged with the "Delete" action
-
     List<String> europeanaIds =
         list.stream()
-            .filter(w -> w.getAction().equals(IndexingAction.DELETE))
+            .filter(w -> w.getActions().contains(IndexingAction.DELETE_DOCUMENT))
             .map(w -> w.getRecordId().toEuropeanaId())
             .collect(Collectors.toList());
 
