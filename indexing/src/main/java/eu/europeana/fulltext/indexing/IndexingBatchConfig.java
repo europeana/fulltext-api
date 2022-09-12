@@ -2,37 +2,36 @@ package eu.europeana.fulltext.indexing;
 
 import static eu.europeana.fulltext.indexing.IndexingConstants.BATCH_THREAD_EXECUTOR;
 
-import eu.europeana.fulltext.exception.SolrDocumentException;
-import eu.europeana.fulltext.exception.SolrServiceException;
 import eu.europeana.fulltext.indexing.listener.FulltextIndexingListener;
 import eu.europeana.fulltext.indexing.listener.MetadataSyncProcessListener;
 import eu.europeana.fulltext.indexing.model.IndexingWrapper;
 import eu.europeana.fulltext.indexing.config.IndexingAppSettings;
 import eu.europeana.fulltext.indexing.model.AnnoPageRecordId;
-import eu.europeana.fulltext.indexing.processor.IndexingActionProcessor;
-import eu.europeana.fulltext.indexing.processor.IndexingFulltextUpdateProcessor;
-import eu.europeana.fulltext.indexing.processor.IndexingMetadataCreateProcessor;
-import eu.europeana.fulltext.indexing.processor.MetadataSyncActionProcessor;
+import eu.europeana.fulltext.indexing.processor.FulltextIndexingWrapperCreator;
+import eu.europeana.fulltext.indexing.processor.FulltextIndexingProcessor;
+import eu.europeana.fulltext.indexing.processor.IndexingMetadataSyncProcessor;
+import eu.europeana.fulltext.indexing.processor.MetadataSyncWrapperCreator;
 import eu.europeana.fulltext.indexing.reader.AnnoPageRecordIdReader;
 import eu.europeana.fulltext.indexing.reader.FulltextSolrDocumentReader;
 import eu.europeana.fulltext.indexing.repository.IndexingAnnoPageRepository;
 import eu.europeana.fulltext.indexing.solr.FulltextSolrService;
-import eu.europeana.fulltext.indexing.solr.MetadataSolrService;
 import eu.europeana.fulltext.indexing.writer.FulltextSolrDeletionWriter;
 import eu.europeana.fulltext.indexing.writer.FulltextSolrInsertionWriter;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.solr.common.SolrDocument;
 import org.springframework.batch.core.ItemProcessListener;
 import org.springframework.batch.core.ItemReadListener;
 import org.springframework.batch.core.ItemWriteListener;
-import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.launch.JobLauncher;
@@ -43,12 +42,12 @@ import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.support.CompositeItemProcessor;
 import org.springframework.batch.item.support.CompositeItemWriter;
 import org.springframework.batch.item.support.SynchronizedItemStreamReader;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
 @Component
+@EnableBatchProcessing
 public class IndexingBatchConfig {
   private static final Logger logger = LogManager.getLogger(IndexingBatchConfig.class);
 
@@ -64,12 +63,12 @@ public class IndexingBatchConfig {
 
   private final IndexingAppSettings appSettings;
   private final FulltextSolrService fulltextSolr;
-  private final MetadataSolrService metadataSolr;
 
-  private final IndexingActionProcessor indexingActionProcessor;
-  private final MetadataSyncActionProcessor metadataSyncActionProcessor;
-  private final IndexingFulltextUpdateProcessor fulltextUpdateProcessor;
-  private final IndexingMetadataCreateProcessor metadataCreateProcessor;
+
+  private final FulltextIndexingWrapperCreator fulltextIndexingWrapperCreator;
+  private final MetadataSyncWrapperCreator metadataSyncWrapperCreator;
+  private final FulltextIndexingProcessor fulltextIndexingProcessor;
+  private final IndexingMetadataSyncProcessor metadataSyncProcessor;
 
   private final FulltextIndexingListener fulltextIndexingListener;
   private final MetadataSyncProcessListener metadataSyncListener;
@@ -77,7 +76,7 @@ public class IndexingBatchConfig {
   private final FulltextSolrInsertionWriter fulltextSolrInsertionWriter;
   private final FulltextSolrDeletionWriter fulltextSolrDeletionWriter;
 
-  private IndexingAnnoPageRepository repository;
+  private final IndexingAnnoPageRepository repository;
 
   public IndexingBatchConfig(
       JobBuilderFactory jobs,
@@ -85,11 +84,10 @@ public class IndexingBatchConfig {
       @Qualifier(BATCH_THREAD_EXECUTOR) TaskExecutor indexingTaskExecutor,
       IndexingAppSettings appSettings,
       FulltextSolrService fulltextSolr,
-      MetadataSolrService metadataSolr,
-      IndexingActionProcessor indexingActionProcessor,
-      MetadataSyncActionProcessor metadataSyncActionProcessor,
-      IndexingFulltextUpdateProcessor fulltextUpdateProcessor,
-      IndexingMetadataCreateProcessor metadataCreateProcessor,
+      FulltextIndexingWrapperCreator fulltextIndexingWrapperCreator,
+      MetadataSyncWrapperCreator metadataSyncWrapperCreator,
+      FulltextIndexingProcessor fulltextIndexingProcessor,
+      IndexingMetadataSyncProcessor metadataSyncProcessor,
       FulltextIndexingListener fulltextIndexingListener,
       MetadataSyncProcessListener metadataSyncListener,
       FulltextSolrInsertionWriter fulltextSolrInsertionWriter,
@@ -101,11 +99,10 @@ public class IndexingBatchConfig {
     this.indexingTaskExecutor = indexingTaskExecutor;
     this.appSettings = appSettings;
     this.fulltextSolr = fulltextSolr;
-    this.metadataSolr = metadataSolr;
-    this.indexingActionProcessor = indexingActionProcessor;
-    this.metadataSyncActionProcessor = metadataSyncActionProcessor;
-    this.fulltextUpdateProcessor = fulltextUpdateProcessor;
-    this.metadataCreateProcessor = metadataCreateProcessor;
+    this.fulltextIndexingWrapperCreator = fulltextIndexingWrapperCreator;
+    this.metadataSyncWrapperCreator = metadataSyncWrapperCreator;
+    this.fulltextIndexingProcessor = fulltextIndexingProcessor;
+    this.metadataSyncProcessor = metadataSyncProcessor;
     this.fulltextIndexingListener = fulltextIndexingListener;
     this.metadataSyncListener = metadataSyncListener;
     this.fulltextSolrInsertionWriter = fulltextSolrInsertionWriter;
@@ -114,11 +111,21 @@ public class IndexingBatchConfig {
     this.jobLauncher = jobLauncher;
   }
 
-  private ItemReader<AnnoPageRecordId> recordIdReader(Optional<Instant> from, Instant to) {
-    return threadSafeReader(new AnnoPageRecordIdReader(repository, from.orElse(null), to));
+
+  /**
+   * Creates a thread-safe reader for fetching record identifiers from Mongo
+   * @param from modification timestamp to use in reader
+   * @return
+   */
+  private ItemReader<AnnoPageRecordId> recordIdReader(Optional<Instant> from) {
+    return threadSafeReader(new AnnoPageRecordIdReader(repository, from.orElse(null)));
   }
 
-  private ItemReader<String> fulltextSolrReader() {
+  /**
+   * Creates a thread-safe reader for fetching records from Fulltext Solr
+   * @return
+   */
+  private ItemReader<SolrDocument> fulltextSolrReader() {
     return threadSafeReader(new FulltextSolrDocumentReader(fulltextSolr));
   }
 
@@ -130,38 +137,53 @@ public class IndexingBatchConfig {
     return synchronizedItemStreamReader;
   }
 
-  private ItemWriter<IndexingWrapper> compositeFulltextSyncWriter() {
+  /**
+   * Creates a composite ItemWriter that inserts and deletes documents from Solr.
+   * Reader chains {@link FulltextSolrInsertionWriter} and {@link FulltextSolrDeletionWriter}
+   * @return composite item writer
+   */
+  private ItemWriter<IndexingWrapper> compositeWriter() {
     CompositeItemWriter<IndexingWrapper> writer = new CompositeItemWriter<>();
     writer.setDelegates(List.of(fulltextSolrInsertionWriter, fulltextSolrDeletionWriter));
     return writer;
   }
 
-  private ItemProcessor<AnnoPageRecordId, IndexingWrapper> compositeFulltextSyncProcessor() {
+  /**
+   * Creates a composite processor for the Fulltext Indexing pipeline.
+   * Chains {@link FulltextIndexingWrapperCreator}, {@link FulltextIndexingProcessor} and {@link IndexingMetadataSyncProcessor}
+   * @return
+   */
+  private ItemProcessor<AnnoPageRecordId, IndexingWrapper> compositeFulltextIndexingProcessor() {
     CompositeItemProcessor<AnnoPageRecordId, IndexingWrapper> processor =
         new CompositeItemProcessor<>();
     processor.setDelegates(
-        List.of(indexingActionProcessor, fulltextUpdateProcessor, metadataCreateProcessor));
+        List.of(fulltextIndexingWrapperCreator, fulltextIndexingProcessor, metadataSyncProcessor));
     return processor;
   }
 
-  private ItemProcessor<String, IndexingWrapper> compositeMetadataSyncProcessor() {
-    CompositeItemProcessor<String, IndexingWrapper> processor = new CompositeItemProcessor<>();
+  /**
+   * Creates a composite processor the Metadata Sync pipeline.
+   * Chains {@link MetadataSyncWrapperCreator}, and {@link IndexingMetadataSyncProcessor}
+   * @return
+   */
+  private ItemProcessor<SolrDocument, IndexingWrapper> compositeMetadataSyncProcessor() {
+    CompositeItemProcessor<SolrDocument, IndexingWrapper> processor = new CompositeItemProcessor<>();
     processor.setDelegates(
-        List.of(metadataSyncActionProcessor, fulltextUpdateProcessor, metadataCreateProcessor));
+        List.of(metadataSyncWrapperCreator, metadataSyncProcessor));
     return processor;
   }
 
-  private Step syncFulltextStep(Optional<Instant> from, Instant to) {
+  private Step syncFulltextStep(Optional<Instant> from) {
     return this.steps
         .get("syncFulltextStep")
         .<AnnoPageRecordId, IndexingWrapper>chunk(appSettings.getBatchPageSize())
-        .reader(recordIdReader(from, to))
+        .reader(recordIdReader(from))
         .listener((ItemReadListener<? super AnnoPageRecordId>) fulltextIndexingListener)
-        .processor(compositeFulltextSyncProcessor())
+        .processor(compositeFulltextIndexingProcessor())
         .listener(
             (ItemProcessListener<? super AnnoPageRecordId, ? super IndexingWrapper>)
                 fulltextIndexingListener)
-        .writer(compositeFulltextSyncWriter())
+        .writer(compositeWriter())
         .listener((ItemWriteListener<? super IndexingWrapper>) fulltextIndexingListener)
         .faultTolerant()
         // skip all exceptions up to the configurable limit
@@ -175,11 +197,11 @@ public class IndexingBatchConfig {
   private Step syncMetadataStep() {
     return this.steps
         .get("syncMetadataStep")
-        .<String, IndexingWrapper>chunk(appSettings.getBatchPageSize())
+        .<SolrDocument, IndexingWrapper>chunk(appSettings.getBatchPageSize())
         .reader(fulltextSolrReader())
         .processor(compositeMetadataSyncProcessor())
         .listener(metadataSyncListener)
-        .writer(compositeFulltextSyncWriter())
+        .writer(compositeWriter())
         .listener(fulltextIndexingListener)
         .faultTolerant()
         // skip all exceptions up to the configurable limit
@@ -190,46 +212,24 @@ public class IndexingBatchConfig {
         .build();
   }
 
-  public void indexFulltext() throws Exception {
-    Optional<Instant> from =
-        fulltextSolr.getMostRecentValue(IndexingConstants.TIMESTAMP_UPDATE_FULLTEXT);
-    Instant to = Instant.now();
+  public void indexFulltext(ZonedDateTime modifiedTimestamp) throws Exception {
+    Optional<Instant> from;
+    if(modifiedTimestamp != null){
+      from = Optional.of(modifiedTimestamp.toInstant());
+    } else {
+      from = fulltextSolr.getMostRecentValue(IndexingConstants.TIMESTAMP_UPDATE_FULLTEXT);
+    }
 
-    logger.info("Indexing Fulltext records modified between {} and {}", from, to);
+
+    logger.info("Indexing Fulltext records modified after {}", from);
 
     jobLauncher.run(
-        this.jobs.get("fulltextIndexJob").start(syncFulltextStep(from, to)).build(), jobParams);
+        this.jobs.get("fulltextIndexJob").start(syncFulltextStep(from)).build(), jobParams);
   }
 
   public void syncMetadataJob() throws Exception {
-
-    Optional<Instant> fulltextMetadataUpdateValue =
-        fulltextSolr.getMostRecentValue(IndexingConstants.TIMESTAMP_UPDATE_METADATA);
-
-    Optional<Instant> metadataUpdateValue =
-        metadataSolr.getMostRecentValue(IndexingConstants.TIMESTAMP_UPDATE_METADATA);
-
-    if (fulltextMetadataUpdateValue.isEmpty() || metadataUpdateValue.isEmpty()) {
-      logger.warn(
-          "Missing metadata update timestamp. Fulltext value={}, Metadata value={}",
-          fulltextMetadataUpdateValue,
-          metadataUpdateValue);
-      return;
-    }
-
-    if (fulltextMetadataUpdateValue.get().isBefore(metadataUpdateValue.get())) {
-      logger.info(
-          "Fulltext Solr is out of date. Triggering metadata sync. Fulltext value={}, Metadata value={}",
-          fulltextMetadataUpdateValue,
-          metadataUpdateValue);
-      jobLauncher.run(
+          jobLauncher.run(
           this.jobs.get("syncMetadataJob").start(syncMetadataStep()).build(), jobParams);
 
-    } else {
-      logger.info(
-          "Fulltext Solr is up to date. Not triggering metadata update. Fulltext value={}, Metadata value={}",
-          fulltextMetadataUpdateValue,
-          metadataUpdateValue);
-    }
   }
 }

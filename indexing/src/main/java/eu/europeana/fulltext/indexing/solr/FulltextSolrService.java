@@ -123,13 +123,14 @@ public class FulltextSolrService implements InitializingBean {
   /**
    * Creates a Solr iterator for getting all documents in the Fulltext Solr collection.
    *
-   * Populates all fields
+   * @param fields fields to populate
    */
-  public SolrSearchCursorIterator createFulltextSyncIterator() {
+  public SolrSearchCursorIterator createFulltextSyncIterator(String... fields) {
     return new SolrSearchCursorIterator(
         fulltextSolr,
         new SolrQuery("*:*")
             .setRows(metadataSolrSyncPageSize)
+            .setFields(fields)
             .setSort(EUROPEANA_ID, ORDER.asc));
   }
 }

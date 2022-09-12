@@ -25,8 +25,7 @@ public class FulltextSolrInsertionWriter implements ItemWriter<IndexingWrapper> 
         list.stream()
             .filter(
                 w ->
-                    w.getAction().equals(IndexingAction.CREATE)
-                        || w.getAction().equals(IndexingAction.UPDATE))
+                    w.getActions().contains(IndexingAction.WRITE_DOCUMENT))
             .map(IndexingWrapper::getSolrDocument)
             .collect(Collectors.toList());
 

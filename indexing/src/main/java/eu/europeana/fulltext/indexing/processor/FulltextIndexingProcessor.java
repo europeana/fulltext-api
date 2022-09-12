@@ -20,36 +20,27 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.response.schema.SchemaRepresentation;
 import org.apache.solr.common.SolrInputDocument;
-import org.springframework.batch.item.ItemProcessor;
 import org.springframework.stereotype.Component;
 
 /**
  * Processor that copies Fulltext Resources to Solr. Expects to run BEFORE {@link
- * IndexingMetadataCreateProcessor}
+ * IndexingMetadataSyncProcessor}
  */
 @Component
-public class IndexingFulltextUpdateProcessor
-    implements ItemProcessor<IndexingWrapper, IndexingWrapper> {
+public class FulltextIndexingProcessor extends BaseIndexingWrapperProcessor {
 
   private final FulltextSolrService fulltextSolr;
   private final IndexingAnnoPageRepository repository;
+  private static final Logger logger = LogManager.getLogger(FulltextIndexingProcessor.class);
 
-  private static final Logger logger = LogManager.getLogger(IndexingFulltextUpdateProcessor.class);
-
-  public IndexingFulltextUpdateProcessor(
+  public FulltextIndexingProcessor(
       FulltextSolrService fulltextSolr, IndexingAnnoPageRepository repository) {
+    super(IndexingAction.UPDATE_FULLTEXT_FIELDS);
     this.fulltextSolr = fulltextSolr;
     this.repository = repository;
   }
 
-  @Override
-  public IndexingWrapper process(IndexingWrapper indexingWrapper) throws Exception {
-    // Processor only runs on "Create" and "Update" action
-    if (!indexingWrapper.getAction().equals(IndexingAction.CREATE)
-        && !indexingWrapper.getAction().equals(IndexingAction.UPDATE)) {
-      return indexingWrapper;
-    }
-
+   public IndexingWrapper doProcessing(IndexingWrapper indexingWrapper) {
     AnnoPageRecordId recordId = indexingWrapper.getRecordId();
     String europeanaId = recordId.toEuropeanaId();
 
@@ -60,13 +51,6 @@ public class IndexingFulltextUpdateProcessor
     List<AnnoPage> annoPages =
         repository.getAnnoPagesWithProjection(recordId.getDsId(), recordId.getLcId());
 
-    // only necessary when Solr is the source
-    if (annoPages.isEmpty()) {
-      logger.info("No AnnoPage exists in Fulltext database for {}; Will delete Fulltext doc in Solr", recordId);
-      // mark for deletion (will be handled in the writer)
-      indexingWrapper.setAction(IndexingAction.DELETE);
-      return indexingWrapper;
-    }
 
     // creates a mapping between AnnoPage deprecation status and AnnoPages.
     // True -> Active
