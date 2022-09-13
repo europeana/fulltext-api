@@ -67,6 +67,8 @@ public class ProcessorUtils {
         if (!isoDates.isEmpty()) {
           destinationDoc.addField(IndexingConstants.ISSUED, Map.of("set", isoDates));
         }
+
+        destinationDoc.addField(field, Map.of("set", metadataDoc.getFieldValue(field)));
         continue;
       }
       if (field.equals(IS_FULLTEXT)) {
