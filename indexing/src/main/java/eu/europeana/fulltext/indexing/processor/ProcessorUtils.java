@@ -65,12 +65,12 @@ public class ProcessorUtils {
           }
         }
         if (!isoDates.isEmpty()) {
-          destinationDoc.addField(IndexingConstants.ISSUED, Map.of("set", isoDates));
+          destinationDoc.setField(IndexingConstants.ISSUED, Map.of("set", isoDates));
         }
         continue;
       }
       if (field.equals(IS_FULLTEXT)) {
-        destinationDoc.addField(field, Map.of("set", true));
+        destinationDoc.setField(field, Map.of("set", true));
         continue;
       }
 
@@ -82,7 +82,7 @@ public class ProcessorUtils {
 
       if (!field.equals(EUROPEANA_ID) && !field.equals(TIMESTAMP) && !field.equals(VERSION)) {
         // _version_ and timestamp are automatically added by Solr
-        destinationDoc.addField(field, Map.of("set", metadataDoc.getFieldValue(field)));
+        destinationDoc.setField(field, Map.of("set", metadataDoc.getFieldValue(field)));
       }
     }
     }

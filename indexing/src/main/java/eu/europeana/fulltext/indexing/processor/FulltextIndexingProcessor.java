@@ -95,11 +95,11 @@ public class FulltextIndexingProcessor extends BaseIndexingWrapperProcessor {
     }
 
     for (Entry<String, List<String>> entry : langFtContent.entrySet()) {
-      doc.addField(
+      doc.setField(
           IndexingConstants.FULLTEXT + "." + entry.getKey(), Map.of("set", entry.getValue()));
     }
 
-    doc.addField(IndexingConstants.TIMESTAMP_UPDATE_FULLTEXT, Map.of("set", modified));
+    doc.setField(IndexingConstants.TIMESTAMP_UPDATE_FULLTEXT, Map.of("set", modified));
 
     indexingWrapper.setSolrDocument(doc);
     return indexingWrapper;
