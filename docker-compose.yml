@@ -26,3 +26,14 @@ services:
       # Databases for Fulltext and Spring Batch
       - FULLTEXT_DB=fulltext
       - BATCH_DB=spring-batch-repo
+
+  solr-indexing:
+    build:
+      context: ./indexing/src/integration-test/resources/solr-docker
+      dockerfile: Dockerfile
+    container_name: solr
+    ports:
+      - "8983:8983"
+      - "9983:9983"
+    environment:
+      - FULLTEXT_INDEXING_CORE=fulltext

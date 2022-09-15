@@ -1,47 +1,59 @@
 package eu.europeana.fulltext.indexing;
 
-import eu.europeana.fulltext.entity.AnnoPage;
-import eu.europeana.fulltext.indexing.repository.IndexingAnnoPageRepository;
-import java.io.IOException;
-import java.time.*;
-import java.util.*;
+import static eu.europeana.fulltext.indexing.model.IndexingJobType.FULLTEXT_INDEXING;
+import static eu.europeana.fulltext.indexing.model.IndexingJobType.METADATA_SYNC;
+
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.io.stream.TupleStream;
-import org.apache.solr.common.util.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.util.StringUtils;
 
-@SpringBootApplication
+@SpringBootApplication(
+    scanBasePackages = "eu.europeana.fulltext",
+    exclude = {SecurityAutoConfiguration.class})
 public class IndexingApplication implements CommandLineRunner {
 
-  @Autowired
-  private IndexingAnnoPageRepository repository;
-
-  @Autowired
-  private MetadataCollection metadataCollection;
-
-  @Autowired
-  private FulltextCollection fulltextCollection;
-
   private static final Logger logger = LogManager.getLogger(IndexingApplication.class);
+  private static String job = "";
+  private static ZonedDateTime modifiedTimestamp;
+  @Autowired private IndexingBatchConfig batchConfig;
 
   public static void main(String[] args) {
-    SpringApplication.run(IndexingApplication.class, args);
+    job = args.length > 0 ? args[0]: "";
+    modifiedTimestamp = args.length > 1 ? ZonedDateTime.parse(args[1], DateTimeFormatter.ISO_DATE_TIME) : null;
+    validateArgs();
+
+    ConfigurableApplicationContext context = SpringApplication.run(IndexingApplication.class, args);
+    System.exit(SpringApplication.exit(context));
+  }
+
+  private static void validateArgs() {
+    if (StringUtils.hasLength(job)
+        && !FULLTEXT_INDEXING.value().equalsIgnoreCase(job)
+        && !METADATA_SYNC.value().equalsIgnoreCase(job)) {
+      logger.error(
+          "Unsupported argument '{}'. Supported arguments are '{}' and '{}'",
+          job,
+          FULLTEXT_INDEXING.value(),
+          METADATA_SYNC.value());
+      System.exit(1);
+    }
   }
 
   @Override
   public void run(String... args) throws Exception {
-    //use:
-    //fulltextCollection.synchronizeFulltextContent();
-    //fulltextCollection.synchronizeMetadataContent();
-    //List<String> toRepair = fulltextCollection.isFulltextUpdated();
-
-    //for intensive check/repair if something goes wrong
-    //List<String> toRepair = fulltextCollection.isFulltextUpdated();
-    //fulltextCollection.synchronizeFulltextContent(toRepair);
+    // run fulltext indexing job by default, if no arg is provided
+    if (FULLTEXT_INDEXING.value().equalsIgnoreCase(job) || !StringUtils.hasLength(job)) {
+      batchConfig.indexFulltext(modifiedTimestamp);
+    } else if (METADATA_SYNC.value().equalsIgnoreCase(job)) {
+      batchConfig.syncMetadataJob();
+    }
   }
 }
