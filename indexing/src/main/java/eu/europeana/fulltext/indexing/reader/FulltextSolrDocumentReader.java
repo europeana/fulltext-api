@@ -8,11 +8,11 @@ import java.util.Iterator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.common.SolrDocument;
-import org.apache.solr.common.SolrDocumentList;
 import org.springframework.batch.item.data.AbstractPaginatedDataItemReader;
 
 /**
  * Reader for fetching documents from Fulltext Solr.
+ * Only populates the europeana_id and timestamp_update fields.
  */
 public class FulltextSolrDocumentReader extends AbstractPaginatedDataItemReader<SolrDocument> {
 
@@ -37,7 +37,7 @@ public class FulltextSolrDocumentReader extends AbstractPaginatedDataItemReader<
   @Override
   protected void doOpen() throws Exception {
     super.doOpen();
-    // Non-restartable, as we expect this to run in multi-threaded steps.
+    // Non-restartable, as we expect this to run in multithreaded steps.
     // see: https://stackoverflow.com/a/20002493
     setSaveState(false);
     setName(FulltextSolrDocumentReader.class.getName());

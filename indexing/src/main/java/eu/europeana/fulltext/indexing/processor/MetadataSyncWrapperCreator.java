@@ -12,7 +12,7 @@ import org.springframework.batch.item.ItemProcessor;
 import org.springframework.stereotype.Component;
 
 /**
- * Processor that only creates an {@link IndexingWrapper} for the Solr document
+ * Processor that only creates an {@link IndexingWrapper} for the Solr document retrieved by {@link eu.europeana.fulltext.indexing.reader.FulltextSolrDocumentReader}
  */
 @Component
 public class MetadataSyncWrapperCreator implements ItemProcessor<SolrDocument, IndexingWrapper> {
@@ -22,7 +22,10 @@ public class MetadataSyncWrapperCreator implements ItemProcessor<SolrDocument, I
 
    String europeanaId = doc.getFieldValue(IndexingConstants.EUROPEANA_ID).toString();
 
-   // simply creates an IndexingWrapper for the document.
+    /*
+     * Simply creates an IndexingWrapper for the document.
+     * doc only contains europeana_id and timestamp_update here (see FulltextSolrDocumentReader.doOpen())
+     */
     return new IndexingWrapper(createAnnoPageRecordId(europeanaId),
         ProcessorUtils.toSolrInputDocument(doc), IndexingAction.UPDATE_METADATA_FIELDS, IndexingAction.WRITE_DOCUMENT);
   }
