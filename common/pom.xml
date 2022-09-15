@@ -5,13 +5,13 @@
     <parent>
         <artifactId>fulltext</artifactId>
         <groupId>eu.europeana</groupId>
-        <version>0.8.2-SNAPSHOT</version>
+        <version>0.9.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <groupId>eu.europeana.fulltext</groupId>
     <artifactId>common</artifactId>
-    <version>0.8.2-SNAPSHOT</version>
+    <version>0.9.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Common functionality (Mongo and Entity definitions)</name>
@@ -36,6 +36,7 @@
         <dependency>
             <groupId>eu.europeana.api.commons</groupId>
             <artifactId>commons-error</artifactId>
+            <version>${api-commons.version}</version>
         </dependency>
 
         <dependency>

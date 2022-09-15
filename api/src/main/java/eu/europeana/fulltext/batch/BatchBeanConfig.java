@@ -3,12 +3,8 @@ package eu.europeana.fulltext.batch;
 import static eu.europeana.fulltext.AppConstants.ANNO_SYNC_TASK_EXECUTOR;
 import static eu.europeana.fulltext.AppConstants.ANNO_SYNC_TASK_SCHEDULER;
 import static eu.europeana.fulltext.AppConstants.JOB_LAUNCHER_TASK_EXECUTOR;
-import static eu.europeana.fulltext.AppConstants.SPRINGBATCH_DATASTORE_BEAN;
 
-import dev.morphia.Datastore;
-import eu.europeana.batch.config.MongoBatchConfigurer;
 import eu.europeana.fulltext.api.config.FTSettings;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.SyncTaskExecutor;
@@ -51,18 +47,5 @@ public class BatchBeanConfig {
   @Bean(ANNO_SYNC_TASK_SCHEDULER)
   public TaskScheduler asyncTaskScheduler() {
     return new ThreadPoolTaskScheduler();
-  }
-
-  /**
-   * Configures Spring Batch to use Mongo
-   *
-   * @param datastore Morphia datastore for Spring Batch
-   * @return BatchConfigurer instance
-   */
-  @Bean
-  public MongoBatchConfigurer mongoBatchConfigurer(
-      @Qualifier(SPRINGBATCH_DATASTORE_BEAN) Datastore datastore) {
-
-    return new MongoBatchConfigurer(datastore, new SyncTaskExecutor());
   }
 }

@@ -1,6 +1,7 @@
 package eu.europeana.fulltext.batch.repository;
 
-import static eu.europeana.fulltext.AppConstants.SPRINGBATCH_DATASTORE_BEAN;
+
+import static eu.europeana.fulltext.AppConstants.FULLTEXT_DATASTORE_BEAN;
 
 import dev.morphia.Datastore;
 import dev.morphia.query.FindOptions;
@@ -14,7 +15,7 @@ public class AnnoSyncJobMetadataRepo {
 
   private final Datastore datastore;
 
-  public AnnoSyncJobMetadataRepo(@Qualifier(SPRINGBATCH_DATASTORE_BEAN) Datastore datastore) {
+  public AnnoSyncJobMetadataRepo(@Qualifier(FULLTEXT_DATASTORE_BEAN) Datastore datastore) {
     this.datastore = datastore;
   }
 

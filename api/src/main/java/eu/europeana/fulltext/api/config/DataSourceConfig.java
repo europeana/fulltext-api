@@ -1,14 +1,12 @@
 package eu.europeana.fulltext.api.config;
 
 import static eu.europeana.fulltext.AppConstants.FULLTEXT_DATASTORE_BEAN;
-import static eu.europeana.fulltext.AppConstants.SPRINGBATCH_DATASTORE_BEAN;
 import static eu.europeana.fulltext.util.MorphiaUtils.MAPPER_OPTIONS;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import dev.morphia.Datastore;
 import dev.morphia.Morphia;
-import eu.europeana.batch.entity.PackageMapper;
 import eu.europeana.fulltext.entity.FulltextPackageMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -53,17 +51,5 @@ public class DataSourceConfig {
         }
         return datastore;
 
-    }
-
-    @Bean(SPRINGBATCH_DATASTORE_BEAN)
-    public Datastore batchDatastore(MongoClient mongoClient) {
-        String batchDatabase = settings.getBatchDatabase();
-
-        logger.info("Configuring Batch database: {}", batchDatabase);
-        Datastore datastore = Morphia.createDatastore(mongoClient, batchDatabase);
-        // Indexes aren't created unless Entity classes are explicitly mapped.
-        datastore.getMapper().mapPackage(PackageMapper.class.getPackageName());
-        datastore.ensureIndexes();
-        return datastore;
     }
 }

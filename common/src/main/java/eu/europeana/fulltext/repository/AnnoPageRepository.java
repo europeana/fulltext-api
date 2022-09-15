@@ -347,9 +347,19 @@ public class AnnoPageRepository {
      * @param annoPage AnnoPage to update
      * @return UpdateResult
      */
-    public UpdateResult updateAnnoPage(AnnoPage annoPage) {
+    public UpdateResult updateAnnoPage(AnnoPage existingAnnoPage, AnnoPage annoPage) {
         MongoCollection<AnnoPage> collection =
             datastore.getMapper().getCollection(AnnoPage.class);
+
+        Document updateDoc = new Document(ANNOTATIONS, annoPage.getAns())
+                .append(MODIFIED, annoPage.getModified())
+                .append(SOURCE, annoPage.getSource());
+
+        // if annopage is deprecated then update resource ref as well
+        if (existingAnnoPage.isDeprecated()) {
+            updateDoc.append(RESOURCE, new DBRef(RESOURCE_COL, annoPage.getRes().getId()));
+        }
+
         return collection.updateOne(
             new Document(
                 Map.of(
@@ -361,11 +371,8 @@ public class AnnoPageRepository {
                     annoPage.getPgId(),
                     LANGUAGE,
                     annoPage.getLang())),
-            new Document(
-                "$set",
-                new Document(ANNOTATIONS, annoPage.getAns())
-                    .append(MODIFIED, annoPage.getModified())
-                    .append(SOURCE, annoPage.getSource())));
+            new Document(SET, updateDoc)
+                  .append(UNSET, new Document(DELETED, ""))); // while updating, annopage should not be deprecated
     }
 
     /**

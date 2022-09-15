@@ -1,10 +1,12 @@
 package eu.europeana.fulltext.migrations.config;
 
-import static eu.europeana.fulltext.migrations.MigrationConstants.FULLTEXT_DATASTORE_BEAN;
+import static eu.europeana.fulltext.migrations.MigrationConstants.FULLTEXT_DEST_DATASTORE;
+import static eu.europeana.fulltext.migrations.MigrationConstants.FULLTEXT_SRC_DATASTORE;
 import static eu.europeana.fulltext.util.MorphiaUtils.MAPPER_OPTIONS;
 
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
+import com.mongodb.MongoClientSettings.Builder;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import dev.morphia.Datastore;
@@ -17,6 +19,7 @@ import org.bson.codecs.configuration.CodecProvider;
 import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -25,36 +28,62 @@ import org.springframework.context.annotation.Primary;
 public class MigrationDatasourceConfig {
   private final MigrationAppSettings config;
   private static final Logger logger = LogManager.getLogger(MigrationDatasourceConfig.class);
+  private Datastore sourceMongoDataStore;
 
   public MigrationDatasourceConfig(MigrationAppSettings config) {
     this.config = config;
   }
 
-  @Bean
-  public MongoClient mongoClient() {
-    // Configure custom codecs
-    CodecProvider pojoCodecProvider =
-        PojoCodecProvider.builder().register(new AtomicReferenceCodecProvider()).build();
+  public MongoClient createMongoClient(String connectionUrl, boolean addCodecProvider) {
 
-    CodecRegistry codecRegistry =
-        CodecRegistries.fromRegistries(
-            CodecRegistries.fromCodecs(new AtomicReferenceCodec()),
-            CodecRegistries.fromProviders(pojoCodecProvider),
-            MongoClientSettings.getDefaultCodecRegistry());
+    Builder mongoBuilder =
+        MongoClientSettings.builder().applyConnectionString(new ConnectionString(connectionUrl));
 
-    return MongoClients.create(
-        MongoClientSettings.builder()
-            .applyConnectionString(new ConnectionString(config.getMongoConnectionUrl()))
-            .codecRegistry(codecRegistry)
-            .build());
+    if (addCodecProvider) {
+      // Configure custom codecs
+      CodecProvider pojoCodecProvider =
+          PojoCodecProvider.builder().register(new AtomicReferenceCodecProvider()).build();
+
+      CodecRegistry codecRegistry =
+          CodecRegistries.fromRegistries(
+              CodecRegistries.fromCodecs(new AtomicReferenceCodec()),
+              CodecRegistries.fromProviders(pojoCodecProvider),
+              MongoClientSettings.getDefaultCodecRegistry());
+      mongoBuilder.codecRegistry(codecRegistry);
+    }
+
+    return MongoClients.create(mongoBuilder.build());
   }
 
-  @Bean(FULLTEXT_DATASTORE_BEAN)
+  @Bean(FULLTEXT_SRC_DATASTORE)
   @Primary
-  public Datastore fulltextDatastore(MongoClient mongoClient) {
-    String fulltextDatabase = config.getFulltextDatabase();
+  public Datastore fulltextSourceDb() {
+    String fulltextDatabase = config.getFulltextSrcDatabase();
     logger.info("Configuring fulltext database: {}", fulltextDatabase);
 
-    return Morphia.createDatastore(mongoClient, fulltextDatabase, MAPPER_OPTIONS);
+    // if using same db as source and dest, we configure custom codecs when creating this datastore
+    return Morphia.createDatastore(
+        createMongoClient(config.getMongoSrcConnectionUrl(), config.useSameDb()),
+        fulltextDatabase,
+        MAPPER_OPTIONS);
+  }
+
+  @Bean(FULLTEXT_DEST_DATASTORE)
+  public Datastore fulltextDestDb(
+      @Qualifier((FULLTEXT_SRC_DATASTORE)) Datastore srcDataStore) {
+
+    if (config.useSameDb()) {
+      logger.info("Using the same Mongo db as source and destination");
+      return srcDataStore;
+    }
+
+    String fulltextDatabase = config.getFulltextDestDatabase();
+    logger.info("Configuring destination  database: {}", fulltextDatabase);
+
+    // if using different DBs, we write JobMetadata to the dest db. So custom codecs need to be configured
+    return Morphia.createDatastore(
+        createMongoClient(config.getMongoDestConnectionUrl(), !config.useSameDb()),
+        fulltextDatabase,
+        MAPPER_OPTIONS);
   }
 }

@@ -25,10 +25,12 @@
     </Root>
 
 
-    <Logger name="eu.europeana.fulltext.migrations" level="DEBUG" additivity="false">
+    <Logger name="eu.europeana.fulltext.migrations" level="INFO" additivity="false">
       <AppenderRef ref="Console"/>
       <AppenderRef ref="RollingFile"/>
     </Logger>
+    
+    <logger name="eu.europeana.fulltext.migrations.repository" level="DEBUG"/>
 
             <logger name="dev.morphia" level="TRACE"/>
 <!--            <logger name="org.mongodb.driver" level="DEBUG"/>-->

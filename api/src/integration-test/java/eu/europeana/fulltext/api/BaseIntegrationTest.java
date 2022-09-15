@@ -37,7 +37,7 @@ public abstract class BaseIntegrationTest {
 
   static {
     MONGO_CONTAINER =
-        new MongoContainer("fulltext", "fulltext-write-batch")
+        new MongoContainer("fulltext")
             .withLogConsumer(new WaitingConsumer().andThen(new ToStringConsumer()));
     MONGO_CONTAINER.start();
   }
@@ -50,7 +50,6 @@ public abstract class BaseIntegrationTest {
         // add compressor, so we can detect issues during integration tests
         "mongo.connectionUrl", () -> MONGO_CONTAINER.getConnectionUrl() + "?compressors=snappy");
     registry.add("mongo.fulltext.database", MONGO_CONTAINER::getFulltextDb);
-    registry.add("mongo.batch.database", MONGO_CONTAINER::getBatchDb);
     // remove annotationId domain restriction for tests
     registry.add("annotations.id.hosts", () -> ".*");
   }

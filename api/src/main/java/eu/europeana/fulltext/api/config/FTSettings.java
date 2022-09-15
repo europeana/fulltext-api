@@ -76,9 +76,6 @@ public class FTSettings implements InitializingBean {
     @Value("${mongo.fulltext.ensureIndices: false}")
     private boolean ensureFulltextIndices;
 
-    @Value("${mongo.batch.database}")
-    private String batchDatabase;
-
     @Value("${annotations.serviceurl}")
     private String annotationsApiUrl;
 
@@ -136,11 +133,11 @@ public class FTSettings implements InitializingBean {
     @Value("${webclient.maxBufferMb:16}")
     private int maxBufferMb;
 
+    @Value("${annotations.retry:3}")
+    private int retryLimit;
+
     @Autowired
     private Environment environment;
-
-
-
 
     public boolean isAuthEnabled() {
         return authEnabled;
@@ -158,10 +155,6 @@ public class FTSettings implements InitializingBean {
         return apiKeyUrl;
     }
 
-    public String getBatchDatabase() {
-        return batchDatabase;
-    }
-
     public String getMongoConnectionUrl() {
         return mongoConnectionUrl;
     }
@@ -176,6 +169,10 @@ public class FTSettings implements InitializingBean {
 
     public String getAnnotationsApiKey() {
         return annotationsApiKey;
+    }
+
+    public int getRetryLimit() {
+        return retryLimit;
     }
 
     public String getAnnotationsApiUrl() {
@@ -334,5 +331,9 @@ public class FTSettings implements InitializingBean {
 
     public int getMaxBufferMb() {
         return maxBufferMb;
+    }
+
+    public int getSkipLimit() {
+        return batchSkipLimit;
     }
 }

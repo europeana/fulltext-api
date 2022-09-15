@@ -31,7 +31,6 @@ import eu.europeana.fulltext.util.GeneralUtils;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -41,8 +40,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import static eu.europeana.fulltext.subtitles.FulltextType.SRT;
-import static eu.europeana.fulltext.subtitles.FulltextType.WEB_VTT;
+import static eu.europeana.fulltext.subtitles.FulltextType.*;
 import static eu.europeana.fulltext.util.GeneralUtils.*;
 
 /**
@@ -64,7 +62,8 @@ public class FTService {
 
 
   private static final Map<FulltextType, FulltextConverter> fulltextConverterMap =
-        Map.of(WEB_VTT, new SubtitleFulltextConverter(), SRT, new TranscriptionFulltextConverter());
+        Map.of(WEB_VTT, new SubtitleFulltextConverter(), SUB_RIP, new SubtitleFulltextConverter(), TTML, new SubtitleFulltextConverter(),
+                PLAIN, new TranscriptionFulltextConverter());
 
     @Value("${spring.profiles.active:}")
     private String activeProfileString;
@@ -220,7 +219,7 @@ public class FTService {
 
         for (AnnoPage annoPage : annoPages){
             SummaryCanvas summaryCanvas = new SummaryCanvas(makeSummaryCanvasID(datasetId, localId,
-                annoPage.getPgId(), annoPage.getLang()));
+                annoPage.getPgId()));
 
             // add original SummaryAnnoPage to the SummaryCanvas
             summaryCanvas.addAnnotation(
@@ -242,8 +241,8 @@ public class FTService {
             + ap.getPgId();
     }
 
-    private String makeSummaryCanvasID(String dsId, String lcId, String pgId, String lang) {
-        return ftSettings.getAnnoPageBaseUrl() + dsId + "/" + lcId + FTDefinitions.CANVAS_PATH + "/" + pgId + "?" + FTDefinitions.LANGUAGE_PARAM + lang;
+    private String makeSummaryCanvasID(String dsId, String lcId, String pgId) {
+        return ftSettings.getAnnoPageBaseUrl() + dsId + "/" + lcId + FTDefinitions.CANVAS_PATH + "/" + pgId;
     }
 
     @Deprecated
@@ -414,7 +413,7 @@ public class FTService {
     }
 
     if (AnnotationUtils.isAnnoPageUpdateRequired(annotationPreview)) {
-      UpdateResult results = annoPageRepository.updateAnnoPage(annoPage);
+      UpdateResult results = annoPageRepository.updateAnnoPage(existingAnnoPage, annoPage);
       if (LOG.isDebugEnabled()) {
         LOG.debug(
             "Updated annoPage in db : dsId={}, lcId={}, pgId={}, lang={}, matched={}, modified={}",

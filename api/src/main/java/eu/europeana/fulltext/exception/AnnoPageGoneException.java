@@ -16,6 +16,10 @@ public class AnnoPageGoneException extends EuropeanaApiException {
     super("Annotation Page with id " + id + " has been deprecated for language " + language);
   }
 
+  public AnnoPageGoneException(String id, String language, String msg) {
+    super("Annotation Page with id " + id + " has been deprecated for language " + language + ". " +msg);
+  }
+
   @Override
   public boolean doLog() {
     return false;

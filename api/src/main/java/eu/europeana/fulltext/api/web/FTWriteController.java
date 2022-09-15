@@ -2,8 +2,10 @@ package eu.europeana.fulltext.api.web;
 
 import static eu.europeana.fulltext.WebConstants.*;
 import static eu.europeana.fulltext.util.GeneralUtils.isValidAnnotationId;
+import static eu.europeana.fulltext.util.RequestUtils.PROFILE_TEXT;
 import static eu.europeana.fulltext.util.RequestUtils.REQUEST_VERSION_2;
 import static eu.europeana.fulltext.util.RequestUtils.addContentTypeToResponseHeader;
+import static eu.europeana.fulltext.util.RequestUtils.extractProfiles;
 
 import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.api.commons.service.authorization.AuthorizationService;
@@ -19,11 +21,7 @@ import eu.europeana.fulltext.api.service.AnnotationApiRestService;
 import eu.europeana.fulltext.api.service.CacheUtils;
 import eu.europeana.fulltext.api.service.FTService;
 import eu.europeana.fulltext.entity.AnnoPage;
-import eu.europeana.fulltext.exception.AnnoPageDoesNotExistException;
-import eu.europeana.fulltext.exception.InvalidUriException;
-import eu.europeana.fulltext.exception.MediaTypeNotSupportedException;
-import eu.europeana.fulltext.exception.SerializationException;
-import eu.europeana.fulltext.exception.UnsupportedAnnotationException;
+import eu.europeana.fulltext.exception.*;
 import eu.europeana.fulltext.subtitles.AnnotationPreview;
 import eu.europeana.fulltext.subtitles.DeleteAnnoSyncResponse;
 import eu.europeana.fulltext.subtitles.DeleteAnnoSyncResponse.Status;
@@ -98,11 +96,14 @@ public class FTWriteController extends BaseRestController {
       value = "/fulltext/annosync",
       produces = {HttpHeaders.CONTENT_TYPE_JSONLD, MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<String> syncAnnotations(
-      @RequestParam(value = REQUEST_VALUE_SOURCE) String source, HttpServletRequest request)
+      @RequestParam(value = REQUEST_VALUE_SOURCE) String source, HttpServletRequest request,
+      @RequestParam(value = "profile", required = false) String profileParam
+      )
       throws ApplicationAuthenticationException, EuropeanaApiException {
     if (appSettings.isAuthEnabled()) {
       verifyWriteAccess(Operations.UPDATE, request);
     }
+    List<String> profiles = extractProfiles(profileParam);
 
     // check that sourceUrl is valid, and points to a europeana.eu domain
     if (!isValidAnnotationId(source, annotationIdPattern)) {
@@ -149,7 +150,7 @@ public class FTWriteController extends BaseRestController {
     // could be an update.
     ftService.upsertAnnoPage(List.of(annoPage));
 
-    return generateResponse(request, annoPage, HttpStatus.ACCEPTED);
+    return generateResponse(request, annoPage, profiles, HttpStatus.ACCEPTED);
   }
 
   @ApiOperation(
@@ -169,6 +170,7 @@ public class FTWriteController extends BaseRestController {
           boolean originalLang,
       @RequestParam(value = WebConstants.REQUEST_VALUE_RIGHTS) String rights,
       @RequestParam(value = WebConstants.REQUEST_VALUE_SOURCE, required = false) String source,
+      @RequestParam(value = "profile", required = false) String profileParam,
       @RequestBody String content,
       HttpServletRequest request)
       throws ApplicationAuthenticationException, EuropeanaApiException {
@@ -176,6 +178,8 @@ public class FTWriteController extends BaseRestController {
     if (appSettings.isAuthEnabled()) {
       verifyWriteAccess(Operations.CREATE, request);
     }
+    List<String> profiles = extractProfiles(profileParam);
+
     /*
      * Check if there is a fulltext annotation page associated with the combination of DATASET_ID,
      * LOCAL_ID and the media URL, if so then return a HTTP 301 with the URL of the Annotation Page
@@ -224,7 +228,7 @@ public class FTWriteController extends BaseRestController {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Created new AnnoPage {}", createdAnnoPage);
     }
-    return generateResponse(request, createdAnnoPage, HttpStatus.OK);
+    return generateResponse(request, createdAnnoPage, profiles, HttpStatus.OK);
   }
 
   @ApiOperation(value = "Replaces existing fulltext for a media resource with a new document")
@@ -243,6 +247,7 @@ public class FTWriteController extends BaseRestController {
           boolean originalLang,
       @RequestParam(value = WebConstants.REQUEST_VALUE_RIGHTS) String rights,
       @RequestParam(value = WebConstants.REQUEST_VALUE_SOURCE, required = false) String source,
+      @RequestParam(value = "profile", required = false) String profileParam,
       @RequestBody(required = false) String content,
       HttpServletRequest request)
       throws ApplicationAuthenticationException, EuropeanaApiException {
@@ -250,17 +255,28 @@ public class FTWriteController extends BaseRestController {
     if (appSettings.isAuthEnabled()) {
       verifyWriteAccess(Operations.UPDATE, request);
     }
+    List<String> profiles = extractProfiles(profileParam);
     /*
      * Check if there is a fulltext annotation page associated with the combination of DATASET_ID,
      * LOCAL_ID and the PAGE_ID and LANG, if not then return a HTTP 404
      */
     AnnoPage annoPage = ftService.getAnnoPageByPgId(datasetId, localId, pageId, lang, true);
-
     if (annoPage == null) {
       throw new AnnoPageDoesNotExistException(
           "Annotation page does not exist for "
               + GeneralUtils.getAnnoPageUrl(datasetId, localId, pageId, lang));
     }
+
+    // TODO still need to decide the appropriate order of thing for updating deprecated annopage
+    //  Till then if AnnoPage is deprecated, content is mandatory in the request to update resource
+    // if existing AnnoPage is deprecated then - resource is deleted from the Resource Collection and DBRef for resource as well
+    // hence we can not update the rights of the resource
+    // User needs to send the annotation body for the deprecated AnnoPages update
+    if (annoPage.isDeprecated() && StringUtils.isEmpty(content)) {
+      throw new AnnoPageGoneException(String.format("/%s/%s/annopage/%s", datasetId, localId, pageId),
+              lang, "Send content to update the deprecated Annopage");
+    }
+
     // determine type
     FulltextType type = null;
     if (!StringUtils.isEmpty(content)) {
@@ -282,12 +298,11 @@ public class FTWriteController extends BaseRestController {
             content,
             type);
 
-    // if AnnoPage is deprecated, this re-enables it
     AnnoPage updatedAnnoPage = ftService.updateAnnoPage(annotationPreview, annoPage);
     if (LOG.isDebugEnabled()) {
       LOG.debug("Replaced AnnoPage {}", updatedAnnoPage);
     }
-    return generateResponse(request, updatedAnnoPage, HttpStatus.OK);
+    return generateResponse(request, updatedAnnoPage, profiles, HttpStatus.OK);
   }
 
   @ApiOperation(value = "Deprecates the full-text associated to a media resource\n")
@@ -330,12 +345,11 @@ public class FTWriteController extends BaseRestController {
 
 
   protected ResponseEntity<String> generateResponse(
-      HttpServletRequest request, AnnoPage annoPage, HttpStatus status)
+      HttpServletRequest request, AnnoPage annoPage, List<String> profiles,
+      HttpStatus status)
       throws SerializationException {
 
-    AnnotationWrapper annotationWrapper = ftService.generateAnnoPageV2(annoPage, true);
-    // no context in json responses
-    annotationWrapper.setContext(null);
+    AnnotationWrapper annotationWrapper = ftService.generateAnnoPageV2(annoPage, profiles.contains(PROFILE_TEXT));
 
     ZonedDateTime modified = CacheUtils.dateToZonedUTC(annoPage.getModified());
     String requestVersion = REQUEST_VERSION_2;
@@ -349,7 +363,7 @@ public class FTWriteController extends BaseRestController {
 
     org.springframework.http.HttpHeaders headers =
         CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
-    addContentTypeToResponseHeader(headers, requestVersion, true);
+    addContentTypeToResponseHeader(headers, requestVersion, false);
     // overwrite Allow header populated in CacheUtils.generateHeaders
     headers.set(HttpHeaders.ALLOW, getMethodsForRequestPattern(request, requestPathMethodService));
 
