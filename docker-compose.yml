@@ -27,7 +27,7 @@ services:
 
   solr-indexing:
     build:
-      context: ./indexing/src/integration-test/resources/solr-docker
+      context: ./api/src/integration-test/resources/solr-docker
       dockerfile: Dockerfile
     container_name: solr
     ports:

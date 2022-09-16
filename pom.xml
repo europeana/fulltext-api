@@ -64,6 +64,7 @@
         <mock-webserver.version>4.9.0</mock-webserver.version>
         <testcontainers.version>1.16.0</testcontainers.version>
         <eclipse-jetty.version>11.0.11</eclipse-jetty.version>
+        <spring-batch.version>4.3.6</spring-batch.version>
     </properties>
 
     <dependencyManagement>
