@@ -70,20 +70,28 @@ public class AnnoPageRepository {
             .count();
     }
 
-    /**
-     * Find and return AnnoPages that match the given parameters.
-     *
-     * @param datasetId ID of the dataset
-     * @param localId   ID of the parent of the Annopage object
-     * @return List of AnnoPage objects
-     */
-    public List<AnnoPage> findAnnoPages(String datasetId, String localId) {
-        //TODO instead of loading the AnnoPage + Resource, we should load have the option to only the AnnoPage
-        return datastore.find(AnnoPage.class)
-            .filter(eq(DATASET_ID, datasetId), eq(LOCAL_ID, localId))
-            .iterator()
-            .toList();
+  /**
+   * Find and return AnnoPages that match the given parameters.
+   * Also includes deprecated AnnoPages.
+   * @param datasetId ID of the dataset
+   * @param localId ID of the parent of the Annopage object
+   * @param projectionFields fields to populate in the result
+   * @return List of AnnoPage objects
+   */
+  public List<AnnoPage> findAnnoPages(
+      String datasetId, String localId, List<String> projectionFields) {
+
+    FindOptions findOptions = new FindOptions();
+    if (projectionFields != null && !projectionFields.isEmpty()) {
+      findOptions.projection().include(projectionFields.toArray(String[]::new));
     }
+
+    return datastore
+        .find(AnnoPage.class)
+        .filter(eq(DATASET_ID, datasetId), eq(LOCAL_ID, localId))
+        .iterator(findOptions)
+        .toList();
+  }
 
     /**
      * Find and return single AnnoPage that match the given parameters.

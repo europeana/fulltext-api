@@ -24,3 +24,14 @@ services:
       - ROOT_PASSWORD=password
       - MONGO_INITDB_DATABASE=admin
       - FULLTEXT_DB=fulltext
+
+  solr-indexing:
+    build:
+      context: ./api/src/integration-test/resources/solr-docker
+      dockerfile: Dockerfile
+    container_name: solr
+    ports:
+      - "8983:8983"
+      - "9983:9983"
+    environment:
+      - FULLTEXT_INDEXING_CORE=fulltext

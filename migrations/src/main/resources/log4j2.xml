@@ -32,7 +32,7 @@
     
     <logger name="eu.europeana.fulltext.migrations.repository" level="DEBUG"/>
 
-<!--            <logger name="dev.morphia" level="TRACE"/>-->
+            <logger name="dev.morphia" level="TRACE"/>
 <!--            <logger name="org.mongodb.driver" level="DEBUG"/>-->
 
     <!--Suppress unhelpful Spring Batch warnings:

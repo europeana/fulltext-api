@@ -264,7 +264,7 @@
         <dependency>
             <groupId>org.springframework.batch</groupId>
             <artifactId>spring-batch-core</artifactId>
-            <version>4.3.3</version>
+            <version>${spring-batch.version}</version>
         </dependency>
 
         <!-- Used for subtitle conversion-->
