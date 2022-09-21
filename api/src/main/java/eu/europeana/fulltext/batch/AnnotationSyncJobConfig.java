@@ -127,7 +127,7 @@ public class AnnotationSyncJobConfig {
   public Job syncAnnotations() {
 
     AnnoSyncJobMetadata jobMetadata = annoSyncJobMetaRepository.getMostRecentAnnoSyncMetadata();
-    Instant from = null;
+    Instant from = Instant.EPOCH;
     Instant startTime = Instant.now();
 
     // take from value from previous run if it exists
@@ -140,10 +140,9 @@ public class AnnotationSyncJobConfig {
     jobMetadata.setLastSuccessfulStartTime(startTime);
 
     if (logger.isInfoEnabled()) {
-      String fromLogString = from == null ? "*" : from.toString();
       logger.info(
           "Starting annotation sync job. Fetching annotations from {} to {}",
-          fromLogString,
+          from,
           startTime);
     }
 

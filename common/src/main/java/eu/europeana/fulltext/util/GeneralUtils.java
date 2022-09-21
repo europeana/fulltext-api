@@ -4,7 +4,6 @@ import eu.europeana.fulltext.WebConstants;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Annotation;
 import java.time.Instant;
-import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
@@ -13,7 +12,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 import org.springframework.util.CollectionUtils;
 
 public class GeneralUtils {
@@ -28,7 +26,7 @@ public class GeneralUtils {
   public static final String ACTIVE_TEST_PROFILE = "test";
 
   private static final String ANNO_SEARCH_QUERY_FMT =
-      "generated:[%s TO %s ] AND  (motivation:subtitling OR motivation:transcribing OR motivation:captioning)";
+      "modified:[%s TO %s ] AND  (motivation:subtitling OR motivation:transcribing OR motivation:captioning)";
 
   /**
    * Regex used for validating annotation ids. '%s' will be replaced by allowed domains (via
@@ -194,23 +192,8 @@ public class GeneralUtils {
     return path;
   }
 
-  public static String generateAnnotationSearchQuery(@Nullable Instant from, @NonNull Instant to) {
-    /*
-     * if 'from' is null, fetch from the earliest representable time
-     */
-
-    String fromString = from != null ? toSolrDateString(from) : "*";
-    String toString = toSolrDateString(to);
-
-    return String.format(ANNO_SEARCH_QUERY_FMT, fromString, toString);
-  }
-
-  private static String toSolrDateString(Instant instant) {
-    /*
-     * escape colons in dates, as the colon is a special character to Solr's parser
-     * See: https://solr.apache.org/guide/6_6/working-with-dates.html#WorkingwithDates-DateFormatting
-     */
-    return instant.atZone(ZoneOffset.UTC).toString().replace(":", "\\:");
+  public static String generateAnnotationSearchQuery(@NonNull Instant from, @NonNull Instant to) {
+    return String.format(ANNO_SEARCH_QUERY_FMT, from, to);
   }
 
   public static String generateResourceId(String recordId, String language, String media) {

@@ -19,7 +19,7 @@ public class AnnotationItemReader extends AbstractPaginatedDataItemReader<Annota
     this.annotationsRestService = annotationsRestService;
     this.from = from;
     this.to = to;
-    // Non-restartable, as we expect this to run in multi-threaded steps.
+    // Non-restartable, as we expect this to run in multithreaded steps.
     // see: https://stackoverflow.com/a/20002493
     setSaveState(false);
   }
@@ -30,7 +30,7 @@ public class AnnotationItemReader extends AbstractPaginatedDataItemReader<Annota
 
   @Override
   protected Iterator<AnnotationItem> doPageRead() {
-    // pageSize is incremented in parent class every time this method is invoked
+    // page is incremented in parent class every time this method is invoked
     List<AnnotationItem> searchResponse =
         annotationsRestService.getAnnotations(page, pageSize, from, to);
 

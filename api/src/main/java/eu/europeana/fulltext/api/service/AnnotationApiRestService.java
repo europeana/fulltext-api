@@ -23,6 +23,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriBuilder;
@@ -43,7 +44,15 @@ public class AnnotationApiRestService {
     this.webClient = webClient;
   }
 
-  public List<AnnotationItem> getAnnotations(int page, int pageSize, Instant from, Instant to) {
+  /**
+   * Performs a search query on Annotation API
+   * @param page page number for search
+   * @param pageSize number of items to include in response
+   * @param from least recent modification timestamp to include in result
+   * @param to most recent modification timestamp to include in result
+   * @return List of {@link AnnotationItem} or empty list if no result found
+   */
+  public List<AnnotationItem> getAnnotations(int page, int pageSize, @NonNull Instant from, @NonNull Instant to) {
     String searchQuery = GeneralUtils.generateAnnotationSearchQuery(from, to);
     AnnotationSearchResponse response =
         webClient
