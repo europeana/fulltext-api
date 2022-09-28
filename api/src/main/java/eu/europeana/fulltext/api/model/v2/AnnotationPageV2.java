@@ -7,7 +7,7 @@ import eu.europeana.fulltext.api.model.AnnotationWrapper;
 import java.io.Serializable;
 
 import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_EDM_JSONLD;
-import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_IIIF_V2;
+import static eu.europeana.iiif.Definitions.MEDIA_TYPE_IIIF_V2;
 
 /**
  * Created by luthien on 14/06/2018.

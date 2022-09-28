@@ -1,8 +1,8 @@
 package eu.europeana.fulltext.api.service;
 
+import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.api.config.FTDefinitions;
 import eu.europeana.fulltext.api.config.FTSettings;
-import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.api.model.FTResource;
 import eu.europeana.fulltext.api.model.v2.AnnotationBodyV2;
 import eu.europeana.fulltext.api.model.v2.AnnotationFullBodyV2;
@@ -27,6 +27,8 @@ import java.util.Optional;
 
 import static eu.europeana.fulltext.api.config.FTDefinitions.*;
 import static eu.europeana.fulltext.util.NormalPlayTime.msToHHmmss;
+import static eu.europeana.iiif.Definitions.MEDIA_TYPE_IIIF_V2;
+import static eu.europeana.iiif.Definitions.MEDIA_TYPE_IIIF_V3;
 
 /**
  * This class contains the methods for mapping Annotation / AnnoPage Mongo bean objects to IIIF v2 / v3 fulltext

@@ -8,7 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_JSONLD;
+import static eu.europeana.iiif.Definitions.MEDIA_TYPE_JSONLD;
 
 /**
  * This will set json-ld as the default type if there is no accept header specified or if it's *

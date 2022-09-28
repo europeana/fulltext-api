@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import static eu.europeana.iiif.Definitions.MEDIA_TYPE_IIIF_V3;
 import static eu.europeana.fulltext.api.config.FTDefinitions.*;
 
 /**

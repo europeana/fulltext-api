@@ -7,6 +7,7 @@ import eu.europeana.fulltext.api.model.JsonLdIdType;
 
 import java.io.Serializable;
 
+import static eu.europeana.iiif.Definitions.MEDIA_TYPE_IIIF_V3;
 import static eu.europeana.fulltext.api.config.FTDefinitions.*;
 
 /**

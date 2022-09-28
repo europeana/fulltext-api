@@ -1,7 +1,7 @@
 package eu.europeana.fulltext.search.web;
 
-import static eu.europeana.fulltext.util.RequestUtils.ACCEPT_VERSION_INVALID;
-import static eu.europeana.fulltext.util.RequestUtils.getRequestVersion;
+import static eu.europeana.iiif.AcceptUtils.ACCEPT_VERSION_INVALID;
+import static eu.europeana.iiif.AcceptUtils.getRequestVersion;
 
 import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.fulltext.AnnotationType;
