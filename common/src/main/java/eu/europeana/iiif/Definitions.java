@@ -6,7 +6,7 @@ package eu.europeana.iiif;
 public class Definitions {
 
     public static final  String UTF_8                     = "charset=UTF-8";
-    private static final String PROFILE_IS                = ";profile=http://\""; // always return with http, never https
+    private static final String PROFILE_IS                = ";profile=\"http://"; // always return with http, never https
 
     public static final  String MEDIA_TYPE_JSONLD         = "application/ld+json";
     public static final  String MEDIA_TYPE_JSON           = "application/json";
