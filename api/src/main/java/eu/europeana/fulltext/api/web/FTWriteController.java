@@ -375,6 +375,7 @@ public class FTWriteController extends BaseRestController {
   private ResponseEntity<String> noContentResponse(HttpServletRequest request) {
     org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
     headers.add(HttpHeaders.ALLOW, getMethodsForRequestPattern(request, requestPathMethodService));
+    headers.add(HttpHeaders.CONTENT_TYPE, HttpHeaders.CONTENT_TYPE_JSONLD);
     return ResponseEntity.noContent().headers(headers).build();
   }
 }

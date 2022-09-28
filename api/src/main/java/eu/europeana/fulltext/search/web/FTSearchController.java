@@ -4,6 +4,7 @@ import static eu.europeana.fulltext.util.RequestUtils.ACCEPT_VERSION_INVALID;
 import static eu.europeana.fulltext.util.RequestUtils.getRequestVersion;
 
 import eu.europeana.api.commons.error.EuropeanaApiException;
+import eu.europeana.api.commons.web.http.HttpHeaders;
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.api.config.FTSettings;
 import eu.europeana.fulltext.api.service.ControllerUtils;
@@ -64,7 +65,8 @@ public class FTSearchController {
      * @param debug           if specified then include debug information in the response
      * @throws EuropeanaApiException when there is an error processing the request
      */
-    @GetMapping(value = "/{datasetId}/{localId}/search", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/{datasetId}/{localId}/search",
+            produces = {HttpHeaders.CONTENT_TYPE_JSONLD, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity searchIssue(@PathVariable String datasetId, @PathVariable String localId,
                                     @RequestParam(required = false) String query,
                                     @RequestParam(required = false) String q,
@@ -95,7 +97,10 @@ public class FTSearchController {
         String searchId = request.getRequestURI() + "?" + request.getQueryString();
         SearchResult searchResult = searchService.searchIssue(searchId, new EuropeanaId(datasetId, localId), qry,
                 pageSize, annoTypes, requestVersion, (debug != null));
-        return new ResponseEntity<>(searchResult, HttpStatus.OK);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .header(HttpHeaders.CONTENT_TYPE, HttpHeaders.CONTENT_TYPE_JSONLD)
+                .body(searchResult);
     }
 
     private String validateQuery(String query, String q) throws EuropeanaApiException {
