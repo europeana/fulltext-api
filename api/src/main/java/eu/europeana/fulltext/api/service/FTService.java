@@ -34,6 +34,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
+import eu.europeana.iiif.IIIFDefinitions;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -252,7 +253,7 @@ public class FTService {
             .append(ap.getDsId())
             .append("/")
             .append(ap.getLcId())
-            .append(FTDefinitions.ANNOPAGE_PATH)
+            .append(IIIFDefinitions.FULLTEXT_ANNOPAGE_PATH)
             .append("/")
             .append(ap.getPgId());
         if (!StringUtils.isEmpty(ap.getLang())) {
@@ -269,7 +270,7 @@ public class FTService {
             .append(dsId)
             .append("/")
             .append(lcId)
-            .append(FTDefinitions.ANNOPAGE_PATH)
+            .append(IIIFDefinitions.FULLTEXT_ANNOPAGE_PATH)
             .append("/")
             .append(pgId);
         if (!StringUtils.isEmpty(lang)) {

@@ -34,7 +34,6 @@ import static eu.europeana.fulltext.api.service.CacheUtils.generateSimpleETag;
 import static eu.europeana.fulltext.util.RequestUtils.PROFILE_TEXT;
 import static eu.europeana.fulltext.util.RequestUtils.extractProfiles;
 import static eu.europeana.iiif.AcceptUtils.*;
-import static eu.europeana.iiif.Definitions.*;
 
 /**
  * Rest controller that handles fulltext annotation page (annopage)- annotation- & resource requests
@@ -369,7 +368,7 @@ public class FTRetrievalController {
     @ApiOperation(value = "Retrieve a full-text")
     @GetMapping(value = "/presentation/{datasetId}/{localId}/{pageId}",
         headers = ACCEPT_JSONLD,
-        produces = MEDIA_TYPE_JSONLD + ';' + UTF_8)
+        produces = MEDIA_TYPE_JSONLD + ';' + CHARSET_UTF_8)
     public ResponseEntity<String> resourceJsonLd(
         @PathVariable String datasetId,
         @PathVariable String localId,
@@ -391,7 +390,7 @@ public class FTRetrievalController {
     @ApiOperation(value = "Retrieve a full-text")
     @GetMapping(value = "/presentation/{datasetId}/{localId}/{pageId}",
         headers = ACCEPT_JSON,
-        produces = MEDIA_TYPE_JSON + ';' + UTF_8)
+        produces = MEDIA_TYPE_JSON + ';' + CHARSET_UTF_8)
     public ResponseEntity<String> resourceJson(
         @PathVariable String datasetId,
         @PathVariable String localId,
@@ -423,7 +422,7 @@ public class FTRetrievalController {
         }
 
         headers = CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
-        headers.add(CONTENT_TYPE, (isJson ? MEDIA_TYPE_JSON : MEDIA_TYPE_JSONLD) + ";" + UTF_8);
+        headers.add(CONTENT_TYPE, (isJson ? MEDIA_TYPE_JSON : MEDIA_TYPE_JSONLD) + ";" + CHARSET_UTF_8);
 
         if (isJson) {
             resource.setContext(null);

@@ -1,7 +1,6 @@
 package eu.europeana.fulltext.api.service;
 
 import eu.europeana.fulltext.AnnotationType;
-import eu.europeana.fulltext.api.config.FTDefinitions;
 import eu.europeana.fulltext.api.config.FTSettings;
 import eu.europeana.fulltext.api.model.FTResource;
 import eu.europeana.fulltext.api.model.v2.AnnotationBodyV2;
@@ -16,6 +15,7 @@ import eu.europeana.fulltext.entity.Annotation;
 import eu.europeana.fulltext.entity.Resource;
 import eu.europeana.fulltext.entity.Target;
 import eu.europeana.fulltext.exception.ResourceDoesNotExistException;
+import eu.europeana.iiif.IIIFDefinitions;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -27,8 +27,7 @@ import java.util.Optional;
 
 import static eu.europeana.fulltext.api.config.FTDefinitions.*;
 import static eu.europeana.fulltext.util.NormalPlayTime.msToHHmmss;
-import static eu.europeana.iiif.Definitions.MEDIA_TYPE_IIIF_V2;
-import static eu.europeana.iiif.Definitions.MEDIA_TYPE_IIIF_V3;
+import static eu.europeana.iiif.IIIFDefinitions.*;
 
 /**
  * This class contains the methods for mapping Annotation / AnnoPage Mongo bean objects to IIIF v2 / v3 fulltext
@@ -283,7 +282,7 @@ public final class EDM2IIIFMapping {
 
     private static String getAnnoPageIdUrl(AnnoPage annoPage){
         return fts.getAnnoPageBaseUrl() + annoPage.getDsId() + "/" +
-               annoPage.getLcId() + FTDefinitions.ANNOPAGE_PATH + "/" + annoPage.getPgId() + "?" + LANGUAGE_PARAM + annoPage.getLang();
+               annoPage.getLcId() + IIIFDefinitions.FULLTEXT_ANNOPAGE_PATH + "/" + annoPage.getPgId() + "?" + LANGUAGE_PARAM + annoPage.getLang();
     }
 
     private static String getAnnotationIdUrl(AnnoPage annoPage, Annotation annotation) {

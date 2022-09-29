@@ -19,7 +19,7 @@ import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Date;
 
-import static eu.europeana.fulltext.api.config.FTDefinitions.*;
+import static eu.europeana.iiif.IIIFDefinitions.*;
 
 /**
  * Created by luthien on 26/09/2018.
