@@ -31,8 +31,10 @@ class FulltextRetrievalIT extends BaseIntegrationTest {
   private MockMvc mockMvc;
 
   private AnnoPage subtitleAnnopageOrginal;
-  private AnnoPage subtitleAnnopageTransalation;
-  private AnnoPage transcriptionAnnoPage;
+  private AnnoPage subtitleAnnopageTransalation_1;
+    private AnnoPage subtitleAnnopageTransalation_2;
+
+    private AnnoPage transcriptionAnnoPage;
 
 
   @BeforeEach
@@ -46,9 +48,14 @@ class FulltextRetrievalIT extends BaseIntegrationTest {
             IntegrationTestUtils.loadFile(SUBTITLE_VTT),FulltextType.WEB_VTT), false);
 
     // add translation subtitle
-    subtitleAnnopageTransalation = ftService.createAnnoPage(AnnotationUtils.createAnnotationPreview(
-            SUBTITLE_DSID, SUBTITLE_LCID, "fr", false, "http://creativecommons.org/licenses/by-sa/4.0/", null, SUBTITLE_MEDIA,
-            IntegrationTestUtils.loadFile(SUBTITLE_VTT),FulltextType.WEB_VTT), false);
+    subtitleAnnopageTransalation_1 = ftService.createAnnoPage(AnnotationUtils.createAnnotationPreview(
+            SUBTITLE_2_DSID, SUBTITLE_2_LCID, "fr", false, "http://creativecommons.org/licenses/by-sa/4.0/", null, SUBTITLE_MEDIA,
+            IntegrationTestUtils.loadFile(SUBTITLE_VTT_2),FulltextType.WEB_VTT), false);
+
+      // add translation subtitle
+      subtitleAnnopageTransalation_2 = ftService.createAnnoPage(AnnotationUtils.createAnnotationPreview(
+              SUBTITLE_2_DSID, SUBTITLE_2_LCID, "es", false, "http://creativecommons.org/licenses/by-sa/4.0/", null, SUBTITLE_MEDIA,
+              IntegrationTestUtils.loadFile(SUBTITLE_VTT_2),FulltextType.WEB_VTT), false);
 
     // add transcription
     transcriptionAnnoPage = ftService.createAnnoPage(AnnotationUtils.createAnnotationPreview(
@@ -134,9 +141,9 @@ class FulltextRetrievalIT extends BaseIntegrationTest {
         mockMvc.perform(
                         get(
                                 "/presentation/{datasetId}/{localId}/annopage/{pageId}",
-                                subtitleAnnopageTransalation.getDsId(),
-                                subtitleAnnopageTransalation.getLcId(),
-                                subtitleAnnopageTransalation.getPgId()
+                                subtitleAnnopageTransalation_1.getDsId(),
+                                subtitleAnnopageTransalation_1.getLcId(),
+                                subtitleAnnopageTransalation_1.getPgId()
                         ).accept(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isNotFound());
@@ -145,10 +152,10 @@ class FulltextRetrievalIT extends BaseIntegrationTest {
         mockMvc.perform(
                         get(
                                 "/presentation/{datasetId}/{localId}/annopage/{pageId}",
-                                subtitleAnnopageTransalation.getDsId(),
-                                subtitleAnnopageTransalation.getLcId(),
-                                subtitleAnnopageTransalation.getPgId()
-                        ).param(WebConstants.REQUEST_VALUE_LANG, subtitleAnnopageTransalation.getLang())
+                                subtitleAnnopageTransalation_2.getDsId(),
+                                subtitleAnnopageTransalation_2.getLcId(),
+                                subtitleAnnopageTransalation_2.getPgId()
+                        ).param(WebConstants.REQUEST_VALUE_LANG, subtitleAnnopageTransalation_2.getLang())
                                 .accept(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk());
@@ -215,6 +222,7 @@ class FulltextRetrievalIT extends BaseIntegrationTest {
                 .andExpect(status().isBadRequest());
     }
 
+    // jsonLd annopage retrieval test
     @Test
     void annoPageJsonld_Ok_Test() throws Exception {
 
@@ -245,9 +253,9 @@ class FulltextRetrievalIT extends BaseIntegrationTest {
         mockMvc.perform(
                         get(
                                 "/presentation/{datasetId}/{localId}/annopage/{pageId}",
-                                subtitleAnnopageTransalation.getDsId(),
-                                subtitleAnnopageTransalation.getLcId(),
-                                subtitleAnnopageTransalation.getPgId()
+                                subtitleAnnopageTransalation_1.getDsId(),
+                                subtitleAnnopageTransalation_1.getLcId(),
+                                subtitleAnnopageTransalation_1.getPgId()
                         ).accept(ACCEPT_JSONLD))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isNotFound());
@@ -256,10 +264,10 @@ class FulltextRetrievalIT extends BaseIntegrationTest {
         mockMvc.perform(
                         get(
                                 "/presentation/{datasetId}/{localId}/annopage/{pageId}",
-                                subtitleAnnopageTransalation.getDsId(),
-                                subtitleAnnopageTransalation.getLcId(),
-                                subtitleAnnopageTransalation.getPgId()
-                        ).param(WebConstants.REQUEST_VALUE_LANG, subtitleAnnopageTransalation.getLang())
+                                subtitleAnnopageTransalation_1.getDsId(),
+                                subtitleAnnopageTransalation_1.getLcId(),
+                                subtitleAnnopageTransalation_1.getPgId()
+                        ).param(WebConstants.REQUEST_VALUE_LANG, subtitleAnnopageTransalation_1.getLang())
                                 .accept(ACCEPT_JSONLD))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk());

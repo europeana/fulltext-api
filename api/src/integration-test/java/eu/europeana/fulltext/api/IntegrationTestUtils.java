@@ -16,6 +16,10 @@ public class IntegrationTestUtils {
   public static final String  SUBTITLE_DSID = "08604";
   public static final String  SUBTITLE_LCID = "FDE2205EEE384218A8D986E5138F9691";
 
+  public static final String  SUBTITLE_2_MEDIA = "https://www.filmportal.de/node/1197365";
+  public static final String  SUBTITLE_2_DSID = "67546";
+  public static final String  SUBTITLE_2_LCID = "ABC2205EEE384218A8D986E5138F9691";
+
   public static final String  TRANSCRIPTION_MEDIA = "https://europeana1914-1918.s3.amazonaws.com/attachments/261100/21892.261100.original.jpg";
   public static final String  TRANSCRIPTION_DSID = "2020601";
   public static final String  TRANSCRIPTION_LCID = "https___1914_1918_europeana_eu_contributions_21892";
