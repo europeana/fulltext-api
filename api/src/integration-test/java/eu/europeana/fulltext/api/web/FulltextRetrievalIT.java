@@ -71,7 +71,14 @@ class FulltextRetrievalIT extends BaseIntegrationTest {
   // AnnoPage Info Test
   @Test
   void annoPageInfoTest() throws Exception {
-    mockMvc.perform(
+      System.out.println("HERE Mongo DATA ======");
+      System.out.println(ftService.countAnnoPage());
+      System.out.println(subtitleAnnopageOrginal.toString());
+      System.out.println(subtitleAnnopageTransalation_1.toString());
+      System.out.println(subtitleAnnopageTransalation_2.toString());
+
+
+      mockMvc.perform(
             head(
                     "/presentation/{datasetId}/{localId}/annopage",
                     subtitleAnnopageOrginal.getDsId(),
@@ -80,12 +87,21 @@ class FulltextRetrievalIT extends BaseIntegrationTest {
             .andDo(MockMvcResultHandlers.print())
             .andExpect(status().isOk());
 
+      mockMvc.perform(
+                      head(
+                              "/presentation/{datasetId}/{localId}/annopage",
+                              subtitleAnnopageTransalation_1.getDsId(),
+                              subtitleAnnopageTransalation_1.getLcId()
+                      ).accept(ACCEPT_JSONLD))
+              .andDo(MockMvcResultHandlers.print())
+              .andExpect(status().isOk());
+
     mockMvc.perform(
                     head(
                             "/presentation/{datasetId}/{localId}/annopage",
                             transcriptionAnnoPage.getDsId(),
                             transcriptionAnnoPage.getLcId()
-                    ).accept(eu.europeana.api.commons.web.http.HttpHeaders.CONTENT_TYPE_JSONLD))
+                    ).accept(ACCEPT_JSONLD))
             .andDo(MockMvcResultHandlers.print())
             .andExpect(status().isOk());
 

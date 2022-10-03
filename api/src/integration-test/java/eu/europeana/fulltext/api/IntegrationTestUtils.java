@@ -12,13 +12,13 @@ public class IntegrationTestUtils {
   public static final String SUBTITLE_VTT = "/subtitles/submission.vtt";
   public static final String SUBTITLE_VTT_2 = "/subtitles/submission_pg2.vtt";
 
-  public static final String  SUBTITLE_MEDIA = "https://www.filmportal.de/node/1197365";
+  public static final String  SUBTITLE_MEDIA = "https://www.filmportal.de/sites/default/files/video/Salem06_x264.mp4";
   public static final String  SUBTITLE_DSID = "08604";
-  public static final String  SUBTITLE_LCID = "FDE2205EEE384218A8D986E5138F9691";
+  public static final String  SUBTITLE_LCID = "EAAE870171E24F05A64CE364D750631A";
 
-  public static final String  SUBTITLE_2_MEDIA = "https://www.filmportal.de/testing2/1197365";
-  public static final String  SUBTITLE_2_DSID = "67546";
-  public static final String  SUBTITLE_2_LCID = "ABC2205EEE384218A8D986E5138F9691";
+  public static final String  SUBTITLE_2_MEDIA = "http://repozytorium.fn.org.pl/sites/default/files/video/PLa46686d6-9896-48ac-9258-83a63bf3980c/012_mf_143_6-1.mp4";
+  public static final String  SUBTITLE_2_DSID = "08609";
+  public static final String  SUBTITLE_2_LCID = "a46686d6_9896_48ac_9258_83a63bf3980c";
 
   public static final String  TRANSCRIPTION_MEDIA = "https://europeana1914-1918.s3.amazonaws.com/attachments/261100/21892.261100.original.jpg";
   public static final String  TRANSCRIPTION_DSID = "2020601";
