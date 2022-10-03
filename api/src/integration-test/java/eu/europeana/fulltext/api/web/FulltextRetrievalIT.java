@@ -13,10 +13,7 @@ import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.subtitles.AnnotationPreview;
 import eu.europeana.fulltext.subtitles.FulltextType;
 import eu.europeana.fulltext.util.AnnotationUtils;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -38,7 +35,7 @@ class FulltextRetrievalIT extends BaseIntegrationTest {
   private AnnoPage transcriptionAnnoPage;
 
 
-  @BeforeAll
+  @BeforeEach
   void setUp() throws IOException, EuropeanaApiException {
     this.mockMvc = MockMvcBuilders.webAppContextSetup(this.webApplicationContext).build();
     this.ftService.deleteAll();
@@ -59,7 +56,7 @@ class FulltextRetrievalIT extends BaseIntegrationTest {
             TRANSCRIPTION_CONTENT,FulltextType.PLAIN), false);
   }
 
-  @AfterAll
+  @AfterEach
   void clear() {
       this.ftService.deleteAll();
   }
@@ -104,6 +101,119 @@ class FulltextRetrievalIT extends BaseIntegrationTest {
             .andExpect(status().isNotFound());
 
   }
+
+  //Annopage retreival Test
+
+    @Test
+    void annoPageJson_Ok_Test() throws Exception {
+
+      // original lang present
+        mockMvc.perform(
+                        get(
+                                "/presentation/{datasetId}/{localId}/annopage/{pageId}",
+                                subtitleAnnopageOrginal.getDsId(),
+                                subtitleAnnopageOrginal.getLcId(),
+                                subtitleAnnopageOrginal.getPgId()
+                        ).accept(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk());
+
+        // original lang present + format 3
+        mockMvc.perform(
+                        get(
+                                "/presentation/{datasetId}/{localId}/annopage/{pageId}",
+                                subtitleAnnopageOrginal.getDsId(),
+                                subtitleAnnopageOrginal.getLcId(),
+                                subtitleAnnopageOrginal.getPgId()
+                        ).param("format", "3")
+                                .accept(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk());
+
+        // original not present - without lang should return 404
+        mockMvc.perform(
+                        get(
+                                "/presentation/{datasetId}/{localId}/annopage/{pageId}",
+                                subtitleAnnopageTransalation.getDsId(),
+                                subtitleAnnopageTransalation.getLcId(),
+                                subtitleAnnopageTransalation.getPgId()
+                        ).accept(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isNotFound());
+
+        // original not present - with lang should return 200
+        mockMvc.perform(
+                        get(
+                                "/presentation/{datasetId}/{localId}/annopage/{pageId}",
+                                subtitleAnnopageTransalation.getDsId(),
+                                subtitleAnnopageTransalation.getLcId(),
+                                subtitleAnnopageTransalation.getPgId()
+                        ).param(WebConstants.REQUEST_VALUE_LANG, subtitleAnnopageTransalation.getLang())
+                                .accept(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk());
+
+        // with text granularity
+        mockMvc.perform(
+                        get(
+                                "/presentation/{datasetId}/{localId}/annopage/{pageId}",
+                                subtitleAnnopageOrginal.getDsId(),
+                                subtitleAnnopageOrginal.getLcId(),
+                                subtitleAnnopageOrginal.getPgId()
+                        ).param("textGranularity", "media")
+                                .accept(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk());
+  }
+
+
+    @Test
+    void annoPageJson_4xx_Test() throws Exception {
+       // annopage not found
+        mockMvc.perform(
+                        get("/presentation/{datasetId}/{localId}/annopage/{pageId}",
+                                "test",
+                               "test",
+                                "test"
+                        ).accept(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isNotFound());
+
+        // invalid accept header
+        mockMvc.perform(
+                        get(
+                                "/presentation/{datasetId}/{localId}/annopage/{pageId}",
+                                transcriptionAnnoPage.getDsId(),
+                                transcriptionAnnoPage.getLcId(),
+                                transcriptionAnnoPage.getPgId()
+                        ).accept(MediaType.APPLICATION_ATOM_XML))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isNotAcceptable());
+
+        // invalid version
+        mockMvc.perform(
+                        get(
+                                "/presentation/{datasetId}/{localId}/annopage/{pageId}",
+                                transcriptionAnnoPage.getDsId(),
+                                transcriptionAnnoPage.getLcId(),
+                                transcriptionAnnoPage.getPgId()
+                        ).param("format", "8")
+                                .accept(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest());
+
+        // invalid text granularity
+        mockMvc.perform(
+                        get(
+                                "/presentation/{datasetId}/{localId}/annopage/{pageId}",
+                                transcriptionAnnoPage.getDsId(),
+                                transcriptionAnnoPage.getLcId(),
+                                transcriptionAnnoPage.getPgId()
+                        ).param("textGranularity", "test")
+                                .accept(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest());
+    }
 
  // @Test
   void retrievingDeprecatedAnnoPageShouldReturn410() throws Exception {
