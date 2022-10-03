@@ -63,11 +63,6 @@ class FulltextRetrievalIT extends BaseIntegrationTest {
             TRANSCRIPTION_CONTENT,FulltextType.PLAIN), false);
   }
 
-  @AfterEach
-  void clear() {
-      this.ftService.deleteAll();
-  }
-
   // AnnoPage Info Test
   @Test
   void annoPageInfoTest() throws Exception {
