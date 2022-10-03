@@ -70,9 +70,14 @@ class FulltextRetrievalIT extends BaseIntegrationTest {
   @Test
   void annoPageInfoTest() throws Exception {
       System.out.println("HERE Mongo DATA ======");
+
       System.out.println(ftService.countAnnoPage());
+      System.out.println(ftService.countResource());
+
       System.out.println(subtitleAnnopageOrginal.toString());
       System.out.println(subtitleAnnopageTransalation_1.toString());
+      System.out.println(subtitleAnnopageTransalation_1.getRes().getValue());
+
       System.out.println(subtitleAnnopageTransalation_2.toString());
 
 
@@ -348,7 +353,71 @@ class FulltextRetrievalIT extends BaseIntegrationTest {
                 .andExpect(status().isBadRequest());
     }
 
- // @Test
+    // annoPageHeadExists json and jsonLd
+    @Test
+    void annoPageHeadExists_Test() throws Exception {
+        // original lang present + jsonld
+        mockMvc.perform(
+                        get(
+                                "/presentation/{datasetId}/{localId}/annopage/{pageId}",
+                                subtitleAnnopageOrginal.getDsId(),
+                                subtitleAnnopageOrginal.getLcId(),
+                                subtitleAnnopageOrginal.getPgId()
+                        ).accept(ACCEPT_JSONLD))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk());
+
+        // original lang not present + json
+        mockMvc.perform(
+                        get(
+                                "/presentation/{datasetId}/{localId}/annopage/{pageId}",
+                                subtitleAnnopageTransalation_2.getDsId(),
+                                subtitleAnnopageTransalation_2.getLcId(),
+                                subtitleAnnopageTransalation_2.getPgId()
+                        ).accept(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk());
+
+        // annopage not found
+        mockMvc.perform(
+                        head("/presentation/{datasetId}/{localId}/annopage/{pageId}",
+                                "test",
+                                "test",
+                                "test"
+                        ).accept(ACCEPT_JSONLD))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isNotFound());
+
+        // invalid version format
+        mockMvc.perform(
+                        get(
+                                "/presentation/{datasetId}/{localId}/annopage/{pageId}",
+                                subtitleAnnopageOrginal.getDsId(),
+                                subtitleAnnopageOrginal.getLcId(),
+                                subtitleAnnopageOrginal.getPgId()
+                        )
+                                .param("format", "9")
+                                .accept(ACCEPT_JSONLD))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest());
+    }
+
+    // annotationJson test
+    //@Test
+    void annotationJson_Test() throws Exception {
+        // original lang present + jsonld
+        mockMvc.perform(
+                        get(
+                                "/presentation/{datasetId}/{localId}/annopage/{pageId}",
+                                subtitleAnnopageOrginal.getDsId(),
+                                subtitleAnnopageOrginal.getLcId(),
+                                subtitleAnnopageOrginal.getPgId()
+                        ).accept(ACCEPT_JSONLD))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk());
+    }
+
+        // @Test
   void retrievingDeprecatedAnnoPageShouldReturn410() throws Exception {
     AnnoPage annoPage =
         mapper.readValue(loadFile(ANNOPAGE_FILMPORTAL_1197365_JSON), AnnoPage.class);
