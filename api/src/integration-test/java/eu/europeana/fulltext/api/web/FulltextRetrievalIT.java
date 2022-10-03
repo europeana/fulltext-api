@@ -49,12 +49,12 @@ class FulltextRetrievalIT extends BaseIntegrationTest {
 
     // add translation subtitle
     subtitleAnnopageTransalation_1 = ftService.createAnnoPage(AnnotationUtils.createAnnotationPreview(
-            SUBTITLE_2_DSID, SUBTITLE_2_LCID, "fr", false, "http://creativecommons.org/licenses/by-sa/4.0/", null, SUBTITLE_MEDIA,
+            SUBTITLE_2_DSID, SUBTITLE_2_LCID, "fr", false, "http://creativecommons.org/licenses/by-sa/4.0/", null, SUBTITLE_2_MEDIA,
             IntegrationTestUtils.loadFile(SUBTITLE_VTT_2),FulltextType.WEB_VTT), false);
 
       // add translation subtitle
       subtitleAnnopageTransalation_2 = ftService.createAnnoPage(AnnotationUtils.createAnnotationPreview(
-              SUBTITLE_2_DSID, SUBTITLE_2_LCID, "es", false, "http://creativecommons.org/licenses/by-sa/4.0/", null, SUBTITLE_MEDIA,
+              SUBTITLE_2_DSID, SUBTITLE_2_LCID, "es", false, "http://creativecommons.org/licenses/by-sa/4.0/", null, SUBTITLE_2_MEDIA,
               IntegrationTestUtils.loadFile(SUBTITLE_VTT_2),FulltextType.WEB_VTT), false);
 
     // add transcription

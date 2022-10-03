@@ -16,7 +16,7 @@ public class IntegrationTestUtils {
   public static final String  SUBTITLE_DSID = "08604";
   public static final String  SUBTITLE_LCID = "FDE2205EEE384218A8D986E5138F9691";
 
-  public static final String  SUBTITLE_2_MEDIA = "https://www.filmportal.de/node/1197365";
+  public static final String  SUBTITLE_2_MEDIA = "https://www.filmportal.de/testing2/1197365";
   public static final String  SUBTITLE_2_DSID = "67546";
   public static final String  SUBTITLE_2_LCID = "ABC2205EEE384218A8D986E5138F9691";
 
