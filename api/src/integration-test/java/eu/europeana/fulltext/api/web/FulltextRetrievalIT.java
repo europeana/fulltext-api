@@ -61,6 +61,9 @@ class FulltextRetrievalIT extends BaseIntegrationTest {
     transcriptionAnnoPage = ftService.createAnnoPage(AnnotationUtils.createAnnotationPreview(
             TRANSCRIPTION_DSID, TRANSCRIPTION_LCID, "en", true, "http://creativecommons.org/licenses/by-sa/4.0/", null, TRANSCRIPTION_MEDIA,
             TRANSCRIPTION_CONTENT,FulltextType.PLAIN), false);
+
+    // add them to mongo
+      ftService.upsertAnnoPage(List.of(subtitleAnnopageOrginal, subtitleAnnopageTransalation_1, subtitleAnnopageTransalation_2, transcriptionAnnoPage));
   }
 
   // AnnoPage Info Test
