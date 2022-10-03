@@ -7,6 +7,8 @@ import org.apache.commons.io.IOUtils;
 
 public class IntegrationTestUtils {
 
+  public static final String ACCEPT_JSONLD = "application/ld+json";
+
   public static final String SUBTITLE_VTT = "/subtitles/submission.vtt";
   public static final String SUBTITLE_VTT_2 = "/subtitles/submission_pg2.vtt";
 

@@ -47,7 +47,7 @@ class FulltextRetrievalIT extends BaseIntegrationTest {
 
     // add translation subtitle
     subtitleAnnopageTransalation = ftService.createAnnoPage(AnnotationUtils.createAnnotationPreview(
-            SUBTITLE_DSID, SUBTITLE_LCID, "fr", true, "http://creativecommons.org/licenses/by-sa/4.0/", null, SUBTITLE_MEDIA,
+            SUBTITLE_DSID, SUBTITLE_LCID, "fr", false, "http://creativecommons.org/licenses/by-sa/4.0/", null, SUBTITLE_MEDIA,
             IntegrationTestUtils.loadFile(SUBTITLE_VTT),FulltextType.WEB_VTT), false);
 
     // add transcription
@@ -211,6 +211,117 @@ class FulltextRetrievalIT extends BaseIntegrationTest {
                                 transcriptionAnnoPage.getPgId()
                         ).param("textGranularity", "test")
                                 .accept(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void annoPageJsonld_Ok_Test() throws Exception {
+
+        // original lang present
+        mockMvc.perform(
+                        get(
+                                "/presentation/{datasetId}/{localId}/annopage/{pageId}",
+                                subtitleAnnopageOrginal.getDsId(),
+                                subtitleAnnopageOrginal.getLcId(),
+                                subtitleAnnopageOrginal.getPgId()
+                        ).accept(ACCEPT_JSONLD))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk());
+
+        // original lang present + format 3
+        mockMvc.perform(
+                        get(
+                                "/presentation/{datasetId}/{localId}/annopage/{pageId}",
+                                subtitleAnnopageOrginal.getDsId(),
+                                subtitleAnnopageOrginal.getLcId(),
+                                subtitleAnnopageOrginal.getPgId()
+                        ).param("format", "3")
+                                .accept(ACCEPT_JSONLD))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk());
+
+        // original not present - without lang should return 404
+        mockMvc.perform(
+                        get(
+                                "/presentation/{datasetId}/{localId}/annopage/{pageId}",
+                                subtitleAnnopageTransalation.getDsId(),
+                                subtitleAnnopageTransalation.getLcId(),
+                                subtitleAnnopageTransalation.getPgId()
+                        ).accept(ACCEPT_JSONLD))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isNotFound());
+
+        // original not present - with lang should return 200
+        mockMvc.perform(
+                        get(
+                                "/presentation/{datasetId}/{localId}/annopage/{pageId}",
+                                subtitleAnnopageTransalation.getDsId(),
+                                subtitleAnnopageTransalation.getLcId(),
+                                subtitleAnnopageTransalation.getPgId()
+                        ).param(WebConstants.REQUEST_VALUE_LANG, subtitleAnnopageTransalation.getLang())
+                                .accept(ACCEPT_JSONLD))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk());
+
+        // with text granularity
+        mockMvc.perform(
+                        get(
+                                "/presentation/{datasetId}/{localId}/annopage/{pageId}",
+                                subtitleAnnopageOrginal.getDsId(),
+                                subtitleAnnopageOrginal.getLcId(),
+                                subtitleAnnopageOrginal.getPgId()
+                        ).param("textGranularity", "media")
+                                .accept(ACCEPT_JSONLD))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk());
+    }
+
+
+    @Test
+    void annoPageJsonld_4xx_Test() throws Exception {
+        // annopage not found
+        mockMvc.perform(
+                        get("/presentation/{datasetId}/{localId}/annopage/{pageId}",
+                                "test",
+                                "test",
+                                "test"
+                        ).accept(ACCEPT_JSONLD))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isNotFound());
+
+        // invalid accept header
+        mockMvc.perform(
+                        get(
+                                "/presentation/{datasetId}/{localId}/annopage/{pageId}",
+                                transcriptionAnnoPage.getDsId(),
+                                transcriptionAnnoPage.getLcId(),
+                                transcriptionAnnoPage.getPgId()
+                        ).accept(MediaType.APPLICATION_ATOM_XML))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isNotAcceptable());
+
+        // invalid version
+        mockMvc.perform(
+                        get(
+                                "/presentation/{datasetId}/{localId}/annopage/{pageId}",
+                                transcriptionAnnoPage.getDsId(),
+                                transcriptionAnnoPage.getLcId(),
+                                transcriptionAnnoPage.getPgId()
+                        ).param("format", "8")
+                                .accept(ACCEPT_JSONLD))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest());
+
+        // invalid text granularity
+        mockMvc.perform(
+                        get(
+                                "/presentation/{datasetId}/{localId}/annopage/{pageId}",
+                                transcriptionAnnoPage.getDsId(),
+                                transcriptionAnnoPage.getLcId(),
+                                transcriptionAnnoPage.getPgId()
+                        ).param("textGranularity", "test")
+                                .accept(ACCEPT_JSONLD))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest());
     }
