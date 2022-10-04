@@ -42,22 +42,22 @@ class FulltextRetrievalIT extends BaseIntegrationTest {
 
         // create original subtitle
         subtitleAnnopageOrginal = ftService.createAnnoPage(AnnotationUtils.createAnnotationPreview(
-                SUBTITLE_DSID, SUBTITLE_LCID, "nl", true, "http://creativecommons.org/licenses/by-sa/4.0/", null, SUBTITLE_MEDIA,
+                SUBTITLE_DSID, SUBTITLE_LCID, "nl", true, RIGHTS, null, SUBTITLE_MEDIA,
                 IntegrationTestUtils.loadFile(SUBTITLE_VTT), FulltextType.WEB_VTT), false);
 
         // create translation subtitle
         subtitleAnnopageTransalation_1 = ftService.createAnnoPage(AnnotationUtils.createAnnotationPreview(
-                SUBTITLE_2_DSID, SUBTITLE_2_LCID, "fr", false, "http://creativecommons.org/licenses/by-sa/4.0/", null, SUBTITLE_2_MEDIA,
+                SUBTITLE_2_DSID, SUBTITLE_2_LCID, "fr", false, RIGHTS, null, SUBTITLE_2_MEDIA,
                 IntegrationTestUtils.loadFile(SUBTITLE_VTT_2), FulltextType.WEB_VTT), false);
 
         // create translation subtitle
         subtitleAnnopageTransalation_2 = ftService.createAnnoPage(AnnotationUtils.createAnnotationPreview(
-                SUBTITLE_2_DSID, SUBTITLE_2_LCID, "es", false, "http://creativecommons.org/licenses/by-sa/4.0/", null, SUBTITLE_2_MEDIA,
+                SUBTITLE_2_DSID, SUBTITLE_2_LCID, "es", false, RIGHTS, null, SUBTITLE_2_MEDIA,
                 IntegrationTestUtils.loadFile(SUBTITLE_VTT_2), FulltextType.WEB_VTT), false);
 
         // create transcription
         transcriptionAnnoPage = ftService.createAnnoPage(AnnotationUtils.createAnnotationPreview(
-                TRANSCRIPTION_DSID, TRANSCRIPTION_LCID, "en", true, "http://creativecommons.org/licenses/by-sa/4.0/", null, TRANSCRIPTION_MEDIA,
+                TRANSCRIPTION_DSID, TRANSCRIPTION_LCID, "en", true, RIGHTS, null, TRANSCRIPTION_MEDIA,
                 TRANSCRIPTION_CONTENT, FulltextType.PLAIN), false);
 
         // add all annopages to mongo
@@ -461,7 +461,7 @@ class FulltextRetrievalIT extends BaseIntegrationTest {
                                 "/presentation/{datasetId}/{localId}/anno/{annoID}",
                                 subtitleAnnopageOrginal.getDsId(),
                                 subtitleAnnopageOrginal.getLcId(),
-                                subtitleAnnopageOrginal.getAns().get(1)
+                                subtitleAnnopageOrginal.getAns().get(1).getAnId()
                         )
                                 .param("format", "2")
                                 .accept(MediaType.APPLICATION_JSON))
@@ -476,7 +476,7 @@ class FulltextRetrievalIT extends BaseIntegrationTest {
                                 "/presentation/{datasetId}/{localId}/anno/{annoID}",
                                 transcriptionAnnoPage.getDsId(),
                                 transcriptionAnnoPage.getLcId(),
-                                transcriptionAnnoPage.getAns().get(0)
+                                transcriptionAnnoPage.getAns().get(0).getAnId()
                         )
                                 .param("format", "3")
                                 .accept(ACCEPT_JSONLD))
@@ -491,7 +491,7 @@ class FulltextRetrievalIT extends BaseIntegrationTest {
                                 "/presentation/{datasetId}/{localId}/anno/{annoID}",
                                 subtitleAnnopageTransalation_2.getDsId(),
                                 subtitleAnnopageTransalation_2.getLcId(),
-                                subtitleAnnopageTransalation_2.getAns().get(2)
+                                subtitleAnnopageTransalation_2.getAns().get(2).getAnId()
                         )
                                 .param("format", "3")
                                 .accept(ACCEPT_JSONLD))
@@ -533,7 +533,7 @@ class FulltextRetrievalIT extends BaseIntegrationTest {
                                 "/presentation/{datasetId}/{localId}/anno/{annoID}",
                                 subtitleAnnopageOrginal.getDsId(),
                                 subtitleAnnopageOrginal.getLcId(),
-                                subtitleAnnopageOrginal.getAns().get(0)
+                                subtitleAnnopageOrginal.getAns().get(0).getAnId()
                         ).accept(MediaType.APPLICATION_ATOM_XML))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isNotAcceptable());
@@ -546,7 +546,7 @@ class FulltextRetrievalIT extends BaseIntegrationTest {
                                 "/presentation/{datasetId}/{localId}/anno/{annoID}",
                                 subtitleAnnopageOrginal.getDsId(),
                                 subtitleAnnopageOrginal.getLcId(),
-                                subtitleAnnopageOrginal.getAns().get(1)
+                                subtitleAnnopageOrginal.getAns().get(1).getAnId()
                         )
                                 .param("format", "8")
                                 .accept(ACCEPT_JSONLD))
@@ -593,7 +593,7 @@ class FulltextRetrievalIT extends BaseIntegrationTest {
                                 subtitleAnnopageTransalation_1.getPgId()
                         ).accept(ACCEPT_JSONLD))
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
     }
 
     @Test

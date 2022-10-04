@@ -25,6 +25,8 @@ public class IntegrationTestUtils {
   public static final String  TRANSCRIPTION_LCID = "https___1914_1918_europeana_eu_contributions_21892";
   public static final String  TRANSCRIPTION_CONTENT = "leere Seite";
 
+  public static final String RIGHTS = "http://creativecommons.org/licenses/by-sa/4.0/";
+
   public static final String ANNOPAGE_FILMPORTAL_1197365_JSON =
       "/annopages/annopage-filmportal-1197365.json";
   public static final String ANNOPAGE_FILMPORTAL_1197365_EN_JSON =
