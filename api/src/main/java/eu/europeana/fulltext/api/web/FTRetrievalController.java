@@ -9,7 +9,6 @@ import eu.europeana.fulltext.api.service.CacheUtils;
 import eu.europeana.fulltext.api.service.ControllerUtils;
 import eu.europeana.fulltext.api.service.FTService;
 import eu.europeana.fulltext.api.service.exception.InvalidVersionException;
-import eu.europeana.fulltext.exception.InvalidRequestParamException;
 import eu.europeana.fulltext.exception.SerializationException;
 import eu.europeana.fulltext.entity.AnnoPage;
 import io.swagger.annotations.Api;
@@ -17,9 +16,9 @@ import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
@@ -70,7 +69,8 @@ public class FTRetrievalController {
      * @throws EuropeanaApiException when serialising to Json fails
      */
     @ApiOperation(value = "Lists available Annotation Pages for a given EuropeanaID (dataset + localID)")
-    @GetMapping(value = "/presentation/{datasetId}/{localId}/annopage", headers = ACCEPT_JSON)
+    @GetMapping(value = "/presentation/{datasetId}/{localId}/annopage",
+            produces = {eu.europeana.api.commons.web.http.HttpHeaders.CONTENT_TYPE_JSONLD, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<String> annoPageInfo(
         @PathVariable String datasetId,
         @PathVariable String localId,
@@ -92,6 +92,8 @@ public class FTRetrievalController {
             return cached;
         }
         HttpHeaders headers = CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
+        // add content-type
+        headers.add(HttpHeaders.CONTENT_TYPE, eu.europeana.api.commons.web.http.HttpHeaders.CONTENT_TYPE_JSONLD);
         SummaryManifest apInfo = fts.collectionAnnoPageInfo(datasetId, localId);
 
         return new ResponseEntity<>(fts.serialise(apInfo), headers, HttpStatus.OK);
@@ -138,7 +140,8 @@ public class FTRetrievalController {
      * @throws EuropeanaApiException when serialising to JsonLd fails or an invalid parameter value is provided
      */
     @ApiOperation(value = "Retrieve a page with annotations")
-    @GetMapping(value = "/presentation/{datasetId}/{localId}/annopage/{pageId}", headers = ACCEPT_JSONLD)
+    @GetMapping(value = "/presentation/{datasetId}/{localId}/annopage/{pageId}",
+            headers = ACCEPT_JSONLD)
     public ResponseEntity<String> annoPageJsonLd(
         @PathVariable String datasetId,
         @PathVariable String localId,
