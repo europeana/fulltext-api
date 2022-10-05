@@ -25,7 +25,7 @@ public final class AcceptUtils {
     public static final String ACCEPT                 = "Accept";
     public static final String ACCEPT_JSON            = "Accept=" + MEDIA_TYPE_JSON;
     public static final String ACCEPT_JSONLD          = "Accept=" + MEDIA_TYPE_JSONLD;
-    public static final String ACCEPT_VERSION_INVALID = "Unknown profile version indicated either in Accept or using the format field";
+    public static final String ACCEPT_VERSION_INVALID = "Unknown IIIF version in Accept header or format parameter";
 
     public static final String CONTENT_TYPE           = "Content-Type";
 
