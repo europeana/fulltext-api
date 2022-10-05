@@ -11,13 +11,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
+import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.util.StringUtils;
 
 @SpringBootApplication(
     scanBasePackages = "eu.europeana.fulltext",
-    exclude = {SecurityAutoConfiguration.class})
+    exclude = {
+        SecurityAutoConfiguration.class,
+
+        // disable Spring Mongo auto config
+        MongoAutoConfiguration.class,
+        MongoDataAutoConfiguration.class
+    })
 public class IndexingApplication implements CommandLineRunner {
 
   private static final Logger logger = LogManager.getLogger(IndexingApplication.class);
