@@ -213,14 +213,7 @@ public class IndexingBatchConfig {
   }
 
   public void indexFulltext(ZonedDateTime modifiedTimestamp) throws Exception {
-    Optional<Instant> from;
-    if(modifiedTimestamp != null){
-      from = Optional.of(modifiedTimestamp.toInstant());
-    } else {
-      from = fulltextSolr.getMostRecentValue(IndexingConstants.TIMESTAMP_UPDATE_FULLTEXT);
-    }
-
-
+    Optional<Instant> from = modifiedTimestamp != null ? Optional.of(modifiedTimestamp.toInstant()) : Optional.empty();
     logger.info("Indexing Fulltext records modified after {}", from);
 
     jobLauncher.run(

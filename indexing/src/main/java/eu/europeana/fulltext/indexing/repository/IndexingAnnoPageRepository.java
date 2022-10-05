@@ -14,6 +14,7 @@ import static eu.europeana.fulltext.util.MorphiaUtils.Fields.RESOURCE;
 import static eu.europeana.fulltext.util.MorphiaUtils.Fields.TARGET_ID;
 
 import dev.morphia.aggregation.experimental.Aggregation;
+import dev.morphia.aggregation.experimental.AggregationOptions;
 import dev.morphia.aggregation.experimental.stages.Group;
 import dev.morphia.aggregation.experimental.stages.ReplaceRoot;
 import dev.morphia.aggregation.experimental.stages.Sort;
@@ -31,6 +32,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class IndexingAnnoPageRepository extends AnnoPageRepository {
 
+  private static final AggregationOptions aggregationOpts = new AggregationOptions().allowDiskUse(true);
   private static final List<String> PROJECTION_FIELDS =
       List.of(DATASET_ID, LOCAL_ID, PAGE_ID, TARGET_ID, LANGUAGE, MODIFIED, RESOURCE, DELETED);
 
@@ -81,6 +83,6 @@ public class IndexingAnnoPageRepository extends AnnoPageRepository {
         .group(Group.group(id().field(DATASET_ID).field(LOCAL_ID)))
         .replaceRoot(ReplaceRoot.replaceRoot(field("_id")));
 
-    return query.execute(AnnoPageRecordId.class);
+    return query.execute(AnnoPageRecordId.class, aggregationOpts);
   }
 }
