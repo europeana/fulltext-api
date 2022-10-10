@@ -19,12 +19,10 @@ import dev.morphia.aggregation.experimental.stages.Group;
 import dev.morphia.aggregation.experimental.stages.ReplaceRoot;
 import dev.morphia.aggregation.experimental.stages.Sort;
 import dev.morphia.query.MorphiaCursor;
-import dev.morphia.query.experimental.filters.Filter;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.indexing.model.AnnoPageRecordId;
 import eu.europeana.fulltext.repository.AnnoPageRepository;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Repository;
@@ -32,7 +30,12 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class IndexingAnnoPageRepository extends AnnoPageRepository {
 
-  private static final AggregationOptions aggregationOpts = new AggregationOptions().allowDiskUse(true);
+  /**
+   * Increases the number of records fetched from the Mongo cursor. Default is 101
+   */
+  private static final int MONGO_BATCH_SIZE = 300;
+
+  private final AggregationOptions aggregationOpts = new AggregationOptions().allowDiskUse(true).batchSize(MONGO_BATCH_SIZE);
   private static final List<String> PROJECTION_FIELDS =
       List.of(DATASET_ID, LOCAL_ID, PAGE_ID, TARGET_ID, LANGUAGE, MODIFIED, RESOURCE, DELETED);
 
@@ -71,14 +74,11 @@ public class IndexingAnnoPageRepository extends AnnoPageRepository {
     // Aggregation Stages
     Aggregation<AnnoPage> query = datastore.aggregate(AnnoPage.class);
 
-    List<Filter> match = new ArrayList<>();
-
     // match stage only included if a timestamp is specified, otherwise we aggregate on all records
     // in db
-    from.ifPresent(instant -> match.add(gt(MODIFIED, instant)));
+    from.ifPresent(instant -> query.match((gt(MODIFIED, instant))));
 
     query
-        .match(match.toArray(new Filter[0]))
         .sort(Sort.sort().ascending(DATASET_ID).ascending(LOCAL_ID))
         .group(Group.group(id().field(DATASET_ID).field(LOCAL_ID)))
         .replaceRoot(ReplaceRoot.replaceRoot(field("_id")));
