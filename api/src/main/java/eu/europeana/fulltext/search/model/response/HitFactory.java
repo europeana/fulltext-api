@@ -5,7 +5,7 @@ import eu.europeana.fulltext.entity.Annotation;
 import eu.europeana.fulltext.search.model.response.v2.HitV2;
 import eu.europeana.fulltext.search.model.response.v3.HitV3;
 
-import static eu.europeana.fulltext.util.RequestUtils.REQUEST_VERSION_3;
+import static eu.europeana.iiif.AcceptUtils.REQUEST_VERSION_3;
 
 public final class HitFactory {
 

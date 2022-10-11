@@ -2,22 +2,21 @@ package eu.europeana.fulltext.api.web;
 
 import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.fulltext.AnnotationType;
-import eu.europeana.fulltext.api.model.info.SummaryManifest;
 import eu.europeana.fulltext.api.model.AnnotationWrapper;
 import eu.europeana.fulltext.api.model.FTResource;
+import eu.europeana.fulltext.api.model.info.SummaryManifest;
 import eu.europeana.fulltext.api.service.CacheUtils;
 import eu.europeana.fulltext.api.service.ControllerUtils;
 import eu.europeana.fulltext.api.service.FTService;
 import eu.europeana.fulltext.api.service.exception.InvalidVersionException;
-import eu.europeana.fulltext.exception.InvalidRequestParamException;
-import eu.europeana.fulltext.exception.SerializationException;
 import eu.europeana.fulltext.entity.AnnoPage;
+import eu.europeana.fulltext.exception.SerializationException;
+import eu.europeana.iiif.AcceptUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,12 +25,15 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
 
-import static eu.europeana.fulltext.util.RequestUtils.*;
-import static eu.europeana.fulltext.api.config.FTDefinitions.*;
 import static eu.europeana.fulltext.api.service.CacheUtils.generateETag;
 import static eu.europeana.fulltext.api.service.CacheUtils.generateSimpleETag;
+import static eu.europeana.fulltext.util.RequestUtils.PROFILE_TEXT;
+import static eu.europeana.fulltext.util.RequestUtils.extractProfiles;
+import static eu.europeana.iiif.AcceptUtils.*;
 
 /**
  * Rest controller that handles fulltext annotation page (annopage)- annotation- & resource requests
@@ -163,7 +165,7 @@ public class FTRetrievalController {
         boolean isJson) throws EuropeanaApiException {
         LOG.debug("Retrieve Annopage: {}/{}/{} with language {}", datasetId, localId, pageId, lang);
         // validate the format
-        String requestVersion = getRequestVersion(request, versionParam);
+        String requestVersion = AcceptUtils.getRequestVersion(request, versionParam);
         if (StringUtils.isEmpty(requestVersion)) {
             throw new InvalidVersionException(ACCEPT_VERSION_INVALID);
         }
@@ -183,7 +185,7 @@ public class FTRetrievalController {
         }
 
         HttpHeaders headers = CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
-        addContentTypeToResponseHeader(headers, requestVersion, isJson);
+        AcceptUtils.addContentTypeToResponseHeader(headers, requestVersion, isJson);
 
         List<String> profiles = extractProfiles(profileParam);
 
@@ -256,12 +258,12 @@ public class FTRetrievalController {
         boolean isJson,
         HttpServletRequest request) throws InvalidVersionException {
         // validate the format
-        String requestVersion = getRequestVersion(request, versionParam);
+        String requestVersion = AcceptUtils.getRequestVersion(request, versionParam);
         if (StringUtils.isEmpty(requestVersion)) {
             throw new InvalidVersionException(ACCEPT_VERSION_INVALID);
         }
         HttpHeaders headers = new HttpHeaders();
-        addContentTypeToResponseHeader(headers, requestVersion, isJson);
+        AcceptUtils.addContentTypeToResponseHeader(headers, requestVersion, isJson);
         if (fts.doesAnnoPageExist(datasetId, localId, pageId, lang, false)) {
             return new ResponseEntity<>(headers, HttpStatus.OK);
         } else {
@@ -320,7 +322,7 @@ public class FTRetrievalController {
         boolean isJson) throws EuropeanaApiException {
         LOG.debug("Retrieve Annotation: {}/{}/{}", datasetId, localId, annoID);
         // validate the format
-        String requestVersion = getRequestVersion(request, versionParam);
+        String requestVersion = AcceptUtils.getRequestVersion(request, versionParam);
         if (StringUtils.isEmpty(requestVersion)) {
             throw new InvalidVersionException(ACCEPT_VERSION_INVALID);
         }
@@ -339,7 +341,7 @@ public class FTRetrievalController {
         }
 
         headers = CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
-        addContentTypeToResponseHeader(headers, requestVersion, isJson);
+        AcceptUtils.addContentTypeToResponseHeader(headers, requestVersion, isJson);
 
         if ("3".equalsIgnoreCase(requestVersion)) {
             annotation = fts.generateAnnotationV3(annoPage, annoID);
@@ -366,7 +368,7 @@ public class FTRetrievalController {
     @ApiOperation(value = "Retrieve a full-text")
     @GetMapping(value = "/presentation/{datasetId}/{localId}/{pageId}",
         headers = ACCEPT_JSONLD,
-        produces = MEDIA_TYPE_JSONLD + ';' + UTF_8)
+        produces = MEDIA_TYPE_JSONLD + ';' + CHARSET_UTF_8)
     public ResponseEntity<String> resourceJsonLd(
         @PathVariable String datasetId,
         @PathVariable String localId,
@@ -388,7 +390,7 @@ public class FTRetrievalController {
     @ApiOperation(value = "Retrieve a full-text")
     @GetMapping(value = "/presentation/{datasetId}/{localId}/{pageId}",
         headers = ACCEPT_JSON,
-        produces = MEDIA_TYPE_JSON + ';' + UTF_8)
+        produces = MEDIA_TYPE_JSON + ';' + CHARSET_UTF_8)
     public ResponseEntity<String> resourceJson(
         @PathVariable String datasetId,
         @PathVariable String localId,
@@ -420,30 +422,12 @@ public class FTRetrievalController {
         }
 
         headers = CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
-        headers.add(CONTENT_TYPE, (isJson ? MEDIA_TYPE_JSON : MEDIA_TYPE_JSONLD) + ";" + UTF_8);
+        headers.add(CONTENT_TYPE, (isJson ? MEDIA_TYPE_JSON : MEDIA_TYPE_JSONLD) + ";" + CHARSET_UTF_8);
 
         if (isJson) {
             resource.setContext(null);
         }
         return new ResponseEntity<>(fts.serialise(resource), headers, HttpStatus.OK);
-    }
-
-    // --- utils ---
-
-    private void addContentTypeToResponseHeader(HttpHeaders headers, String version, boolean isJson) {
-        if ("3".equalsIgnoreCase(version)) {
-            if (isJson) {
-                headers.add(CONTENT_TYPE, MEDIA_TYPE_IIIF_JSON_V3);
-            } else {
-                headers.add(CONTENT_TYPE, MEDIA_TYPE_IIIF_JSONLD_V3);
-            }
-        } else {
-            if (isJson) {
-                headers.add(CONTENT_TYPE, MEDIA_TYPE_IIIF_JSON_V2);
-            } else {
-                headers.add(CONTENT_TYPE, MEDIA_TYPE_IIIF_JSONLD_V2);
-            }
-        }
     }
 
     /**

@@ -1,7 +1,7 @@
 package eu.europeana.fulltext.search.web;
 
-import static eu.europeana.fulltext.util.RequestUtils.ACCEPT_VERSION_INVALID;
-import static eu.europeana.fulltext.util.RequestUtils.getRequestVersion;
+import static eu.europeana.iiif.AcceptUtils.ACCEPT_VERSION_INVALID;
+import static eu.europeana.iiif.AcceptUtils.getRequestVersion;
 
 import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.fulltext.AnnotationType;
@@ -14,6 +14,7 @@ import eu.europeana.fulltext.search.exception.SearchDisabledException;
 import eu.europeana.fulltext.search.model.query.EuropeanaId;
 import eu.europeana.fulltext.search.model.response.SearchResult;
 import eu.europeana.fulltext.search.service.FTSearchService;
+import eu.europeana.iiif.IIIFDefinitions;
 import io.swagger.annotations.Api;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -36,7 +37,7 @@ import java.util.Set;
  */
 @Api(tags = {"Full-text search"}, description = "Search all full-texts that are part of an item (e.g. newspaper issue)")
 @RestController
-@RequestMapping("/presentation")
+@RequestMapping(IIIFDefinitions.PRESENTATION_PATH)
 public class FTSearchController {
 
     public static final Set<AnnotationType> ALLOWED_ANNOTATION_TYPES = EnumSet.of(
