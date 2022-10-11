@@ -21,6 +21,7 @@ public final class AcceptUtils {
     public static final String ACCEPT_DELIMITER          = ";";
 
     public static final Pattern ACCEPT_PROFILE_PATTERN = Pattern.compile("profile=\"(.*?)\"");
+    public static final Pattern ACCEPT_MEDIA_TYPE_PATTERN = Pattern.compile("^(http|https):(\\/\\/)iiif.io\\/api\\/presentation\\/(2|3)\\/context.json");
 
     public static final String ACCEPT                 = "Accept";
     public static final String ACCEPT_JSON            = "Accept=" + MEDIA_TYPE_JSON;
@@ -52,12 +53,17 @@ public final class AcceptUtils {
             Matcher m = ACCEPT_PROFILE_PATTERN.matcher(accept);
             if (m.find()) { // found a Profile parameter in the Accept header
                 String profiles = m.group(1);
-                if (profiles.toLowerCase(Locale.getDefault()).contains(IIIFDefinitions.MEDIA_TYPE_IIIF_V3)) {
-                    result = REQUEST_VERSION_3;
-                } else if (profiles.toLowerCase(Locale.getDefault()).contains(IIIFDefinitions.MEDIA_TYPE_IIIF_V2)) {
-                    result = REQUEST_VERSION_2;
-                } else {
-                    result = null; // in case profile is found & it's invalid.
+                // we will accept http and https both. See : EA-3141
+                Matcher matcher = ACCEPT_MEDIA_TYPE_PATTERN.matcher(profiles);
+                while (matcher.find()) { // found valid version in the profile url in group 3
+                    String version = matcher.group(3);
+                    if(version.equals(REQUEST_VERSION_3)) {
+                        result = REQUEST_VERSION_3;
+                    } else if( version.equals(REQUEST_VERSION_2)) {
+                        result = REQUEST_VERSION_2;
+                    } else {
+                        result = null; // in case profile is found & it's invalid.
+                    }
                 }
                 return result; // if accept header present and contains profile; return the value processed
             }
