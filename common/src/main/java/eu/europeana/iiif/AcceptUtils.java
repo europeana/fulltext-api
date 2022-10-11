@@ -4,7 +4,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpHeaders;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -47,35 +46,42 @@ public final class AcceptUtils {
      * @return either version 2, 3 or null (if invalid)
      */
     public static String getRequestVersion(HttpServletRequest request, String format) {
-        String result = null;
         String accept = request.getHeader(ACCEPT);
         if (StringUtils.isNotEmpty(accept)) {
             Matcher m = ACCEPT_PROFILE_PATTERN.matcher(accept);
             if (m.find()) { // found a Profile parameter in the Accept header
                 String profiles = m.group(1);
-                // we will accept http and https both. See : EA-3141
-                Matcher matcher = ACCEPT_MEDIA_TYPE_PATTERN.matcher(profiles);
-                while (matcher.find()) { // found valid version in the profile url in group 3
-                    String version = matcher.group(3);
-                    if(version.equals(REQUEST_VERSION_3)) {
-                        result = REQUEST_VERSION_3;
-                    } else if( version.equals(REQUEST_VERSION_2)) {
-                        result = REQUEST_VERSION_2;
-                    } else {
-                        result = null; // in case profile is found & it's invalid.
-                    }
-                }
-                return result; // if accept header present and contains profile; return the value processed
+                return getVersionFromProfile(profiles); // if accept header present and contains profile; return the value processed
             }
         }
-
         // Check if format is present in the request param
         if (StringUtils.isBlank(format)) {
-            result = REQUEST_VERSION_2;    // if format not given, fall back to default REQUEST_VERSION_2
+            return REQUEST_VERSION_2;    // if format not given, fall back to default REQUEST_VERSION_2
         } else if (REQUEST_VERSION_2.equals(format) || REQUEST_VERSION_3.equals(format)) {
-            result = format; // else use the format parameter
+            return format; // else use the format parameter
         }
-        return result;
+        return null;
+    }
+
+    /**
+     * Matches the Accept header media type pattern and
+     * fetches the version present in it.
+     *
+     * NOTE : we will accept profile starting with http and https both. See: EA-3141
+     * @param profile
+     * @return
+     */
+    private static String getVersionFromProfile(String profile){
+        Matcher matcher = ACCEPT_MEDIA_TYPE_PATTERN.matcher(profile);
+        while (matcher.find()) { // found valid version in the profile url in group 3
+            String version = matcher.group(3);
+            if (version.equals(REQUEST_VERSION_3)) {
+                return REQUEST_VERSION_3;
+            } else if (version.equals(REQUEST_VERSION_2)) {
+                return REQUEST_VERSION_2;
+            }
+        }
+        return null; // in case profile is invalid
     }
 
     /**
