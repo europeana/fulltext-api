@@ -11,7 +11,6 @@ import eu.europeana.fulltext.api.service.FTService;
 import eu.europeana.fulltext.api.service.exception.InvalidVersionException;
 import eu.europeana.fulltext.exception.SerializationException;
 import eu.europeana.fulltext.entity.AnnoPage;
-import eu.europeana.fulltext.exception.SerializationException;
 import eu.europeana.iiif.AcceptUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -99,7 +98,7 @@ public class FTRetrievalController {
         HttpHeaders headers = CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
         // by default content-type should be application/ld+json unless accept header is passed as application/json
         boolean isJson = false;
-        if (request.getHeader(ACCEPT) != null && request.getHeader(ACCEPT).equals(MediaType.APPLICATION_JSON_VALUE)) {
+        if (request.getHeader(ACCEPT) != null && request.getHeader(ACCEPT).equals(MEDIA_TYPE_JSON)) {
             isJson = true;
         }
         // add content-type. As no version is present in request hence will default to '2'
