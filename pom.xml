@@ -48,7 +48,7 @@
         <spring-boot.version>2.5.9</spring-boot.version>
         <jackson.version>2.9.9</jackson.version>
         <io-informatics.version>0.1.1</io-informatics.version>
-        <morphia.version>2.2.6</morphia.version>
+        <morphia.version>2.2.9</morphia.version>
         <mongo-driver.version>4.5.1</mongo-driver.version>
         <snappy.version>1.1.8.4</snappy.version>
         <commons-lang3.version>3.9</commons-lang3.version>

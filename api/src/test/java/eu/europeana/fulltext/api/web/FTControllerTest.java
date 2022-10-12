@@ -5,6 +5,9 @@ import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.fulltext.api.config.FTSettings;
 import eu.europeana.fulltext.api.service.CacheUtils;
 import eu.europeana.fulltext.api.service.FTService;
+
+import eu.europeana.iiif.AcceptUtils;
+import eu.europeana.iiif.IIIFDefinitions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,12 +20,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultMatcher;
 
 import static eu.europeana.fulltext.TestUtils.*;
-import static eu.europeana.fulltext.api.config.FTDefinitions.*;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.hasItems;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.startsWith;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.eq;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -82,6 +84,14 @@ public class FTControllerTest {
     private static final String BEGINNINGOFTIME = "Thu, 11 Jan 1990 00:00:00 GMT";
     private static final String BEFORETHEBEGINNING = "Wed, 10 Jan 1990 00:00:00 GMT";
     private static final String AFTERTHEBEGINNING = "Fri, 12 Jan 1990 00:00:00 GMT";
+
+    // This should match the definition in eu.europeana.iiif.Definitions
+    private static final String PROFILE_V2 = "profile=\"http://iiif.io/api/presentation/2/context.json\"";
+    private static final String PROFILE_V3 = "profile=\"http://iiif.io/api/presentation/3/context.json\"";
+    private static final String JSONLD_PROFILE_V2 = "application/ld+json;" + PROFILE_V2;
+    private static final String JSON_PROFILE_V2 = "application/json;" + PROFILE_V2;
+    private static final String JSONLD_PROFILE_V3 = "application/ld+json;" + PROFILE_V3;
+    private static final String JSON_PROFILE_V3 = "application/json;" + PROFILE_V3;
 
 
     private static String v2ETag;
@@ -188,34 +198,28 @@ public class FTControllerTest {
         this.mockMvc.perform(get("/presentation/hoort_wie/klopt_daar/annopage/kinderen")
                 .param("format", "2"))
                 .andExpect(status().isOk())
-                .andExpect(header().string(HEADER_CONTENTTYPE,
-                        containsString("profile=\"" + MEDIA_TYPE_IIIF_V2 + "\"")))
+                .andExpect(header().string(HEADER_CONTENTTYPE, containsString(PROFILE_V2)))
                 .andExpect(content().json(JSONLD_ANP_V2_OUTPUT))
                 .andDo(print());
 
         this.mockMvc.perform(get("/presentation/tis_een/vreemdeling/annopage/zeeker")
                 .param("format", "3"))
                 .andExpect(status().isOk())
-                .andExpect(header().string(HEADER_CONTENTTYPE,
-                        containsString("profile=\"" + MEDIA_TYPE_IIIF_V3 + "\"")))
+                .andExpect(header().string(HEADER_CONTENTTYPE, containsString(PROFILE_V3)))
                 .andExpect(content().json(JSONLD_ANP_V3_OUTPUT))
                 .andDo(print());
 
         this.mockMvc.perform(get("/presentation/ziet_de/maan_schijnt/annopage/door_den_boomen")
-                .header("Accept",
-                        "application/ld+json;profile=\"" + MEDIA_TYPE_IIIF_V2 + " \""))
+                .header(HEADER_ACCEPT, JSONLD_PROFILE_V2))
                 .andExpect(status().isOk())
-                .andExpect(header().string(HEADER_CONTENTTYPE,
-                        containsString("profile=\"" + MEDIA_TYPE_IIIF_V2 + "\"")))
+                .andExpect(header().string(HEADER_CONTENTTYPE, containsString(PROFILE_V2)))
                 .andExpect(content().json(JSONLD_ANP_V2_OUTPUT))
                 .andDo(print());
 
         this.mockMvc.perform(get("/presentation/makkers/staakt_uw/annopage/wild_geraasch")
-                .header("Accept",
-                        "application/ld+json;profile=\"" + MEDIA_TYPE_IIIF_V3 + " \""))
+                .header(HEADER_ACCEPT, JSONLD_PROFILE_V3))
                 .andExpect(status().isOk())
-                .andExpect(header().string(HEADER_CONTENTTYPE,
-                        containsString("profile=\"" + MEDIA_TYPE_IIIF_V3 + "\"")))
+                .andExpect(header().string(HEADER_CONTENTTYPE, containsString(PROFILE_V3)))
                 .andExpect(content().json(JSONLD_ANP_V3_OUTPUT))
                 .andDo(print());
     }
@@ -228,39 +232,34 @@ public class FTControllerTest {
     public void testGetAnnotations() throws Exception {
 
         this.mockMvc.perform(get("/presentation/iwazzawokking/downdastreet/anno/an1"))
-                .andExpect(header().string(HEADER_CONTENTTYPE,
-                        containsString("profile=\"" + MEDIA_TYPE_IIIF_V2 + "\"")))
+                .andExpect(header().string(HEADER_CONTENTTYPE, containsString(PROFILE_V2)))
                 .andExpect(content().json(JSONLD_ANN_V2_1_OUTPUT))
                 .andDo(print());
 
         this.mockMvc.perform(get("/presentation/heydude/dontletmedown/anno/an3").param("format", "3"))
                 .andExpect(status().isOk())
-                .andExpect(header().string(HEADER_CONTENTTYPE,
-                        containsString("profile=\"" + MEDIA_TYPE_IIIF_V3 + "\"")))
+                .andExpect(header().string(HEADER_CONTENTTYPE, containsString(PROFILE_V3)))
                 .andExpect(content().json(JSONLD_ANN_V3_3_OUTPUT))
                 .andDo(print());
 
         this.mockMvc.perform(get("/presentation/we_are_the_walrus/kookookechoo/anno/an2")
                 .param("format", "2"))
                 .andExpect(status().isOk())
-                .andExpect(header().string(HEADER_CONTENTTYPE,
-                        containsString("profile=\"" + MEDIA_TYPE_IIIF_V2 + "\"")))
+                .andExpect(header().string(HEADER_CONTENTTYPE, containsString(PROFILE_V2)))
                 .andExpect(content().json(JSONLD_ANN_V2_2_OUTPUT))
                 .andDo(print());
 
         this.mockMvc.perform(get("/presentation/let_me_take_you_down/cause_im_going_to/anno/an3")
-                .header("Accept", "application/ld+json;profile=\"" + MEDIA_TYPE_IIIF_V2 + "\""))
+                .header(HEADER_ACCEPT, IIIFDefinitions.MEDIA_TYPE_IIIF_JSONLD_V2))
                 .andExpect(status().isOk())
-                .andExpect(header().string(HEADER_CONTENTTYPE,
-                        containsString("profile=\"" + MEDIA_TYPE_IIIF_V2 + "\"")))
+                .andExpect(header().string(HEADER_CONTENTTYPE, containsString(PROFILE_V2)))
                 .andExpect(content().json(JSONLD_ANN_V2_3_OUTPUT))
                 .andDo(print());
 
         this.mockMvc.perform(get("/presentation/strawberry_fields/nothing_is_real/anno/an2")
-                .header("Accept", "application/ld+json;profile=\"" + MEDIA_TYPE_IIIF_V3 + "\""))
+                .header(HEADER_ACCEPT, IIIFDefinitions.MEDIA_TYPE_IIIF_JSONLD_V3))
                 .andExpect(status().isOk())
-                .andExpect(header().string(HEADER_CONTENTTYPE,
-                        containsString("profile=\"" + MEDIA_TYPE_IIIF_V3 + "\"")))
+                .andExpect(header().string(HEADER_CONTENTTYPE, containsString(PROFILE_V3)))
                 .andExpect(content().json(JSONLD_ANN_V3_2_OUTPUT))
                 .andDo(print());
     }
@@ -286,69 +285,69 @@ public class FTControllerTest {
         this.mockMvc.perform(head("/presentation/vrolijk/versierde/annopage/annopagetaart"))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(header().string(HEADER_CONTENTTYPE, MEDIA_TYPE_JSONLD + ";profile=\"" + MEDIA_TYPE_IIIF_V2 + "\"" + ";" + UTF_8));
+                .andExpect(header().string(HEADER_CONTENTTYPE, JSONLD_PROFILE_V2 + ";" + AcceptUtils.CHARSET_UTF_8));
 
         this.mockMvc.perform(head("/presentation/tergend/zanikende/annopage/zuurpruimen"))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(header().string(HEADER_CONTENTTYPE, MEDIA_TYPE_JSONLD + ";profile=\"" + MEDIA_TYPE_IIIF_V2 + "\"" + ";" + UTF_8));
+                .andExpect(header().string(HEADER_CONTENTTYPE, JSONLD_PROFILE_V2 + ";" + AcceptUtils.CHARSET_UTF_8));
 
         // with format parameter. Default accept header json
         this.mockMvc.perform(head("/presentation/vrolijk/versierde/annopage/annopagetaart")
                 .param("format", "2"))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(header().string(HEADER_CONTENTTYPE, MEDIA_TYPE_JSONLD + ";profile=\"" + MEDIA_TYPE_IIIF_V2 + "\"" + ";" + UTF_8));
+                .andExpect(header().string(HEADER_CONTENTTYPE, JSONLD_PROFILE_V2 + ";" + AcceptUtils.CHARSET_UTF_8));
 
         this.mockMvc.perform(head("/presentation/vrolijk/versierde/annopage/annopagetaart")
                 .param("format", "3"))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(header().string(HEADER_CONTENTTYPE, MEDIA_TYPE_JSONLD + ";profile=\"" + MEDIA_TYPE_IIIF_V3 + "\"" + ";" + UTF_8));
+                .andExpect(header().string(HEADER_CONTENTTYPE, JSONLD_PROFILE_V3 + ";" + AcceptUtils.CHARSET_UTF_8));
 
 
         this.mockMvc.perform(head("/presentation/tergend/zanikende/annopage/zuurpruimen")
                 .param("format", "2"))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(header().string(HEADER_CONTENTTYPE, MEDIA_TYPE_JSONLD + ";profile=\"" + MEDIA_TYPE_IIIF_V2 + "\"" + ";" + UTF_8));
+                .andExpect(header().string(HEADER_CONTENTTYPE, JSONLD_PROFILE_V2 + ";" + AcceptUtils.CHARSET_UTF_8));
 
 
         this.mockMvc.perform(head("/presentation/tergend/zanikende/annopage/zuurpruimen")
                 .param("format", "3"))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(header().string(HEADER_CONTENTTYPE, MEDIA_TYPE_JSONLD + ";profile=\"" + MEDIA_TYPE_IIIF_V3 + "\"" + ";" + UTF_8));
+                .andExpect(header().string(HEADER_CONTENTTYPE,JSONLD_PROFILE_V3 + ";" + AcceptUtils.CHARSET_UTF_8));
 
         //with format parameter and accept header jsonld
         this.mockMvc.perform(head("/presentation/vrolijk/versierde/annopage/annopagetaart")
                 .param("format", "2")
-                .header("Accept", "application/ld+json"))
+                .header(HEADER_ACCEPT, AcceptUtils.MEDIA_TYPE_JSONLD))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(header().string(HEADER_CONTENTTYPE, MEDIA_TYPE_JSONLD + ";profile=\"" + MEDIA_TYPE_IIIF_V2 + "\"" + ";" + UTF_8));
+                .andExpect(header().string(HEADER_CONTENTTYPE, JSONLD_PROFILE_V2 + ";" + AcceptUtils.CHARSET_UTF_8));
 
         this.mockMvc.perform(head("/presentation/tergend/zanikende/annopage/zuurpruimen")
                 .param("format", "3")
-                .header("Accept", "application/ld+json"))
+                .header(HEADER_ACCEPT, AcceptUtils.MEDIA_TYPE_JSONLD))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(header().string(HEADER_CONTENTTYPE, MEDIA_TYPE_JSONLD + ";profile=\"" + MEDIA_TYPE_IIIF_V3 + "\"" + ";" + UTF_8));
+                .andExpect(header().string(HEADER_CONTENTTYPE, JSONLD_PROFILE_V3 + ";" + AcceptUtils.CHARSET_UTF_8));
 
         //with format parameter and accept header json
         this.mockMvc.perform(head("/presentation/vrolijk/versierde/annopage/annopagetaart")
                 .param("format", "2")
-                .header("Accept", "application/json"))
+                .header(HEADER_ACCEPT, AcceptUtils.MEDIA_TYPE_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(header().string(HEADER_CONTENTTYPE, MEDIA_TYPE_JSON + ";profile=\"" + MEDIA_TYPE_IIIF_V2 + "\"" + ";" + UTF_8));
+                .andExpect(header().string(HEADER_CONTENTTYPE, JSON_PROFILE_V2 + ";" + AcceptUtils.CHARSET_UTF_8));
 
         this.mockMvc.perform(head("/presentation/tergend/zanikende/annopage/zuurpruimen")
                 .param("format", "3")
-                .header("Accept", "application/json"))
+                .header(HEADER_ACCEPT, AcceptUtils.MEDIA_TYPE_JSON))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(header().string(HEADER_CONTENTTYPE, MEDIA_TYPE_JSON + ";profile=\"" + MEDIA_TYPE_IIIF_V3 + "\"" + ";" + UTF_8));
+                .andExpect(header().string(HEADER_CONTENTTYPE, JSON_PROFILE_V3 + ";" + AcceptUtils.CHARSET_UTF_8));
     }
 
 
@@ -360,7 +359,7 @@ public class FTControllerTest {
 
         // matching ETag: should return HTTP 304. Also tests if the controller returns the regular headers
         this.mockMvc.perform(get("/presentation/bombombom/heskoembelge/annopage/gevettakkegareziet")
-                .header(HEADER_ACCEPT, "application/ld+json;profile=\"" + MEDIA_TYPE_IIIF_V2 + "\"")
+                .header(HEADER_ACCEPT, JSONLD_PROFILE_V2)
                 .header(HEADER_IFNONEMATCH, v2ETag))
                 .andExpect(header().string(HEADER_ETAG, containsString(v2ETag)))
                 .andExpect(header().string(HEADER_LASTMODIFIED, containsString(LASTMODIFIED_GMT)))
@@ -373,7 +372,7 @@ public class FTControllerTest {
 
         // ditto for "*"
         this.mockMvc.perform(get("/presentation/scareamoose/willyoudo/annopage/thedamntango")
-                .header(HEADER_ACCEPT, "application/ld+json;profile=\"" + MEDIA_TYPE_IIIF_V3 + "\"")
+                .header(HEADER_ACCEPT, JSONLD_PROFILE_V3)
                 .header(HEADER_IFNONEMATCH, ANY))
                 .andExpect(content().string(""))
                 .andExpect(status().isNotModified())
@@ -381,7 +380,7 @@ public class FTControllerTest {
 
         // and ditto for multiple ETags if it contains the matching one
         this.mockMvc.perform(get("/presentation/bombombom/heskoembelge/annopage/gevettakkegareziet")
-                .header(HEADER_ACCEPT, "application/ld+json;profile=\"" + MEDIA_TYPE_IIIF_V2 + "\"")
+                .header(HEADER_ACCEPT, JSONLD_PROFILE_V2)
                 .header(HEADER_IFNONEMATCH, multipleETags))
                 .andExpect(content().string(""))
                 .andExpect(status().isNotModified())
@@ -389,10 +388,10 @@ public class FTControllerTest {
 
         // but when the ETag does not match, expect a regular response. Check the regular headers again as well.
         this.mockMvc.perform(get("/presentation/scareamoose/willyoudo/annopage/thedamntango")
-                .header(HEADER_ACCEPT, "application/ld+json;profile=\"" + MEDIA_TYPE_IIIF_V3 + "\"")
+                .header(HEADER_ACCEPT, JSONLD_PROFILE_V3)
                 .header(HEADER_IFNONEMATCH, THE_WRONG_ETAG))
                 .andExpect(header().string(HEADER_CONTENTTYPE,
-                        containsString("profile=\"" + MEDIA_TYPE_IIIF_V3 + "\"")))
+                        containsString(PROFILE_V3)))
                 .andExpect(header().string(HEADER_ETAG, containsString(v3ETag)))
                 .andExpect(header().string(HEADER_LASTMODIFIED, containsString(LASTMODIFIED_GMT)))
                 .andExpect(header().string(HEADER_ALLOW, containsString(VALUE_ALLOW)))
@@ -404,7 +403,7 @@ public class FTControllerTest {
 
         // and for two nonmatching ETags
         this.mockMvc.perform(get("/presentation/scareamoose/willyoudo/annopage/thedamntango")
-                .header(HEADER_ACCEPT, "application/ld+json;profile=\"" + MEDIA_TYPE_IIIF_V3 + "\"")
+                .header(HEADER_ACCEPT, JSONLD_PROFILE_V3)
                 .header(HEADER_IFNONEMATCH, ANOTHER_WRONG_ETAG + "," + THE_WRONG_ETAG))
                 .andExpect(content().json(JSONLD_ANP_V3_OUTPUT))
                 .andExpect(status().isOk())
@@ -419,7 +418,7 @@ public class FTControllerTest {
 
         // matching ETag: should return HTTP 200 + regular JSON content. Also tests if the controller returns the regular headers
         this.mockMvc.perform(get("/presentation/bombombom/heskoembelge/annopage/gevettakkegareziet")
-                .header(HEADER_ACCEPT, "application/ld+json;profile=\"" + MEDIA_TYPE_IIIF_V2 + "\"")
+                .header(HEADER_ACCEPT, JSONLD_PROFILE_V2)
                 .header(HEADER_IFMATCH, v2ETag))
                 .andExpect(header().string(HEADER_ETAG, containsString(v2ETag)))
                 .andExpect(header().string(HEADER_LASTMODIFIED, containsString(LASTMODIFIED_GMT)))
@@ -432,21 +431,21 @@ public class FTControllerTest {
 
         // ditto for "*"
         this.mockMvc.perform(get("/presentation/scareamoose/willyoudo/annopage/thedamntango")
-                .header(HEADER_ACCEPT, "application/ld+json;profile=\"" + MEDIA_TYPE_IIIF_V3 + "\"")
+                .header(HEADER_ACCEPT, JSONLD_PROFILE_V3)
                 .header(HEADER_IFMATCH, ANY))
                 .andExpect(content().json(JSONLD_ANP_V3_OUTPUT))
                 .andExpect(status().isOk());
 
         // and ditto for multiple ETags if it contains the matching one
         this.mockMvc.perform(get("/presentation/bombombom/heskoembelge/annopage/gevettakkegareziet")
-                .header(HEADER_ACCEPT, "application/ld+json;profile=\"" + MEDIA_TYPE_IIIF_V2 + "\"")
+                .header(HEADER_ACCEPT, JSONLD_PROFILE_V2)
                 .header(HEADER_IFMATCH, multipleETags))
                 .andExpect(content().json(JSONLD_ANP_V2_OUTPUT))
                 .andExpect(status().isOk());
 
         // but when the ETag does not match, expect a HTTP 412 without the regular headers.
         this.mockMvc.perform(get("/presentation/scareamoose/willyoudo/annopage/thedamntango")
-                .header(HEADER_ACCEPT, "application/ld+json;profile=\"" + MEDIA_TYPE_IIIF_V3 + "\"")
+                .header(HEADER_ACCEPT, JSONLD_PROFILE_V3)
                 .header(HEADER_IFMATCH, THE_WRONG_ETAG))
                 .andExpect(header().string(HEADER_ETAG, nullValue()))
                 .andExpect(header().string(HEADER_LASTMODIFIED, nullValue()))
@@ -466,7 +465,7 @@ public class FTControllerTest {
 
         // matching ETag: should return HTTP 304. Also tests if the controller returns the regular headers
         this.mockMvc.perform(get("/presentation/dikkertjedap/zatopdetrap/anno/an1")
-                .header(HEADER_ACCEPT, "application/ld+json;profile=\"" + MEDIA_TYPE_IIIF_V2 + "\"")
+                .header(HEADER_ACCEPT, JSONLD_PROFILE_V2)
                 .header(HEADER_IFNONEMATCH, dikkertjeDapV2ETag))
                 .andExpect(header().string(HEADER_ETAG, containsString(dikkertjeDapV2ETag)))
                 .andExpect(header().string(HEADER_LASTMODIFIED, containsString(LASTMODIFIED_GMT)))
@@ -479,7 +478,7 @@ public class FTControllerTest {
 
         // ditto for "*"
         this.mockMvc.perform(get("/presentation/meestervanzoeten/wastezijnvoeten/anno/an2")
-                .header(HEADER_ACCEPT, "application/ld+json;profile=\"" + MEDIA_TYPE_IIIF_V3 + "\"")
+                .header(HEADER_ACCEPT, JSONLD_PROFILE_V3)
                 .header(HEADER_IFNONEMATCH, ANY))
                 .andExpect(content().string(""))
                 .andExpect(status().isNotModified())
@@ -487,7 +486,7 @@ public class FTControllerTest {
 
         // and ditto for multiple ETags if it contains the matching one
         this.mockMvc.perform(get("/presentation/zaterdags/inhetaquarium/anno/an3")
-                .header(HEADER_ACCEPT, "application/ld+json;profile=\"" + MEDIA_TYPE_IIIF_V2 + "\"")
+                .header(HEADER_ACCEPT, JSONLD_PROFILE_V2)
                 .header(HEADER_IFNONEMATCH, multiMrVanZoetenETag))
                 .andExpect(content().string(""))
                 .andExpect(status().isNotModified())
@@ -495,10 +494,9 @@ public class FTControllerTest {
 
         // but when the ETag does not match, expect a regular response. Check the regular headers again as well.
         this.mockMvc.perform(get("/presentation/iseealittle/sillypetbesideaman/anno/an1")
-                .header(HEADER_ACCEPT, "application/ld+json;profile=\"" + MEDIA_TYPE_IIIF_V3 + "\"")
+                .header(HEADER_ACCEPT, JSONLD_PROFILE_V3)
                 .header(HEADER_IFNONEMATCH, THE_WRONG_ETAG))
-                .andExpect(header().string(HEADER_CONTENTTYPE,
-                        containsString("profile=\"" + MEDIA_TYPE_IIIF_V3 + "\"")))
+                .andExpect(header().string(HEADER_CONTENTTYPE, containsString(PROFILE_V3)))
                 .andExpect(header().string(HEADER_ETAG, containsString(littleSillyPetV3ETag)))
                 .andExpect(header().string(HEADER_LASTMODIFIED, containsString(LASTMODIFIED_GMT)))
                 .andExpect(header().string(HEADER_ALLOW, containsString(VALUE_ALLOW)))
@@ -517,7 +515,7 @@ public class FTControllerTest {
 
         // matching ETag: should return HTTP 200. Also tests if the controller returns the regular headers
         this.mockMvc.perform(get("/presentation/dikkertjedap/zatopdetrap/anno/an1")
-                .header(HEADER_ACCEPT, "application/ld+json;profile=\"" + MEDIA_TYPE_IIIF_V2 + "\"")
+                .header(HEADER_ACCEPT, JSONLD_PROFILE_V2)
                 .header(HEADER_IFMATCH, dikkertjeDapV2ETag))
                 .andExpect(header().string(HEADER_ETAG, containsString(dikkertjeDapV2ETag)))
                 .andExpect(header().string(HEADER_LASTMODIFIED, containsString(LASTMODIFIED_GMT)))
@@ -530,7 +528,7 @@ public class FTControllerTest {
 
         // ditto for "*"
         this.mockMvc.perform(get("/presentation/meestervanzoeten/wastezijnvoeten/anno/an2")
-                .header(HEADER_ACCEPT, "application/ld+json;profile=\"" + MEDIA_TYPE_IIIF_V3 + "\"")
+                .header(HEADER_ACCEPT, JSONLD_PROFILE_V3)
                 .header(HEADER_IFMATCH, ANY))
                 .andExpect(content().json(JSONLD_ANN_V3_2_OUTPUT))
                 .andExpect(status().isOk())
@@ -538,7 +536,7 @@ public class FTControllerTest {
 
         // and ditto for multiple ETags if it contains the matching one
         this.mockMvc.perform(get("/presentation/zaterdags/inhetaquarium/anno/an3")
-                .header(HEADER_ACCEPT, "application/ld+json;profile=\"" + MEDIA_TYPE_IIIF_V2 + "\"")
+                .header(HEADER_ACCEPT, JSONLD_PROFILE_V2)
                 .header(HEADER_IFMATCH, multiMrVanZoetenETag))
                 .andExpect(content().json(JSONLD_ANN_V2_3_OUTPUT))
                 .andExpect(status().isOk())
@@ -546,7 +544,7 @@ public class FTControllerTest {
 
         // but when the ETag does not match, expect a HTTP 412 without regular headers.
         this.mockMvc.perform(get("/presentation/iseealittle/sillypetbesideaman/anno/an1")
-                .header(HEADER_ACCEPT, "application/ld+json;profile=\"" + MEDIA_TYPE_IIIF_V3 + "\"")
+                .header(HEADER_ACCEPT, JSONLD_PROFILE_V3)
                 .header(HEADER_IFMATCH, THE_WRONG_ETAG))
                 .andExpect(header().string(HEADER_ETAG, nullValue()))
                 .andExpect(header().string(HEADER_LASTMODIFIED, nullValue()))
@@ -581,14 +579,14 @@ public class FTControllerTest {
     public void testGetFTResourceJsonOrLd() throws Exception {
         this.mockMvc.perform(get("/presentation/esgab/einefrau/pg1")
                 .param("lang", "de")
-                .header(HEADER_ACCEPT, "application/ld+json"))
-                .andExpect(header().string(HEADER_CONTENTTYPE, containsString(MEDIA_TYPE_JSONLD)))
+                .header(HEADER_ACCEPT, AcceptUtils.MEDIA_TYPE_JSONLD))
+                .andExpect(header().string(HEADER_CONTENTTYPE, containsString(AcceptUtils.MEDIA_TYPE_JSONLD)))
                 .andExpect(status().isOk())
                 .andDo(print());
 
         this.mockMvc.perform(get("/presentation/aberdas/teig/pg2")
-                .header(HEADER_ACCEPT, "application/json"))
-                .andExpect(header().string(HEADER_CONTENTTYPE, containsString(MEDIA_TYPE_JSON)))
+                .header(HEADER_ACCEPT, AcceptUtils.MEDIA_TYPE_JSON))
+                .andExpect(header().string(HEADER_CONTENTTYPE, containsString(AcceptUtils.MEDIA_TYPE_JSON)))
                 .andExpect(status().isOk())
                 .andDo(print());
     }
@@ -602,7 +600,7 @@ public class FTControllerTest {
         // matching ETag: should return HTTP 304. Also tests if the controller returns the regular headers
         this.mockMvc.perform(get("/presentation/esgab/einefrau/pg1")
                 .param("lang", "de")
-                .header(HEADER_ACCEPT, "application/json")
+                .header(HEADER_ACCEPT, AcceptUtils.MEDIA_TYPE_JSON)
                 .header(HEADER_IFNONEMATCH, dieKuckeBackenWollteETag))
                 .andExpect(header().string(HEADER_ETAG, containsString(dieKuckeBackenWollteETag)))
                 .andExpect(header().string(HEADER_LASTMODIFIED, containsString(BEGINNINGOFTIME)))
@@ -616,7 +614,7 @@ public class FTControllerTest {
         // ditto for "*"
         this.mockMvc.perform(get("/presentation/aberdas/teig/pg2")
                 .param("lang", "de")
-                .header(HEADER_ACCEPT, "application/ld+json")
+                .header(HEADER_ACCEPT, AcceptUtils.MEDIA_TYPE_JSONLD)
                 .header(HEADER_IFNONEMATCH, ANY))
                 .andExpect(content().string(""))
                 .andExpect(status().isNotModified())
@@ -625,7 +623,7 @@ public class FTControllerTest {
         // and ditto for multiple ETags if it contains the matching one
         this.mockMvc.perform(get("/presentation/aberdas/teig/pg2")
                 .param("lang", "de")
-                .header(HEADER_ACCEPT, "application/json")
+                .header(HEADER_ACCEPT, AcceptUtils.MEDIA_TYPE_JSON)
                 .header(HEADER_IFNONEMATCH, multiTeigWollteNichtAufgehenETag))
                 .andExpect(header().string(HEADER_ETAG, containsString(dasTeigWollteNichtAufgehenETag)))
                 .andExpect(content().string(""))
@@ -635,7 +633,7 @@ public class FTControllerTest {
         // but when the ETag does not match, expect a regular response. Check the regular headers again as well.
         this.mockMvc.perform(get("/presentation/esgab/einefrau/pg1")
                 .param("lang", "de")
-                .header(HEADER_ACCEPT, "application/json")
+                .header(HEADER_ACCEPT, AcceptUtils.MEDIA_TYPE_JSON)
                 .header(HEADER_IFNONEMATCH, THE_WRONG_ETAG))
                 .andExpect(header().string(HEADER_ETAG, containsString(dieKuckeBackenWollteETag)))
                 .andExpect(header().string(HEADER_LASTMODIFIED, containsString(BEGINNINGOFTIME)))
@@ -650,10 +648,10 @@ public class FTControllerTest {
         // TWO wrong ETags ... why not?
         this.mockMvc.perform(get("/presentation/aberdas/teig/pg2")
                 .param("lang", "de")
-                .header(HEADER_ACCEPT, "application/ld+json")
+                .header(HEADER_ACCEPT, AcceptUtils.MEDIA_TYPE_JSONLD)
                 .header(HEADER_IFNONEMATCH, ANOTHER_WRONG_ETAG + "," + THE_WRONG_ETAG))
                 .andExpect(content().json(JSON_RES_2_OUTPUT))
-                .andExpect(header().string(HEADER_CONTENTTYPE, containsString(MEDIA_TYPE_JSONLD)))
+                .andExpect(header().string(HEADER_CONTENTTYPE, containsString(AcceptUtils.MEDIA_TYPE_JSONLD)))
                 .andExpect(status().isOk())
                 .andDo(print());
     }
@@ -667,7 +665,7 @@ public class FTControllerTest {
         // matching ETag: should return HTTP 200 + regular JSON content. Also tests if the controller returns the regular headers
         this.mockMvc.perform(get("/presentation/esgab/einefrau/pg1")
                 .param("lang", "de")
-                .header(HEADER_ACCEPT, "application/json")
+                .header(HEADER_ACCEPT, AcceptUtils.MEDIA_TYPE_JSON)
                 .header(HEADER_IFMATCH, dieKuckeBackenWollteETag))
                 .andExpect(header().string(HEADER_ETAG, containsString(dieKuckeBackenWollteETag)))
                 .andExpect(header().string(HEADER_LASTMODIFIED, containsString(BEGINNINGOFTIME)))
@@ -681,7 +679,7 @@ public class FTControllerTest {
         // ditto for "*"
         this.mockMvc.perform(get("/presentation/aberdas/teig/pg2")
                 .param("lang", "de")
-                .header(HEADER_ACCEPT, "application/json")
+                .header(HEADER_ACCEPT, AcceptUtils.MEDIA_TYPE_JSON)
                 .header(HEADER_IFMATCH, ANY))
                 .andExpect(content().json(JSON_RES_2_OUTPUT))
                 .andExpect(status().isOk());
@@ -689,7 +687,7 @@ public class FTControllerTest {
         // and ditto for multiple ETags if it contains the matching one
         this.mockMvc.perform(get("/presentation/aberdas/teig/pg2")
                 .param("lang", "de")
-                .header(HEADER_ACCEPT, "application/json")
+                .header(HEADER_ACCEPT, AcceptUtils.MEDIA_TYPE_JSON)
                 .header(HEADER_IFMATCH, multiTeigWollteNichtAufgehenETag))
                 .andExpect(content().json(JSON_RES_2_OUTPUT))
                 .andExpect(status().isOk());
@@ -697,7 +695,7 @@ public class FTControllerTest {
         // but when the ETag does not match, expect a HTTP 412 without the regular headers.
         this.mockMvc.perform(get("/presentation/esgab/einefrau/pg1")
                 .param("lang", "de")
-                .header(HEADER_ACCEPT, "application/ld+json")
+                .header(HEADER_ACCEPT, AcceptUtils.MEDIA_TYPE_JSONLD)
                 .header(HEADER_IFMATCH, THE_WRONG_ETAG))
                 .andExpect(header().string(HEADER_ETAG, nullValue()))
                 .andExpect(header().string(HEADER_LASTMODIFIED, nullValue()))
@@ -717,7 +715,7 @@ public class FTControllerTest {
         // content is changed after date set in if-modified-since: return regular content plus the whole header zoo
         this.mockMvc.perform(get("/presentation/esgab/einefrau/pg1")
                 .param("lang", "de")
-                .header(HEADER_ACCEPT, "application/json")
+                .header(HEADER_ACCEPT, AcceptUtils.MEDIA_TYPE_JSON)
                 .header(HEADER_IFMODIFIEDSINCE, BEFORETHEBEGINNING))
                 .andExpect(header().string(HEADER_ETAG, containsString(dieKuckeBackenWollteETag)))
                 .andExpect(header().string(HEADER_LASTMODIFIED, containsString(BEGINNINGOFTIME)))
@@ -731,7 +729,7 @@ public class FTControllerTest {
         // content was last changed before date set in if-modified-since: return nothing with status HTTP 304
         this.mockMvc.perform(get("/presentation/aberdas/teig/pg2")
                 .param("lang", "de")
-                .header(HEADER_ACCEPT, "application/json")
+                .header(HEADER_ACCEPT, AcceptUtils.MEDIA_TYPE_JSON)
                 .header(HEADER_IFMODIFIEDSINCE, AFTERTHEBEGINNING))
                 .andExpect(header().string(HEADER_ETAG, nullValue()))
                 .andExpect(header().string(HEADER_LASTMODIFIED, nullValue()))
@@ -740,9 +738,7 @@ public class FTControllerTest {
                 .andExpect(content().string(""))
                 .andExpect(status().isNotModified())
                 .andDo(print());
-
     }
-
 
     @Test
     public void testCorsGet() throws Exception {
