@@ -97,8 +97,14 @@ public class FTRetrievalController {
             return cached;
         }
         HttpHeaders headers = CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
-        // add content-type
-        headers.add(HttpHeaders.CONTENT_TYPE, eu.europeana.api.commons.web.http.HttpHeaders.CONTENT_TYPE_JSONLD);
+        // by default content-type should be application/ld+json unless accept header is passed as application/json
+        boolean isJson = false;
+        if (request.getHeader(ACCEPT) != null && request.getHeader(ACCEPT).equals(MediaType.APPLICATION_JSON_VALUE)) {
+            isJson = true;
+        }
+        // add content-type. As no version is present in request hence will default to '2'
+        AcceptUtils.addContentTypeToResponseHeader(headers, null, isJson);
+
         SummaryManifest apInfo = fts.collectionAnnoPageInfo(datasetId, localId);
 
         return new ResponseEntity<>(fts.serialise(apInfo), headers, HttpStatus.OK);
