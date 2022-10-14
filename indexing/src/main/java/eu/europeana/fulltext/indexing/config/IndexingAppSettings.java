@@ -54,8 +54,14 @@ public class IndexingAppSettings {
   @Value("${batch.skipLimit: 500}")
   private int skipLimit;
 
+  @Value("${batch.retryLimit: 3}")
+  private int batchRetryLimit;
+
   @Value("${batch.fulltext.commitWithinMs: 30000}")
   private int commitWithinMs;
+
+  @Value("${batch.progressLoggingInterval: 10000}")
+  private long progressLoggingInterval;
 
   public String getMongoConnectionUrl() {
     return mongoConnectionUrl;
@@ -118,5 +124,13 @@ public class IndexingAppSettings {
 
   public int getCommitWithinMs() {
     return commitWithinMs;
+  }
+
+  public int getBatchRetryLimit() {
+    return batchRetryLimit;
+  }
+
+  public long getProgressLoggingInterval() {
+    return progressLoggingInterval;
   }
 }
