@@ -101,8 +101,8 @@ public class FTRetrievalController {
         if (request.getHeader(ACCEPT) != null && request.getHeader(ACCEPT).equals(MEDIA_TYPE_JSON)) {
             isJson = true;
         }
-        // add content-type. As no version is present in request hence will default to '2'
-        AcceptUtils.addContentTypeToResponseHeader(headers, null, isJson);
+        // add content-type.
+        AcceptUtils.addContentTypeToResponseHeader(headers, REQUEST_VERSION_3, isJson);
 
         SummaryManifest apInfo = fts.collectionAnnoPageInfo(datasetId, localId);
 
