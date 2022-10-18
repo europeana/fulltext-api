@@ -22,7 +22,6 @@ import eu.europeana.fulltext.subtitles.FulltextType;
 import eu.europeana.fulltext.subtitles.external.AnnotationItem;
 import eu.europeana.fulltext.util.AnnotationUtils;
 import eu.europeana.fulltext.util.GeneralUtils;
-import eu.europeana.iiif.AcceptUtils;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -370,7 +369,7 @@ public class FTWriteController extends BaseRestController {
   private ResponseEntity<String> noContentResponse(HttpServletRequest request) {
     org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
     headers.add(HttpHeaders.ALLOW, getMethodsForRequestPattern(request, requestPathMethodService));
-    AcceptUtils.addContentTypeToResponseHeader(headers, REQUEST_VERSION_2, false);
+    addContentTypeToResponseHeader(headers, REQUEST_VERSION_2, false);
     return ResponseEntity.noContent().headers(headers).build();
   }
 }
