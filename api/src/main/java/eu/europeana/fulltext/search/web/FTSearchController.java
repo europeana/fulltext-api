@@ -1,10 +1,6 @@
 package eu.europeana.fulltext.search.web;
 
-import static eu.europeana.iiif.AcceptUtils.ACCEPT_VERSION_INVALID;
-import static eu.europeana.iiif.AcceptUtils.getRequestVersion;
-
 import eu.europeana.api.commons.error.EuropeanaApiException;
-import eu.europeana.api.commons.web.http.HttpHeaders;
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.api.config.FTSettings;
 import eu.europeana.fulltext.api.service.ControllerUtils;
@@ -15,13 +11,14 @@ import eu.europeana.fulltext.search.exception.SearchDisabledException;
 import eu.europeana.fulltext.search.model.query.EuropeanaId;
 import eu.europeana.fulltext.search.model.response.SearchResult;
 import eu.europeana.fulltext.search.service.FTSearchService;
+import eu.europeana.iiif.AcceptUtils;
 import eu.europeana.iiif.IIIFDefinitions;
 import io.swagger.annotations.Api;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,6 +26,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+
+import static eu.europeana.iiif.AcceptUtils.*;
 
 /**
  * Rest controller that handles search requests
@@ -66,9 +65,32 @@ public class FTSearchController {
      * @param debug           if specified then include debug information in the response
      * @throws EuropeanaApiException when there is an error processing the request
      */
-    @GetMapping(value = "/{datasetId}/{localId}/search",
-            produces = {HttpHeaders.CONTENT_TYPE_JSONLD, MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity searchIssue(@PathVariable String datasetId, @PathVariable String localId,
+    @GetMapping(value = "/{datasetId}/{localId}/search", headers = ACCEPT_JSON)
+    public ResponseEntity searchIssueJson(@PathVariable String datasetId, @PathVariable String localId,
+                                      @RequestParam(required = false) String query,
+                                      @RequestParam(required = false) String q,
+                                      @RequestParam(required = false, defaultValue = "12") int pageSize,
+                                      @RequestParam(required = false) String textGranularity,
+                                      @RequestParam(value = "format", required = false) String versionParam,
+                                      @RequestParam(required = false) String debug,
+                                      HttpServletRequest request) throws EuropeanaApiException {
+        return serachIssue(datasetId, localId, query, q, pageSize, textGranularity, versionParam, debug, request, true);
+    }
+
+    /**
+     * Search the provided issue (CHO) for a particular string
+     *
+     * @param datasetId       datasetId of the issue to search
+     * @param localId         itemId of the issue to search
+     * @param query           search query
+     * @param q               alternative search query (will override query if specified both
+     * @param pageSize        maximum number of hits
+     * @param textGranularity one-letter abbreviation or name of an Annotation type
+     * @param debug           if specified then include debug information in the response
+     * @throws EuropeanaApiException when there is an error processing the request
+     */
+    @GetMapping(value = "/{datasetId}/{localId}/search", headers = ACCEPT_JSONLD)
+    public ResponseEntity searchIssueJsonLd(@PathVariable String datasetId, @PathVariable String localId,
                                     @RequestParam(required = false) String query,
                                     @RequestParam(required = false) String q,
                                     @RequestParam(required = false, defaultValue = "12") int pageSize,
@@ -76,7 +98,11 @@ public class FTSearchController {
                                     @RequestParam(value = "format", required = false) String versionParam,
                                     @RequestParam(required = false) String debug,
                                     HttpServletRequest request) throws EuropeanaApiException {
+        return serachIssue(datasetId, localId, query, q, pageSize, textGranularity, versionParam, debug, request, false);
+    }
 
+    private ResponseEntity serachIssue(String datasetId, String localId, String query, String q, int pageSize, String textGranularity,
+                                       String versionParam, String debug, HttpServletRequest request, boolean isJson) throws EuropeanaApiException {
         // validate the format
         if(!settings.isSolrEnabled()){
             throw new SearchDisabledException();
@@ -99,9 +125,9 @@ public class FTSearchController {
         SearchResult searchResult = searchService.searchIssue(searchId, new EuropeanaId(datasetId, localId), qry,
                 pageSize, annoTypes, requestVersion, (debug != null));
 
-        return ResponseEntity.status(HttpStatus.OK)
-                .header(HttpHeaders.CONTENT_TYPE, HttpHeaders.CONTENT_TYPE_JSONLD)
-                .body(searchResult);
+        HttpHeaders headers = new HttpHeaders();
+        AcceptUtils.addContentTypeToResponseHeader(headers, requestVersion, isJson);
+        return new ResponseEntity(searchResult, headers, HttpStatus.OK);
     }
 
     private String validateQuery(String query, String q) throws EuropeanaApiException {

@@ -22,6 +22,7 @@ import eu.europeana.fulltext.subtitles.FulltextType;
 import eu.europeana.fulltext.subtitles.external.AnnotationItem;
 import eu.europeana.fulltext.util.AnnotationUtils;
 import eu.europeana.fulltext.util.GeneralUtils;
+import eu.europeana.iiif.AcceptUtils;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -45,8 +46,7 @@ import static eu.europeana.fulltext.WebConstants.*;
 import static eu.europeana.fulltext.util.GeneralUtils.isValidAnnotationId;
 import static eu.europeana.fulltext.util.RequestUtils.PROFILE_TEXT;
 import static eu.europeana.fulltext.util.RequestUtils.extractProfiles;
-import static eu.europeana.iiif.AcceptUtils.REQUEST_VERSION_2;
-import static eu.europeana.iiif.AcceptUtils.addContentTypeToResponseHeader;
+import static eu.europeana.iiif.AcceptUtils.*;
 
 @RestController
 @Validated
@@ -370,7 +370,7 @@ public class FTWriteController extends BaseRestController {
   private ResponseEntity<String> noContentResponse(HttpServletRequest request) {
     org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
     headers.add(HttpHeaders.ALLOW, getMethodsForRequestPattern(request, requestPathMethodService));
-    headers.add(HttpHeaders.CONTENT_TYPE, HttpHeaders.CONTENT_TYPE_JSONLD);
+    AcceptUtils.addContentTypeToResponseHeader(headers, REQUEST_VERSION_2, false);
     return ResponseEntity.noContent().headers(headers).build();
   }
 }
