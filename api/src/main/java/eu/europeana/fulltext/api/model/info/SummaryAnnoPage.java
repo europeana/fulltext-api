@@ -1,6 +1,5 @@
 package eu.europeana.fulltext.api.model.info;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import eu.europeana.fulltext.api.model.JsonLdIdType;
 
 import static eu.europeana.fulltext.api.config.FTDefinitions.INFO_ANNOPAGE_TYPE;
@@ -13,6 +12,7 @@ public class SummaryAnnoPage extends JsonLdIdType {
     private static final long serialVersionUID = -670619785903826924L;
 
     private String language;
+    private String source;
 
     /**
      * This object serves as a placeholder for AnnoPages.
@@ -20,10 +20,12 @@ public class SummaryAnnoPage extends JsonLdIdType {
      *
      * @param id    String containing identifying URL of the SummaryAnnoPage
      * @param language  String containing language of the SummaryAnnoPage
+     * @param source source of the AnnotationPage
      */
-    public SummaryAnnoPage(String id, String language){
+    public SummaryAnnoPage(String id, String language, String source){
         super(id, INFO_ANNOPAGE_TYPE);
         this.language = language;
+        this.source = source;
     }
 
     public String getLanguage() {

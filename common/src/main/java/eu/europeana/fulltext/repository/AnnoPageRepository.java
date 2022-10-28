@@ -432,6 +432,7 @@ public class AnnoPageRepository {
             .include(LANGUAGE) // EA-3123 lang, translation and deleted field is needed since multilingual behaviour and deprecation is added.
             .include(TRANSLATION)
             .include(DELETED)
+            .include(SOURCE) // EA-3216, expose source value to differentiate between annotation coming from Annotation API and one submitted via Fullext API
             .include(ANNOTATIONS,
                  filter(field(ANNOTATIONS),
                         ArrayExpressions.in(value("$$annotation.dcType"),
@@ -465,7 +466,7 @@ public class AnnoPageRepository {
                 .iterator(
                         new FindOptions()
                                 .projection()
-                                .include(DATASET_ID, LOCAL_ID, PAGE_ID, LANGUAGE, MODIFIED, DELETED))
+                                .include(DATASET_ID, LOCAL_ID, PAGE_ID, LANGUAGE, MODIFIED, DELETED, SOURCE)) // EA-3216, include source field
                 .toList();
     }
 
