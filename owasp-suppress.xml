@@ -260,4 +260,18 @@
         <cve>CVE-2021-29262</cve>
         <cve>CVE-2019-17558</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: commons-text-1.9.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.commons/commons\-text@.*$</packageUrl>
+        <cve>CVE-2022-42889</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: protobuf-java-3.19.3.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.google\.protobuf/protobuf\-java@.*$</packageUrl>
+        <cve>CVE-2022-3171</cve>
+    </suppress>
 </suppressions>
