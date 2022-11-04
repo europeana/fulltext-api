@@ -8,11 +8,8 @@ import eu.europeana.fulltext.search.exception.InvalidParameterException;
 import eu.europeana.fulltext.search.web.FTSearchController;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -276,21 +273,24 @@ public class FTSettings implements InitializingBean {
 
     private void validateRequiredSettings() {
         List<String> missingProps = new ArrayList<>();
-        // validate required settings
-        if (StringUtils.isEmpty(annotationsApiKey)) {
-            missingProps.add("annotations.wskey");
-        }
+        // single validations
+        Map<String, String> singleValidations = new HashMap<>();
+        singleValidations.put(annotationsApiKey, "annotations.wskey");
+        singleValidations.put(apiKeyPublicKey, "europeana.apikey.jwttoken.signaturekey");
+        singleValidations.put(apiKeyUrl, "europeana.apikey.serviceurl");
+        singleValidations.put(annotationsApiUrl, "annotations.serviceurl");
 
-        if (StringUtils.isEmpty(apiKeyPublicKey)) {
-            missingProps.add("europeana.apikey.jwttoken.signaturekey");
-        }
+        // validate all
+        validateValues(singleValidations, missingProps);
 
-        if (StringUtils.isEmpty(apiKeyUrl)) {
-            missingProps.add("europeana.apikey.serviceurl");
+        // group validations
+        if (authEnabled) {
+            validateValues(Map.of(authorizationApiName, "authorization.api.name",
+                    apiKeyUrl , "europeana.apikey.serviceurl",
+                    apiKeyPublicKey, "europeana.apikey.jwttoken.signaturekey"), missingProps);
         }
-
-        if (StringUtils.isEmpty(annotationsApiUrl)) {
-            missingProps.add("annotations.serviceurl");
+        if (annoSyncEnabled) {
+            validateValues(Map.of(deploymentName, "fulltext.deployment"), missingProps);
         }
 
         if (!missingProps.isEmpty()) {
@@ -298,6 +298,14 @@ public class FTSettings implements InitializingBean {
                 String.format(
                     "The following config properties are not set: %s",
                     String.join("\n", missingProps)));
+        }
+    }
+
+    private void validateValues(Map<String, String> map, List<String> missingProps) {
+        for (Map.Entry<String,  String> entry : map.entrySet()) {
+            if (StringUtils.isEmpty(entry.getKey())) {
+                missingProps.add(entry.getValue());
+            }
         }
     }
 
