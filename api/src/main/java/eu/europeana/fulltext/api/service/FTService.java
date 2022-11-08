@@ -227,7 +227,8 @@ public class FTService {
                 new SummaryAnnoPage(
                     makeLangAwareAnnoPageID(datasetId, localId, annoPage.getPgId(),
                         annoPage.getLang()),
-                    annoPage.getLang()));
+                    annoPage.getLang(),
+                    annoPage.getSource()));
             summaryCanvas.setOriginalLanguage(annoPage.getLang());
 
             // add SummaryCanvas to SummaryManifest
