@@ -25,11 +25,11 @@ services:
       - MONGO_INITDB_DATABASE=admin
       - FULLTEXT_DB=fulltext
 
-  solr-indexing:
+  solr:
     build:
       context: ./api/src/integration-test/resources/solr-docker
       dockerfile: Dockerfile
-    container_name: solr
+    container_name: fulltext-solr
     ports:
       - "8983:8983"
       - "9983:9983"

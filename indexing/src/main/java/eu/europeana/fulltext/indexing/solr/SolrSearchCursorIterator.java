@@ -53,29 +53,41 @@ public class SolrSearchCursorIterator implements Iterator<SolrDocumentList> {
   /** Retrieves the next chunk of documents that match the search query. */
   public SolrDocumentList next() {
     solrQuery.set(CursorMarkParams.CURSOR_MARK_PARAM, cursorMark);
-    QueryResponse response;
+    QueryResponse response = null;
+    int attempts = IndexingConstants.ATTEMPTS;
+    while (attempts > 0) {
+      try {
+        response = client.query(solrQuery);
+        break;
+      } catch (SolrServerException | IOException ex) {
+        attempts--;
+        if (attempts <= 0) {
+          throw new IllegalStateException(
+                  String.format("Error while searching Solr q=%s", solrQuery.getQuery()), ex);
+        }
+        try {
+          Thread.sleep(IndexingConstants.SLEEP_MS);
+        } catch (InterruptedException e1) {
+          throw new IllegalStateException("Error while searching Solr", e1);
+        }
 
-    try {
-      response = client.query(solrQuery);
-    } catch (SolrServerException | IOException ex) {
-      throw new IllegalStateException(
-          String.format("Error while searching Solr q=%s", solrQuery.getQuery()), ex);
+      }
     }
-
     previousCursorMark = cursorMark;
     cursorMark = response.getNextCursorMark();
 
     if (log.isDebugEnabled()) {
       log.debug(
-          "Performed Solr search query in {}ms: numFound={}, cursorMark={}, q={}",
-          response.getElapsedTime(),
-          response.getResults().getNumFound(),
-          cursorMark,
-          solrQuery.getQuery());
+              "Performed Solr search query in {}ms: numFound={}, cursorMark={}, q={}",
+              response.getElapsedTime(),
+              response.getResults().getNumFound(),
+              cursorMark,
+              solrQuery.getQuery());
     }
 
     return response.getResults();
   }
+
 
   public SolrQuery getQuery() {
     return solrQuery;

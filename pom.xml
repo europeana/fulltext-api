@@ -43,17 +43,16 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <api-commons.version>0.3.16</api-commons.version>
-        <!-- upgraded to 2.5.9 as 2.6.x is not compatible with swagger (springfox-swagger-ui)-->
+        <!-- upgraded to 2.5.14 as 2.6.x is not compatible with swagger (springfox-swagger-ui)-->
         <!-- org.apache.tomcat.embed version 9.0.56 is included uptill 2.6.3 which is vulnerable. See : CVE-2022-23181  -->
-        <spring-boot.version>2.5.9</spring-boot.version>
+        <spring-boot.version>2.5.14</spring-boot.version>
         <jackson.version>2.9.9</jackson.version>
         <io-informatics.version>0.1.1</io-informatics.version>
-        <morphia.version>2.2.6</morphia.version>
+        <morphia.version>2.2.9</morphia.version>
         <mongo-driver.version>4.5.1</mongo-driver.version>
         <snappy.version>1.1.8.4</snappy.version>
         <commons-lang3.version>3.9</commons-lang3.version>
         <commons-io.version>2.4</commons-io.version>
-        <log4j2.version>2.17.1</log4j2.version>
         <!-- Note that upgrading to a newer version of Junit Jupiter may not work with older IntelliJ versions (2019.2.1)
              However for Maven verify goal a newer Jupiter version is no problem-->
         <junit-jupiter.version>5.6.0</junit-jupiter.version>
@@ -69,6 +68,25 @@
 
     <dependencyManagement>
         <dependencies>
+
+            <!-- Override the spring-security-core and crypto to 5.7.5 which does not have any vulnerabilities like CVE-2022-22978 -->
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-crypto</artifactId>
+                <version>5.7.5</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-core</artifactId>
+                <version>5.7.5</version>
+            </dependency>
+            <!-- Non vulnerable version of spring-security-web and config -->
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-web</artifactId>
+                <version>5.7.5</version>
+            </dependency>
+
             <!-- Import dependency management start Spring Boot (because we don't use Spring-Boot as parent pom)-->
             <dependency>
                 <groupId>org.springframework.boot</groupId>
@@ -174,47 +192,38 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <plugin>
+                <!-- This will be active when running the verify or install goal
+                     To skip (e.g. during debugging) use 'mvn clean package')-->
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <version>7.3.0</version>
+                <configuration>
+                    <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
+                    <failBuildOnCVSS>8</failBuildOnCVSS>
+                    <suppressionFiles>
+                        <suppressionFile>owasp-suppress.xml</suppressionFile>
+                    </suppressionFiles>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Tmp added to see compilation errors after upgrading dependencies, see
+            https://stackoverflow.com/questions/62583298/exception-in-thread-main-java-lang-assertionerror-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <forceJavacCompilerUse>true</forceJavacCompilerUse>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>depcheck</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <!-- This will be active when running the verify or install goal
-                             To skip (e.g. during debugging) use 'mvn clean package')-->
-                        <groupId>org.owasp</groupId>
-                        <artifactId>dependency-check-maven</artifactId>
-                        <version>6.5.0</version>
-                        <configuration>
-                            <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
-                            <failBuildOnCVSS>7</failBuildOnCVSS>
-                            <suppressionFiles>
-                                <suppressionFile>owasp-suppress.xml</suppressionFile>
-                            </suppressionFiles>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>check</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-
-                    <!-- Tmp added to see compilation errors after upgrading dependencies, see
-                    https://stackoverflow.com/questions/62583298/exception-in-thread-main-java-lang-assertionerror-->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-compiler-plugin</artifactId>
-                        <configuration>
-                            <forceJavacCompilerUse>true</forceJavacCompilerUse>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>

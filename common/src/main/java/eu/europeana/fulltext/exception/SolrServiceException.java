@@ -2,6 +2,11 @@ package eu.europeana.fulltext.exception;
 
 import eu.europeana.api.commons.error.EuropeanaApiException;
 
+
+/**
+ * Exception thrown when an issue occurs while interacting with Solr.
+ * Should be used for I/O or network issues
+ */
 public class SolrServiceException extends EuropeanaApiException {
 
   private static final long serialVersionUID = -167560566275881316L;

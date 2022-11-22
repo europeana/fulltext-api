@@ -26,13 +26,38 @@
       <groupId>eu.europeana.fulltext</groupId>
       <artifactId>common</artifactId>
       <version>0.9.1-SNAPSHOT</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.springframework.security</groupId>
+          <artifactId>spring-security-crypto</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.springframework.security</groupId>
+          <artifactId>spring-security-core</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
       <groupId>org.springframework.batch</groupId>
       <artifactId>spring-batch-core</artifactId>
       <version>${spring-batch.version}</version>
+      <exclusions>
+        <!--Excluding jettison due to CVE-2022-40149, CVE-2022-40150. latest version is 1.2 is vulnerable.-->
+        <exclusion>
+          <groupId>org.codehaus.jettison</groupId>
+          <artifactId>jettison</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
+
+    <!--non-vulnerable version -->
+    <dependency>
+      <groupId>org.codehaus.jettison</groupId>
+      <artifactId>jettison</artifactId>
+      <version>1.5.1</version>
+    </dependency>
+
   </dependencies>
 
   <build>

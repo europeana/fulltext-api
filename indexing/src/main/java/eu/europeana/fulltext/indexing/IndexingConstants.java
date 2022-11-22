@@ -28,6 +28,8 @@ public class IndexingConstants {
   public static final String SOLR_SORT  = "sort";
   public static final String SOLR_SORT_ASC  = " asc";
   public static final String SOLR_EXPORT  = "/export";
+  public static final Integer ATTEMPTS  = 3;
+  public static final Long SLEEP_MS = 1000l;
 
   // Date formats
   public static final String METADATA_DATE_FORMAT  = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";

@@ -39,8 +39,8 @@ public class AnnoPageUpsertWriter implements ItemWriter<AnnoPage> {
         statsCounter.addUpdated();
       }
     } catch (MongoException e) {
-      if (e instanceof MongoSocketException | e instanceof MongoTimeoutException |
-              e instanceof MongoSocketOpenException | e instanceof MongoTimeoutException) {
+      if (e instanceof MongoSocketException || e instanceof MongoTimeoutException ||
+              e instanceof MongoSocketOpenException || e instanceof MongoTimeoutException) {
         throw new MongoConnnectionException("Error while connecting to Mongo -"  +e.getMessage());
       }
     }

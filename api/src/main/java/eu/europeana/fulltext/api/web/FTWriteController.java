@@ -1,12 +1,5 @@
 package eu.europeana.fulltext.api.web;
 
-import static eu.europeana.fulltext.WebConstants.*;
-import static eu.europeana.fulltext.util.GeneralUtils.isValidAnnotationId;
-import static eu.europeana.fulltext.util.RequestUtils.PROFILE_TEXT;
-import static eu.europeana.fulltext.util.RequestUtils.REQUEST_VERSION_2;
-import static eu.europeana.fulltext.util.RequestUtils.addContentTypeToResponseHeader;
-import static eu.europeana.fulltext.util.RequestUtils.extractProfiles;
-
 import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.api.commons.service.authorization.AuthorizationService;
 import eu.europeana.api.commons.web.controller.BaseRestController;
@@ -30,13 +23,6 @@ import eu.europeana.fulltext.subtitles.external.AnnotationItem;
 import eu.europeana.fulltext.util.AnnotationUtils;
 import eu.europeana.fulltext.util.GeneralUtils;
 import io.swagger.annotations.ApiOperation;
-import java.time.ZonedDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Predicate;
-import java.util.regex.Pattern;
-import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -44,14 +30,22 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import javax.servlet.http.HttpServletRequest;
+import java.time.ZonedDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
+
+import static eu.europeana.fulltext.WebConstants.*;
+import static eu.europeana.fulltext.util.GeneralUtils.isValidAnnotationId;
+import static eu.europeana.fulltext.util.RequestUtils.PROFILE_TEXT;
+import static eu.europeana.fulltext.util.RequestUtils.extractProfiles;
+import static eu.europeana.iiif.AcceptUtils.*;
 
 @RestController
 @Validated
@@ -375,7 +369,7 @@ public class FTWriteController extends BaseRestController {
   private ResponseEntity<String> noContentResponse(HttpServletRequest request) {
     org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
     headers.add(HttpHeaders.ALLOW, getMethodsForRequestPattern(request, requestPathMethodService));
-    headers.add(HttpHeaders.CONTENT_TYPE, HttpHeaders.CONTENT_TYPE_JSONLD);
+    addContentTypeToResponseHeader(headers, REQUEST_VERSION_2, false);
     return ResponseEntity.noContent().headers(headers).build();
   }
 }

@@ -1,6 +1,6 @@
 package eu.europeana.fulltext.api.web;
 
-import eu.europeana.fulltext.api.config.FTDefinitions;
+import eu.europeana.iiif.AcceptUtils;
 import org.springframework.boot.autoconfigure.web.servlet.error.AbstractErrorController;
 import org.springframework.boot.web.error.ErrorAttributeOptions;
 import org.springframework.boot.web.servlet.error.ErrorAttributes;
@@ -24,7 +24,7 @@ public class FTErrorController extends AbstractErrorController {
     }
 
 
-    @RequestMapping(value = "/error", produces = {FTDefinitions.MEDIA_TYPE_JSON, FTDefinitions.MEDIA_TYPE_JSONLD})
+    @RequestMapping(value = "/error", produces = {AcceptUtils.MEDIA_TYPE_JSON, AcceptUtils.MEDIA_TYPE_JSONLD})
     @ResponseBody
     public Map<String, Object> error(final HttpServletRequest request) {
         return this.getErrorAttributes(request, ErrorAttributeOptions.defaults());

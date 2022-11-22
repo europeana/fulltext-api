@@ -1,5 +1,7 @@
 package eu.europeana.fulltext;
 
+import eu.europeana.iiif.IIIFDefinitions;
+
 public class WebConstants {
 
   private WebConstants() {
@@ -29,5 +31,5 @@ public class WebConstants {
   public static final String ITEM_BASE_URL = "http://data.europeana.eu/item";
   public static final String FULLTEXT_BASE_URL = "http://data.europeana.eu/fulltext";
   public static final String ANNOTATION_BASE_URL = "http://data.europeana.eu/annotation";
-  public static final String ANNOPAGE_BASE_URL = "https://iiif.europeana.eu/presentation";
+  public static final String ANNOPAGE_BASE_URL = IIIFDefinitions.IIIF_EUROPENA_BASE_URL + IIIFDefinitions.PRESENTATION_PATH;
 }

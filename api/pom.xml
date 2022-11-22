@@ -36,7 +36,19 @@
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-starter-logging</artifactId>
                 </exclusion>
+                <!--Non vulnerable version added below -->
+                <exclusion>
+                    <groupId>org.yaml</groupId>
+                    <artifactId>snakeyaml</artifactId>
+                </exclusion>
             </exclusions>
+        </dependency>
+
+        <!-- Added non-vulnerable version -->
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>1.33</version>
         </dependency>
 
         <dependency>
@@ -96,35 +108,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-log4j2</artifactId>
         </dependency>
-        <!-- All log4j components specifically added to override spring-boot-starter-log4j2 version -->
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>${log4j2.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <version>${log4j2.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
-            <version>${log4j2.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-jul</artifactId>
-            <version>${log4j2.version}</version>
-        </dependency>
-
-        <!-- Adds better web container support for log4j  -->
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-web</artifactId>
-            <version>${log4j2.version}</version>
-        </dependency>
-
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -224,18 +207,6 @@
             <version>2.0.1.Final</version>
         </dependency>
 
-        <!-- Override the spring-security-core and crypto to 5.7.2 which does not have any vulnerabilities like CVE-2022-22978 -->
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-crypto</artifactId>
-            <version>5.7.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-core</artifactId>
-            <version>5.7.2</version>
-        </dependency>
-
         <!-- StringUtils -->
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -246,7 +217,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
-            <version>1.9</version>
+            <version>1.10.0</version>
         </dependency>
 
         <!-- Swagger -->
@@ -265,6 +236,14 @@
             <groupId>org.springframework.batch</groupId>
             <artifactId>spring-batch-core</artifactId>
             <version>${spring-batch.version}</version>
+            <exclusions>
+                <!--Excluding jettison due to CVE-2022-40149, CVE-2022-40150. latest version is 1.2 is vulnerable.
+                Duplicate, coming from commons-web -> annotation-id , version 1.3-->
+                <exclusion>
+                    <groupId>org.codehaus.jettison</groupId>
+                    <artifactId>jettison</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- Used for subtitle conversion-->
@@ -272,8 +251,28 @@
             <groupId>com.dotsub.converter</groupId>
             <artifactId>subtitle-converter</artifactId>
             <version>1</version>
+            <exclusions>
+                <!--Excluding velocity due to CVE-2020-13936. latest version is 1.7 is vulnerable.
+                 For now while converting subtitle this dependency is not being used -->
+                <exclusion>
+                    <groupId>org.apache.velocity</groupId>
+                    <artifactId>velocity</artifactId>
+                </exclusion>
+                <!--Excluding velocity due to CVE-2018-1000632, CVE-2020-10683. latest version is 1.6.1 is vulnerable.
+                Added not vulnerable version below-->
+                <exclusion>
+                    <groupId>dom4j</groupId>
+                    <artifactId>dom4j</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
+        <!-- Adding dom4j with non-vulnerable version. Used in DfxpImportHandler for TTML conversion -->
+        <dependency>
+            <groupId>org.dom4j</groupId>
+            <artifactId>dom4j</artifactId>
+            <version>2.1.3</version>
+        </dependency>
 
         <!-- Fixes DNS resolution issues on Apple Silicon  -->
         <dependency>
@@ -287,7 +286,31 @@
             <groupId>eu.europeana.api.commons</groupId>
             <artifactId>commons-web</artifactId>
             <version>${api-commons.version}</version>
+            <exclusions>
+                <!-- version 1.3, also vulnerable. Adding below non-vulnerable version 1.5.1-->
+                <exclusion>
+                    <groupId>org.codehaus.jettison</groupId>
+                    <artifactId>jettison</artifactId>
+                </exclusion>
+                <!-- Excluded for CVE-2022-22978. Added below non-vulnerable version-->
+                <exclusion>
+                    <groupId>org.springframework.security</groupId>
+                    <artifactId>spring-security-web</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework.security</groupId>
+                    <artifactId>spring-security-config</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
+
+        <!--non-vulnerable version -->
+        <dependency>
+            <groupId>org.codehaus.jettison</groupId>
+            <artifactId>jettison</artifactId>
+            <version>1.5.1</version>
+        </dependency>
+
 
         <!-- Test stuff -->
         <dependency>
@@ -302,32 +325,20 @@
             </exclusions>
         </dependency>
 
-        <!-- junit 5 -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>${junit-jupiter.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-junit-jupiter</artifactId>
-            <version>${mockito.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.unitils</groupId>
-            <artifactId>unitils-core</artifactId>
-            <version>${unitils.version}</version>
-            <scope>test</scope>
-        </dependency>
-
         <!--testcontainers for integration testing-->
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
             <version>${testcontainers.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <!--Excluding common-compress due to CVE-2021-35517, CVE-2021-35516, CVE-2021-35515, CVE-2021-36090.
+                version is 1.20 is vulnerable. Also the dependency is duplicate and coming from commons-web-> jena-core -> jena-base now -->
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-compress</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
