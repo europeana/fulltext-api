@@ -134,6 +134,12 @@
             http2-client, http2-common , http2-http-client-transport and jetty-io -->
         </dependency>
 
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-ui</artifactId>
+            <version>${springdoc.version}</version>
+        </dependency>
+
         <!-- Override the http2-client, http2-common , jetty-io , jetty-http, jetty-util, jetty-client version for CVE-2022-2048-->
         <dependency>
             <groupId>org.eclipse.jetty.http2</groupId>
@@ -185,7 +191,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-xml</artifactId>
-            <version>${jackson.version}</version>
+            <!-- <version>${jackson.version}</version> For some reason specifying a new version will make SpringDoc fail -->
         </dependency>
 
         <!-- see https://github.com/io-informatics/jackson-jsonld -->
@@ -220,17 +226,8 @@
             <version>1.10.0</version>
         </dependency>
 
-        <!-- Swagger -->
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-boot-starter</artifactId>
-            <version>${swagger.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger-ui</artifactId>
-            <version>${swagger.version}</version>
-        </dependency>
+
+
 
         <dependency>
             <groupId>org.springframework.batch</groupId>

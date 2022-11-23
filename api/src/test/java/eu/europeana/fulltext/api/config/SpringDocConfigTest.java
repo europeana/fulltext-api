@@ -1,6 +1,5 @@
 package eu.europeana.fulltext.api.config;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -10,17 +9,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
- * JUnit test to check if Swagger is setup fine
+ * JUnit test to check if OpenAPI and SpringDoc is setup okay
  */
 @SpringBootTest
 @AutoConfigureMockMvc
-@Disabled("Disabled as this loads the entire application. Should be made an integration test")
-class SwaggerConfigTest {
+public class SpringDocConfigTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -29,7 +25,7 @@ class SwaggerConfigTest {
      * Test if the /v3/api-docs endpoint is available and if CORS is enabled for it
      */
     @Test
-    void testApiDocEndpoint() throws Exception {
+    public void testApiDocEndpoint() throws Exception {
         mockMvc.perform(get("/v3/api-docs")
                 .header(HttpHeaders.ORIGIN, "https://test.com"))
                 .andExpect(status().is(HttpStatus.OK.value()))
@@ -43,12 +39,12 @@ class SwaggerConfigTest {
     }
 
     /**
-     * Test if Swagger UI is available
+     * Test if UI is available via /console path
      */
     @Test
-    void testSwaggerUI() throws Exception {
-        mockMvc.perform(get("/swagger-ui/"))
-                .andExpect(status().is(HttpStatus.OK.value()));
+    public void testConsole() throws Exception {
+        mockMvc.perform(get("/console"))
+                .andExpect(status().is(HttpStatus.FOUND.value()));
     }
 
 }

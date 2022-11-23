@@ -13,7 +13,7 @@ import eu.europeana.fulltext.search.model.response.SearchResult;
 import eu.europeana.fulltext.search.service.FTSearchService;
 import eu.europeana.iiif.AcceptUtils;
 import eu.europeana.iiif.IIIFDefinitions;
-import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -35,7 +35,7 @@ import static eu.europeana.iiif.AcceptUtils.*;
  * @author Patrick Ehlert
  * Created on 28 May 2020
  */
-@Api(tags = {"Full-text search"}, description = "Search all full-texts that are part of an item (e.g. newspaper issue)")
+@Tag(name = "Full-text search", description = "Search all full-texts that are part of an item (e.g. newspaper issue)")
 @RestController
 @RequestMapping(IIIFDefinitions.PRESENTATION_PATH)
 public class FTSearchController {
@@ -80,8 +80,8 @@ public class FTSearchController {
     /**
      * Search the provided issue (CHO) for a particular string
      *
-     * @param datasetId       datasetId of the issue to search
-     * @param localId         itemId of the issue to search
+     * @param dsId       datasetId of the issue to search
+     * @param lcId         itemId of the issue to search
      * @param query           search query
      * @param q               alternative search query (will override query if specified both
      * @param pageSize        maximum number of hits
@@ -89,16 +89,16 @@ public class FTSearchController {
      * @param debug           if specified then include debug information in the response
      * @throws EuropeanaApiException when there is an error processing the request
      */
-    @GetMapping(value = "/{datasetId}/{localId}/search", headers = ACCEPT_JSONLD)
-    public ResponseEntity searchIssueJsonLd(@PathVariable String datasetId, @PathVariable String localId,
-                                    @RequestParam(required = false) String query,
-                                    @RequestParam(required = false) String q,
-                                    @RequestParam(required = false, defaultValue = "12") int pageSize,
-                                    @RequestParam(required = false) String textGranularity,
-                                    @RequestParam(value = "format", required = false) String versionParam,
-                                    @RequestParam(required = false) String debug,
-                                    HttpServletRequest request) throws EuropeanaApiException {
-        return serachIssue(datasetId, localId, query, q, pageSize, textGranularity, versionParam, debug, request, false);
+    @GetMapping(value = "/{dsId}/{lcId}/search", headers = ACCEPT_JSONLD)
+    public ResponseEntity searchIssueJsonLd(@PathVariable String dsId, @PathVariable String lcId,
+                                            @RequestParam(required = false) String query,
+                                            @RequestParam(required = false) String q,
+                                            @RequestParam(required = false, defaultValue = "12") int pageSize,
+                                            @RequestParam(required = false) String textGranularity,
+                                            @RequestParam(value = "format", required = false) String versionParam,
+                                            @RequestParam(required = false) String debug,
+                                            HttpServletRequest request) throws EuropeanaApiException {
+        return serachIssue(dsId, lcId, query, q, pageSize, textGranularity, versionParam, debug, request, false);
     }
 
     private ResponseEntity serachIssue(String datasetId, String localId, String query, String q, int pageSize, String textGranularity,

@@ -45,7 +45,7 @@
         <!-- upgraded to 2.5.14 as 2.6.x is not compatible with swagger (springfox-swagger-ui)-->
         <!-- org.apache.tomcat.embed version 9.0.56 is included uptill 2.6.3 which is vulnerable. See : CVE-2022-23181  -->
         <spring-boot.version>2.5.14</spring-boot.version>
-        <jackson.version>2.9.9</jackson.version>
+        <jackson.version>2.14.0</jackson.version>
         <io-informatics.version>0.1.1</io-informatics.version>
         <morphia.version>2.2.9</morphia.version>
         <mongo-driver.version>4.5.1</mongo-driver.version>
@@ -57,7 +57,7 @@
         <junit-jupiter.version>5.6.0</junit-jupiter.version>
         <mockito.version>3.7.0</mockito.version>
         <unitils.version>3.4.6</unitils.version>
-        <swagger.version>3.0.0</swagger.version>
+        <springdoc.version>1.6.13</springdoc.version>
         <tomcat.version>9.0.58</tomcat.version>
         <mock-webserver.version>4.9.0</mock-webserver.version>
         <testcontainers.version>1.16.0</testcontainers.version>
@@ -100,8 +100,7 @@
                 <artifactId>commons-web</artifactId>
                 <version>${api-commons.version}</version>
                 <exclusions>
-                    <!-- exclude Swagger dependency as it clashes with version in project
-                     TODO: remove Swagger from api-commons -->
+                    <!-- exclude Swagger dependency -->
                     <exclusion>
                         <groupId>io.springfox</groupId>
                         <artifactId>springfox-swagger2</artifactId>

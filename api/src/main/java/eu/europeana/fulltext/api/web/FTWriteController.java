@@ -22,7 +22,7 @@ import eu.europeana.fulltext.subtitles.FulltextType;
 import eu.europeana.fulltext.subtitles.external.AnnotationItem;
 import eu.europeana.fulltext.util.AnnotationUtils;
 import eu.europeana.fulltext.util.GeneralUtils;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -45,7 +45,8 @@ import static eu.europeana.fulltext.WebConstants.*;
 import static eu.europeana.fulltext.util.GeneralUtils.isValidAnnotationId;
 import static eu.europeana.fulltext.util.RequestUtils.PROFILE_TEXT;
 import static eu.europeana.fulltext.util.RequestUtils.extractProfiles;
-import static eu.europeana.iiif.AcceptUtils.*;
+import static eu.europeana.iiif.AcceptUtils.REQUEST_VERSION_2;
+import static eu.europeana.iiif.AcceptUtils.addContentTypeToResponseHeader;
 
 @RestController
 @Validated
@@ -85,7 +86,7 @@ public class FTWriteController extends BaseRestController {
     return ftAuthorizationService;
   }
 
-  @ApiOperation(value = "Propagate and synchronise with Annotations API")
+  @Tag(name = "Synchronize annotations", description ="Propagate and synchronise with Annotations API")
   @PostMapping(
       value = "/fulltext/annosync",
       produces = {HttpHeaders.CONTENT_TYPE_JSONLD, MediaType.APPLICATION_JSON_VALUE})
@@ -147,8 +148,7 @@ public class FTWriteController extends BaseRestController {
     return generateResponse(request, annoPage, profiles, HttpStatus.ACCEPTED);
   }
 
-  @ApiOperation(
-      value = "Submits a new fulltext document for a given Europeana ID (dataset + localID)")
+  @Tag(name = "Submit new fulltext", description ="Submits a new fulltext document for a given Europeana ID (dataset + localID)")
   @PostMapping(
       value = "/presentation/{datasetId}/{localId}/annopage",
       produces = {HttpHeaders.CONTENT_TYPE_JSONLD, MediaType.APPLICATION_JSON_VALUE})
@@ -225,7 +225,7 @@ public class FTWriteController extends BaseRestController {
     return generateResponse(request, createdAnnoPage, profiles, HttpStatus.OK);
   }
 
-  @ApiOperation(value = "Replaces existing fulltext for a media resource with a new document")
+  @Tag(name = "Replace fulltext", description = "Replaces existing fulltext for a media resource with a new document")
   @PutMapping(
       value = "/presentation/{datasetId}/{localId}/annopage/{pageId}",
       produces = {HttpHeaders.CONTENT_TYPE_JSONLD, MediaType.APPLICATION_JSON_VALUE})
@@ -299,7 +299,7 @@ public class FTWriteController extends BaseRestController {
     return generateResponse(request, updatedAnnoPage, profiles, HttpStatus.OK);
   }
 
-  @ApiOperation(value = "Deprecates the full-text associated to a media resource\n")
+  @Tag(name = "Deprecate fulltext", description = "Deprecates the full-text associated to a media resource\n")
   @DeleteMapping(
       value = "/presentation/{datasetId}/{localId}/annopage/{pageId}",
       produces = {HttpHeaders.CONTENT_TYPE_JSONLD, MediaType.APPLICATION_JSON_VALUE})
