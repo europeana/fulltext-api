@@ -352,7 +352,7 @@ class FulltextRetrievalIT extends BaseIntegrationTest {
         // with text granularity
         mockMvc.perform(
                         get(
-                                "/presentation/{dsId}/{lcId}/annopage/{pgId}}",
+                                "/presentation/{dsId}/{lcId}/annopage/{pgId}",
                                 subtitleAnnopageOrginal.getDsId(),
                                 subtitleAnnopageOrginal.getLcId(),
                                 subtitleAnnopageOrginal.getPgId()
