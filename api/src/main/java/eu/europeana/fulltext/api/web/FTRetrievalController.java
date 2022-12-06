@@ -155,7 +155,7 @@ public class FTRetrievalController {
      * @throws EuropeanaApiException when serialising to JsonLd fails or an invalid parameter value is provided
      */
     @Tag(name = "Annopage (JSON-LD)", description = "Retrieve a page with annotations")
-    @GetMapping(value = "/presentation/{dsId}/{lcId}/annopage/{pageId}",
+    @GetMapping(value = "/presentation/{dsId}/{lcId}/annopage/{pgId}",
             headers = ACCEPT_JSONLD)
     public ResponseEntity<String> annoPageJsonLd(
         @PathVariable String dsId,
