@@ -307,7 +307,7 @@ class FulltextRetrievalIT extends BaseIntegrationTest {
         // original lang present
         mockMvc.perform(
                         get(
-                                "/presentation/{datasetId}/{localId}/annopage/{pageId}",
+                                "/presentation/{dsId}/{lcId}/annopage/{pageId}",
                                 subtitleAnnopageOrginal.getDsId(),
                                 subtitleAnnopageOrginal.getLcId(),
                                 subtitleAnnopageOrginal.getPgId()
@@ -323,7 +323,7 @@ class FulltextRetrievalIT extends BaseIntegrationTest {
         // original not present - without lang should return 404
         mockMvc.perform(
                         get(
-                                "/presentation/{datasetId}/{localId}/annopage/{pageId}",
+                                "/presentation/{dsId}/{lcId}/annopage/{pageId}",
                                 subtitleAnnopageTransalation_1.getDsId(),
                                 subtitleAnnopageTransalation_1.getLcId(),
                                 subtitleAnnopageTransalation_1.getPgId()
@@ -337,7 +337,7 @@ class FulltextRetrievalIT extends BaseIntegrationTest {
         // original not present - with lang should return 200
         mockMvc.perform(
                         get(
-                                "/presentation/{datasetId}/{localId}/annopage/{pageId}",
+                                "/presentation/{dsId}/{lcId}/annopage/{pageId}",
                                 subtitleAnnopageTransalation_2.getDsId(),
                                 subtitleAnnopageTransalation_2.getLcId(),
                                 subtitleAnnopageTransalation_2.getPgId()
@@ -352,7 +352,7 @@ class FulltextRetrievalIT extends BaseIntegrationTest {
         // with text granularity
         mockMvc.perform(
                         get(
-                                "/presentation/{datasetId}/{localId}/annopage/{pageId}",
+                                "/presentation/{dsId}/{lcId}/annopage/{pageId}}",
                                 subtitleAnnopageOrginal.getDsId(),
                                 subtitleAnnopageOrginal.getLcId(),
                                 subtitleAnnopageOrginal.getPgId()
@@ -383,7 +383,7 @@ class FulltextRetrievalIT extends BaseIntegrationTest {
         // original lang present + jsonld
         mockMvc.perform(
                         get(
-                                "/presentation/{datasetId}/{localId}/annopage/{pageId}",
+                                "/presentation/{dsId}/{lcId}/annopage/{pgId}",
                                 subtitleAnnopageOrginal.getDsId(),
                                 subtitleAnnopageOrginal.getLcId(),
                                 subtitleAnnopageOrginal.getPgId()
@@ -442,7 +442,7 @@ class FulltextRetrievalIT extends BaseIntegrationTest {
         // invalid version format
         mockMvc.perform(
                         get(
-                                "/presentation/{datasetId}/{localId}/annopage/{pageId}",
+                                "/presentation/{dsId}/{lcId}/annopage/{pgId}",
                                 subtitleAnnopageOrginal.getDsId(),
                                 subtitleAnnopageOrginal.getLcId(),
                                 subtitleAnnopageOrginal.getPgId()
