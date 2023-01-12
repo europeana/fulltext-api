@@ -191,28 +191,6 @@
                 </executions>
             </plugin>
 
-            <plugin>
-                <!-- This will be active when running the verify or install goal
-                     To skip (e.g. during debugging) use 'mvn clean package')-->
-                <groupId>org.owasp</groupId>
-                <artifactId>dependency-check-maven</artifactId>
-                <version>7.3.0</version>
-                <configuration>
-                    <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
-                    <failBuildOnCVSS>8</failBuildOnCVSS>
-                    <suppressionFiles>
-                        <suppressionFile>owasp-suppress.xml</suppressionFile>
-                    </suppressionFiles>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
             <!-- Tmp added to see compilation errors after upgrading dependencies, see
             https://stackoverflow.com/questions/62583298/exception-in-thread-main-java-lang-assertionerror-->
             <plugin>
@@ -224,4 +202,33 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>depcheck</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.owasp</groupId>
+                        <artifactId>dependency-check-maven</artifactId>
+                        <version>7.3.0</version>
+                        <configuration>
+                            <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
+                            <failBuildOnCVSS>8</failBuildOnCVSS>
+                            <suppressionFiles>
+                                <suppressionFile>owasp-suppress.xml</suppressionFile>
+                            </suppressionFiles>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
