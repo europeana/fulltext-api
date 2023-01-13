@@ -34,6 +34,7 @@
         <module>loader</module>
         <module>migrations</module>
         <module>indexing</module>
+        <module>annosync</module>
     </modules>
 
     <properties>
