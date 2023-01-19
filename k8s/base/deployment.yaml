@@ -25,7 +25,7 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - name: secret
-              mountPath: "/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/fulltext.user.properties"
+              mountPath: "/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/fulltext.properties"
               readOnly: true
               subPath: fulltext.user.properties
       volumes:
