@@ -1,0 +1,4 @@
+# Send only unzipped war directory to Docker
+**
+!/api/target/fulltext/
+**/*.user.properties

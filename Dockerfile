@@ -7,8 +7,5 @@ ENV ELASTIC_APM_VERSION 1.34.1
 RUN wget https://repo1.maven.org/maven2/co/elastic/apm/elastic-apm-agent/$ELASTIC_APM_VERSION/elastic-apm-agent-$ELASTIC_APM_VERSION.jar -O /usr/local/elastic-apm-agent.jar
 
 # Copy unzipped directory so we can mount config files in Kubernetes pod
-COPY api/target/fulltext/ ./ROOT/
-
-# Remove properties file and credentials. Don't fail if either file is missing
-RUN rm -f ./ROOT/WEB-INF/classes/fulltext.properties
-RUN rm -f ./ROOT/WEB-INF/classes/fulltext.user.properties
+# Ensure sensitive files aren't copied
+COPY ./api/target/fulltext/ ./ROOT/
