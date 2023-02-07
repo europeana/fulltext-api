@@ -11,6 +11,7 @@ import eu.europeana.fulltext.api.model.v3.AnnotationV3;
 import eu.europeana.fulltext.exception.ResourceDoesNotExistException;
 import eu.europeana.fulltext.repository.AnnoPageRepository;
 import eu.europeana.fulltext.repository.ResourceRepository;
+import eu.europeana.fulltext.service.SubtitleFulltextConverter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
