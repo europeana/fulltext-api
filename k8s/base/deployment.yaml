@@ -24,11 +24,41 @@ spec:
             initialDelaySeconds: 100
             periodSeconds: 30
           volumeMounts:
-            - name: secret
+            - name: config
               mountPath: "/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/fulltext.user.properties"
               readOnly: true
               subPath: fulltext.user.properties
       volumes:
-        - name: secret
-          secret:
-            secretName: fulltext-api-secret
+        - name: config
+          configMap:
+            name: fulltext-api-config
+
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: fulltext-annosync-job
+spec:
+  # only one instance should run at a time
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 600
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: fulltext-annosync
+              image: europeana/fulltext-annosync
+              volumeMounts:
+                - name: annosync-properties
+                  mountPath: "/opt/app/config/annosync.user.properties"
+                  readOnly: true
+                  subPath: annosync.user.properties
+              env:
+                - name: SPRING_CONFIG_ADDITIONAL_LOCATION
+                  value: "file:/opt/app/config/annosync.user.properties"
+          restartPolicy: OnFailure
+          volumes:
+            - name: annosync-properties
+              configMap:
+                name: fulltext-annosync-config
