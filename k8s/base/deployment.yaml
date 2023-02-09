@@ -41,9 +41,9 @@ metadata:
 spec:
   # only one instance should run at a time
   concurrencyPolicy: Forbid
-  startingDeadlineSeconds: 600
   jobTemplate:
     spec:
+      ttlSecondsAfterFinished: 0
       template:
         spec:
           containers:
