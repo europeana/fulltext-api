@@ -18,7 +18,7 @@ spec:
               value: "-javaagent:/usr/local/elastic-apm-agent.jar
                       -Delastic.apm.application_packages=${ELASTIC_APP_PACKAGES}
                       -Delastic.apm.server_urls=${ELASTIC_APM_SERVERS}
-                      -Delastic.apm.service_name=${APP_NAME}-api
+                      -Delastic.apm.service_name=${API_APP_NAME}
                       -Delastic.apm.environment=${K8S_NAMESPACE}"
           resources:
             requests:
@@ -39,6 +39,10 @@ spec:
   jobTemplate:
     spec:
       template:
+        metadata:
+          annotations:
+            fluentd/include: '${COLLECT_LOGS}'
+            fluentd/multiline: 'true'
         spec:
           containers:
             - name: fulltext-annosync
@@ -49,7 +53,7 @@ spec:
                   value: "-javaagent:\"/usr/local/elastic-apm-agent.jar\"
                           -Delastic.apm.application_packages=${ELASTIC_APP_PACKAGES}
                           -Delastic.apm.server_urls=${ELASTIC_APM_SERVERS}
-                          -Delastic.apm.service_name=${APP_NAME}-annosync
+                          -Delastic.apm.service_name=${ANNOSYNC_APP_NAME}
                           -Delastic.apm.environment=${K8S_NAMESPACE}"
               resources:
                 requests:
