@@ -1,0 +1,144 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: fulltext-annosync-job
+spec:
+  schedule: "${ANNOSYNC_CRON_SCHEDULE}"
+  suspend: ${SUSPEND_ANNOSYNC}
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 60
+      template:
+        spec:
+          containers:
+            - name: fulltext-annosync
+              image: europeana/fulltext-annosync
+              imagePullPolicy: Always
+              env:
+                - name: SPRING_CONFIG_ADDITIONAL_LOCATION
+                  value: "file:/opt/app/config/annosync.user.properties"
+                - name: JAVA_OPTS
+                  value: "-javaagent:\"/usr/local/elastic-apm-agent.jar\"
+                          -Delastic.apm.application_packages=${ELASTIC_APP_PACKAGES}
+                          -Delastic.apm.server_urls=${ELASTIC_APM_SERVERS}
+                          -Delastic.apm.service_name=${ANNOSYNC_APP_NAME}
+                          -Delastic.apm.environment=${K8S_NAMESPACE}"
+              resources:
+                requests:
+                  memory: "${ANNOSYNC_MEMORY}M"
+                  cpu: "${ANNOSYNC_CPU}m"
+                limits:
+                  memory: "${ANNOSYNC_MEMORY}M"
+                  cpu: "${ANNOSYNC_CPU}m"
+              volumeMounts:
+                - name: annosync-properties
+                  mountPath: "/opt/app/config/annosync.user.properties"
+                  readOnly: true
+                  subPath: annosync.user.properties
+          restartPolicy: OnFailure
+          volumes:
+            - name: annosync-properties
+              configMap:
+                name: fulltext-annosync-config
+
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: fulltext-indexing-job
+spec:
+  schedule: "${INDEXING_CRON_SCHEDULE}"
+  suspend: ${SUSPEND_INDEXING}
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 60
+      template:
+        spec:
+          containers:
+            - name: fulltext-indexing
+              image: europeana/fulltext-indexing
+              imagePullPolicy: Always
+              command:
+                - java
+                - -jar
+                - /opt/app/fulltext-indexing.jar
+                - fulltext_indexing
+              env:
+                - name: SPRING_CONFIG_ADDITIONAL_LOCATION
+                  value: "file:/opt/app/config/indexing.user.properties"
+                - name: JAVA_OPTS
+                  value: "-javaagent:\"/usr/local/elastic-apm-agent.jar\"
+                          -Delastic.apm.application_packages=${ELASTIC_APP_PACKAGES}
+                          -Delastic.apm.server_urls=${ELASTIC_APM_SERVERS}
+                          -Delastic.apm.service_name=${INDEXING_APP_NAME}
+                          -Delastic.apm.environment=${K8S_NAMESPACE}"
+              resources:
+                requests:
+                  memory: "${INDEXING_MEMORY}M"
+                  cpu: "${INDEXING_CPU}m"
+                limits:
+                  memory: "${INDEXING_MEMORY}M"
+                  cpu: "${INDEXING_CPU}m"
+              volumeMounts:
+                - name: indexing-properties
+                  mountPath: "/opt/app/config/indexing.user.properties"
+                  readOnly: true
+                  subPath: indexing.user.properties
+          restartPolicy: OnFailure
+          volumes:
+            - name: indexing-properties
+              configMap:
+                name: fulltext-indexing-config
+
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: fulltext-metadata-sync-job
+spec:
+  schedule: "${METADATA_SYNC_CRON_SCHEDULE}"
+  suspend: ${SUSPEND_INDEXING}
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 60
+      template:
+        spec:
+          containers:
+            - name: fulltext-indexing
+              image: europeana/fulltext-indexing
+              imagePullPolicy: Always
+              command:
+                - java
+                - -jar
+                - /opt/app/fulltext-indexing.jar
+                - metadata_sync
+              env:
+                - name: SPRING_CONFIG_ADDITIONAL_LOCATION
+                  value: "file:/opt/app/config/indexing.user.properties"
+                - name: JAVA_OPTS
+                  value: "-javaagent:\"/usr/local/elastic-apm-agent.jar\"
+                          -Delastic.apm.application_packages=${ELASTIC_APP_PACKAGES}
+                          -Delastic.apm.server_urls=${ELASTIC_APM_SERVERS}
+                          -Delastic.apm.service_name=${METADATA_SYNC_APP_NAME}
+                          -Delastic.apm.enabled=${COLLECT_LOGS}
+                          -Delastic.apm.environment=${K8S_NAMESPACE}"
+              resources:
+                requests:
+                  memory: "${INDEXING_MEMORY}M"
+                  cpu: "${INDEXING_CPU}m"
+                limits:
+                  memory: "${INDEXING_MEMORY}M"
+                  cpu: "${INDEXING_CPU}m"
+              volumeMounts:
+                - name: indexing-properties
+                  mountPath: "/opt/app/config/indexing.user.properties"
+                  readOnly: true
+                  subPath: indexing.user.properties
+          restartPolicy: OnFailure
+          volumes:
+            - name: indexing-properties
+              configMap:
+                name: fulltext-indexing-config

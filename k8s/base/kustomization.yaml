@@ -4,11 +4,7 @@ resources:
 commonLabels:
   app: fulltext-api
 
-# expects files to be in the same directory
 configMapGenerator:
   - name: fulltext-api-config
     files:
       - fulltext.user.properties
-  - name: fulltext-annosync-config
-    files:
-      - annosync.user.properties

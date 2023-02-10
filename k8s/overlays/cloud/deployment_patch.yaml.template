@@ -19,46 +19,12 @@ spec:
                       -Delastic.apm.application_packages=${ELASTIC_APP_PACKAGES}
                       -Delastic.apm.server_urls=${ELASTIC_APM_SERVERS}
                       -Delastic.apm.service_name=${API_APP_NAME}
+                      -Delastic.apm.enabled=${COLLECT_LOGS}
                       -Delastic.apm.environment=${K8S_NAMESPACE}"
           resources:
             requests:
-              memory: "${MEMORY_REQUEST}M"
-              cpu: "${CPU_REQUEST}m"
+              memory: "${API_MEMORY_REQUEST}M"
+              cpu: "${API_CPU_REQUEST}m"
             limits:
-              memory: "${MEMORY_LIMIT}M"
-              cpu: "${CPU_LIMIT}m"
-
----
-apiVersion: batch/v1
-kind: CronJob
-metadata:
-  name: fulltext-annosync-job
-spec:
-  schedule: "${ANNOSYNC_CRON_SCHEDULE}"
-  suspend: ${SUSPEND_ANNOSYNC}
-  jobTemplate:
-    spec:
-      template:
-        metadata:
-          annotations:
-            fluentd/include: '${COLLECT_LOGS}'
-            fluentd/multiline: 'true'
-        spec:
-          containers:
-            - name: fulltext-annosync
-              imagePullPolicy: Always
-              env:
-                - name: JAVA_OPTS
-                 # javaagent path needs to be inside double-quotes. See https://stackoverflow.com/a/23530158
-                  value: "-javaagent:\"/usr/local/elastic-apm-agent.jar\"
-                          -Delastic.apm.application_packages=${ELASTIC_APP_PACKAGES}
-                          -Delastic.apm.server_urls=${ELASTIC_APM_SERVERS}
-                          -Delastic.apm.service_name=${ANNOSYNC_APP_NAME}
-                          -Delastic.apm.environment=${K8S_NAMESPACE}"
-              resources:
-                requests:
-                  memory: "${MEMORY_REQUEST}M"
-                  cpu: "${CPU_REQUEST}m"
-                limits:
-                  memory: "${MEMORY_LIMIT}M"
-                  cpu: "${CPU_LIMIT}m"
+              memory: "${API_MEMORY_LIMIT}M"
+              cpu: "${API_CPU_LIMIT}m"
