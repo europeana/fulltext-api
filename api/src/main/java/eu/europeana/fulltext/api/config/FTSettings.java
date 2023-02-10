@@ -52,7 +52,6 @@ public class FTSettings implements InitializingBean {
     @Value("${spring.profiles.active:}")
     private String activeProfileString;
 
-
     @Value("${auth.enabled}")
     private boolean authEnabled;
 
@@ -74,9 +73,6 @@ public class FTSettings implements InitializingBean {
     @Value("${mongo.fulltext.ensureIndices: false}")
     private boolean ensureFulltextIndices;
 
-    @Value("${annotations.serviceurl}")
-    private String annotationsApiUrl;
-
     @Value("${webclient.maxBufferMb:16}")
     private int maxBufferMb;
     @Value("${annotations.id.hosts}")
@@ -87,9 +83,6 @@ public class FTSettings implements InitializingBean {
 
     @Value("${spring.data.solr.repositories.enabled}")
     private boolean solrEnabled;
-
-
-
 
 
     @Autowired
@@ -126,12 +119,6 @@ public class FTSettings implements InitializingBean {
     public String getAnnotationsApiKey() {
         return annotationsApiKey;
     }
-
-
-
-
-
-
 
 
     public String getAnnotationIdHostsPattern() {
@@ -208,7 +195,6 @@ public class FTSettings implements InitializingBean {
         singleValidations.put(annotationsApiKey, "annotations.wskey");
         singleValidations.put(apiKeyPublicKey, "europeana.apikey.jwttoken.signaturekey");
         singleValidations.put(apiKeyUrl, "europeana.apikey.serviceurl");
-        singleValidations.put(annotationsApiUrl, "annotations.serviceurl");
 
         // validate all
         validateValues(singleValidations, missingProps);
