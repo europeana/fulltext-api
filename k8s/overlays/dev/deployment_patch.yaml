@@ -8,17 +8,3 @@ spec:
       containers:
         - name: fulltext-api
           imagePullPolicy: Never
----
-apiVersion: batch/v1
-kind: CronJob
-metadata:
-  name: fulltext-annosync-job
-spec:
-  schedule: "* * * * *"
-  jobTemplate:
-    spec:
-      template:
-        spec:
-          containers:
-            - name: fulltext-annosync
-              imagePullPolicy: Never

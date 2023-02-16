@@ -1,9 +1,18 @@
 resources:
   - ../../base
   - nodeport.yaml
+#  uncomment to run annosync cronjob
+#  - cronjob.yaml
 
 patchesStrategicMerge:
   - deployment_patch.yaml
 
 commonLabels:
   app: fulltext-api
+
+# Uncomment to run annosync cronjob (also see cronjob.yaml)
+# Requires annosync.user.properties file in the same directory
+#configMapGenerator:
+#  - name: fulltext-annosync-config
+#    files:
+#      - annosync.user.properties
