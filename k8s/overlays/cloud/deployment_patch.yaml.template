@@ -20,11 +20,12 @@ spec:
                       -Delastic.apm.server_urls=${ELASTIC_APM_SERVERS}
                       -Delastic.apm.service_name=${API_APP_NAME}
                       -Delastic.apm.enabled=${COLLECT_LOGS}
-                      -Delastic.apm.environment=${K8S_NAMESPACE}"
+                      -Delastic.apm.environment=${K8S_NAMESPACE}
+                      -XX:+UseParallelGC -XX:MaxRAMPercentage=75"
           resources:
             requests:
-              memory: "${API_MEMORY_REQUEST}M"
-              cpu: "${API_CPU_REQUEST}m"
+              memory: "${API_MEMORY}M"
+              cpu: "${API_CPU}m"
             limits:
-              memory: "${API_MEMORY_LIMIT}M"
-              cpu: "${API_CPU_LIMIT}m"
+              memory: "${API_MEMORY}M"
+              cpu: "${API_CPU}m"

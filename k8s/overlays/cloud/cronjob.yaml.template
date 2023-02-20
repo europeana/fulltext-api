@@ -24,7 +24,8 @@ spec:
                           -Delastic.apm.server_urls=${ELASTIC_APM_SERVERS}
                           -Delastic.apm.service_name=${ANNOSYNC_APP_NAME}
                           -Delastic.apm.enabled=${COLLECT_LOGS}
-                          -Delastic.apm.environment=${K8S_NAMESPACE}"
+                          -Delastic.apm.environment=${K8S_NAMESPACE}
+                          -XX:+UseParallelGC -XX:MaxRAMPercentage=75"
               resources:
                 requests:
                   memory: "${ANNOSYNC_MEMORY}M"
@@ -37,7 +38,7 @@ spec:
                   mountPath: "/opt/app/config/annosync.user.properties"
                   readOnly: true
                   subPath: annosync.user.properties
-          restartPolicy: OnFailure
+          restartPolicy: Never
           volumes:
             - name: annosync-properties
               configMap:
@@ -75,7 +76,8 @@ spec:
                           -Delastic.apm.server_urls=${ELASTIC_APM_SERVERS}
                           -Delastic.apm.service_name=${INDEXING_APP_NAME}
                           -Delastic.apm.enabled=${COLLECT_LOGS}
-                          -Delastic.apm.environment=${K8S_NAMESPACE}"
+                          -Delastic.apm.environment=${K8S_NAMESPACE}
+                          -XX:+UseParallelGC -XX:MaxRAMPercentage=75"
               resources:
                 requests:
                   memory: "${INDEXING_MEMORY}M"
@@ -88,7 +90,7 @@ spec:
                   mountPath: "/opt/app/config/indexing.user.properties"
                   readOnly: true
                   subPath: indexing.user.properties
-          restartPolicy: OnFailure
+          restartPolicy: Never
           volumes:
             - name: indexing-properties
               configMap:
@@ -126,7 +128,8 @@ spec:
                           -Delastic.apm.server_urls=${ELASTIC_APM_SERVERS}
                           -Delastic.apm.service_name=${METADATA_SYNC_APP_NAME}
                           -Delastic.apm.enabled=${COLLECT_LOGS}
-                          -Delastic.apm.environment=${K8S_NAMESPACE}"
+                          -Delastic.apm.environment=${K8S_NAMESPACE}
+                          -XX:+UseParallelGC -XX:MaxRAMPercentage=75"
               resources:
                 requests:
                   memory: "${INDEXING_MEMORY}M"
@@ -139,7 +142,7 @@ spec:
                   mountPath: "/opt/app/config/indexing.user.properties"
                   readOnly: true
                   subPath: indexing.user.properties
-          restartPolicy: OnFailure
+          restartPolicy: Never
           volumes:
             - name: indexing-properties
               configMap:
