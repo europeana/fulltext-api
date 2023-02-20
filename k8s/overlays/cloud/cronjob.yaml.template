@@ -23,6 +23,7 @@ spec:
                           -Delastic.apm.application_packages=${ELASTIC_APP_PACKAGES}
                           -Delastic.apm.server_urls=${ELASTIC_APM_SERVERS}
                           -Delastic.apm.service_name=${ANNOSYNC_APP_NAME}
+                          -Delastic.apm.enabled=${COLLECT_LOGS}
                           -Delastic.apm.environment=${K8S_NAMESPACE}"
               resources:
                 requests:
@@ -73,6 +74,7 @@ spec:
                           -Delastic.apm.application_packages=${ELASTIC_APP_PACKAGES}
                           -Delastic.apm.server_urls=${ELASTIC_APM_SERVERS}
                           -Delastic.apm.service_name=${INDEXING_APP_NAME}
+                          -Delastic.apm.enabled=${COLLECT_LOGS}
                           -Delastic.apm.environment=${K8S_NAMESPACE}"
               resources:
                 requests:
