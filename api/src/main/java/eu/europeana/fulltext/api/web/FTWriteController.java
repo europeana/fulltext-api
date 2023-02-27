@@ -10,7 +10,7 @@ import eu.europeana.api.commons.web.service.AbstractRequestPathMethodService;
 import eu.europeana.fulltext.WebConstants;
 import eu.europeana.fulltext.api.config.FTSettings;
 import eu.europeana.fulltext.api.model.AnnotationWrapper;
-import eu.europeana.fulltext.api.service.AnnotationApiRestService;
+import eu.europeana.fulltext.service.AnnotationApiRestService;
 import eu.europeana.fulltext.api.service.CacheUtils;
 import eu.europeana.fulltext.api.service.FTService;
 import eu.europeana.fulltext.entity.AnnoPage;

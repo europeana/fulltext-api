@@ -88,6 +88,54 @@
             <version>1.15</version>
         </dependency>
 
+        <!-- WebClient used for Annotation syncing -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.batch</groupId>
+            <artifactId>spring-batch-core</artifactId>
+            <version>${spring-batch.version}</version>
+            <exclusions>
+                <!--Excluding jettison due to CVE-2022-40149, CVE-2022-40150. latest version is 1.2 is vulnerable.
+                Duplicate, coming from commons-web -> annotation-id , version 1.3-->
+                <exclusion>
+                    <groupId>org.codehaus.jettison</groupId>
+                    <artifactId>jettison</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- Used for subtitle conversion-->
+        <dependency>
+            <groupId>com.dotsub.converter</groupId>
+            <artifactId>subtitle-converter</artifactId>
+            <version>1</version>
+            <exclusions>
+                <!--Excluding velocity due to CVE-2020-13936. latest version is 1.7 is vulnerable.
+                 For now while converting subtitle this dependency is not being used -->
+                <exclusion>
+                    <groupId>org.apache.velocity</groupId>
+                    <artifactId>velocity</artifactId>
+                </exclusion>
+                <!--Excluding velocity due to CVE-2018-1000632, CVE-2020-10683. latest version is 1.6.1 is vulnerable.
+                Added not vulnerable version below-->
+                <exclusion>
+                    <groupId>dom4j</groupId>
+                    <artifactId>dom4j</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- Adding dom4j with non-vulnerable version. Used in DfxpImportHandler for TTML conversion -->
+        <dependency>
+            <groupId>org.dom4j</groupId>
+            <artifactId>dom4j</artifactId>
+            <version>2.1.3</version>
+        </dependency>
+
         <!-- For AcceptUtils -->
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -98,6 +146,14 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
+        </dependency>
+
+        <!-- Fixes DNS resolution issues on Apple Silicon  -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-resolver-dns-native-macos</artifactId>
+            <version>4.1.86.Final</version>
+            <classifier>osx-aarch_64</classifier>
         </dependency>
 
         <!-- junit 5 -->

@@ -16,16 +16,16 @@ import eu.europeana.fulltext.api.model.v2.AnnotationPageV2;
 import eu.europeana.fulltext.api.model.v2.AnnotationV2;
 import eu.europeana.fulltext.api.model.v3.AnnotationPageV3;
 import eu.europeana.fulltext.api.model.v3.AnnotationV3;
-import eu.europeana.fulltext.edm.EdmFullTextPackage;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Resource;
 import eu.europeana.fulltext.exception.*;
 import eu.europeana.fulltext.repository.AnnoPageRepository;
 import eu.europeana.fulltext.repository.ResourceRepository;
+import eu.europeana.fulltext.service.CommonFTService;
+import eu.europeana.fulltext.service.FulltextConverter;
 import eu.europeana.fulltext.subtitles.AnnotationPreview;
 import eu.europeana.fulltext.subtitles.FulltextType;
 import eu.europeana.fulltext.util.AnnotationUtils;
-import eu.europeana.fulltext.util.EdmToFullTextConverter;
 import eu.europeana.fulltext.util.GeneralUtils;
 
 import java.io.IOException;
@@ -48,7 +48,7 @@ import static eu.europeana.fulltext.util.GeneralUtils.*;
  * @author Lúthien Created on 27-02-2018
  */
 @Service
-public class FTService {
+public class FTService extends CommonFTService {
 
     private static final String GENERATED_IN = "Generated in {} ms ";
     private static final String ANNOPAGE_ID_FORMAT = "/%s/%s/annopage/%s";
@@ -56,15 +56,9 @@ public class FTService {
     private static final String FETCHED_AGGREGATED = "Originals fetched in {} ms";
     private static final Logger LOG = LogManager.getLogger(FTService.class);
 
-    private final ResourceRepository resourceRepository;
-    private final AnnoPageRepository annoPageRepository;
     private final FTSettings ftSettings;
     private final ObjectMapper mapper;
 
-
-  private static final Map<FulltextType, FulltextConverter> fulltextConverterMap =
-        Map.of(WEB_VTT, new SubtitleFulltextConverter(), SUB_RIP, new SubtitleFulltextConverter(), TTML, new SubtitleFulltextConverter(),
-                PLAIN, new TranscriptionFulltextConverter());
 
     @Value("${spring.profiles.active:}")
     private String activeProfileString;
@@ -74,8 +68,7 @@ public class FTService {
      */
     public FTService(ResourceRepository resourceRepository, AnnoPageRepository annoPageRepository,
                      FTSettings ftSettings, ObjectMapper mapper) {
-        this.resourceRepository = resourceRepository;
-        this.annoPageRepository = annoPageRepository;
+        super(resourceRepository, annoPageRepository);
         this.ftSettings = ftSettings;
         this.mapper = mapper;
     }
@@ -380,30 +373,6 @@ public class FTService {
         return result;
     }
 
-    /**
-     * Converts the Annotation preview to Annopage
-     * Gets the appropriate handler based on the fulltext Type to do the convert the input into EDMFulltextPackage
-     *
-     * @param annotationPreview
-     * @param isContributed
-     * @return
-     * @throws EuropeanaApiException
-     */
-    public AnnoPage createAnnoPage(AnnotationPreview annotationPreview, boolean isContributed) throws EuropeanaApiException {
-        FulltextConverter converter = fulltextConverterMap.get(annotationPreview.getFulltextType());
-
-    if (converter == null) {
-      throw new InvalidFormatException(
-          String.format(
-              "No converter implemented for FulltextType '%s'. Supported types are %s",
-              annotationPreview.getFulltextType().getMimeType(), fulltextConverterMap.keySet()));
-    }
-
-        EdmFullTextPackage fulltext = converter.convert(annotationPreview);
-        String recordId = annotationPreview.getRecordId();
-        return EdmToFullTextConverter.createAnnoPage(
-                getDsId(recordId), getLocalId(recordId), annotationPreview, fulltext, isContributed);
-    }
 
   public AnnoPage updateAnnoPage(
       AnnotationPreview annotationPreview, AnnoPage existingAnnoPage)
@@ -430,44 +399,7 @@ public class FTService {
     return annoPage;
   }
 
-    /**
-     * Deprecates AnnoPage with the specified dsId, lcId, pgId and lang values.
-     * Deprecation deletes the Resource associated to an AnnoPage and its annotations. Other properties
-     * are retained within the AnnoPage – effectively making it a "shell" record.
-     *
-     * Can deprecate max 1 AnnoPage.
-     */
-    public void deprecateAnnoPages(String datasetId, String localId, String pageId, String lang) {
-        long resourceCount = resourceRepository.deleteResource(datasetId, localId, lang);
-        long annoPageCount = annoPageRepository.deprecateAnnoPage(datasetId, localId, pageId, lang);
-        LOG.info(
-            "AnnoPage and Resource with datasetId={}, localId={}, pageId={}, lang={} are deprecated. resourceCount={}, annoPageCount={}",
-            datasetId,
-            localId,
-            pageId,
-            lang,
-            resourceCount,
-            annoPageCount);
-    }
 
-    /** Deprecates AnnoPage(s) with the specified dsId, lcId and pgId.
-     * Deprecation deletes the Resource associated to an AnnoPage and its annotations. Other properties
-     * are retained within the AnnoPage – effectively making it a "shell" record.
-     *
-     *
-     *  Could deprecate multiple records
-     */
-    public void deprecateAnnoPages(String datasetId, String localId, String pageId) {
-        long resourceCount = resourceRepository.deleteResources(datasetId, localId);
-        long annoPageCount = annoPageRepository.deprecateAnnoPages(datasetId, localId, pageId);
-        LOG.info(
-            "{} AnnoPage and {} Resource with datasetId={}, localId={}, pageId={} are deprecated",
-            annoPageCount,
-            resourceCount,
-            datasetId,
-            localId,
-            pageId);
-    }
 
     private AnnoPage getAnnoPageToUpdate(
         AnnotationPreview annotationPreview, AnnoPage existingAnnoPage) throws EuropeanaApiException {
@@ -571,51 +503,6 @@ public class FTService {
         }
     }
 
-    /**
-     * Deprecates AnnoPage(s) with the specified source
-     *
-     * @param sources sources to query
-     * @return number of deprecated documents
-     */
-    public long deprecateAnnoPagesWithSources(List<? extends String> sources) {
-        List<String> resourceIds = annoPageRepository.getResourceIdsForAnnoPageSources(sources);
-        long resourceCount = resourceRepository.deleteResourcesById(resourceIds);
-        long annoPageCount = annoPageRepository.deprecateAnnoPagesWithSources(sources);
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Deprecated {} AnnoPages and deleted {} Resources for for sources {}", annoPageCount, resourceCount, sources);
-        }
-
-        return annoPageCount;
-    }
-
-    /**
-     * For each AnnoPage in the input list:
-     *      - updates the existing records in AnnoPage and Resource collections in the database (matching on dsId, lcId, pgId and lang); or
-     *      - creates new records in AnnoPage and Resource collections if none exist
-     * @param annoPageList List of AnnoPages to upsert
-     * @throws DatabaseQueryException if
-     */
-    public BulkWriteResult upsertAnnoPage(List<? extends AnnoPage> annoPageList)
-        throws DatabaseQueryException {
-        BulkWriteResult resourceWriteResult = resourceRepository.upsertFromAnnoPage(annoPageList);
-        if (LOG.isDebugEnabled()) {
-            LOG.debug(
-                "Saved resources to db: replaced={}; new={}",
-                resourceWriteResult.getModifiedCount(),
-                resourceWriteResult.getUpserts().size());
-        }
-
-        BulkWriteResult annoPageWriteResult = annoPageRepository.upsertAnnoPages(annoPageList);
-        if (LOG.isDebugEnabled()) {
-            LOG.debug(
-                "Saved annoPages to db: replaced={}; new={}; annoPages={}",
-                annoPageWriteResult.getModifiedCount(),
-                annoPageWriteResult.getUpserts().size(),
-                getAnnoPageToString(annoPageList));
-        }
-
-        return annoPageWriteResult;
-    }
 
     /**
      * Retrieves the AnnoPage with the specified dcId, lcId, pgId and lang

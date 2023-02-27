@@ -1,6 +1,7 @@
 package eu.europeana.fulltext.api.config;
 
 import static eu.europeana.fulltext.util.GeneralUtils.testProfileNotActive;
+import static eu.europeana.fulltext.util.SettingsUtils.validateValues;
 
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.api.service.ControllerUtils;
@@ -51,7 +52,6 @@ public class FTSettings implements InitializingBean {
     @Value("${spring.profiles.active:}")
     private String activeProfileString;
 
-
     @Value("${auth.enabled}")
     private boolean authEnabled;
 
@@ -73,65 +73,17 @@ public class FTSettings implements InitializingBean {
     @Value("${mongo.fulltext.ensureIndices: false}")
     private boolean ensureFulltextIndices;
 
-    @Value("${annotations.serviceurl}")
-    private String annotationsApiUrl;
-
+    @Value("${webclient.maxBufferMb:16}")
+    private int maxBufferMb;
     @Value("${annotations.id.hosts}")
     private String annotationIdHostsPattern;
 
     @Value("${annotations.wskey}")
     private String annotationsApiKey;
 
-    @Value("${batch.annotations.pageSize: 50}")
-    private int annotationItemsPageSize;
-
-    @Value("${batch.executor.corePool: 5}")
-    private int batchCorePoolSize;
-
-    @Value("${batch.step.skipLimit: 10}")
-    private int batchSkipLimit;
-
-    @Value("${batch.executor.maxPool: 10}")
-    private int batchMaxPoolSize;
-
-    @Value("${batch.step.executor.queueSize: 5}")
-    private int batchQueueSize;
-
-    @Value("${batch.step.throttleLimit: 5}")
-    private int annoSyncThrottleLimit;
-
-    @Value("${annosync.initialDelaySeconds}")
-    private int annoSyncInitialDelay;
-
-    @Value("${annosync.intervalSeconds}")
-    private int annoSyncInterval;
-
     @Value("${spring.data.solr.repositories.enabled}")
     private boolean solrEnabled;
 
-    @Value("${annosync.enabled}")
-    private boolean annoSyncEnabled;
-
-    @Value("${annosync.mail.enabled}")
-    private boolean annoSyncMailEnabled;
-
-    @Value("${annosync.mail.from:}")
-    private String mailFrom;
-
-    @Value("${annosync.mail.to:}")
-    private String mailTo;
-
-    @Value("${annosync.mail.cc:}")
-    private String mailCc;
-
-    @Value("${fulltext.deployment:}")
-    private String deploymentName;
-
-    @Value("${webclient.maxBufferMb:16}")
-    private int maxBufferMb;
-
-    @Value("${annotations.retry:3}")
-    private int retryLimit;
 
     @Autowired
     private Environment environment;
@@ -168,41 +120,6 @@ public class FTSettings implements InitializingBean {
         return annotationsApiKey;
     }
 
-    public int getRetryLimit() {
-        return retryLimit;
-    }
-
-    public String getAnnotationsApiUrl() {
-        return annotationsApiUrl;
-    }
-
-    public int getAnnotationItemsPageSize() {
-        return annotationItemsPageSize;
-    }
-
-    public int getBatchCorePoolSize() {
-        return batchCorePoolSize;
-    }
-
-    public int getBatchMaxPoolSize() {
-        return batchMaxPoolSize;
-    }
-
-    public int getBatchQueueSize() {
-        return batchQueueSize;
-    }
-
-    public int getAnnoSyncInitialDelay() {
-        return annoSyncInitialDelay;
-    }
-
-    public int getAnnoSyncInterval() {
-        return annoSyncInterval;
-    }
-
-    public int getAnnoSyncThrottleLimit() {
-        return annoSyncThrottleLimit;
-    }
 
     public String getAnnotationIdHostsPattern() {
         return annotationIdHostsPattern;
@@ -278,7 +195,6 @@ public class FTSettings implements InitializingBean {
         singleValidations.put(annotationsApiKey, "annotations.wskey");
         singleValidations.put(apiKeyPublicKey, "europeana.apikey.jwttoken.signaturekey");
         singleValidations.put(apiKeyUrl, "europeana.apikey.serviceurl");
-        singleValidations.put(annotationsApiUrl, "annotations.serviceurl");
 
         // validate all
         validateValues(singleValidations, missingProps);
@@ -289,9 +205,6 @@ public class FTSettings implements InitializingBean {
                     apiKeyUrl , "europeana.apikey.serviceurl",
                     apiKeyPublicKey, "europeana.apikey.jwttoken.signaturekey"), missingProps);
         }
-        if (annoSyncEnabled) {
-            validateValues(Map.of(deploymentName, "fulltext.deployment"), missingProps);
-        }
 
         if (!missingProps.isEmpty()) {
             throw new IllegalStateException(
@@ -301,47 +214,11 @@ public class FTSettings implements InitializingBean {
         }
     }
 
-    private void validateValues(Map<String, String> map, List<String> missingProps) {
-        for (Map.Entry<String,  String> entry : map.entrySet()) {
-            if (StringUtils.isEmpty(entry.getKey())) {
-                missingProps.add(entry.getValue());
-            }
-        }
-    }
-
     public boolean isSolrEnabled() {
         return solrEnabled;
     }
 
-    public boolean isAnnoSyncEnabled() {
-        return annoSyncEnabled;
-    }
-
-    public String getMailFrom() {
-        return mailFrom;
-    }
-
-    public String getMailTo() {
-        return mailTo;
-    }
-
-    public String getMailCc() {
-        return mailCc;
-    }
-
-    public String getDeploymentName(){
-        return deploymentName;
-    }
-
-    public boolean annoSyncMailEnabled() {
-        return annoSyncMailEnabled;
-    }
-
     public int getMaxBufferMb() {
         return maxBufferMb;
-    }
-
-    public int getSkipLimit() {
-        return batchSkipLimit;
     }
 }
