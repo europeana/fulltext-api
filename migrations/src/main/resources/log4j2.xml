@@ -5,29 +5,18 @@
   </Properties>
   <Appenders>
     <Console name="Console" target="SYSTEM_OUT" follow="true">
-      <PatternLayout
-        pattern="%d{HH:mm:ss.SSS} [%t] %highlight{%level}{FATAL=bg_red, ERROR=red, WARN=yellow, INFO=green, DEBUG=blue} %logger{36} - %msg%n"/>
+      <PatternLayout pattern="%d{HH:mm:ss.SSS} %level %C:%L [%t] - %m%n" />
     </Console>
 
-    <RollingFile name="RollingFile"
-      fileName="${APP_LOG_ROOT}/migration.log"
-      filePattern="${APP_LOG_ROOT}/migration-%d{yyyy-MM-dd}-%i.log">
-      <PatternLayout pattern="%highlight{%d [%t] %-5level: %msg%n%throwable}"/>
-      <Policies>
-        <TimeBasedTriggeringPolicy/>
-      </Policies>
-    </RollingFile>
   </Appenders>
   <Loggers>
     <Root level="INFO">
       <AppenderRef ref="Console"/>
-      <AppenderRef ref="RollingFile"/>
     </Root>
 
 
     <Logger name="eu.europeana.fulltext.migrations" level="INFO" additivity="false">
       <AppenderRef ref="Console"/>
-      <AppenderRef ref="RollingFile"/>
     </Logger>
     
     <logger name="eu.europeana.fulltext.migrations.repository" level="DEBUG"/>
