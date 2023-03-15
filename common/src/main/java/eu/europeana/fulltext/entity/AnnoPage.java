@@ -1,5 +1,6 @@
 package eu.europeana.fulltext.entity;
 
+import eu.europeana.fulltext.AnnotationType;
 import org.bson.types.ObjectId;
 import dev.morphia.annotations.*;
 

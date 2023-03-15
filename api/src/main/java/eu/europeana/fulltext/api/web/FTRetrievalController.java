@@ -206,9 +206,9 @@ public class FTRetrievalController {
         List<String> profiles = extractProfiles(profileParam);
 
         if ("3".equalsIgnoreCase(requestVersion)) {
-            annotationPage = fts.generateAnnoPageV3(annoPage, profiles.contains(PROFILE_TEXT));
+            annotationPage = fts.generateAnnoPageV3(annoPage, textGranValues, profiles.contains(PROFILE_TEXT));
         } else {
-            annotationPage = fts.generateAnnoPageV2(annoPage, profiles.contains(PROFILE_TEXT));
+            annotationPage = fts.generateAnnoPageV2(annoPage, textGranValues, profiles.contains(PROFILE_TEXT));
         }
 
         if (isJson) {

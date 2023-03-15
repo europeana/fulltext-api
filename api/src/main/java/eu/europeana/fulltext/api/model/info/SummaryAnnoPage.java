@@ -12,6 +12,7 @@ public class SummaryAnnoPage extends JsonLdIdType {
     private static final long serialVersionUID = -670619785903826924L;
 
     private String language;
+    private String[] textGranularity;
     private String source;
 
     /**
@@ -34,6 +35,14 @@ public class SummaryAnnoPage extends JsonLdIdType {
 
     public void setLanguage(String language) {
         this.language = language;
+    }
+
+    public String[] getTextGranularity() {
+        return textGranularity;
+    }
+
+    public void setTextGranularity(String[] textGranularity) {
+        this.textGranularity = textGranularity;
     }
 
 

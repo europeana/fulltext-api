@@ -22,8 +22,9 @@ public class AnnotationPageV2 extends JsonLdId implements Serializable, Annotati
     private String[] context = new String[]{MEDIA_TYPE_IIIF_V2, MEDIA_TYPE_EDM_JSONLD};
     @JsonProperty("@type")
     private String type = "sc:AnnotationList";
-    private String language;
-    private String source;
+    private String   language;
+    private String[] textGranularity;
+    private String   source;
     private AnnotationV2[] resources;
 
     public AnnotationPageV2(String id) {
@@ -46,6 +47,14 @@ public class AnnotationPageV2 extends JsonLdId implements Serializable, Annotati
 
     public void setLanguage(String language){
         this.language = language;
+    }
+
+    public String[] getTextGranularity() {
+        return textGranularity;
+    }
+
+    public void setTextGranularity(String[] textGranularity) {
+        this.textGranularity = textGranularity;
     }
 
     public AnnotationV2[] getResources() {

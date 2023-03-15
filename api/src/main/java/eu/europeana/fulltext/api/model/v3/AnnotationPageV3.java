@@ -21,8 +21,9 @@ public class AnnotationPageV3 extends JsonLdIdType implements Serializable, Anno
 
     @JsonProperty("@context")
     private String[] context = new String[]{MEDIA_TYPE_IIIF_V3, MEDIA_TYPE_EDM_JSONLD};
-    private String language;
-    private String source;
+    private String   language;
+    private String[] textGranularity;
+    private String   source;
     private AnnotationV3[] items;
 
     public AnnotationPageV3(String id) {
@@ -45,6 +46,14 @@ public class AnnotationPageV3 extends JsonLdIdType implements Serializable, Anno
 
     public void setLanguage(String language){
         this.language = language;
+    }
+
+    public String[] getTextGranularity() {
+        return textGranularity;
+    }
+
+    public void setTextGranularity(String[] textGranularity) {
+        this.textGranularity = textGranularity;
     }
 
     public AnnotationV3[] getItems() {

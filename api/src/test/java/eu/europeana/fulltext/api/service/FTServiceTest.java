@@ -2,6 +2,7 @@ package eu.europeana.fulltext.api.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.europeana.api.commons.error.EuropeanaApiException;
+import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.api.config.FTSettings;
 import eu.europeana.fulltext.api.model.FTResource;
 import eu.europeana.fulltext.api.model.v2.AnnotationPageV2;
@@ -12,6 +13,7 @@ import eu.europeana.fulltext.exception.ResourceDoesNotExistException;
 import eu.europeana.fulltext.repository.AnnoPageRepository;
 import eu.europeana.fulltext.repository.ResourceRepository;
 import eu.europeana.fulltext.service.SubtitleFulltextConverter;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -23,6 +25,7 @@ import org.springframework.test.context.TestPropertySource;
 import java.util.Collections;
 
 import static eu.europeana.fulltext.TestUtils.*;
+import static eu.europeana.fulltext.search.web.FTSearchController.ALLOWED_ANNOTATION_TYPES;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
@@ -80,11 +83,13 @@ public class FTServiceTest {
      * First create an AnnotationPageV2 through the FTService and EDM2IIIFMapping code (with mockito'd entity classes
      * instead of retrieving from Mongo); and deep compare the result with a manually constructed AnnotationPageV2
      * object containing the same identifiers (see TestUtils.java for details)
+     * TODO properly initialise test textGranvalues and test the rendering in Annopage
      */
     @Test
     public void testGetAnnotationPageV2() throws EuropeanaApiException {
         prepareAnnotationPageV2();
-        AnnotationPageV2 ap = ftService.generateAnnoPageV2(ftService.fetchAnnoPage("ds1", "lc1", "pg1", Collections.emptyList(), "de"),false);
+        List<AnnotationType> textGranValues = ControllerUtils.validateTextGranularity("page,word", ALLOWED_ANNOTATION_TYPES);
+        AnnotationPageV2 ap = ftService.generateAnnoPageV2(ftService.fetchAnnoPage("ds1", "lc1", "pg1", Collections.emptyList(), "de"), textGranValues, false);
         //assertReflectionEquals(anpv2_1, ap);
     }
 
@@ -92,11 +97,13 @@ public class FTServiceTest {
      * First create an AnnotationPageV3 through the FTService and EDM2IIIFMapping code (with mockito'd entity classes
      * instead of retrieving from Mongo); and deep compare the result with a manually constructed AnnotationPageV3
      * object containing the same identifiers (see TestUtils.java for details)
+     * TODO properly initialise test textGranvalues and test the rendering in Annopage
      */
     @Test
     public void testGetAnnotationPageV3() throws EuropeanaApiException {
         prepareAnnotationPageV3();
-        AnnotationPageV3 ap = ftService.generateAnnoPageV3(ftService.fetchAnnoPage("ds1", "lc1", "pg1", Collections.emptyList(), null),false);
+        List<AnnotationType> textGranValues = ControllerUtils.validateTextGranularity("page,word", ALLOWED_ANNOTATION_TYPES);
+        AnnotationPageV3     ap = ftService.generateAnnoPageV3(ftService.fetchAnnoPage("ds1", "lc1", "pg1", Collections.emptyList(), null), textGranValues, false);
         //assertReflectionEquals(anpv3_1, ap);
     }
 

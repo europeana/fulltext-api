@@ -16,6 +16,7 @@ import eu.europeana.fulltext.entity.Resource;
 import eu.europeana.fulltext.entity.Target;
 import eu.europeana.fulltext.exception.ResourceDoesNotExistException;
 import eu.europeana.iiif.IIIFDefinitions;
+import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 import static eu.europeana.fulltext.api.config.FTDefinitions.*;
+import static eu.europeana.fulltext.api.service.ControllerUtils.createTextGranularity;
 import static eu.europeana.fulltext.util.NormalPlayTime.msToHHmmss;
 import static eu.europeana.iiif.IIIFDefinitions.*;
 
@@ -56,11 +58,14 @@ public final class EDM2IIIFMapping {
         EDM2IIIFMapping.ftService = ftService;
     }
 
-    static AnnotationPageV2 getAnnotationPageV2(AnnoPage annoPage, boolean derefResource){
+    static AnnotationPageV2 getAnnotationPageV2(AnnoPage annoPage,
+                                                List<AnnotationType> textGranValues,
+                                                boolean derefResource){
         AnnotationPageV2 annPage = new AnnotationPageV2(getAnnoPageIdUrl(annoPage));
         annPage.setLanguage(annoPage.getLang());
         annPage.setSource(annoPage.getSource());
         annPage.setResources(getAnnotationV2Array(annoPage, derefResource));
+        annPage.setTextGranularity(createTextGranularity(textGranValues, annPage.getResources()[0].isMedia()));
         return annPage;
     }
 
@@ -115,11 +120,14 @@ public final class EDM2IIIFMapping {
         return ann;
     }
 
-    static AnnotationPageV3 getAnnotationPageV3(AnnoPage annoPage, boolean derefResource){
+    static AnnotationPageV3 getAnnotationPageV3(AnnoPage annoPage,
+                                                List<AnnotationType> textGranValues,
+                                                boolean derefResource){
         AnnotationPageV3 annPage = new AnnotationPageV3(getAnnoPageIdUrl(annoPage));
         annPage.setLanguage(annoPage.getLang());
         annPage.setSource(annoPage.getSource());
         annPage.setItems(getAnnotationV3Array(annoPage, derefResource));
+        annPage.setTextGranularity(createTextGranularity(textGranValues, annPage.getItems()[0].isMedia()));
         return annPage;
     }
 

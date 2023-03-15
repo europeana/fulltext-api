@@ -3,10 +3,12 @@ package eu.europeana.fulltext.api.model.v3;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.api.model.AnnotationWrapper;
 import eu.europeana.fulltext.api.model.JsonLdIdType;
 
 import java.io.Serializable;
+import org.apache.commons.lang3.StringUtils;
 
 import static eu.europeana.fulltext.api.config.FTDefinitions.V3_ANNOTATION_TYPE;
 
@@ -70,6 +72,12 @@ public class AnnotationV3 extends JsonLdIdType implements Serializable, Annotati
 
     public void setTarget(String[] target) {
         this.target = target;
+    }
+
+    public boolean isMedia() {
+        return (StringUtils.equalsAnyIgnoreCase(getDcType(),
+                                                AnnotationType.MEDIA.getDisplayName(),
+                                                AnnotationType.CAPTION.getDisplayName()));
     }
 }
 

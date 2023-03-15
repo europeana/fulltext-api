@@ -52,6 +52,13 @@ public enum AnnotationType {
     }
 
     /**
+     * @return the name of the annotation type in a public friendly format (capitalized first letter)
+     */
+    public String getLowerCaseName() {
+        return this.name().toLowerCase(Locale.GERMAN);
+    }
+
+    /**
      * Check if the provided string is either a valid abbreviation or name of an existing AnnotationType
      * Note that the provided value can have any capitalization.
      * @return an AnnotationType if we can find a corresponding type, otherwise null

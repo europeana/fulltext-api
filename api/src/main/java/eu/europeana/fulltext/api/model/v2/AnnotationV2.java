@@ -2,10 +2,12 @@ package eu.europeana.fulltext.api.model.v2;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.api.model.AnnotationWrapper;
 import ioinformarics.oss.jackson.module.jsonld.annotation.JsonldType;
 
 import java.io.Serializable;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Created by luthien on 14/06/2018.
@@ -70,6 +72,12 @@ public class AnnotationV2 extends JsonLdId implements Serializable, AnnotationWr
 
     public void setOn(String[] on) {
         this.on = on;
+    }
+
+    public boolean isMedia() {
+        return (StringUtils.equalsAnyIgnoreCase(getDcType(),
+                                                AnnotationType.MEDIA.getDisplayName(),
+                                                AnnotationType.CAPTION.getDisplayName()));
     }
 }
 

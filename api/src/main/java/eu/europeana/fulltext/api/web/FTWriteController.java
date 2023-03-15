@@ -343,7 +343,7 @@ public class FTWriteController extends BaseRestController {
       HttpStatus status)
       throws SerializationException {
 
-    AnnotationWrapper annotationWrapper = ftService.generateAnnoPageV2(annoPage, profiles.contains(PROFILE_TEXT));
+    AnnotationWrapper annotationWrapper = ftService.generateAnnoPageV2(annoPage, null, profiles.contains(PROFILE_TEXT));
 
     ZonedDateTime modified = CacheUtils.dateToZonedUTC(annoPage.getModified());
     String requestVersion = REQUEST_VERSION_2;
