@@ -24,6 +24,11 @@ public class IIIFDefinitions {
     public static final String MEDIA_TYPE_EDM_JSONLD  = "https://www.europeana.eu/schemas/context/edm.jsonld";
 
     /**
+     * Media type used in @context tag of Fulltext Resource
+     */
+    public static final String TEXT_GRANULARITY_CONTEXT  = "http://iiif.io/api/extension/text-granularity/context.json";
+
+    /**
      * Media type used in @context tag of Fulltext Summary
      */
     public static final String MEDIA_TYPE_W3ORG_JSONLD  = "https://www.w3.org/ns/anno.jsonld";

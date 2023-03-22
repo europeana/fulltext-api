@@ -1,7 +1,9 @@
 package eu.europeana.fulltext.api.service;
 
+import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_ANNOTATION_TYPES;
+import static eu.europeana.fulltext.api.config.FTDefinitions.TEXT_ANNOTATION_TYPES;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.result.UpdateResult;
 import dev.morphia.query.internal.MorphiaCursor;
 import eu.europeana.api.commons.error.EuropeanaApiException;
@@ -18,31 +20,27 @@ import eu.europeana.fulltext.api.model.v3.AnnotationPageV3;
 import eu.europeana.fulltext.api.model.v3.AnnotationV3;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Resource;
-import eu.europeana.fulltext.exception.*;
+import eu.europeana.fulltext.exception.AnnoPageDoesNotExistException;
+import eu.europeana.fulltext.exception.AnnoPageGoneException;
+import eu.europeana.fulltext.exception.ResourceDoesNotExistException;
+import eu.europeana.fulltext.exception.SerializationException;
 import eu.europeana.fulltext.repository.AnnoPageRepository;
 import eu.europeana.fulltext.repository.ResourceRepository;
 import eu.europeana.fulltext.service.CommonFTService;
-import eu.europeana.fulltext.service.FulltextConverter;
 import eu.europeana.fulltext.subtitles.AnnotationPreview;
-import eu.europeana.fulltext.subtitles.FulltextType;
 import eu.europeana.fulltext.util.AnnotationUtils;
 import eu.europeana.fulltext.util.GeneralUtils;
-
+import eu.europeana.iiif.IIIFDefinitions;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-
-import eu.europeana.iiif.IIIFDefinitions;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import static eu.europeana.fulltext.subtitles.FulltextType.*;
-import static eu.europeana.fulltext.util.GeneralUtils.*;
 
 /**
  * @author Lúthien Created on 27-02-2018
@@ -203,6 +201,17 @@ public class FTService extends CommonFTService {
         return annoPage;
     }
 
+    /**
+     * Collects the data needed to construct the Summary Canvas
+     * The array of TextGranularities is added on the SummaryManifest level as it is in its current implementation
+     * only dependent on whether the record is a text (eg. newspaper) or a media record (eg. caption).
+     * The Summary endpoint does not allow the user to filter on textgranularities and they are not displayed in the
+     * summary either, so this merely enumerates what values can be expected when retrieving Annopages / Annotations
+     *
+     * @param datasetId identifier of the dataset that contains the Annopage that refers to Resource
+     * @param localId identifier of the record that contains the Annopage that refers to Resource
+     * @return SummaryManifest
+     */
     public SummaryManifest collectionAnnoPageInfo(String datasetId, String localId) {
         Instant start = Instant.now();
         SummaryManifest apInfoSummaryManifest = new SummaryManifest(datasetId, localId);

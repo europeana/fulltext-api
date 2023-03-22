@@ -93,7 +93,7 @@ public final class EDM2IIIFMapping {
             ann.setContext(new String[]{MEDIA_TYPE_IIIF_V2, MEDIA_TYPE_EDM_JSONLD});
         }
         ann.setMotivation(StringUtils.isNotBlank(annotation.getMotiv()) ? annotation.getMotiv() : V2_MOTIVATION);
-        ann.setDcType(expandDCType(annotation.getDcType()));
+        ann.setTextGranularity(dcTypeToTextGranularity(annotation.getDcType()));
         ann.setOn(getFTTargetArray(annoPage, annotation));
         AnnotationBodyV2 anb;
 
@@ -158,7 +158,7 @@ public final class EDM2IIIFMapping {
         }
 
         ann.setMotivation(StringUtils.isNotBlank(annotation.getMotiv()) ? annotation.getMotiv() : V3_MOTIVATION);
-        ann.setDcType(expandDCType(annotation.getDcType()));
+        ann.setTextGranularity(dcTypeToTextGranularity(annotation.getDcType()));
         if (StringUtils.isNotBlank(annotation.getLang())){
             anb = new AnnotationBodyV3(body, V3_ANNO_BODY_TYPE);
             anb.setSource(getResourceIdBaseUrl(annoPage));
@@ -309,12 +309,12 @@ public final class EDM2IIIFMapping {
         return s.toString();
     }
 
-    private static String expandDCType(char dcTypeCode){
+    private static String dcTypeToTextGranularity(char dcTypeCode){
         AnnotationType dcType = AnnotationType.fromAbbreviation(dcTypeCode);
         if (dcType == null) {
             LOG.warn("Unknown dcType code '{}'", dcTypeCode);
             return "undefined";
         }
-        return dcType.getDisplayName();
+        return dcType.getLowerCaseName();
     }
 }

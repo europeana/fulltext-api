@@ -10,6 +10,7 @@ import java.io.Serializable;
 import static eu.europeana.iiif.IIIFDefinitions.MEDIA_TYPE_EDM_JSONLD;
 import static eu.europeana.iiif.IIIFDefinitions.MEDIA_TYPE_IIIF_V3;
 import static eu.europeana.fulltext.api.config.FTDefinitions.V3_ANNO_PAGE_TYPE;
+import static eu.europeana.iiif.IIIFDefinitions.TEXT_GRANULARITY_CONTEXT;
 
 /**
  * Created by luthien on 14/06/2018.
@@ -20,7 +21,7 @@ public class AnnotationPageV3 extends JsonLdIdType implements Serializable, Anno
     private static final long serialVersionUID = 3567695991809278386L;
 
     @JsonProperty("@context")
-    private String[] context = new String[]{MEDIA_TYPE_IIIF_V3, MEDIA_TYPE_EDM_JSONLD};
+    private String[] context = new String[]{MEDIA_TYPE_IIIF_V3, TEXT_GRANULARITY_CONTEXT, MEDIA_TYPE_EDM_JSONLD};
     private String   language;
     private String[] textGranularity;
     private String   source;
