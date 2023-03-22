@@ -24,8 +24,8 @@ spec:
                       -XX:+UseParallelGC -XX:MaxRAMPercentage=75"
           resources:
             requests:
-              memory: "${API_MEMORY}M"
-              cpu: "${API_CPU}m"
+              memory: "${API_MEMORY_REQUEST}M"
+              cpu: "${API_CPU_REQUEST}m"
             limits:
-              memory: "${API_MEMORY}M"
-              cpu: "${API_CPU}m"
+              memory: "${API_MEMORY_LIMIT}M"
+              cpu: "${API_CPU_LIMIT}m"
