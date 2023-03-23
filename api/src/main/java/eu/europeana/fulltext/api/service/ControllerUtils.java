@@ -46,28 +46,4 @@ public final class ControllerUtils {
         }
         return result;
     }
-
-    /**
-     * EA-3368
-     * Determines which textGranularities can be expected in the Annotations. If a textGranularity filter is requested,
-     * the method returns those in a String array. If not, all valid granularities for the record type (text or media)
-     * are returned. The text or media type is determined from the first Annotation in the result set.
-     * @param granularities List of AnnotationType enum values corresponding to the request textGranularity parameter
-     * @param isMedia boolean: TRUE if dcType found in the first Annotation is MEDIA or CAPTION, FALSE otherwise
-     * @return String[] of all possibly present textGranularities present in the Annotations
-     */
-    public static String[] createTextGranularity(List<AnnotationType> granularities, boolean isMedia){
-        if (null == granularities || granularities.isEmpty()){
-            if (isMedia){
-                granularities = List.copyOf(MEDIA_ANNOTATION_TYPES);
-            } else {
-                granularities = List.copyOf(TEXT_ANNOTATION_TYPES);
-            }
-        }
-        List<String> textGranularity = new ArrayList<>();
-        for (AnnotationType granularity : granularities){
-            textGranularity.add(granularity.getLowerCaseName());
-        }
-        return textGranularity.toArray(new String[0]);
-    }
 }

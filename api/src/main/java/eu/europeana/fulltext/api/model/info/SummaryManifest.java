@@ -15,7 +15,7 @@ import static eu.europeana.iiif.IIIFDefinitions.TEXT_GRANULARITY_CONTEXT;
 /**
  * Created by luthien on 07/04/2021.
  */
-@JsonPropertyOrder({"@context", "textGranularity", "items"})
+@JsonPropertyOrder({"@context", "items"})
 public class SummaryManifest implements Serializable {
     private static final long serialVersionUID = -8052995235828716772L;
 
@@ -23,7 +23,6 @@ public class SummaryManifest implements Serializable {
     @JsonProperty("@context")
     private final String[] context = new String[]{MEDIA_TYPE_W3ORG_JSONLD, TEXT_GRANULARITY_CONTEXT, MEDIA_TYPE_IIIF_V3};
 
-    private String[] textGranularity;
 
     @JsonIgnore
     private String              dataSetId;
@@ -46,13 +45,13 @@ public class SummaryManifest implements Serializable {
         canvases = new ArrayList<>();
     }
 
-    public String[] getTextGranularity() {
-        return textGranularity;
-    }
-
-    public void setTextGranularity(String[] textGranularity) {
-        this.textGranularity = textGranularity;
-    }
+//    public String[] getTextGranularity() {
+//        return textGranularity;
+//    }
+//
+//    public void setTextGranularity(String[] textGranularity) {
+//        this.textGranularity = textGranularity;
+//    }
 
     public String getDataSetId() {
         return dataSetId;

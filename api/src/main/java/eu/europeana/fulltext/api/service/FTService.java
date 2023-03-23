@@ -2,6 +2,7 @@ package eu.europeana.fulltext.api.service;
 
 import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_ANNOTATION_TYPES;
 import static eu.europeana.fulltext.api.config.FTDefinitions.TEXT_ANNOTATION_TYPES;
+import static eu.europeana.fulltext.api.service.EDM2IIIFMapping.getTextGranularitiesForSummary;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.result.UpdateResult;
@@ -31,11 +32,13 @@ import eu.europeana.fulltext.subtitles.AnnotationPreview;
 import eu.europeana.fulltext.util.AnnotationUtils;
 import eu.europeana.fulltext.util.GeneralUtils;
 import eu.europeana.iiif.IIIFDefinitions;
+
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -93,31 +96,29 @@ public class FTService extends CommonFTService {
      * @throws AnnoPageDoesNotExistException when the Annopage cannot be found
      */
     public AnnoPage fetchAnnoPage(String datasetId, String localId, String pageId, List<AnnotationType> textGranValues,
-        String lang) throws AnnoPageDoesNotExistException, AnnoPageGoneException {
+                                  String lang) throws AnnoPageDoesNotExistException, AnnoPageGoneException {
         AnnoPage result;
         // if no lang is provided, fetch the original AnnoPage (ie. translation=false)
         if (StringUtils.isEmpty(lang)) {
             result = annoPageRepository.findOriginalByPageId(datasetId, localId, pageId, textGranValues, false);
             if (result == null) {
                 throw new AnnoPageDoesNotExistException(
-                    String.format(ANNOPAGE_ID_FORMAT, datasetId, localId, pageId));
+                        String.format(ANNOPAGE_ID_FORMAT, datasetId, localId, pageId));
             }
         } else {
             result = annoPageRepository.findByPageIdLang(datasetId, localId, pageId, textGranValues, lang,
-                true);
+                    true);
             if (result == null) {
                 throw new AnnoPageDoesNotExistException(String.format(ANNOPAGE_ID_LANG_FORMAT, datasetId, localId, pageId),
-                    lang);
-            }
-            else if(result.isDeprecated()){
+                        lang);
+            } else if (result.isDeprecated()) {
                 throw new AnnoPageGoneException(String.format(ANNOPAGE_ID_LANG_FORMAT, datasetId, localId, pageId),
-                    lang);
+                        lang);
             }
         }
 
         return result;
     }
-
 
     /**
      * Retrieve a cursor to AnnoPages with the provided datasetId, localId and targetIds. If the annotationType is
@@ -126,13 +127,13 @@ public class FTService extends CommonFTService {
      *
      * @param datasetId ID of the dataset
      * @param localId   ID of the parent of the Annopage object
-     * @param targetIds  IDs of the targets (images)
+     * @param targetIds IDs of the targets (images)
      * @param annoTypes type of annotations that should be retrieved, if null or empty all annotations of that annopage
      *                  will be retrieved
      * @return MorphiaCursor containing AnnoPage entries.
      */
     public MorphiaCursor<AnnoPage> fetchAnnoPageFromTargetId(String datasetId, String localId, List<String> targetIds,
-        List<AnnotationType> annoTypes, boolean includeDeprecated) {
+                                                             List<AnnotationType> annoTypes, boolean includeDeprecated) {
         return annoPageRepository.findByTargetId(datasetId, localId, targetIds, annoTypes, includeDeprecated);
     }
 
@@ -147,49 +148,49 @@ public class FTService extends CommonFTService {
      * @throws AnnoPageDoesNotExistException when the Annopage containing the required Annotation can't be found
      */
     public AnnoPage fetchAPAnnotation(String datasetId, String localId, String annoId)
-        throws EuropeanaApiException {
+            throws EuropeanaApiException {
         AnnoPage result = annoPageRepository.findByAnnoId(datasetId, localId, annoId, true);
 
         if (result == null) {
             throw new AnnoPageDoesNotExistException(String.format("/%s/%s/anno/%s", datasetId, localId, annoId));
         }
 
-        if(result.isDeprecated()){
+        if (result.isDeprecated()) {
             throw new AnnoPageGoneException(String.format("/%s/%s/anno/%s", datasetId, localId, annoId));
         }
         return result;
     }
 
-  /**
-   * Handles fetching an Annotation page (aka AnnoPage) containing the Annotation with given annoId
-   *
-   * @param datasetId identifier of the dataset that contains the Annopage that refers to Resource
-   * @param localId identifier of the record that contains the Annopage that refers to Resource
-   * @param pageId Identifier of the item's page
-   * @param lang Language of the resource
-   * @return FTResource
-   * @throws ResourceDoesNotExistException when the Resource can't be found
-   */
-  public FTResource fetchFTResource(String datasetId, String localId, String pageId, String lang)
-      throws ResourceDoesNotExistException {
+    /**
+     * Handles fetching an Annotation page (aka AnnoPage) containing the Annotation with given annoId
+     *
+     * @param datasetId identifier of the dataset that contains the Annopage that refers to Resource
+     * @param localId   identifier of the record that contains the Annopage that refers to Resource
+     * @param pageId    Identifier of the item's page
+     * @param lang      Language of the resource
+     * @return FTResource
+     * @throws ResourceDoesNotExistException when the Resource can't be found
+     */
+    public FTResource fetchFTResource(String datasetId, String localId, String pageId, String lang)
+            throws ResourceDoesNotExistException {
 
-    Resource result;
-    if (StringUtils.isEmpty(lang)) {
-      result = resourceRepository.findOriginalByPageId(datasetId, localId, pageId);
-      if (result == null) {
-        throw new ResourceDoesNotExistException(
-            String.format("/%s/%s/%s", datasetId, localId, pageId));
-      }
+        Resource result;
+        if (StringUtils.isEmpty(lang)) {
+            result = resourceRepository.findOriginalByPageId(datasetId, localId, pageId);
+            if (result == null) {
+                throw new ResourceDoesNotExistException(
+                        String.format("/%s/%s/%s", datasetId, localId, pageId));
+            }
 
-    } else {
-      result = resourceRepository.findByPageIdLang(datasetId, localId, pageId, lang);
-      if (result == null) {
-        throw new ResourceDoesNotExistException(
-            String.format("/%s/%s/%s?lang=%s", datasetId, localId, pageId, lang));
-      }
+        } else {
+            result = resourceRepository.findByPageIdLang(datasetId, localId, pageId, lang);
+            if (result == null) {
+                throw new ResourceDoesNotExistException(
+                        String.format("/%s/%s/%s?lang=%s", datasetId, localId, pageId, lang));
+            }
+        }
+        return generateFTResource(result);
     }
-    return generateFTResource(result);
-  }
 
     // = = [ collect summary information ]= = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
@@ -209,28 +210,29 @@ public class FTService extends CommonFTService {
      * summary either, so this merely enumerates what values can be expected when retrieving Annopages / Annotations
      *
      * @param datasetId identifier of the dataset that contains the Annopage that refers to Resource
-     * @param localId identifier of the record that contains the Annopage that refers to Resource
+     * @param localId   identifier of the record that contains the Annopage that refers to Resource
      * @return SummaryManifest
      */
-    public SummaryManifest collectionAnnoPageInfo(String datasetId, String localId) {
+    public SummaryManifest collectionAnnoPageInfo(String datasetId, String localId) throws AnnoPageDoesNotExistException, AnnoPageGoneException {
         Instant start = Instant.now();
         SummaryManifest apInfoSummaryManifest = new SummaryManifest(datasetId, localId);
         // fetch annopages with dsId and lcId
         List<AnnoPage> annoPages = annoPageRepository.getAnnoPages(datasetId, localId, null, false);
         Instant finish = Instant.now();
-        LOG.debug(FETCHED_AGGREGATED,  Duration.between(start, finish).toMillis());
+        LOG.debug(FETCHED_AGGREGATED, Duration.between(start, finish).toMillis());
 
-        for (AnnoPage annoPage : annoPages){
+        for (AnnoPage annoPage : annoPages) {
             SummaryCanvas summaryCanvas = new SummaryCanvas(makeSummaryCanvasID(datasetId, localId,
-                annoPage.getPgId()));
+                    annoPage.getPgId()));
 
             // add original SummaryAnnoPage to the SummaryCanvas
             summaryCanvas.addAnnotation(
-                new SummaryAnnoPage(
-                    makeLangAwareAnnoPageID(datasetId, localId, annoPage.getPgId(),
-                        annoPage.getLang()),
-                    annoPage.getLang(),
-                    annoPage.getSource()));
+                    new SummaryAnnoPage(
+                            makeLangAwareAnnoPageID(datasetId, localId, annoPage.getPgId(), annoPage.getLang()),
+                            annoPage.getLang(),
+                            getTextGranularitiesForSummary(fetchAnnoPageNoFilter(datasetId, localId, annoPage.getPgId(),
+                                    annoPage.getLang())),
+                            annoPage.getSource()));
             summaryCanvas.setOriginalLanguage(annoPage.getLang());
 
             // add SummaryCanvas to SummaryManifest
@@ -239,10 +241,32 @@ public class FTService extends CommonFTService {
         return apInfoSummaryManifest;
     }
 
+    public AnnoPage fetchAnnoPageNoFilter(String datasetId, String localId, String pageId, String lang) throws AnnoPageDoesNotExistException, AnnoPageGoneException {
+        AnnoPage result;
+        // if no lang is provided, fetch the original AnnoPage (ie. translation=false)
+        if (StringUtils.isEmpty(lang)) {
+            result = annoPageRepository.findOrigAPNoGranFilter(datasetId, localId, pageId, false);
+            if (result == null) {
+                throw new AnnoPageDoesNotExistException(
+                        String.format(ANNOPAGE_ID_FORMAT, datasetId, localId, pageId));
+            }
+        } else {
+            result = annoPageRepository.findAPNoGranFilter(datasetId, localId, pageId, lang, true);
+            if (result == null) {
+                throw new AnnoPageDoesNotExistException(String.format(ANNOPAGE_ID_LANG_FORMAT, datasetId, localId, pageId),
+                        lang);
+            } else if (result.isDeprecated()) {
+                throw new AnnoPageGoneException(String.format(ANNOPAGE_ID_LANG_FORMAT, datasetId, localId, pageId),
+                        lang);
+            }
+        }
+        return result;
+    }
+
     @Deprecated
     private String makeSummaryCanvasID(AnnoPage ap) {
         return ftSettings.getAnnoPageBaseUrl() + ap.getDsId() + "/" + ap.getLcId() + FTDefinitions.CANVAS_PATH + "/"
-            + ap.getPgId();
+                + ap.getPgId();
     }
 
     private String makeSummaryCanvasID(String dsId, String lcId, String pgId) {
@@ -253,16 +277,16 @@ public class FTService extends CommonFTService {
     private String makeLangAwareAnnoPageID(AnnoPage ap) {
         StringBuilder result = new StringBuilder(100);
         result.append(ftSettings.getAnnoPageBaseUrl())
-            .append(ap.getDsId())
-            .append("/")
-            .append(ap.getLcId())
-            .append(IIIFDefinitions.FULLTEXT_ANNOPAGE_PATH)
-            .append("/")
-            .append(ap.getPgId());
+                .append(ap.getDsId())
+                .append("/")
+                .append(ap.getLcId())
+                .append(IIIFDefinitions.FULLTEXT_ANNOPAGE_PATH)
+                .append("/")
+                .append(ap.getPgId());
         if (!StringUtils.isEmpty(ap.getLang())) {
             result.append("?")
-                .append(FTDefinitions.LANGUAGE_PARAM)
-                .append(ap.getLang());
+                    .append(FTDefinitions.LANGUAGE_PARAM)
+                    .append(ap.getLang());
         }
         return result.toString();
     }
@@ -270,16 +294,16 @@ public class FTService extends CommonFTService {
     private String makeLangAwareAnnoPageID(String dsId, String lcId, String pgId, String lang) {
         StringBuilder result = new StringBuilder(100);
         result.append(ftSettings.getAnnoPageBaseUrl())
-            .append(dsId)
-            .append("/")
-            .append(lcId)
-            .append(IIIFDefinitions.FULLTEXT_ANNOPAGE_PATH)
-            .append("/")
-            .append(pgId);
+                .append(dsId)
+                .append("/")
+                .append(lcId)
+                .append(IIIFDefinitions.FULLTEXT_ANNOPAGE_PATH)
+                .append("/")
+                .append(pgId);
         if (!StringUtils.isEmpty(lang)) {
             result.append("?")
-                .append(FTDefinitions.LANGUAGE_PARAM)
-                .append(lang);
+                    .append(FTDefinitions.LANGUAGE_PARAM)
+                    .append(lang);
         }
         return result.toString();
     }
@@ -300,7 +324,7 @@ public class FTService extends CommonFTService {
             // if no lang is provided, check if an original AnnoPage exists (ie. translation=false)
             return annoPageRepository.existsOriginalByPageId(datasetId, localId, pageId, includeDeprecated);
         }
-       return annoPageRepository.existsByPageIdLang(datasetId, localId, pageId, lang, includeDeprecated);
+        return annoPageRepository.existsByPageIdLang(datasetId, localId, pageId, lang, includeDeprecated);
     }
 
 
@@ -309,8 +333,10 @@ public class FTService extends CommonFTService {
     /**
      * Generates an AnnotationPageV3 (IIIF V3 response type) object with the AnnoPage as input
      *
-     * @param annoPage      AnnoPage input object
-     * @param derefResource boolean indicating whether to dereference the Resource object on the top level Annotation
+     * @param annoPage       AnnoPage input object
+     * @param textGranValues user-supplied filter on textGranularities, used here to limit searching for actually
+     *                       present textGranularities
+     * @param derefResource  boolean indicating whether to dereference the Resource object on the top level Annotation
      * @return AnnotationPageV3
      */
     public AnnotationPageV3 generateAnnoPageV3(AnnoPage annoPage, List<AnnotationType> textGranValues, boolean derefResource) {
@@ -325,8 +351,10 @@ public class FTService extends CommonFTService {
     /**
      * Generates an AnnotationPageV2 (IIIF V2 response type) object with the AnnoPage as input
      *
-     * @param annoPage      AnnoPage input object
-     * @param derefResource boolean indicating whether or not to load and dereference the Resource
+     * @param annoPage       AnnoPage input object
+     * @param textGranValues user-supplied filter on textGranularities, used here to limit searching for actually
+     *                       present textGranularities
+     * @param derefResource  boolean indicating whether or not to load and dereference the Resource
      * @return AnnotationPageV2
      */
     public AnnotationPageV2 generateAnnoPageV2(AnnoPage annoPage, List<AnnotationType> textGranValues, boolean derefResource) {
@@ -383,35 +411,34 @@ public class FTService extends CommonFTService {
     }
 
 
-  public AnnoPage updateAnnoPage(
-      AnnotationPreview annotationPreview, AnnoPage existingAnnoPage)
-          throws EuropeanaApiException {
-    AnnoPage annoPage = getAnnoPageToUpdate(annotationPreview, existingAnnoPage);
-    resourceRepository.saveResource(annoPage.getRes());
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Updated Resource in db : id={}", annoPage.getRes().getId());
-    }
+    public AnnoPage updateAnnoPage(
+            AnnotationPreview annotationPreview, AnnoPage existingAnnoPage)
+            throws EuropeanaApiException {
+        AnnoPage annoPage = getAnnoPageToUpdate(annotationPreview, existingAnnoPage);
+        resourceRepository.saveResource(annoPage.getRes());
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Updated Resource in db : id={}", annoPage.getRes().getId());
+        }
 
-    if (AnnotationUtils.isAnnoPageUpdateRequired(annotationPreview)) {
-      UpdateResult results = annoPageRepository.updateAnnoPage(existingAnnoPage, annoPage);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug(
-            "Updated annoPage in db : dsId={}, lcId={}, pgId={}, lang={}, matched={}, modified={}",
-            annoPage.getDsId(),
-            annoPage.getLcId(),
-            annoPage.getPgId(),
-            annoPage.getLang(),
-            results.getMatchedCount(),
-            results.getModifiedCount());
-      }
+        if (AnnotationUtils.isAnnoPageUpdateRequired(annotationPreview)) {
+            UpdateResult results = annoPageRepository.updateAnnoPage(existingAnnoPage, annoPage);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                        "Updated annoPage in db : dsId={}, lcId={}, pgId={}, lang={}, matched={}, modified={}",
+                        annoPage.getDsId(),
+                        annoPage.getLcId(),
+                        annoPage.getPgId(),
+                        annoPage.getLang(),
+                        results.getMatchedCount(),
+                        results.getModifiedCount());
+            }
+        }
+        return annoPage;
     }
-    return annoPage;
-  }
-
 
 
     private AnnoPage getAnnoPageToUpdate(
-        AnnotationPreview annotationPreview, AnnoPage existingAnnoPage) throws EuropeanaApiException {
+            AnnotationPreview annotationPreview, AnnoPage existingAnnoPage) throws EuropeanaApiException {
         AnnoPage annoPageTobeUpdated = null;
         // if there is no subtitles ie; content was empty, only update rights in the resource
         if (StringUtils.isEmpty(annotationPreview.getAnnotationBody())) {
@@ -425,7 +452,7 @@ public class FTService extends CommonFTService {
             // Also, rights and value in Resource
             annoPageTobeUpdated = createAnnoPage(annotationPreview, false);
             if (StringUtils.isEmpty(annoPageTobeUpdated.getSource())
-                && StringUtils.isNotEmpty(existingAnnoPage.getSource())) {
+                    && StringUtils.isNotEmpty(existingAnnoPage.getSource())) {
                 annoPageTobeUpdated.setSource(existingAnnoPage.getSource());
             }
         }
@@ -435,10 +462,11 @@ public class FTService extends CommonFTService {
     /**
      * Check if there is a fulltext annotation page associated with the combination of DATASET_ID,
      * LOCAL_ID and the PAGE_ID and LANG (if provided), if not then return a HTTP 404
-     *
+     * <p>
      * If present, check if the annoPages are deprecated already, respond with HTTP 410
      * NOTE : We may have multiple AnnoPages if lang is NOT provided,
-     *        hence respond with HTTP 410 only if all the AnnoPages are already deprecated.
+     * hence respond with HTTP 410 only if all the AnnoPages are already deprecated.
+     *
      * @param datasetId
      * @param localId
      * @param pageId
@@ -486,11 +514,11 @@ public class FTService extends CommonFTService {
         return annoPageRepository.getAnnoPageWithSource(source, false, includeDeprecated);
     }
 
-    public AnnoPage getShellAnnoPageById(String datasetId, String localId, String pageId, String lang, boolean includeDeprecated){
+    public AnnoPage getShellAnnoPageById(String datasetId, String localId, String pageId, String lang, boolean includeDeprecated) {
         return annoPageRepository.getShellAnnoPageById(datasetId, localId, pageId, lang, includeDeprecated);
     }
 
-    public List<AnnoPage> getAnnoPages(String datasetId, String localId, String pageId, boolean includeDeprecated){
+    public List<AnnoPage> getAnnoPages(String datasetId, String localId, String pageId, boolean includeDeprecated) {
         return annoPageRepository.getAnnoPages(datasetId, localId, pageId, includeDeprecated);
     }
 
@@ -519,7 +547,7 @@ public class FTService extends CommonFTService {
      * @return AnnoPage or null if none found
      */
     public AnnoPage getAnnoPageByPgId(
-        String datasetId, String localId, String pgId, String lang, boolean includeDeprecated) {
+            String datasetId, String localId, String pgId, String lang, boolean includeDeprecated) {
         return annoPageRepository.findByPageIdLang(datasetId, localId, pgId, List.of(), lang, includeDeprecated);
     }
 
@@ -535,7 +563,7 @@ public class FTService extends CommonFTService {
     public long countAnnoPage() {
         if (GeneralUtils.testProfileNotActive(activeProfileString)) {
             LOG.warn(
-                "Repository count is temporarily disabled because of bad performance with large collections");
+                    "Repository count is temporarily disabled because of bad performance with large collections");
             return 0;
         }
 
@@ -545,7 +573,7 @@ public class FTService extends CommonFTService {
     public long countResource() {
         if (GeneralUtils.testProfileNotActive(activeProfileString)) {
             LOG.warn(
-                "Repository count is temporarily disabled because of bad performance with large collections");
+                    "Repository count is temporarily disabled because of bad performance with large collections");
             return 0;
         }
 
@@ -560,7 +588,7 @@ public class FTService extends CommonFTService {
     public void deleteAll() {
         if (GeneralUtils.testProfileNotActive(activeProfileString)) {
             LOG.warn(
-                "Attempting to delete repository from non-test code...");
+                    "Attempting to delete repository from non-test code...");
             return;
         }
         annoPageRepository.deleteAll();

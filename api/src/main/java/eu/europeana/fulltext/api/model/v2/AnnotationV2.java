@@ -80,5 +80,10 @@ public class AnnotationV2 extends JsonLdId implements Serializable, AnnotationWr
                                                 AnnotationType.MEDIA.getDisplayName(),
                                                 AnnotationType.CAPTION.getDisplayName()));
     }
+
+    @JsonIgnore
+    public AnnotationType getAnnotationType(){
+        return AnnotationType.fromName(this.textGranularity);
+    }
 }
 
