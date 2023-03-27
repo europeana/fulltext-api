@@ -16,18 +16,15 @@ import eu.europeana.fulltext.entity.Resource;
 import eu.europeana.fulltext.entity.Target;
 import eu.europeana.fulltext.exception.ResourceDoesNotExistException;
 import eu.europeana.iiif.IIIFDefinitions;
-import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Optional;
+import java.util.*;
 
 import static eu.europeana.fulltext.api.config.FTDefinitions.*;
-import static eu.europeana.fulltext.api.service.ControllerUtils.createTextGranularity;
 import static eu.europeana.fulltext.util.NormalPlayTime.msToHHmmss;
 import static eu.europeana.iiif.IIIFDefinitions.*;
 
@@ -65,7 +62,7 @@ public final class EDM2IIIFMapping {
         annPage.setLanguage(annoPage.getLang());
         annPage.setSource(annoPage.getSource());
         annPage.setResources(getAnnotationV2Array(annoPage, derefResource));
-        annPage.setTextGranularity(createTextGranularity(textGranValues, annPage.getResources()[0].isMedia()));
+        annPage.setTextGranularity(findTextGranularitiesV2(textGranValues, annPage));
         return annPage;
     }
 
@@ -120,6 +117,60 @@ public final class EDM2IIIFMapping {
         return ann;
     }
 
+    static AnnotationV2 getSingleAnnotationV2(AnnoPage annoPage, String annoId){
+        Optional<Annotation> maybe = annoPage.getAns().stream().filter(o -> o.getAnId().equals(annoId)).findFirst();
+        // NOTE this shouldn't fail because in that case the annoPage would not have been found in the first place
+        return maybe.map(annotation1 -> getAnnotationV2(annoPage, annotation1, true,false)).orElse(null);
+    }
+
+    /**
+     * EA-3368
+     * Determines which textGranularities are present in the Annotations for a given AnnotationPage.
+     * This method loops through the Annotations to check if either the supplied textGranularities speficied by
+     * the user are accounted for, or else those types that can be expected for the type of record (text or media).
+     * The search continues until either all expected types are found or all Annotations have been searched.
+     * The method returns all accounted textGranularities in a String array.
+     * @param granularities List of AnnotationType enum values corresponding to the request textGranularity parameter
+     * @param annPage AnnotationPageV2 Annotationpage that the textGranularities should be compiled for
+     * @return String[] of all textGranularities present in the Annotations for the given AnnotationPage
+     */
+    private static String[] findTextGranularitiesV2(List<AnnotationType> granularities, AnnotationPageV2 annPage){
+        List<String> foundGranularities = new ArrayList<>();
+
+        // if no filter has been specified, check the first Annotation to narrow the list of possible
+        // textGranularity types down based on the type of record
+        if (null == granularities || granularities.isEmpty()){
+            if (annPage.getResources()[0].isMedia()){
+                granularities = List.copyOf(MEDIA_ANNOTATION_TYPES);
+            } else {
+                granularities = List.copyOf(TEXT_ANNOTATION_TYPES);
+            }
+        }
+        // populate Map with all expected textGranularities, initiate to False (= not yet found)
+        Map<AnnotationType, Boolean> granularityMap = new HashMap<>();
+        for (AnnotationType annotationType : granularities) {
+            granularityMap.put(annotationType, Boolean.FALSE);
+        }
+
+        // iterate through Annotations and check if textGranularity is present
+        for (AnnotationV2 ann : annPage.getResources()){
+            granularityMap.put(ann.getAnnotationType(), Boolean.TRUE);
+            if (!granularityMap.containsValue(Boolean.FALSE)){
+                // all are TRUE, stop the search
+                break;
+            }
+        }
+
+        // now the expected set of textGranularities is either all accounted for or the Annotations have all been looked at
+        // compile List of all found textGranularities
+        for (Map.Entry<AnnotationType, Boolean> entry : granularityMap.entrySet()) {
+            if (entry.getValue().equals(Boolean.TRUE)) {
+                foundGranularities.add(entry.getKey().getLowerCaseName());
+            }
+        }
+        return foundGranularities.toArray(new String[0]);
+    }
+
     static AnnotationPageV3 getAnnotationPageV3(AnnoPage annoPage,
                                                 List<AnnotationType> textGranValues,
                                                 boolean derefResource){
@@ -127,7 +178,7 @@ public final class EDM2IIIFMapping {
         annPage.setLanguage(annoPage.getLang());
         annPage.setSource(annoPage.getSource());
         annPage.setItems(getAnnotationV3Array(annoPage, derefResource));
-        annPage.setTextGranularity(createTextGranularity(textGranValues, annPage.getItems()[0].isMedia()));
+        annPage.setTextGranularity(findTextGranularitiesV3(textGranValues, annPage));
         return annPage;
     }
 
@@ -184,17 +235,67 @@ public final class EDM2IIIFMapping {
         return ann;
     }
 
+    static String[] getTextGranularitiesForSummary(AnnoPage annoPage){
+        AnnotationPageV3 annPage = new AnnotationPageV3(getAnnoPageIdUrl(annoPage));
+        annPage.setItems(getAnnotationV3Array(annoPage, false));
+        return findTextGranularitiesV3(null, annPage);
+    }
+
+    /**
+     * EA-3368
+     * Determines which textGranularities are present in the Annotations for a given AnnotationPage.
+     * This method loops through the Annotations to check if either the supplied textGranularities speficied by
+     * the user are accounted for, or else those types that can be expected for the type of record (text or media).
+     * The search continues until either all expected types are found or all Annotations have been searched.
+     * The method returns all accounted textGranularities in a String array.
+     * @param granularities List of AnnotationType enum values corresponding to the request textGranularity parameter
+     * @param annPage AnnotationPageV3 Annotationpage that the textGranularities should be compiled for
+     * @return String[] of all textGranularities present in the Annotations for the given AnnotationPage
+     */
+    private static String[] findTextGranularitiesV3(List<AnnotationType> granularities, AnnotationPageV3 annPage){
+        List<String> foundGranularities = new ArrayList<>();
+
+        // if no filter has been specified, check the first Annotation to narrow the list of possible
+        // textGranularity types down based on the type of record
+        if (null == granularities || granularities.isEmpty()){
+            if (annPage.getItems()[0].isMedia()){
+                granularities = List.copyOf(MEDIA_ANNOTATION_TYPES);
+            } else {
+                granularities = List.copyOf(TEXT_ANNOTATION_TYPES);
+            }
+        }
+        // populate Map with all expected textGranularities, initiate to False (= not yet found)
+        Map<AnnotationType, Boolean> granularityMap = new HashMap<>();
+        for (AnnotationType annotationType : granularities) {
+            granularityMap.put(annotationType, Boolean.FALSE);
+        }
+
+        // iterate through Annotations and check if textGranularity is present
+        for (AnnotationV3 ann : annPage.getItems()){
+            granularityMap.put(ann.getAnnotationType(), Boolean.TRUE);
+            if (!granularityMap.containsValue(Boolean.FALSE)){
+                // all are TRUE, stop the search
+                break;
+            }
+        }
+
+        // now the expected set of textGranularities is either all accounted for or the Annotations have all
+        // been looked at, so compile a List of all found textGranularities
+        for (Map.Entry<AnnotationType, Boolean> entry : granularityMap.entrySet()) {
+            if (entry.getValue().equals(Boolean.TRUE)) {
+                foundGranularities.add(entry.getKey().getLowerCaseName());
+            }
+        }
+        // and return that
+        return foundGranularities.toArray(new String[0]);
+    }
+
     static AnnotationV3 getSingleAnnotationV3(AnnoPage annoPage, String annoId){
         Optional<Annotation> maybe = annoPage.getAns().stream().filter(o -> o.getAnId().equals(annoId)).findFirst();
         // NOTE this shouldn't fail because in that case the annoPage would not have been found in the first place
         return maybe.map(annotation1 -> getAnnotationV3(annoPage, annotation1, true, false)).orElse(null);
     }
 
-    static AnnotationV2 getSingleAnnotationV2(AnnoPage annoPage, String annoId){
-        Optional<Annotation> maybe = annoPage.getAns().stream().filter(o -> o.getAnId().equals(annoId)).findFirst();
-        // NOTE this shouldn't fail because in that case the annoPage would not have been found in the first place
-        return maybe.map(annotation1 -> getAnnotationV2(annoPage, annotation1, true,false)).orElse(null);
-    }
 
     private static String[] getFTTargetArray(AnnoPage annoPage, Annotation annotation){
         ArrayList<String> ftTargetURLList = new ArrayList<>();
