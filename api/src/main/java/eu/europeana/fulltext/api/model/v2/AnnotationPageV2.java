@@ -14,7 +14,7 @@ import static eu.europeana.iiif.IIIFDefinitions.TEXT_GRANULARITY_CONTEXT;
  * Created by luthien on 14/06/2018.
  */
 //@JsonldType(value = "sc:AnnotationList") // commenting this out works for property ordering #EA-1310
-@JsonPropertyOrder({"context", "id", "type"})
+@JsonPropertyOrder({"context", "id", "type", "language", "textGranularity", "source", "resources"})
 public class AnnotationPageV2 extends JsonLdId implements Serializable, AnnotationWrapper {
 
     private static final long serialVersionUID = -491589144458820254L;

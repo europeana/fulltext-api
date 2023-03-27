@@ -15,7 +15,7 @@ import static eu.europeana.iiif.IIIFDefinitions.TEXT_GRANULARITY_CONTEXT;
 /**
  * Created by luthien on 14/06/2018.
  */
-@JsonPropertyOrder({"context", "id", "type"})
+@JsonPropertyOrder({"context", "id", "type", "language", "textGranularity", "source", "items"})
 public class AnnotationPageV3 extends JsonLdIdType implements Serializable, AnnotationWrapper {
 
     private static final long serialVersionUID = 3567695991809278386L;
