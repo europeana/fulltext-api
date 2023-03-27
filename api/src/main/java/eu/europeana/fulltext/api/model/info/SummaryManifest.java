@@ -17,19 +17,21 @@ import static eu.europeana.iiif.IIIFDefinitions.TEXT_GRANULARITY_CONTEXT;
  */
 @JsonPropertyOrder({"@context", "textGranularity", "items"})
 public class SummaryManifest implements Serializable {
+
     private static final long serialVersionUID = -8052995235828716772L;
 
 
     @JsonProperty("@context")
-    private final String[] context = new String[]{MEDIA_TYPE_W3ORG_JSONLD, TEXT_GRANULARITY_CONTEXT, MEDIA_TYPE_IIIF_V3};
+    private final String[] context = new String[]{MEDIA_TYPE_W3ORG_JSONLD, TEXT_GRANULARITY_CONTEXT,
+                                                  MEDIA_TYPE_IIIF_V3};
 
     private String[] textGranularity;
 
     @JsonIgnore
-    private String              dataSetId;
+    private String dataSetId;
 
     @JsonIgnore
-    private String              localId;
+    private String localId;
 
     @JsonProperty("items")
     private List<SummaryCanvas> canvases;
@@ -40,10 +42,10 @@ public class SummaryManifest implements Serializable {
      * @param dataSetId String containing the dataset of this Fulltext SummaryManifest
      * @param localId   String containing the localId of this Fulltext SummaryManifest
      */
-    public SummaryManifest(String dataSetId, String localId){
+    public SummaryManifest(String dataSetId, String localId) {
         this.dataSetId = dataSetId;
-        this.localId = localId;
-        canvases = new ArrayList<>();
+        this.localId   = localId;
+        canvases       = new ArrayList<>();
     }
 
     public String[] getTextGranularity() {
@@ -73,9 +75,10 @@ public class SummaryManifest implements Serializable {
 
     /**
      * Adds a *fake* SummaryCanvas containing an AnnoPage (AnnotationLangPages)
+     *
      * @param summaryCanvas SummaryCanvas object to be added to the canvases List
      */
-    public void addCanvas(SummaryCanvas summaryCanvas){
+    public void addCanvas(SummaryCanvas summaryCanvas) {
         canvases.add(summaryCanvas);
     }
 
