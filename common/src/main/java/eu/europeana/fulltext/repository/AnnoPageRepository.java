@@ -253,6 +253,61 @@ public class AnnoPageRepository {
     }
 
     /**
+     * Need to find full AnnoPage without filtering on textGranularity
+     *
+     * @param datasetId ID of the dataset
+     * @param localId   ID of the parent of the Annopage object
+     * @param pageId    index (page number) of the Annopage object
+     * @param lang      language
+     * @param includeDeprecated whether deprecated AnnoPages should be included in result
+     * @return AnnoPage
+     */
+    public AnnoPage findAPNoGranFilter(
+            String datasetId, String localId, String pageId, String lang, boolean includeDeprecated) {
+
+        List<Filter> filters =
+                new ArrayList<>(
+                        Arrays.asList(eq(DATASET_ID, datasetId),
+                                eq(LOCAL_ID, localId),
+                                eq(PAGE_ID, pageId),
+                                eq(LANGUAGE, lang)));
+
+        if (!includeDeprecated){
+            filters.add(eq(DELETED, null));
+        }
+
+        Aggregation<AnnoPage> query = datastore.aggregate(AnnoPage.class)
+                .match(filters.toArray(new Filter[0]));
+        return query.execute(AnnoPage.class).tryNext();
+    }
+
+    /**
+     * Need to find original full AnnoPage without filtering on textGranularity
+     *
+     * @param datasetId ID of the dataset
+     * @param localId   ID of the parent of the Annopage object
+     * @param pageId    index (page number) of the Annopage object
+     * @param includeDeprecated whether deprecated AnnoPages should be included in result
+     * @return AnnoPage
+     */
+    public AnnoPage findOrigAPNoGranFilter(
+            String datasetId, String localId, String pageId, boolean includeDeprecated) {
+        List<Filter> filters =
+                new ArrayList<>(
+                        Arrays.asList(eq(DATASET_ID, datasetId),
+                                eq(LOCAL_ID, localId),
+                                eq(PAGE_ID, pageId),
+                                eq(TRANSLATION, null)));
+
+        if (!includeDeprecated){
+            filters.add(eq(DELETED, null));
+        }
+        Aggregation<AnnoPage> query = datastore.aggregate(AnnoPage.class)
+                .match(filters.toArray(new Filter[0]));
+        return query.execute(AnnoPage.class).tryNext();
+    }
+
+    /**
      * Finds the original AnnoPage with the given parameters.
      * Original means the "translation" field in the database is empty
      * @param datasetId

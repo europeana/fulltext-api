@@ -1,5 +1,8 @@
 package eu.europeana.fulltext.api.service;
 
+import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_ANNOTATION_TYPES;
+import static eu.europeana.fulltext.api.config.FTDefinitions.TEXT_ANNOTATION_TYPES;
+
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.search.exception.InvalidParameterException;
 import io.micrometer.core.instrument.util.StringUtils;

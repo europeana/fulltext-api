@@ -3,22 +3,24 @@ package eu.europeana.fulltext.api.model.info;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 import static eu.europeana.iiif.IIIFDefinitions.MEDIA_TYPE_IIIF_V3;
 import static eu.europeana.iiif.IIIFDefinitions.MEDIA_TYPE_W3ORG_JSONLD;
+import static eu.europeana.iiif.IIIFDefinitions.TEXT_GRANULARITY_CONTEXT;
 
 /**
  * Created by luthien on 07/04/2021.
  */
+@JsonPropertyOrder({"@context", "items"})
 public class SummaryManifest implements Serializable {
     private static final long serialVersionUID = -8052995235828716772L;
 
-
     @JsonProperty("@context")
-    private final String[] context = new String[]{MEDIA_TYPE_W3ORG_JSONLD, MEDIA_TYPE_IIIF_V3};
+    private final String[] context = new String[]{MEDIA_TYPE_W3ORG_JSONLD, TEXT_GRANULARITY_CONTEXT, MEDIA_TYPE_IIIF_V3};
 
     @JsonIgnore
     private String              dataSetId;
@@ -56,7 +58,6 @@ public class SummaryManifest implements Serializable {
     public void setLocalId(String localId) {
         this.localId = localId;
     }
-
 
     /**
      * Adds a *fake* SummaryCanvas containing an AnnoPage (AnnotationLangPages)
