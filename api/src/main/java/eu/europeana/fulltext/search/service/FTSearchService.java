@@ -17,6 +17,7 @@ import eu.europeana.fulltext.search.model.response.HitFactory;
 import eu.europeana.fulltext.search.model.response.SearchResult;
 import eu.europeana.fulltext.search.model.response.SearchResultFactory;
 import eu.europeana.fulltext.search.repository.SolrRepo;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -99,26 +100,29 @@ public class FTSearchService {
                 .stream()
                 .collect(Collectors.groupingBy(SolrHit::getImageId));
 
-        long start = System.currentTimeMillis();
-        List<String> targetIds = new ArrayList<>(solrHitsByImageId.keySet());
-        try (MorphiaCursor<AnnoPage> annoPageCursor = fulltextRepo.fetchAnnoPageFromTargetId(europeanaId.getDatasetId(),
-                europeanaId.getLocalId(), targetIds, annoTypes, false)) {
-            if (annoPageCursor == null || !annoPageCursor.hasNext()) {
-                LOG.error("Solr record {} with targetIds {} not found in Mongo!", europeanaId, targetIds);
-                throw new SearchEngineDatabaseMismatch();
-            } else {
-                LOG.debug("Retrieved AnnoPages for {} in {} ms", europeanaId, System.currentTimeMillis() - start);
-            }
+        // if solr results were parsed correctly, else do nothing
+        if (!solrHitsByImageId.isEmpty()) {
+            long start = System.currentTimeMillis();
+            List<String> targetIds = new ArrayList<>(solrHitsByImageId.keySet());
+            try (MorphiaCursor<AnnoPage> annoPageCursor = fulltextRepo.fetchAnnoPageFromTargetId(europeanaId.getDatasetId(),
+                    europeanaId.getLocalId(), targetIds, annoTypes, false)) {
+                if (annoPageCursor == null || !annoPageCursor.hasNext()) {
+                    LOG.error("Solr record {} with targetIds {} not found in Mongo!", europeanaId, targetIds);
+                    throw new SearchEngineDatabaseMismatch();
+                } else {
+                    LOG.debug("Retrieved AnnoPages for {} in {} ms", europeanaId, System.currentTimeMillis() - start);
+                }
 
-            while (annoPageCursor.hasNext()) {
-                AnnoPage annoPage = annoPageCursor.next();
-                LOG.debug("Processing annoPage {}", annoPage);
-                // get relevant SolrHits by imageId (which match annoPage.tgId)
-                for (SolrHit solrHit : solrHitsByImageId.get(annoPage.getTgtId())) {
-                    // use the annopage to find the matching annotations
-                    findAnnotations(result, solrHit, annoPage, pageSize, annoTypes, requestVersion);
-                    if (result.itemSize() >= pageSize) {
-                        return;
+                while (annoPageCursor.hasNext()) {
+                    AnnoPage annoPage = annoPageCursor.next();
+                    LOG.debug("Processing annoPage {}", annoPage);
+                    // get relevant SolrHits by imageId (which match annoPage.tgId)
+                    for (SolrHit solrHit : solrHitsByImageId.get(annoPage.getTgtId())) {
+                        // use the annopage to find the matching annotations
+                        findAnnotations(result, solrHit, annoPage, pageSize, annoTypes, requestVersion);
+                        if (result.itemSize() >= pageSize) {
+                            return;
+                        }
                     }
                 }
             }
@@ -189,37 +193,44 @@ public class FTSearchService {
         for (int i = 0; i < snippetsTxt.size(); i++) {
             // parse snippets data
             String snippetTxt = snippetsTxt.get(i);
-            int imageIdEnd = snippetTxt.indexOf('}');
-            // the imageIds sent by Solr can contain encoded characters such as &amp; so we need to decode/unescape
-            String imageId = StringEscapeUtils.unescapeXml(snippetTxt.substring(1, imageIdEnd));
-            String snippet = snippetTxt.substring(imageIdEnd + 2);
+            // only if we get the imageId/url/webresource-url  back in the solr response
+            if (StringUtils.contains(snippetTxt, "}")) {
+                int imageIdEnd = snippetTxt.indexOf('}');
+                // the imageIds sent by Solr can contain encoded characters such as &amp; so we need to decode/unescape
+                String imageId = StringEscapeUtils.unescapeXml(snippetTxt.substring(1, imageIdEnd));
+                String snippet = snippetTxt.substring(imageIdEnd + 2);
 
-            // parse offsets data
-            NamedList offsetList = offsetsLists.get(i);
-            Long textStartOffset = Long.valueOf(offsetList.get(TEXT_START_OFFSET).toString());
-            // the imageId that is inserted into snippets should also be subtracted
-            textStartOffset = textStartOffset + imageIdEnd + 2; // + 2 because of bracket itself plus a space behind it
-            List<Integer> starts = getOffsets(offsetList.get(HIT_START_OFFSETS).toString(), textStartOffset);
-            List<Integer> ends = getOffsets(offsetList.get(HIT_END_OFFSETS).toString(), textStartOffset);
+                // parse offsets data
+                NamedList offsetList = offsetsLists.get(i);
+                Long textStartOffset = Long.valueOf(offsetList.get(TEXT_START_OFFSET).toString());
+                // the imageId that is inserted into snippets should also be subtracted
+                textStartOffset = textStartOffset + imageIdEnd + 2; // + 2 because of bracket itself plus a space behind it
+                List<Integer> starts = getOffsets(offsetList.get(HIT_START_OFFSETS).toString(), textStartOffset);
+                List<Integer> ends = getOffsets(offsetList.get(HIT_END_OFFSETS).toString(), textStartOffset);
 
-            SolrHit previousHit = null;
-            for (int j = 0; j < starts.size(); j++) {
-                SolrHit newHit = new SolrHit(imageId, snippet, starts.get(j), ends.get(j));
-                // see if we there's a nearby hit we can merge with
-                if (previousHit != null && (newHit.getStart() - previousHit.getEnd() <= SearchConfig.HIT_MERGE_MAX_DISTANCE)) {
-                    LOG.debug("Merging {} with {}...", previousHit.getDebugInfo(), newHit.getDebugInfo());
-                    previousHit.setEnd(newHit.getEnd());
-                    nrMergedHits++;
-                } else {
-                    result.add(newHit);
-                    if (debug != null) {
-                        debug.addSolrSnippet(newHit);
+                SolrHit previousHit = null;
+                for (int j = 0; j < starts.size(); j++) {
+                    SolrHit newHit = new SolrHit(imageId, snippet, starts.get(j), ends.get(j));
+                    // see if we there's a nearby hit we can merge with
+                    if (previousHit != null && (newHit.getStart() - previousHit.getEnd() <= SearchConfig.HIT_MERGE_MAX_DISTANCE)) {
+                        LOG.debug("Merging {} with {}...", previousHit.getDebugInfo(), newHit.getDebugInfo());
+                        previousHit.setEnd(newHit.getEnd());
+                        nrMergedHits++;
+                    } else {
+                        result.add(newHit);
+                        if (debug != null) {
+                            debug.addSolrSnippet(newHit);
+                        }
                     }
+                    previousHit = newHit;
                 }
-                previousHit = newHit;
             }
         }
-        LOG.debug("Parsed {} solr hits, {} merged", result.size() + nrMergedHits, nrMergedHits);
+        if (result.isEmpty()) {
+            LOG.error("Unexpected data in the snippets, Image id url data missing");
+        } else {
+            LOG.debug("Parsed {} solr hits, {} merged", result.size() + nrMergedHits, nrMergedHits);
+        }
         return result;
     }
 
