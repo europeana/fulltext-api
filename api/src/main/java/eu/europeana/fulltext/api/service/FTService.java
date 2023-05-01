@@ -214,16 +214,23 @@ public class FTService extends CommonFTService {
      * @return SummaryManifest
      */
     public SummaryManifest collectionAnnoPageInfo(String datasetId, String localId) throws AnnoPageDoesNotExistException, AnnoPageGoneException {
-        Instant start = Instant.now();
+        Instant start                         = Instant.now();
+        String previousObjectId               = null;
         SummaryManifest apInfoSummaryManifest = new SummaryManifest(datasetId, localId);
         // fetch annopages with dsId and lcId
         List<AnnoPage> annoPages = annoPageRepository.getAnnoPages(datasetId, localId, null, false);
         Instant finish = Instant.now();
         LOG.debug(FETCHED_AGGREGATED, Duration.between(start, finish).toMillis());
 
+
         for (AnnoPage annoPage : annoPages) {
-            SummaryCanvas summaryCanvas = new SummaryCanvas(makeSummaryCanvasID(datasetId, localId,
-                    annoPage.getPgId()));
+            if (StringUtils.isBlank(previousObjectId) || StringUtils.equalsIgnoreCase(annoPage.getIdString(), previousObjectId)){
+                System.out.println("Ze zame one!");
+            } else {
+                System.out.println("Another one!");
+            }
+
+            SummaryCanvas summaryCanvas = new SummaryCanvas(makeSummaryCanvasID(datasetId, localId, annoPage.getPgId()));
 
             // add original SummaryAnnoPage to the SummaryCanvas
             summaryCanvas.addAnnotation(

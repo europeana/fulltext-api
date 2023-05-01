@@ -189,4 +189,8 @@ public class AnnoPage {
     public void setTranslation(boolean translation) {
         this.translation = translation;
     }
+
+    public String getIdString(){
+        return this._id.toString();
+    }
 }
