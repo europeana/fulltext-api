@@ -190,7 +190,4 @@ public class AnnoPage {
         this.translation = translation;
     }
 
-    public String getIdString(){
-        return this._id.toString();
-    }
 }

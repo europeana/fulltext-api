@@ -37,7 +37,9 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -215,33 +217,48 @@ public class FTService extends CommonFTService {
      */
     public SummaryManifest collectionAnnoPageInfo(String datasetId, String localId) throws AnnoPageDoesNotExistException, AnnoPageGoneException {
         Instant start                         = Instant.now();
-        String previousObjectId               = null;
+        String previousPageId               = null;
         SummaryManifest apInfoSummaryManifest = new SummaryManifest(datasetId, localId);
         // fetch annopages with dsId and lcId
         List<AnnoPage> annoPages = annoPageRepository.getAnnoPages(datasetId, localId, null, false);
         Instant finish = Instant.now();
         LOG.debug(FETCHED_AGGREGATED, Duration.between(start, finish).toMillis());
 
+        // loop through annoPages, populate Map of <pageId, List<AnnoPage>>
+        Map<String, List<AnnoPage>> annoPerPage = new LinkedHashMap<>();
 
         for (AnnoPage annoPage : annoPages) {
-            if (StringUtils.isBlank(previousObjectId) || StringUtils.equalsIgnoreCase(annoPage.getIdString(), previousObjectId)){
-                System.out.println("Ze zame one!");
-            } else {
-                System.out.println("Another one!");
+            annoPerPage.computeIfAbsent(annoPage.getPgId(), k -> new ArrayList<>()).add(annoPage);
+        }
+
+        for (Map.Entry<String, List<AnnoPage>> pageList : annoPerPage.entrySet()) {
+            SummaryCanvas summaryCanvas = new SummaryCanvas(makeSummaryCanvasID(datasetId, localId, pageList.getKey()));
+
+            // find original language and apply to the summaryCanvas
+            if (annoPageRepository.existsOriginalByPageId(datasetId, localId, pageList.getKey(), true)) {
+                summaryCanvas.setOriginalLanguage(
+                        annoPageRepository.findOrigAPNoGranFilter(
+                                        datasetId,
+                                        localId,
+                                        pageList.getKey(),
+                                        true)
+                        .getLang());
             }
 
-            SummaryCanvas summaryCanvas = new SummaryCanvas(makeSummaryCanvasID(datasetId, localId, annoPage.getPgId()));
-
-            // add original SummaryAnnoPage to the SummaryCanvas
-            summaryCanvas.addAnnotation(
-                    new SummaryAnnoPage(
-                            makeLangAwareAnnoPageID(datasetId, localId, annoPage.getPgId(), annoPage.getLang()),
-                            annoPage.getLang(),
-                            getTextGranularitiesForSummary(fetchAnnoPageNoFilter(datasetId, localId, annoPage.getPgId(),
-                                    annoPage.getLang())),
-                            annoPage.getSource()));
-            summaryCanvas.setOriginalLanguage(annoPage.getLang());
-
+            for (AnnoPage annoPage: pageList.getValue()) {
+                // for every language, add SummaryAnnoPage to the SummaryCanvas
+                summaryCanvas.addAnnotation(
+                        new SummaryAnnoPage(
+                                makeLangAwareAnnoPageID(datasetId, localId, annoPage.getPgId(), annoPage.getLang()),
+                                annoPage.getLang(),
+                                getTextGranularitiesForSummary(fetchAnnoPageNoFilter(
+                                        datasetId,
+                                        localId,
+                                        annoPage.getPgId(),
+                                        annoPage.getLang())
+                                ),
+                                annoPage.getSource()));
+            }
             // add SummaryCanvas to SummaryManifest
             apInfoSummaryManifest.addCanvas(summaryCanvas);
         }
