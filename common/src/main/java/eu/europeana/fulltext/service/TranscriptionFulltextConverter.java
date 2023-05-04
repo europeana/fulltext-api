@@ -1,11 +1,10 @@
 package eu.europeana.fulltext.service;
 
+import eu.europeana.edm.FullTextAnnotation;
+import eu.europeana.edm.FullTextPackage;
+import eu.europeana.edm.text.FullTextResource;
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.WebConstants;
-import eu.europeana.fulltext.edm.EdmAnnotation;
-import eu.europeana.fulltext.edm.EdmFullTextPackage;
-import eu.europeana.fulltext.edm.EdmFullTextResource;
-import eu.europeana.fulltext.service.FulltextConverter;
 import eu.europeana.fulltext.subtitles.AnnotationPreview;
 import eu.europeana.fulltext.util.GeneralUtils;
 
@@ -15,7 +14,7 @@ import eu.europeana.fulltext.util.GeneralUtils;
 public class TranscriptionFulltextConverter implements FulltextConverter {
 
     @Override
-    public EdmFullTextPackage convert(AnnotationPreview annotationPreview) {
+    public FullTextPackage convert(AnnotationPreview annotationPreview) {
         // get the uri
         String uri = WebConstants.ITEM_BASE_URL + annotationPreview.getRecordId();
         String annotationPageURI = GeneralUtils.getAnnotationPageURI(annotationPreview.getRecordId());
@@ -24,14 +23,14 @@ public class TranscriptionFulltextConverter implements FulltextConverter {
                         annotationPreview.getRecordId(),
                         GeneralUtils.generateResourceId(annotationPreview.getRecordId(), annotationPreview.getLanguage(), annotationPreview.getMedia()));
 
-        // create resource
-        EdmFullTextResource edmFullTextResource = new EdmFullTextResource(
+//         create resource
+        FullTextResource edmFullTextResource = new FullTextResource(
                         fullTextResourceURI, annotationPreview.getAnnotationBody(), annotationPreview.getLanguage(), annotationPreview.getRights(), uri);
 
         // create fulltext with only one annotation Page
-        EdmFullTextPackage edmFullTextPackage = new EdmFullTextPackage(annotationPageURI, edmFullTextResource);
-        edmFullTextPackage.add(new EdmAnnotation(null, null, AnnotationType.PAGE, null, null));
+        FullTextPackage fullTextPackage = new FullTextPackage(annotationPageURI, edmFullTextResource);
+        fullTextPackage.add(new FullTextAnnotation(null, null,null, AnnotationType.PAGE, null, null));
 
-        return edmFullTextPackage;
+        return fullTextPackage;
     }
 }

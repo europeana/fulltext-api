@@ -12,12 +12,14 @@ import com.dotsub.converter.importer.impl.WebVttImportHandler;
 import com.dotsub.converter.model.Configuration;
 import com.dotsub.converter.model.SubtitleItem;
 import eu.europeana.fulltext.AnnotationType;
+import eu.europeana.edm.FullTextAnnotation;
+import eu.europeana.edm.FullTextPackage;
+import eu.europeana.edm.media.MediaResource;
+import eu.europeana.edm.media.TimeBoundary;
+import eu.europeana.edm.text.FullTextResource;
+import eu.europeana.edm.text.TextBoundary;
+import eu.europeana.edm.text.TextReference;
 import eu.europeana.fulltext.WebConstants;
-import eu.europeana.fulltext.edm.EdmAnnotation;
-import eu.europeana.fulltext.edm.EdmFullTextPackage;
-import eu.europeana.fulltext.edm.EdmFullTextResource;
-import eu.europeana.fulltext.edm.EdmTextBoundary;
-import eu.europeana.fulltext.edm.EdmTimeBoundary;
 import eu.europeana.fulltext.exception.InvalidFormatException;
 import eu.europeana.fulltext.exception.SubtitleParsingException;
 import eu.europeana.fulltext.subtitles.AnnotationPreview;
@@ -38,7 +40,7 @@ public class SubtitleFulltextConverter implements FulltextConverter {
 
   private static final Configuration defaultSubtitleConfig = new Configuration();
 
-  private static final Logger logger = LogManager.getLogger(SubtitleFulltextConverter.class);
+  private static final Logger LOGGER = LogManager.getLogger(SubtitleFulltextConverter.class);
   private static final Pattern PATTERN = Pattern.compile("[<][/]?[^<]+[/]?[>]");
 
   private static final Map<FulltextType, SubtitleImportHandler> subtitleImportHandlerMap = Map.of(WEB_VTT, new WebVttImportHandler(),
@@ -46,7 +48,7 @@ public class SubtitleFulltextConverter implements FulltextConverter {
 
 
   @Override
-  public EdmFullTextPackage convert(AnnotationPreview annotationPreview) throws InvalidFormatException, SubtitleParsingException {
+  public FullTextPackage convert(AnnotationPreview annotationPreview) throws InvalidFormatException, SubtitleParsingException {
     // get the subtitles
     List<SubtitleItem> subtitleItems =
             parseSubtitle(
@@ -64,15 +66,15 @@ public class SubtitleFulltextConverter implements FulltextConverter {
                     annotationPreview.getRecordId(),
                     GeneralUtils.generateResourceId(annotationPreview.getRecordId(), annotationPreview.getLanguage(), annotationPreview.getMedia()));
 
-    EdmFullTextPackage page = new EdmFullTextPackage(annotationPageURI, null);
+    FullTextPackage page = new FullTextPackage(annotationPageURI, null);
 
     // generate Fulltext Resource
-    EdmFullTextResource resource =
-            new EdmFullTextResource(
+    FullTextResource resource =
+            new FullTextResource(
                     fullTextResourceURI, null, annotationPreview.getLanguage(), annotationPreview.getRights(), uri);
     // add first annotation of type Media - this will not have any targets or text boundary
-    EdmTextBoundary tb = new EdmTextBoundary(fullTextResourceURI);
-    page.add(new EdmAnnotation(tb, null, AnnotationType.MEDIA, null, null));
+    TextReference tb = new TextBoundary(resource);
+    page.add(new FullTextAnnotation(null, tb, null, AnnotationType.MEDIA, null, null));
 
     // add the subtitles as annotations
     SubtitleContext subtitleContext = new SubtitleContext();
@@ -84,15 +86,15 @@ public class SubtitleFulltextConverter implements FulltextConverter {
       }
       int start = item.getStartTime();
       int end = start + item.getDuration();
-      EdmTimeBoundary mr = new EdmTimeBoundary(annotationPreview.getMedia(), start, end);
-      EdmTextBoundary tr = subtitleContext.newItem(processSubtitle(item.getContent()));
-      page.add(new EdmAnnotation(tr, mr, AnnotationType.CAPTION, null, null));
+      TimeBoundary mr = new TimeBoundary(new MediaResource(annotationPreview.getMedia()), start, end);
+      TextBoundary tr = subtitleContext.newItem(processSubtitle(item.getContent()), resource);
+      page.add(new FullTextAnnotation(null, tr, mr, AnnotationType.CAPTION, null, null));
     }
     // ADD the resource in Fulltext page
     resource.setValue(subtitleContext.end());
     page.setResource(resource);
-    if (logger.isTraceEnabled()) {
-      logger.trace(
+    if (LOGGER.isTraceEnabled()) {
+      LOGGER.trace(
               "Successfully converted SRT to EDM for record {}. Processed Annotations - {}",
               annotationPreview.getRecordId(),
               page.size());
