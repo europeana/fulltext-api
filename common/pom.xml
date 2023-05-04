@@ -108,6 +108,14 @@
             </exclusions>
         </dependency>
 
+        <!--For Image dimension -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.14</version>
+        </dependency>
+
+
         <!-- Used for subtitle conversion-->
         <dependency>
             <groupId>com.dotsub.converter</groupId>
@@ -182,5 +190,4 @@
         </dependency>
 
     </dependencies>
-
 </project>
