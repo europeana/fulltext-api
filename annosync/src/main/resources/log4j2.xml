@@ -10,7 +10,7 @@
         <Root level="INFO">
             <AppenderRef ref="Console"/>
         </Root>
-        <logger name="eu.europeana.fulltext" level="INFO"/>
+        <logger name="eu.europeana.fulltext" level="DEBUG"/>
 
         <!--Suppress unhelpful Spring Batch warnings:
 See     https://stackoverflow.com/questions/23780587/spring-batch-reader-in-multi-threader-job -->

@@ -1,13 +1,21 @@
 package eu.europeana.fulltext.annosync.batch.reader;
 
+import eu.europeana.fulltext.annosync.batch.AnnoSyncJobConfig;
 import eu.europeana.fulltext.service.AnnotationApiRestService;
 import eu.europeana.fulltext.subtitles.external.AnnotationItem;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.batch.item.data.AbstractPaginatedDataItemReader;
 
 public class AnnotationItemReader extends AbstractPaginatedDataItemReader<AnnotationItem> {
+
+  private static final Logger logger = LogManager.getLogger(AnnotationItemReader.class);
 
   private final AnnotationApiRestService annotationsRestService;
   private final Instant from;
@@ -33,6 +41,8 @@ public class AnnotationItemReader extends AbstractPaginatedDataItemReader<Annota
     // page is incremented in parent class every time this method is invoked
     List<AnnotationItem> searchResponse =
         annotationsRestService.getAnnotations(page, pageSize, from, to);
+
+     logger.info("Fetched Annotations ids - {} ", searchResponse.size());
 
     if (searchResponse == null || searchResponse.isEmpty()) {
       return null;
