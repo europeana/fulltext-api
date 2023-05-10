@@ -8,7 +8,7 @@ spec:
   concurrencyPolicy: Forbid
   jobTemplate:
     spec:
-      ttlSecondsAfterFinished: 60
+      ttlSecondsAfterFinished: 300
       template:
         spec:
           containers:
