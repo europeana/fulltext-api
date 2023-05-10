@@ -189,4 +189,5 @@ public class AnnoPage {
     public void setTranslation(boolean translation) {
         this.translation = translation;
     }
+
 }
