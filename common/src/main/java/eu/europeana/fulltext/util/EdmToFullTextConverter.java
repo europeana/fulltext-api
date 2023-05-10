@@ -43,8 +43,8 @@ import org.apache.commons.lang3.StringUtils;
       annoPage.setLcId(localId);
       annoPage.setPgId(GeneralUtils.derivePageId(request.getMedia()));
       annoPage.setTgtId(request.getMedia());
-      annoPage.setLang(fulltext.getResource().getLang()); // set the same language as the resource
-     // annoPage.setLang(request.getLanguage());
+      annoPage.setLang(request.getLanguage());
+
       // set the source if present
       if (!StringUtils.isEmpty(request.getSource())) {
         annoPage.setSource(request.getSource());
@@ -87,10 +87,9 @@ import org.apache.commons.lang3.StringUtils;
       for (FullTextAnnotation sourceAnnotation : fulltext) {
         TextBoundary boundary = (TextBoundary) sourceAnnotation.getTextReference();
         List<Target> targets = new ArrayList<>();
-        // TODO see if we want to add more than one target for one annotatio.
-        //  As for ALTO we do get two targets sometimes
+        // we have the multiple targets for newspapers and AlTO
         if (sourceAnnotation.hasTargets()) {
-          addTarget(sourceAnnotation.getTargets().get(0), targets);
+          sourceAnnotation.getTargets().stream().forEach(target -> addTarget(target, targets));
         }
         Annotation annotation = new Annotation();
         // for top level annotation MEDIA or PAGE, don't add default to, from values

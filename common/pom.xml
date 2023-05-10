@@ -115,6 +115,13 @@
             <version>4.5.14</version>
         </dependency>
 
+        <!-- Saxon-HE for Page Xml parser-->
+        <dependency>
+            <groupId>net.sf.saxon</groupId>
+            <artifactId>Saxon-HE</artifactId>
+            <version>12.2</version>
+        </dependency>
+
 
         <!-- Used for subtitle conversion-->
         <dependency>

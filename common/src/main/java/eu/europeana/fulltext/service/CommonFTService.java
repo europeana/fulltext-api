@@ -28,7 +28,8 @@ public class CommonFTService {
       Map.of(WEB_VTT, new SubtitleFulltextConverter(), SUB_RIP, new SubtitleFulltextConverter(),
           TTML, new SubtitleFulltextConverter(),
           PLAIN, new TranscriptionFulltextConverter(),
-          ALTO_XML, new AltoToFulltextConverter());
+          ALTO_XML, new AltoToFulltextConverter(),
+          PAGE_XML, new PageXmlFulltextConverter());
   protected final ResourceRepository resourceRepository;
   protected final AnnoPageRepository annoPageRepository;
 

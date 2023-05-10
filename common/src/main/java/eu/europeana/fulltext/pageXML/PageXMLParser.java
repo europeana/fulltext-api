@@ -1,6 +1,3 @@
-/**
- *
- */
 package eu.europeana.fulltext.pageXML;
 
 import eu.europeana.edm.media.MediaReference;

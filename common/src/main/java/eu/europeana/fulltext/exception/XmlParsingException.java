@@ -3,13 +3,13 @@ package eu.europeana.fulltext.exception;
 import eu.europeana.api.commons.error.EuropeanaApiException;
 import org.springframework.http.HttpStatus;
 
-public class AltoParsingException extends EuropeanaApiException {
+public class XmlParsingException extends EuropeanaApiException {
     /**
      * Initialise a new exception for which there is no root cause
      *
      * @param msg error message
      */
-    public AltoParsingException(String msg) {
+    public XmlParsingException(String msg) {
         super(msg);
     }
 
@@ -19,7 +19,7 @@ public class AltoParsingException extends EuropeanaApiException {
      * @param msg error message
      * @param errorCode error code
      */
-    public AltoParsingException(String msg, String errorCode) {
+    public XmlParsingException(String msg, String errorCode) {
         super(msg, errorCode);
     }
 

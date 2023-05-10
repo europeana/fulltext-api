@@ -20,7 +20,8 @@ public class AnnotationUtils {
      */
     public static AnnotationPreview createAnnotationPreview(AnnotationItem item)
             throws MediaTypeNotSupportedException {
-        FulltextType fulltextType = FulltextType.getValueByMimetype(item.getBody().getFormat());
+        // there might be data with format values containing version or charset. Hence, get the format value before ";"
+        FulltextType fulltextType = FulltextType.getValueByMimetype(StringUtils.substringBefore(item.getBody().getFormat(), ";"));
 
         if (fulltextType == null) {
             throw new MediaTypeNotSupportedException(
