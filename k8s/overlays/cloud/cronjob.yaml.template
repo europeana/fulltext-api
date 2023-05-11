@@ -8,7 +8,7 @@ spec:
   concurrencyPolicy: Forbid
   jobTemplate:
     spec:
-      ttlSecondsAfterFinished: 300
+      ttlSecondsAfterFinished: ${CRON_TTL_AFTER_FINISHED}
       template:
         spec:
           containers:
@@ -31,8 +31,8 @@ spec:
                   memory: "${ANNOSYNC_MEMORY}M"
                   cpu: "${ANNOSYNC_CPU}m"
                 limits:
-                  memory: "${ANNOSYNC_MEMORY}M"
-                  cpu: "${ANNOSYNC_CPU}m"
+                  memory: "${ANNOSYNC_MEMORY_LIMIT}M"
+                  cpu: "${ANNOSYNC_CPU_LIMIT}m"
               volumeMounts:
                 - name: annosync-properties
                   mountPath: "/opt/app/config/annosync.user.properties"
@@ -55,7 +55,7 @@ spec:
   concurrencyPolicy: Forbid
   jobTemplate:
     spec:
-      ttlSecondsAfterFinished: 60
+      ttlSecondsAfterFinished: ${CRON_TTL_AFTER_FINISHED}
       template:
         spec:
           containers:
@@ -107,7 +107,7 @@ spec:
   concurrencyPolicy: Forbid
   jobTemplate:
     spec:
-      ttlSecondsAfterFinished: 60
+      ttlSecondsAfterFinished: ${CRON_TTL_AFTER_FINISHED}
       template:
         spec:
           containers:
