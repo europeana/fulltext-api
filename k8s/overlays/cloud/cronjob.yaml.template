@@ -25,6 +25,8 @@ spec:
                           -Delastic.apm.service_name=${ANNOSYNC_APP_NAME}
                           -Delastic.apm.enabled=${COLLECT_LOGS}
                           -Delastic.apm.environment=${K8S_NAMESPACE}
+                          -Xms:400M
+                          -XMX:2G
                           -XX:+UseParallelGC -XX:MaxRAMPercentage=75"
               resources:
                 requests:

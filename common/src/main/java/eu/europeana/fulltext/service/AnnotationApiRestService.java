@@ -67,11 +67,13 @@ public class AnnotationApiRestService {
                         .build())
             .accept(MediaType.APPLICATION_JSON)
             .retrieve()
+                // server returns 4xx or 5xx status  
                 .onStatus(
-                        HttpStatus.NOT_FOUND::equals,
+                        //HttpStatus.NOT_FOUND::equals,
+                        HttpStatus::isError,
                         errorResponse ->
                                 errorResponse.bodyToMono(String.class).map(
-                                    AnnotationApiRequestException::new))
+                                    AnnotationApiRequestException::new))  
             .bodyToMono(AnnotationSearchResponse.class)
             .block();
 
@@ -81,10 +83,14 @@ public class AnnotationApiRestService {
     }
 
     List<AnnotationItem> items = response.getItems();
+    
+    if (items == null) {
+      logger.warn("No items in AnnotationSearchResponse");
+      return items = Collections.emptyList();
+    }
 
     if (logger.isDebugEnabled()) {
-      int fetchedItems = items == null ? 0 : items.size();
-      logger.debug("Retrieved {} annotations; totalItems={} ", fetchedItems, response.getTotal());
+      logger.debug("Retrieved {} annotations; totalItems={} ", items.size(), response.getTotal());
     }
 
     return items;

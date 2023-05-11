@@ -1,17 +1,13 @@
 package eu.europeana.fulltext.annosync.batch.reader;
 
-import eu.europeana.fulltext.annosync.batch.AnnoSyncJobConfig;
-import eu.europeana.fulltext.service.AnnotationApiRestService;
-import eu.europeana.fulltext.subtitles.external.AnnotationItem;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.batch.item.data.AbstractPaginatedDataItemReader;
+import eu.europeana.fulltext.service.AnnotationApiRestService;
+import eu.europeana.fulltext.subtitles.external.AnnotationItem;
 
 public class AnnotationItemReader extends AbstractPaginatedDataItemReader<AnnotationItem> {
 
@@ -42,11 +38,12 @@ public class AnnotationItemReader extends AbstractPaginatedDataItemReader<Annota
     List<AnnotationItem> searchResponse =
         annotationsRestService.getAnnotations(page, pageSize, from, to);
 
-     logger.info("Fetched Annotations ids - {} ", searchResponse.size());
-
     if (searchResponse == null || searchResponse.isEmpty()) {
+      logger.info("No results found in page:{} , pageSize:{}, from: {}, to: {} ", page, pageSize, from, to);
       return null;
     }
+    
+    logger.info("Fetched Annotations ids - {} ", searchResponse.size());
 
     return searchResponse.iterator();
   }
