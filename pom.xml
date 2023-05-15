@@ -46,8 +46,6 @@
         <!-- upgraded to 2.5.14 as 2.6.x is not compatible with swagger (springfox-swagger-ui)-->
         <!-- org.apache.tomcat.embed version 9.0.56 is included uptill 2.6.3 which is vulnerable. See : CVE-2022-23181  -->
         <spring-boot.version>2.5.14</spring-boot.version>
-        <spring-batch.version>4.3.6</spring-batch.version>
-        <spring-security.version>5.7.8</spring-security.version>
         <jackson.version>2.14.0</jackson.version>
         <io-informatics.version>0.1.1</io-informatics.version>
         <morphia.version>2.2.9</morphia.version>
@@ -65,13 +63,7 @@
         <mock-webserver.version>4.9.0</mock-webserver.version>
         <testcontainers.version>1.16.0</testcontainers.version>
         <eclipse-jetty.version>11.0.11</eclipse-jetty.version>
-        <build-helper-maven.version>3.0.0</build-helper-maven.version>
-        <maven-failsafe.version>3.0.0-M5</maven-failsafe.version>
-        <dependency-check-maven.version>7.3.0</dependency-check-maven.version>
-
-        <jettison.version>1.5.4</jettison.version>
-        <snakeyaml.version>2.0</snakeyaml.version>
-
+        <spring-batch.version>4.3.6</spring-batch.version>
     </properties>
 
     <dependencyManagement>
@@ -81,18 +73,18 @@
             <dependency>
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-crypto</artifactId>
-                <version>${spring-security.version}</version>
+                <version>5.7.5</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-core</artifactId>
-                <version>${spring-security.version}</version>
+                <version>5.7.5</version>
             </dependency>
             <!-- Non vulnerable version of spring-security-web and config -->
             <dependency>
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-web</artifactId>
-                <version>${spring-security.version}</version>
+                <version>5.7.5</version>
             </dependency>
 
             <!-- Import dependency management start Spring Boot (because we don't use Spring-Boot as parent pom)-->
@@ -147,7 +139,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>${maven-failsafe.version}</version>
+                <version>3.0.0-M5</version>
                 <executions>
                     <execution>
                         <goals>
@@ -163,7 +155,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <version>${build-helper-maven.version}</version>
+                <version>3.0.0</version>
                 <executions>
                     <execution>
                         <id>add-integration-test-source</id>
@@ -220,7 +212,7 @@
                     <plugin>
                         <groupId>org.owasp</groupId>
                         <artifactId>dependency-check-maven</artifactId>
-                        <version>${dependency-check-maven.version}</version>
+                        <version>7.3.0</version>
                         <configuration>
                             <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
                             <failBuildOnCVSS>8</failBuildOnCVSS>
