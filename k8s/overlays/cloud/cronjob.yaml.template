@@ -13,7 +13,7 @@ spec:
         spec:
           containers:
             - name: fulltext-annosync
-              image: europeana/fulltext-annosync
+              image: europeana/fulltext-annosync:${DOCKER_IMAGE_TAG}
               imagePullPolicy: Always
               env:
                 - name: SPRING_CONFIG_ADDITIONAL_LOCATION
@@ -66,7 +66,7 @@ spec:
         spec:
           containers:
             - name: fulltext-indexing
-              image: europeana/fulltext-indexing
+              image: europeana/fulltext-indexing:${DOCKER_IMAGE_TAG}
               imagePullPolicy: Always
               command:
                 - java
@@ -120,7 +120,7 @@ spec:
         spec:
           containers:
             - name: fulltext-indexing
-              image: europeana/fulltext-indexing
+              image: europeana/fulltext-indexing:${DOCKER_IMAGE_TAG}
               imagePullPolicy: Always
               command:
                 - java
