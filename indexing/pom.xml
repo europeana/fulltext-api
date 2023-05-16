@@ -10,6 +10,7 @@
   <artifactId>indexing</artifactId>
   <properties>
     <spring.boot.mainclass>eu.europeana.fulltext.indexing.IndexingApplication</spring.boot.mainclass>
+    <solr-solrj.version>7.7.2</solr-solrj.version>
   </properties>
 
   <dependencies>
@@ -35,7 +36,7 @@
     <dependency>
       <groupId>org.apache.solr</groupId>
       <artifactId>solr-solrj</artifactId>
-      <version>7.7.2</version>
+      <version>${solr-solrj.version}</version>
     </dependency>
 
     <dependency>
@@ -55,7 +56,7 @@
     <dependency>
       <groupId>org.codehaus.jettison</groupId>
       <artifactId>jettison</artifactId>
-      <version>1.5.2</version>
+      <version>${jettison.version}</version>
     </dependency>
 
     <dependency>
@@ -78,7 +79,7 @@
     <dependency>
       <groupId>org.yaml</groupId>
       <artifactId>snakeyaml</artifactId>
-      <version>1.33</version>
+      <version>${snakeyaml.version}</version>
     </dependency>
 
     <dependency>

@@ -19,6 +19,11 @@
 
     <properties>
         <spring.boot.mainclass>eu.europeana.fulltext.api.FtApplication</spring.boot.mainclass>
+        <solr-solrj.version>8.11.1</solr-solrj.version>
+        <javax-validation.version>2.0.1.Final</javax-validation.version>
+        <apache-commons-text.version>1.10.0</apache-commons-text.version>
+        <spring-boot-starter-data-solr.version>2.4.13</spring-boot-starter-data-solr.version>
+        <maven-surefire.version>2.22.2</maven-surefire.version>
     </properties>
 
     <dependencies>
@@ -91,7 +96,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-solr</artifactId>
-            <version>2.4.13</version>
+            <version>${spring-boot-starter-data-solr.version}</version>
             <!-- TODO replace spring-boot-started-data-solr with something else (solrj?) because it's deprecated
               See also https://spring.io/blog/2020/04/07/spring-data-for-apache-solr-discontinued -->
         </dependency>
@@ -100,7 +105,7 @@
         <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-solrj</artifactId>
-            <version>8.11.1</version>
+            <version>${solr-solrj.version}</version>
             <!-- SolrJ latest version 9.0.0 still uses the vulnerable version - 9.4.44.v20210927
             for http2 and jetty dependency. Add the dependency separately for
             http2-client, http2-common , http2-http-client-transport and jetty-io -->
@@ -182,7 +187,7 @@
         <dependency>
             <groupId>javax.validation</groupId>
             <artifactId>validation-api</artifactId>
-            <version>2.0.1.Final</version>
+            <version>${javax-validation.version}</version>
         </dependency>
 
         <!-- StringUtils -->
@@ -195,7 +200,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
-            <version>1.10.0</version>
+            <version>${apache-commons-text.version}</version>
         </dependency>
 
 
@@ -225,7 +230,7 @@
         <dependency>
             <groupId>org.codehaus.jettison</groupId>
             <artifactId>jettison</artifactId>
-            <version>1.5.2</version>
+            <version>${jettison.version}</version>
         </dependency>
 
 
@@ -291,7 +296,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <!-- JUnit 5 requires Surefire version 2.22.0 or higher -->
-                <version>2.22.2</version>
+                <version>${maven-surefire.version}</version>
             </plugin>
 
             <plugin>
