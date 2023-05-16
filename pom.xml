@@ -46,6 +46,7 @@
         <!-- upgraded to 2.5.14 as 2.6.x is not compatible with swagger (springfox-swagger-ui)-->
         <!-- org.apache.tomcat.embed version 9.0.56 is included uptill 2.6.3 which is vulnerable. See : CVE-2022-23181  -->
         <spring-boot.version>2.7.11</spring-boot.version>
+<!--        <spring-boot.version>2.5.14</spring-boot.version>-->
         <spring-batch.version>4.3.6</spring-batch.version>
         <spring-security.version>5.7.8</spring-security.version>
         <jackson.version>2.14.0</jackson.version>
@@ -57,8 +58,12 @@
         <commons-io.version>2.4</commons-io.version>
         <!-- Note that upgrading to a newer version of Junit Jupiter may not work with older IntelliJ versions (2019.2.1)
              However for Maven verify goal a newer Jupiter version is no problem-->
-        <junit-jupiter.version>5.6.0</junit-jupiter.version>
-        <mockito.version>3.7.0</mockito.version>
+<!--        <junit-jupiter.version>5.6.0</junit-jupiter.version>-->
+        <junit-jupiter.version>5.10.0-M1</junit-jupiter.version>
+
+<!--        <mockito.version>3.7.0</mockito.version>-->
+        <mockito.version>5.3.1</mockito.version>
+
         <unitils.version>3.4.6</unitils.version>
         <springdoc.version>1.6.13</springdoc.version>
         <tomcat.version>9.0.58</tomcat.version>
