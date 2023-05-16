@@ -45,7 +45,7 @@
         <api-commons.version>0.3.16</api-commons.version>
         <!-- upgraded to 2.5.14 as 2.6.x is not compatible with swagger (springfox-swagger-ui)-->
         <!-- org.apache.tomcat.embed version 9.0.56 is included uptill 2.6.3 which is vulnerable. See : CVE-2022-23181  -->
-        <spring-boot.version>2.7.11</spring-boot.version>
+        <spring-boot.version>2.5.14</spring-boot.version>
         <spring-batch.version>4.3.6</spring-batch.version>
         <spring-security.version>5.7.8</spring-security.version>
         <jackson.version>2.14.0</jackson.version>
