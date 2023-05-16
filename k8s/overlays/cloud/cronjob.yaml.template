@@ -56,6 +56,10 @@ spec:
   suspend: ${SUSPEND_INDEXING}
   concurrencyPolicy: Forbid
   jobTemplate:
+    metadata:
+      annotations:
+        fluentd/include: '${COLLECT_LOGS}'
+        fluentd/multiline: 'true'    
     spec:
       ttlSecondsAfterFinished: ${CRON_TTL_AFTER_FINISHED}
       template:
@@ -79,14 +83,16 @@ spec:
                           -Delastic.apm.service_name=${INDEXING_APP_NAME}
                           -Delastic.apm.enabled=${COLLECT_LOGS}
                           -Delastic.apm.environment=${K8S_NAMESPACE}
+                          -Xms:400M
+                          -XMX:2G
                           -XX:+UseParallelGC -XX:MaxRAMPercentage=75"
               resources:
                 requests:
                   memory: "${INDEXING_MEMORY}M"
                   cpu: "${INDEXING_CPU}m"
                 limits:
-                  memory: "${INDEXING_MEMORY}M"
-                  cpu: "${INDEXING_CPU}m"
+                  memory: "${INDEXING_MEMORY_LIMIT}M"
+                  cpu: "${INDEXING_CPU_LIMIT}m"
               volumeMounts:
                 - name: indexing-properties
                   mountPath: "/opt/app/config/indexing.user.properties"
