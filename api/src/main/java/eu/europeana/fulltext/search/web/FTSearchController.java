@@ -74,7 +74,7 @@ public class FTSearchController {
                                       @RequestParam(value = "format", required = false) String versionParam,
                                       @RequestParam(required = false) String debug,
                                       HttpServletRequest request) throws EuropeanaApiException {
-        return serachIssue(datasetId, localId, query, q, pageSize, textGranularity, versionParam, debug, request, true);
+        return searchIssue(datasetId, localId, query, q, pageSize, textGranularity, versionParam, debug, request, true);
     }
 
     /**
@@ -98,13 +98,13 @@ public class FTSearchController {
                                             @RequestParam(value = "format", required = false) String versionParam,
                                             @RequestParam(required = false) String debug,
                                             HttpServletRequest request) throws EuropeanaApiException {
-        return serachIssue(dsId, lcId, query, q, pageSize, textGranularity, versionParam, debug, request, false);
+        return searchIssue(dsId, lcId, query, q, pageSize, textGranularity, versionParam, debug, request, false);
     }
 
-    private ResponseEntity serachIssue(String datasetId, String localId, String query, String q, int pageSize, String textGranularity,
+    private ResponseEntity searchIssue(String datasetId, String localId, String query, String q, int pageSize, String textGranularity,
                                        String versionParam, String debug, HttpServletRequest request, boolean isJson) throws EuropeanaApiException {
         // validate the format
-        if(!settings.isSolrEnabled()){
+        if (!settings.isSolrEnabled()){
             throw new SearchDisabledException();
         }
 
