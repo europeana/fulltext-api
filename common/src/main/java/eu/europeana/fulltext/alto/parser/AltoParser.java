@@ -8,23 +8,21 @@ import eu.europeana.fulltext.alto.model.TextStyle.TextType;
 import eu.europeana.fulltext.alto.utils.AltoPageProcessor;
 import eu.europeana.fulltext.alto.utils.AltoPageProcessorImpl;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
-import org.xml.sax.helpers.XMLReaderFactory;
 
+import javax.xml.XMLConstants;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXResult;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Stack;
 
 import static eu.europeana.fulltext.alto.parser.EDMFullTextUtils.newImageBoundary;
 
@@ -33,27 +31,31 @@ import static eu.europeana.fulltext.alto.parser.EDMFullTextUtils.newImageBoundar
  * @since 23 Feb 2018
  */
 public class AltoParser extends DefaultHandler {
-    private static final Logger LOG = LogManager.getLogger(AltoParser.class);
 
-    private Context _context = null;
-    private AltoPageProcessor _processor = null;
+    private AltoContext context = null;
+    private AltoPageProcessor processor = null;
 
     public AltoParser() {
-        _processor = new AltoPageProcessorImpl();
+        processor = new AltoPageProcessorImpl();
     }
 
     public AltoPage processPage(InputSource source, MediaReference ref)
-            throws IOException, SAXException {
+            throws IOException, SAXException, ParserConfigurationException {
         try {
             AltoPage page = new AltoPage();
-            _context = new Context(page, ref);
-            XMLReader xr = XMLReaderFactory.createXMLReader();
-            xr.setContentHandler(this);
-            xr.parse(source);
-            _context.clear();
+            context = new AltoContext(page, ref);
+            SAXParserFactory parserFactory = SAXParserFactory.newInstance();
+            SAXParser parser = parserFactory.newSAXParser();
+            // XML parsers should not be vulnerable to XXE attacks
+            parser.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            parser.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+            XMLReader reader = parser.getXMLReader();
+            reader.setContentHandler(this);
+            reader.parse(source);
+            context.stack.clear();
             return page;
         } finally {
-            _context = null;
+            context = null;
         }
     }
 
@@ -61,58 +63,63 @@ public class AltoParser extends DefaultHandler {
             throws TransformerException {
         try {
             AltoPage page = new AltoPage();
-            _context = new Context(page, ref);
+            context = new AltoContext(page, ref);
             TransformerFactory factory = TransformerFactory.newInstance();
+            // XML parsers should not be vulnerable to XXE attacks
+            factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
+
             factory.newTransformer().transform(source, new SAXResult(this));
-            _context.clear();
+            context.stack.clear();
             return page;
         } finally {
-            _context = null;
+            context = null;
         }
     }
 
     @Override
     public void startElement(String uri, String localName, String qName
             , Attributes attr) throws SAXException {
-        if (localName.equals("String")) {
-            TextString word = _context.newWord(attr.getValue("CONTENT")
+        ImageDimension imageDimension = context.getPage().getDimension();
+        if (StringUtils.equals(localName, "String")) {
+            TextString word = context.newWord(attr.getValue("CONTENT")
                     , getLanguage(attr)
                     , toImageBoundary(attr), getConfidence(attr, "WC")
-                    , buildStyle(attr), getCorrectionStatus(attr));
-            _context.setCurrentSubs(
+                    , buildStyle(attr), imageDimension, getCorrectionStatus(attr));
+            context.setCurrentSubs(
                     getSubstitution(attr.getValue("SUBS_CONTENT")
                             , attr.getValue("SUBS_TYPE"), word));
             return;
         }
-        if (localName.equals("SP")) {
-            _context.newSpace();
+        if (StringUtils.equals(localName, "SP")) {
+            context.newSpace();
             return;
         }
-        if (localName.equals("HYP")) {
-            _context.newHyphen(attr.getValue("CONTENT"));
+        if (StringUtils.equals(localName, "HYP")) {
+            context.newHyphen(attr.getValue("CONTENT"));
             return;
         }
-        if (localName.equals("TextLine")) {
-            _context.newLine(toImageBoundary(attr), getLanguage(attr)
-                    , buildStyle(attr), getCorrectionStatus(attr));
+        if (StringUtils.equals(localName, "TextLine")) {
+            context.newLine(toImageBoundary(attr), getLanguage(attr)
+                    , buildStyle(attr), imageDimension, getCorrectionStatus(attr));
             return;
         }
-        if (localName.equals("TextBlock") || localName.equals("ComposeBlock")) {
-            _context.newBlock(toImageBoundary(attr), getLanguage(attr)
-                    , buildStyle(attr), getCorrectionStatus(attr));
+        if (StringUtils.equals(localName, "TextBlock") || StringUtils.equals(localName, "ComposeBlock")) {
+            context.newBlock(toImageBoundary(attr), getLanguage(attr)
+                    , buildStyle(attr),imageDimension, getCorrectionStatus(attr));
             return;
         }
-        if (localName.equals("TextStyle")) {
-            TextStyle style = _context.newStyle(getID(attr), getStyleSize(attr));
+        if (StringUtils.equals(localName, "TextStyle")) {
+            TextStyle style = context.newStyle(getID(attr), getStyleSize(attr));
             setStyleTypes(style, getStyleType(attr));
             return;
         }
-        if (localName.equals("ParagraphStyle")) {
-            _context.newParagraphStyle(getID(attr));
+        if (StringUtils.equals(localName, "ParagraphStyle")) {
+            context.newParagraphStyle(getID(attr));
             return;
         }
-        if (localName.equals("Page")) {
-            AltoPage page = _context.getPage();
+        if (StringUtils.equals(localName, "Page")) {
+            AltoPage page = context.getPage();
             page.setConfidence(getConfidence(attr, "PC"));
             page.setAccuracy(getAccuracy(attr));
             page.setStyle(buildStyle(attr));
@@ -123,20 +130,21 @@ public class AltoParser extends DefaultHandler {
     @Override
     public void endElement(String uri, String localName, String qName)
             throws SAXException {
-        if (localName.equals("TextLine")
-                || localName.equals("TextBlock")
-                || localName.equals("ComposeBlock")) {
-            _context.pop();
+        if (StringUtils.equals(localName, "TextLine")
+                || StringUtils.equals(localName, "TextBlock")
+                || StringUtils.equals(localName, "ComposeBlock")) {
+            context.stack.pop();
         }
     }
 
     @Override
     public void startDocument() {
+        // empty
     }
 
     @Override
     public void endDocument() {
-        _processor.process(_context.getPage());
+        processor.process(context.getPage());
     }
 
 
@@ -165,20 +173,20 @@ public class AltoParser extends DefaultHandler {
             return null;
         }
 
-        if (subsType == null || subsType.equals("HypPart1")) {
-            SubstitutionHyphen subs = _context.newSubstitution(subsText);
+        if (subsType == null || StringUtils.equals(subsType, "HypPart1")) {
+            SubstitutionHyphen subs = context.newSubstitution(subsText);
             subs.setWord1(w);
             w.setSubs(subs);
             return subs;
         }
 
-        if (!subsType.equals("HypPart2")) {
+        if (!StringUtils.equals(subsType, "HypPart2")) {
             return null;
         }
 
-        SubstitutionHyphen subs = _context.getCurrentSubs();
+        SubstitutionHyphen subs = context.getCurrentSubs();
         if (subs == null) {
-            subs = _context.newSubstitution(subsText);
+            subs = context.newSubstitution(subsText);
         }
         subs.setWord2(w);
         w.setSubs(subs);
@@ -186,10 +194,8 @@ public class AltoParser extends DefaultHandler {
         return null;
     }
 
-
     private TextStyle buildStyle(Attributes attr) {
-        TextStyle newStyle = _context.getCurrentStyle();
-
+        TextStyle newStyle = context.getCurrentStyle();
         setStyleRefs(newStyle, attr.getValue("STYLEREFS"));
         setStyleTypes(newStyle, attr.getValue("STYLE"));
 
@@ -202,11 +208,11 @@ public class AltoParser extends DefaultHandler {
         }
 
         for (String ref : str.split("\\s+")) {
-            if (_context.hasParagraphStyle(ref)) {
+            if (context.hasParagraphStyle(ref)) {
                 continue;
             }
 
-            TextStyle s = _context.getStyle(ref);
+            TextStyle s = context.getStyle(ref);
             if (s != null) {
                 style.copyStyle(s);
             }
@@ -258,7 +264,7 @@ public class AltoParser extends DefaultHandler {
     }
 
     private ImageBoundary toImageBoundary(Attributes attr) {
-        return newImageBoundary(_context.getReference()
+        return newImageBoundary(context.getReference()
                 , toPixel(attr.getValue("HPOS"))
                 , toPixel(attr.getValue("VPOS"))
                 , toPixel(attr.getValue("WIDTH"))
@@ -284,120 +290,4 @@ public class AltoParser extends DefaultHandler {
         }
     }
 
-    @SuppressWarnings("serial")
-    private class Context extends Stack<TextNode<? super TextElement>> {
-        private final Collection _parStyles = new HashSet();
-        private final AltoPage _page;
-        private SubstitutionHyphen _subs;
-        private final MediaReference _ref;
-
-        public Context(AltoPage page, MediaReference ref) {
-            _page = page;
-            _ref = ref;
-            push((TextNode) page);
-        }
-
-        protected MediaReference getReference() {
-            return _ref;
-        }
-
-        protected void newParagraphStyle(String style) {
-            _parStyles.add(style);
-        }
-
-        protected boolean hasParagraphStyle(String style) {
-            return _parStyles.contains(style);
-        }
-
-        protected TextStyle getCurrentStyle() {
-            TextNode node = _context.peek();
-            if (node instanceof AltoPage) {
-                return new TextStyle();
-            }
-
-            return new TextStyle(_context.peek().getStyle());
-        }
-
-        protected TextStyle getStyle(String id) {
-            if (id == null) {
-                return null;
-            }
-
-            TextStyle style = _page.getStyle(id);
-            if (style == null) {
-                LOG.warn("Unknown style: " + id);
-            }
-
-            return style;
-        }
-
-        protected AltoPage getPage() {
-            return _page;
-        }
-
-        protected SubstitutionHyphen getCurrentSubs() {
-            return _subs;
-        }
-
-        protected void setCurrentSubs(SubstitutionHyphen subs) {
-            _subs = subs;
-        }
-
-        protected TextStyle newStyle(String id, float size) {
-            TextStyle style = new TextStyle(size);
-            _page.addStyle(id, style);
-            return style;
-        }
-
-        protected void newSpace() {
-            peek().add(TextSpace.SINGLETON);
-        }
-
-        protected TextHyphen newHyphen(String text) {
-            TextHyphen hyphen = new TextHyphen(text);
-            peek().add(hyphen);
-            if (_subs != null) {
-                _subs.setHyphen(hyphen);
-            }
-            return hyphen;
-        }
-
-        protected SubstitutionHyphen newSubstitution(String subsText) {
-            return new SubstitutionHyphen(subsText);
-        }
-
-        protected TextString newWord(String text, String lang
-                , ImageBoundary ib, Float confidence
-                , TextStyle style, boolean cs) {
-            TextString w = new TextString(text, null, lang, process(ib)
-                    , confidence, style, cs);
-            peek().add(w);
-            return w;
-        }
-
-        protected TextLine newLine(ImageBoundary ib, String lang
-                , TextStyle style, boolean cs) {
-            TextLine line = new TextLine(process(ib), lang, style, cs);
-            peek().add(line);
-            push(line);
-            return line;
-        }
-
-        protected TextBlock newBlock(ImageBoundary ib, String lang
-                , TextStyle style, boolean cs) {
-            TextBlock block = new TextBlock(process(ib), lang, style, cs);
-            peek().add(block);
-            push((TextNode) block);
-            return block;
-        }
-
-        protected ImageBoundary process(ImageBoundary ib) {
-            if (ib == null) {
-                return ib;
-            }
-
-            ib = ib.clip(_context.getPage().getDimension());
-            return (ib.isValid() ? ib : null);
-        }
-    }
 }

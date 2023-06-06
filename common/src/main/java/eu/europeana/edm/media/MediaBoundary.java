@@ -7,16 +7,16 @@ package eu.europeana.edm.media;
 public abstract class MediaBoundary implements MediaReference {
     public MediaReference mediaReference;
 
-    public MediaBoundary(MediaReference mediaReference) {
-        this.mediaReference = mediaReference;
-    }
-
-    public void setMediaReference(MediaReference mediaReference) {
+    protected MediaBoundary(MediaReference mediaReference) {
         this.mediaReference = mediaReference;
     }
 
     public MediaReference getMediaReference() {
         return mediaReference;
+    }
+
+    public void setMediaReference(MediaReference mediaReference) {
+        this.mediaReference = mediaReference;
     }
 
     public String getURL() {

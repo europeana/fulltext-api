@@ -1,6 +1,3 @@
-/**
- *
- */
 package eu.europeana.fulltext.alto.model;
 
 import eu.europeana.edm.media.ImageBoundary;
@@ -14,7 +11,6 @@ public class TextBlock extends TextNode<TextNode>
     private final ImageBoundary _ib;
     private TextStyle _style;
     private final boolean _correction;
-    private String _type;
 
     public TextBlock(ImageBoundary ib, String lang
             , TextStyle style, boolean correction) {

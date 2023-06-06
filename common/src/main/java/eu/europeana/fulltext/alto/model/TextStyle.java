@@ -19,11 +19,11 @@ public class TextStyle implements TextElement {
     }
 
     public TextStyle(TextStyle style) {
-        this(style.getSize(), new LinkedHashSet(style.getTypes()));
+        this(style.getSize(), new LinkedHashSet<>(style.getTypes()));
     }
 
     public TextStyle(Float size) {
-        this(size, new LinkedHashSet(1));
+        this(size, new LinkedHashSet<>(1));
     }
 
     public TextStyle(Float size, Collection<TextType> types) {
@@ -33,7 +33,7 @@ public class TextStyle implements TextElement {
 
     public TextStyle(Float size, TextType... types) {
         _size = size;
-        _types = new LinkedHashSet<TextType>(types.length);
+        _types = new LinkedHashSet<>(types.length);
         for (TextType type : types) {
             _types.add(type);
         }

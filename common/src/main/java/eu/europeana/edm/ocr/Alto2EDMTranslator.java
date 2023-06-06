@@ -45,7 +45,7 @@ public class Alto2EDMTranslator {
     public FullTextPackage processPage(AltoPage altoPage, MediaReference ref) {
         AnnotationsGenerator annotationsGenerator = new AnnotationsGenerator();
         // process the fulltext annotations and resource value
-        FullTextPackage fulltext = annotationsGenerator.process(altoPage, ref);
+        FullTextPackage fulltext = annotationsGenerator.process(altoPage);
         if (!resize) {
             return fulltext;
         }

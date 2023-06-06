@@ -108,7 +108,7 @@
             </exclusions>
         </dependency>
 
-        <!--For Image dimension -->
+        <!-- Http client is used to fetch Image dimension in IIIFImageInfoSupport class-->
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>

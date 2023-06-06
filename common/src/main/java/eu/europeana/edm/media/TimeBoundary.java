@@ -7,6 +7,7 @@ import org.apache.commons.lang3.time.DurationFormatUtils;
  * @since 17 Jun 2018
  */
 public class TimeBoundary extends MediaBoundary {
+
     private static String FORMAT = "HH:mm:ss.SSS";
 
     public int start;
@@ -35,9 +36,9 @@ public class TimeBoundary extends MediaBoundary {
     }
 
     public String getFragment() {
-        String start = DurationFormatUtils.formatDuration(this.start, FORMAT);
-        String end = DurationFormatUtils.formatDuration(this.end, FORMAT);
-        return ("#t=" + start + "," + end);
+        String startOfFragment = DurationFormatUtils.formatDuration(this.start, FORMAT);
+        String endOfFragment = DurationFormatUtils.formatDuration(this.end, FORMAT);
+        return ("#t=" + startOfFragment + "," + endOfFragment);
     }
 
     public boolean isValid() {

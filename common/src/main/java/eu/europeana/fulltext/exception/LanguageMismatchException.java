@@ -3,6 +3,11 @@ package eu.europeana.fulltext.exception;
 import eu.europeana.api.commons.error.EuropeanaApiException;
 import org.springframework.http.HttpStatus;
 
+/**
+ *  Exception thrown when there is a mismatch between the languages sent in the request while submitting a fulltext and
+ *  one identified by the parser.
+ *  Parser will identify the language if it is present in the data. Currently, it is supported by Alto
+ */
 public class LanguageMismatchException extends EuropeanaApiException {
     /**
      * Initialise a new exception for which there is no root cause

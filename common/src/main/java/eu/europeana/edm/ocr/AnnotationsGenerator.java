@@ -2,7 +2,6 @@ package eu.europeana.edm.ocr;
 
 import eu.europeana.edm.FullTextAnnotation;
 import eu.europeana.edm.FullTextPackage;
-import eu.europeana.edm.media.MediaReference;
 import eu.europeana.edm.text.FullTextResource;
 import eu.europeana.edm.text.TextBoundary;
 import eu.europeana.edm.text.TextReference;
@@ -24,10 +23,9 @@ public class AnnotationsGenerator extends AbsAltoVisitor {
     /**
      * Process the alto page to Fulltext package
      * @param altoPage
-     * @param ref
      * @return
      */
-    public synchronized FullTextPackage process(AltoPage altoPage, MediaReference ref) {
+    public FullTextPackage process(AltoPage altoPage) {
         try {
 
             FullTextResource resource = new FullTextResource();
@@ -50,6 +48,7 @@ public class AnnotationsGenerator extends AbsAltoVisitor {
     /**
      * Interface AltoVisitor
      */
+    @Override
     public void visit(TextBlock block) {
         if (hasText()) {
             newLine();
@@ -69,6 +68,7 @@ public class AnnotationsGenerator extends AbsAltoVisitor {
                 , null));
     }
 
+    @Override
     public void visit(TextLine line) {
         if (!endsWith(' ', '-', '\n') && hasText()) {
             newSpace();
@@ -82,6 +82,7 @@ public class AnnotationsGenerator extends AbsAltoVisitor {
                 , null));
     }
 
+    @Override
     public void visit(TextString word) {
         int s = sb.length();
         if (!word.hasSubs() || word.getSubs().getWord2() == null) {
@@ -112,12 +113,14 @@ public class AnnotationsGenerator extends AbsAltoVisitor {
                 , word.getLanguage(), confidence));
     }
 
+    @Override
     public void visit(TextSpace space) {
         newSpace();
     }
 
-    // TODO what does this do - empty implementation
+    @Override
     public void visit(TextHyphen hyphen) {
+        // TODO what does this do - empty implementation
     }
 
     private Float getConfidence(Float c1, Float c2) {
@@ -127,7 +130,7 @@ public class AnnotationsGenerator extends AbsAltoVisitor {
         if (c2 == null) {
             return c1;
         }
-        return ((c1 + c2) / 2f);
+        return ((c1 + c2) / 2F);
     }
 
     private boolean endsWith(char... chars) {

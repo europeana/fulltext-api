@@ -14,7 +14,7 @@ import java.util.Map;
  * @since 22 Jun 2018
  */
 public class AltoPage extends TextNode<TextBlock> implements StyledTextElement {
-    private final Map<String, TextStyle> _styles = new HashMap();
+    private final Map<String, TextStyle> _styles = new HashMap<>();
     private Float _confidence;
     private Float _accuracy;
     private TextStyle _style;

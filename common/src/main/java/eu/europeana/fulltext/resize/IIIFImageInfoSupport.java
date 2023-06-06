@@ -30,13 +30,13 @@ public class IIIFImageInfoSupport implements ResponseHandler<ImageDimension> {
         _client = HttpClientBuilder.create().build();
     }
 
-    public void finalize() {
-        try {
-            _client.close();
-        } catch (IOException e) {
-            LOG.error("Error when finalizing http client", e);
-        }
-    }
+//    protected void finalize() {
+//        try {
+//            _client.close();
+//        } catch (IOException e) {
+//            LOG.error("Error when finalizing http client", e);
+//        }
+//    }
 
     public ImageDimension getImageSize(String imageURL) {
         String url = getInfoURL(imageURL);
@@ -48,7 +48,7 @@ public class IIIFImageInfoSupport implements ResponseHandler<ImageDimension> {
         try {
             return _client.execute(m, this);
         } catch (IOException e) {
-            LOG.error("Error getting image dimension for: " + url, e);
+            LOG.error("Error getting image dimension for: {}. {} ", url, e);
             return null;
         } finally {
             m.releaseConnection();
