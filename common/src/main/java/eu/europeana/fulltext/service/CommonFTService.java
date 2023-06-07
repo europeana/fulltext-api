@@ -1,16 +1,13 @@
 package eu.europeana.fulltext.service;
 
-import static eu.europeana.fulltext.subtitles.FulltextType.PLAIN;
-import static eu.europeana.fulltext.subtitles.FulltextType.SUB_RIP;
-import static eu.europeana.fulltext.subtitles.FulltextType.TTML;
-import static eu.europeana.fulltext.subtitles.FulltextType.WEB_VTT;
+import static eu.europeana.fulltext.subtitles.FulltextType.*;
 import static eu.europeana.fulltext.util.GeneralUtils.getAnnoPageToString;
 import static eu.europeana.fulltext.util.GeneralUtils.getDsId;
 import static eu.europeana.fulltext.util.GeneralUtils.getLocalId;
 
 import com.mongodb.bulk.BulkWriteResult;
 import eu.europeana.api.commons.error.EuropeanaApiException;
-import eu.europeana.fulltext.edm.EdmFullTextPackage;
+import eu.europeana.edm.FullTextPackage;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.exception.DatabaseQueryException;
 import eu.europeana.fulltext.exception.InvalidFormatException;
@@ -30,7 +27,9 @@ public class CommonFTService {
   private static final Map<FulltextType, FulltextConverter> fulltextConverterMap =
       Map.of(WEB_VTT, new SubtitleFulltextConverter(), SUB_RIP, new SubtitleFulltextConverter(),
           TTML, new SubtitleFulltextConverter(),
-          PLAIN, new TranscriptionFulltextConverter());
+          PLAIN, new TranscriptionFulltextConverter(),
+          ALTO_XML, new AltoToFulltextConverter(),
+          PAGE_XML, new PageXmlFulltextConverter());
   protected final ResourceRepository resourceRepository;
   protected final AnnoPageRepository annoPageRepository;
 
@@ -60,7 +59,7 @@ public class CommonFTService {
               annotationPreview.getFulltextType().getMimeType(), fulltextConverterMap.keySet()));
     }
 
-    EdmFullTextPackage fulltext = converter.convert(annotationPreview);
+    FullTextPackage fulltext = converter.convert(annotationPreview);
     String recordId = annotationPreview.getRecordId();
     return EdmToFullTextConverter.createAnnoPage(
         getDsId(recordId), getLocalId(recordId), annotationPreview, fulltext, isContributed);

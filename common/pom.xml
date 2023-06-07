@@ -117,6 +117,21 @@
             </exclusions>
         </dependency>
 
+        <!-- Http client is used to fetch Image dimension in IIIFImageInfoSupport class-->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.14</version>
+        </dependency>
+
+        <!-- Saxon-HE for Page Xml parser-->
+        <dependency>
+            <groupId>net.sf.saxon</groupId>
+            <artifactId>Saxon-HE</artifactId>
+            <version>12.2</version>
+        </dependency>
+
+
         <!-- Used for subtitle conversion-->
         <dependency>
             <groupId>com.dotsub.converter</groupId>
@@ -191,5 +206,4 @@
         </dependency>
 
     </dependencies>
-
 </project>

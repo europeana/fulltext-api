@@ -1,6 +1,7 @@
 package eu.europeana.fulltext.util;
 
-import eu.europeana.fulltext.edm.EdmTextBoundary;
+import eu.europeana.edm.text.FullTextResource;
+import eu.europeana.edm.text.TextBoundary;
 
 /** Class handles the values of the subtitle and generates the Fulltext resource value */
 public class SubtitleContext {
@@ -11,11 +12,11 @@ public class SubtitleContext {
     fulltextURI = fulltextURl;
   }
 
-  public EdmTextBoundary newItem(String str) {
+  public TextBoundary newItem(String str, FullTextResource resource) {
     int s = textValue.length();
     textValue.append(str);
     int e = textValue.length();
-    return new EdmTextBoundary(fulltextURI, s, e);
+    return new TextBoundary(resource, s, e);
   }
 
   public void separator() {

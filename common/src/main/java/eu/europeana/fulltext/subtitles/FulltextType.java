@@ -7,7 +7,9 @@ public enum FulltextType {
   WEB_VTT("text/vtt"),
   SUB_RIP("application/x-subrip"),
   TTML("application/ttml+xml"),
-  PLAIN("text/plain");
+  PLAIN("text/plain"),
+  PAGE_XML("application/vnd.prima.page+xml"),
+  ALTO_XML("application/alto+xml");
 
   private final String mimeType;
 
