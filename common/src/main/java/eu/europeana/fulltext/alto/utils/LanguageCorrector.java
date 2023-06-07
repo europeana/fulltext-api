@@ -14,7 +14,7 @@ import java.util.Map;
  * correct ones
  */
 public class LanguageCorrector {
-    private static final Map<String, String> CORRECTIONS = load(new HashMap());
+    private static final Map<String, String> CORRECTIONS = load(new HashMap<>());
 
     private static Map<String, String> load(Map<String, String> map) {
         map.put("ji", "yi");

@@ -25,7 +25,8 @@ public class PageXmlFulltextConverter  implements FulltextConverter {
             PageXMLParser parser = new PageXMLParser();
             // create Alto page
             MediaReference reference = new MediaResource(annotationPreview.getMedia());
-            AltoPage altoPage = parser.processPage(new StreamSource(new ByteArrayInputStream(annotationPreview.getAnnotationBody().getBytes(StandardCharsets.UTF_8))), reference);
+            AltoPage altoPage = parser.processPage(new StreamSource(new ByteArrayInputStream(
+                    annotationPreview.getAnnotationBody().getBytes(StandardCharsets.UTF_8))), reference);
 
             // page xml first converts the xslt into alto then we can convert alto to EDM
             return new AltoToFulltextConverter().getAltoToEDM(altoPage, annotationPreview, reference);

@@ -12,7 +12,7 @@ import java.util.*;
 public class AltoContext {
     private static final Logger LOG = LogManager.getLogger(AltoContext.class);
 
-    private final Collection parStyles = new HashSet();
+    private final Collection<String> parStyles = new HashSet<>();
     private final AltoPage page;
     private SubstitutionHyphen subs;
     private final MediaReference ref;

@@ -12,9 +12,13 @@ import eu.europeana.edm.text.TextReference;
  * @author Hugo Manguinhas <hugo.manguinhas@europeana.eu>
  * @since 22 Jun 2018
  */
-public class EDMFullTextUtils {
-    public static String EUROPEANA_DATA_NS = "http://data.europeana.eu/item";
+public final class EDMFullTextUtils {
+    public static final String EUROPEANA_DATA_NS = "http://data.europeana.eu/item";
 
+
+    private EDMFullTextUtils() {
+        // private constructor to prevent initiatilization
+    }
     public static TextBoundary newTextBoundary(TextReference ref, int s, int e) {
         return (s < 0 || e < 0 || s > e ? null : new TextBoundary(ref, s, e));
     }

@@ -14,7 +14,7 @@ import java.util.List;
 public class FullTextAnnotation {
     private String id;
     private TextReference textReference;
-    private ArrayList<MediaReference> targets = new ArrayList(1);
+    private ArrayList<MediaReference> targets = new ArrayList<>(1);
     private AnnotationType type;
     private String lang;
     private Float confidence;

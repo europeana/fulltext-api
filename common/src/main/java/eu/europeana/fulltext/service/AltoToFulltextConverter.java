@@ -26,7 +26,8 @@ public class AltoToFulltextConverter extends AltoParser implements FulltextConve
         try {
             // create Alto page
             MediaReference reference = new MediaResource(annotationPreview.getMedia());
-            AltoPage altoPage = processPage(new StreamSource(new ByteArrayInputStream(annotationPreview.getAnnotationBody().getBytes(StandardCharsets.UTF_8))), reference);
+            AltoPage altoPage = processPage(new StreamSource(new ByteArrayInputStream(
+                    annotationPreview.getAnnotationBody().getBytes(StandardCharsets.UTF_8))), reference);
 
             // convert alto page to EDM Fulltext
            return getAltoToEDM(altoPage, annotationPreview, reference);

@@ -23,6 +23,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXResult;
 import java.io.IOException;
+import java.util.Locale;
 
 import static eu.europeana.fulltext.alto.parser.EDMFullTextUtils.newImageBoundary;
 
@@ -226,7 +227,7 @@ public class AltoParser extends DefaultHandler {
 
         String[] types = str.split(" ");
         for (String type : types) {
-            TextType textType = TextType.valueOf(type.trim().toLowerCase());
+            TextType textType = TextType.valueOf(type.trim().toLowerCase(Locale.getDefault()));
             if (textType != null) {
                 style.addType(textType);
             }
@@ -284,7 +285,7 @@ public class AltoParser extends DefaultHandler {
             return null;
         }
         try {
-            return new Integer(value);
+            return Integer.valueOf(value);
         } catch (NumberFormatException e) {
             return null;
         }

@@ -5,6 +5,7 @@ import eu.europeana.fulltext.alto.model.AltoPage;
 import eu.europeana.fulltext.alto.parser.AltoParser;
 import org.xml.sax.InputSource;
 
+import javax.xml.XMLConstants;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
@@ -26,6 +27,8 @@ public class PageXMLParser extends AltoParser {
             is = this.getClass().getResourceAsStream(XSLT_PATH);
         }
         TransformerFactory tf = TransformerFactory.newInstance();
+        tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+        tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
         _transformer = tf.newTransformer(new StreamSource(is));
     }
 

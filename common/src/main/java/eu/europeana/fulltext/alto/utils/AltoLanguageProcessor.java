@@ -9,10 +9,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.text.DecimalFormat;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * @author Hugo Manguinhas <hugo.manguinhas@europeana.eu>
@@ -23,8 +20,8 @@ import java.util.TreeSet;
  */
 public class AltoLanguageProcessor implements AltoPageProcessor {
     private static final Logger LOG = LogManager.getLogger(AltoLanguageProcessor.class);
-    private static final DecimalFormat FORMAT = new DecimalFormat("###.00");
-    private final Map<String, Integer> _langs = new LinkedHashMap();
+
+    private final Map<String, Integer> _langs = new LinkedHashMap<>();
     private final boolean _acceptNull;
 
     public AltoLanguageProcessor() {
@@ -92,7 +89,7 @@ public class AltoLanguageProcessor implements AltoPageProcessor {
 
     private void account(int length, String lang) {
         Integer i = _langs.get(lang);
-        _langs.put(lang, i == null ? length : length + i);
+        _langs.put(lang, i == null ? length : (length + i));
     }
 
 
@@ -102,7 +99,7 @@ public class AltoLanguageProcessor implements AltoPageProcessor {
         }
 
         //int total = 0;
-        TreeSet<Stat> set = new TreeSet();
+        TreeSet<Stat> set = new TreeSet<>();
         for (Map.Entry<String, Integer> entry : _langs.entrySet()) {
             int length = entry.getValue();
             set.add(new Stat(entry.getKey(), length));
@@ -195,9 +192,7 @@ public class AltoLanguageProcessor implements AltoPageProcessor {
     }
 
     private void logLanguageChange(Stat cNull, Stat c, Set<Stat> set) {
-        LOG.warn("Most predominate language was null(" + cNull.length + ")"
-                + " but was replaced by " + c.lang + " => " + set);
-
+        LOG.warn("Most predominate language was null ({}) but was replaced by {} => {}", cNull.length, c.lang, set);
     }
 
     private class Stat implements Comparable<Stat> {
@@ -213,12 +208,25 @@ public class AltoLanguageProcessor implements AltoPageProcessor {
             return (s.length - this.length);
         }
 
+        @Override
         public boolean equals(Object o) {
-            return StringUtils.equals(this.lang, ((Stat) o).lang);
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            Stat stat = (Stat) o;
+            return length == stat.length && Objects.equals(lang, stat.lang);
         }
 
         public String toString() {
             return (this.lang + ":" + this.length);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(lang, length);
         }
     }
 }
