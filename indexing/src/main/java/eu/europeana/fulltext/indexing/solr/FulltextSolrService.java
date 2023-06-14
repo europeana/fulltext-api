@@ -1,8 +1,5 @@
 package eu.europeana.fulltext.indexing.solr;
 
-import static eu.europeana.fulltext.indexing.IndexingConstants.EUROPEANA_ID;
-import static eu.europeana.fulltext.indexing.IndexingConstants.FULLTEXT_SOLR_BEAN;
-
 import eu.europeana.fulltext.exception.SolrServiceException;
 import eu.europeana.fulltext.indexing.IndexingApplication;
 import eu.europeana.fulltext.indexing.IndexingConstants;
@@ -22,11 +19,14 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.client.solrj.response.schema.SchemaRepresentation;
 import org.apache.solr.client.solrj.response.schema.SchemaResponse;
+import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrInputDocument;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+
+import static eu.europeana.fulltext.indexing.IndexingConstants.*;
 
 @Service
 public class FulltextSolrService implements InitializingBean {
@@ -171,4 +171,30 @@ public class FulltextSolrService implements InitializingBean {
             .setFields(fields)
             .setSort(EUROPEANA_ID, ORDER.asc));
   }
-}
+
+  public SolrDocument getDocument(String europeanaId) throws SolrServiceException {
+    QueryResponse response;
+
+    SolrQuery query =
+            new SolrQuery(IndexingConstants.EUROPEANA_ID + ":\"" + europeanaId + "\"").addField(ALL);
+
+    try {
+      response = fulltextSolr.query(query);
+      if (log.isDebugEnabled()) {
+        log.debug("Performed Fulltext query in {}ms:  query={}", response.getElapsedTime(), query);
+      }
+
+      if (response != null && !response.getResults().isEmpty()) {
+        return response.getResults().get(0);
+      }
+
+    } catch (IOException | SolrServerException ex) {
+      throw new SolrServiceException(
+              String.format(
+                      "Error while searching Solr for fulltext document. query=%s", query.toString()),
+              ex);
+    }
+    return new SolrDocument();
+  }
+
+  }

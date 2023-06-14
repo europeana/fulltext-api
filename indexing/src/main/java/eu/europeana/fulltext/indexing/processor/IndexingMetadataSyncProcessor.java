@@ -5,6 +5,7 @@ import static eu.europeana.fulltext.indexing.processor.ProcessorUtils.mergeDocs;
 
 import eu.europeana.fulltext.indexing.model.IndexingAction;
 import eu.europeana.fulltext.indexing.model.IndexingWrapper;
+import eu.europeana.fulltext.indexing.solr.FulltextSolrService;
 import eu.europeana.fulltext.indexing.solr.MetadataSolrService;
 import java.util.Date;
 import org.apache.logging.log4j.LogManager;
@@ -22,11 +23,13 @@ public class IndexingMetadataSyncProcessor
 
   private static final Logger logger = LogManager.getLogger(IndexingMetadataSyncProcessor.class);
   private final MetadataSolrService metadataSolr;
+  private final FulltextSolrService fulltextSolrService;
 
 
-  public IndexingMetadataSyncProcessor(MetadataSolrService metadataSolr) {
+  public IndexingMetadataSyncProcessor(MetadataSolrService metadataSolr, FulltextSolrService fulltextSolrService) {
     super(IndexingAction.UPDATE_METADATA_FIELDS);
     this.metadataSolr = metadataSolr;
+    this.fulltextSolrService = fulltextSolrService;
   }
 
   @Override
@@ -58,10 +61,10 @@ public class IndexingMetadataSyncProcessor
       return null;
     }
 
-    SolrInputDocument fulltextDoc = indexingWrapper.getSolrDocument();
+      SolrInputDocument fulltextDoc = indexingWrapper.getSolrDocument();
 
     // merge fields from Fulltext and Metadata docs
-    mergeDocs(metadataSolrDocument, fulltextDoc, europeanaId);
+      mergeDocs(metadataSolrDocument, fulltextDoc, europeanaId, fulltextSolrService);
     return indexingWrapper;
   }
 }

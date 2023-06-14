@@ -1,24 +1,23 @@
 package eu.europeana.fulltext.indexing.processor;
 
-import static eu.europeana.fulltext.indexing.IndexingConstants.EUROPEANA_ID;
-import static eu.europeana.fulltext.indexing.IndexingConstants.IS_FULLTEXT;
-import static eu.europeana.fulltext.indexing.IndexingConstants.PROXY_ISSUED;
-import static eu.europeana.fulltext.indexing.IndexingConstants.TIMESTAMP;
-import static eu.europeana.fulltext.indexing.IndexingConstants.TIMESTAMP_UPDATE_METADATA;
-import static eu.europeana.fulltext.indexing.IndexingConstants.VERSION;
-
+import eu.europeana.fulltext.exception.SolrServiceException;
 import eu.europeana.fulltext.indexing.IndexingConstants;
+
+import java.net.ProxySelector;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import eu.europeana.fulltext.indexing.solr.FulltextSolrService;
+import eu.europeana.fulltext.indexing.solr.MetadataSolrService;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrInputDocument;
+
+import static eu.europeana.fulltext.indexing.IndexingConstants.*;
 
 public class ProcessorUtils {
 
@@ -46,11 +45,20 @@ public class ProcessorUtils {
    * @param destinationDoc
    * @param europeanaId
    */
-  public static void mergeDocs(SolrDocument metadataDoc, SolrInputDocument destinationDoc, String europeanaId) {
+  public static void mergeDocs(SolrDocument metadataDoc, SolrInputDocument destinationDoc, String europeanaId, FulltextSolrService fulltextSolrService) throws SolrServiceException {
 
     destinationDoc.setField(EUROPEANA_ID, europeanaId);
+    HashSet<String> metadataFields = new HashSet<>(metadataDoc.getFieldNames());
+    HashSet<String> fulltextFields = new HashSet<>(fulltextSolrService.getDocument(europeanaId).getFieldNames());
 
-    for (String field : metadataDoc.getFieldNames()) {
+    fulltextFields.removeAll(metadataFields);
+    for (String field: fulltextFields) { //if metadata field in fulltext was in the metadata but it no longer is, proceeds to remove it from fulltext
+      if (!field.equals(PROXY_ISSUED) && !field.equals(TIMESTAMP_UPDATE_FULLTEXT) && !field.startsWith(FULLTEXT) && !field.equals(IS_FULLTEXT)) {
+        destinationDoc.setField(field, Map.of("removeregex", ".*"));         //atomic removal
+      }
+    }
+
+    for (String field: metadataFields) { //update/add metadata fields in fulltext
       if (field.equals(PROXY_ISSUED)) {
         Collection<Object> listIssuedDates = metadataDoc.getFieldValues(PROXY_ISSUED);
         List<String> isoDates = new ArrayList<>();
@@ -87,5 +95,6 @@ public class ProcessorUtils {
         destinationDoc.addField(field, Map.of("set", metadataDoc.getFieldValue(field)));
       }
     }
-    }
+  }
+
 }
