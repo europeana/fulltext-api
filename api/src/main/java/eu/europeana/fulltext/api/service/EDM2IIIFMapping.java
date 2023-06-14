@@ -373,14 +373,28 @@ public final class EDM2IIIFMapping {
         return s.toString();
     }
 
+    /**
+     * Returns the Resource Id url
+     *
+     * @param annoPage
+     * @return
+     */
   private static String getResourceIdBaseUrl(AnnoPage annoPage) {
     String url =
         fts.getResourceBaseUrl()
             + annoPage.getDsId()
             + "/"
             + annoPage.getLcId()
-            + "/"
-            + annoPage.getRes().getPgId();
+            + "/";
+      /**
+       *  there are cases when we don't fetch the full annoPage OR Resource due to performance issues. Example - annopageInfo
+       *  the pgId is same for the annopage and resource. If resource is not available get the pgID from anooPage
+       */
+    if(annoPage.getRes() != null) {
+        url += annoPage.getRes().getPgId();
+    } else {
+        url += annoPage.getPgId();
+    }
 
     // EA-3073: Resource endpoint can return the original version without the lang parameter. Only append if this is a translation
     if (annoPage.isTranslation()) {
