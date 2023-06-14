@@ -26,6 +26,9 @@ public class PageXMLParser extends AltoParser {
         if (is == null) {
             is = this.getClass().getResourceAsStream(XSLT_PATH);
         }
+        if( is == null) {
+            System.out.println("HERE stream is null still");
+        }
         TransformerFactory tf = TransformerFactory.newInstance();
         tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
         tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
