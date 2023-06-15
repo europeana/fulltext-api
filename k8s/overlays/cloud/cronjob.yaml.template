@@ -10,6 +10,10 @@ spec:
     spec:
       ttlSecondsAfterFinished: ${CRON_TTL_AFTER_FINISHED}
       template:
+        metadata:
+          annotations:
+            fluentd/include: '${COLLECT_LOGS}'
+            fluentd/multiline: 'true'
         spec:
           containers:
             - name: fulltext-annosync
@@ -56,13 +60,13 @@ spec:
   suspend: ${SUSPEND_INDEXING}
   concurrencyPolicy: Forbid
   jobTemplate:
-    metadata:
-      annotations:
-        fluentd/include: '${COLLECT_LOGS}'
-        fluentd/multiline: 'true'    
     spec:
       ttlSecondsAfterFinished: ${CRON_TTL_AFTER_FINISHED}
       template:
+        metadata:
+          annotations:
+            fluentd/include: '${COLLECT_LOGS}'
+            fluentd/multiline: 'true'
         spec:
           containers:
             - name: fulltext-indexing
@@ -117,6 +121,10 @@ spec:
     spec:
       ttlSecondsAfterFinished: ${CRON_TTL_AFTER_FINISHED}
       template:
+        metadata:
+          annotations:
+            fluentd/include: '${COLLECT_LOGS}'
+            fluentd/multiline: 'true'
         spec:
           containers:
             - name: fulltext-indexing
