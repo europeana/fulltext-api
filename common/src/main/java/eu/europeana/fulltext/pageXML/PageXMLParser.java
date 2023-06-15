@@ -3,6 +3,7 @@ package eu.europeana.fulltext.pageXML;
 import eu.europeana.edm.media.MediaReference;
 import eu.europeana.fulltext.alto.model.AltoPage;
 import eu.europeana.fulltext.alto.parser.AltoParser;
+import eu.europeana.fulltext.exception.XmlParsingException;
 import org.xml.sax.InputSource;
 
 import javax.xml.XMLConstants;
@@ -17,14 +18,18 @@ import java.io.InputStream;
  * @since 4 Apr 2023
  */
 public class PageXMLParser extends AltoParser {
-    private static final String XSLT_PATH = "etc/PageToAlto.xsl";
+    private static final String XSLT_PATH = "/etc/PageToAlto.xsl";
     private final Transformer _transformer;
 
-    public PageXMLParser() throws TransformerConfigurationException {
+    public PageXMLParser() throws TransformerConfigurationException, XmlParsingException {
         InputStream is = ClassLoader.getSystemClassLoader()
                 .getResourceAsStream(XSLT_PATH);
         if (is == null) {
-            is = this.getClass().getResourceAsStream(XSLT_PATH);
+            is = PageXMLParser.class.getClass().getResourceAsStream(XSLT_PATH);
+        }
+
+        if(is == null) {
+            throw new XmlParsingException("Could not read the file from resources {}", XSLT_PATH);
         }
         TransformerFactory tf = TransformerFactory.newInstance();
         tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
