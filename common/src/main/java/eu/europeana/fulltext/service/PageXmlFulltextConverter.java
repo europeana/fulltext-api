@@ -13,6 +13,7 @@ import eu.europeana.fulltext.subtitles.AnnotationPreview;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.stream.StreamSource;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 
@@ -31,9 +32,9 @@ public class PageXmlFulltextConverter  implements FulltextConverter {
             // page xml first converts the xslt into alto then we can convert alto to EDM
             return new AltoToFulltextConverter().getAltoToEDM(altoPage, annotationPreview, reference);
 
-        } catch (TransformerConfigurationException e) {
+        } catch (TransformerConfigurationException | IOException e) {
             e.printStackTrace();
-            throw new XmlParsingException("Error configuring the transformer for type " +annotationPreview.getFulltextType().getMimeType());
+            throw new XmlParsingException("Error configuring the transformer for type " +annotationPreview.getFulltextType());
         }
 
     }
