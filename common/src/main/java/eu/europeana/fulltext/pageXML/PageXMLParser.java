@@ -21,27 +21,19 @@ import java.net.URL;
  */
 public class PageXMLParser extends AltoParser {
     private static final String XSLT_PATH = "etc/PageToAlto.xsl";
-    private final Transformer _transformer;
+    private final Transformer transformer;
 
-    public PageXMLParser() throws TransformerConfigurationException, XmlParsingException, IOException {
+    public PageXMLParser() throws TransformerConfigurationException, IOException, XmlParsingException {
         URL file = PageXMLParser.class.getClassLoader().getResource(XSLT_PATH);
-
-//        InputStream is = ClassLoader.getSystemClassLoader()
-//                .getResourceAsStream(XSLT_PATH);
-//        if (is == null) {
-//            is = this.getClass().getResourceAsStream(XSLT_PATH);
-//        }
-
         if (file == null) {
-            throw new XmlParsingException("Unable to find file {} ", XSLT_PATH);
+            throw new XmlParsingException("Unable to find file " +  XSLT_PATH);
         }
-
-        InputStream is = file.openStream();
-        System.out.println(is);
-        TransformerFactory tf = TransformerFactory.newInstance();
-        tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-        tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
-        _transformer = tf.newTransformer(new StreamSource(is));
+        try (InputStream is = file.openStream()) {
+            TransformerFactory tf = TransformerFactory.newInstance();
+            tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
+            transformer = tf.newTransformer(new StreamSource(is));
+        }
     }
 
     public AltoPage processPage(InputSource source, MediaReference ref) {
@@ -51,14 +43,10 @@ public class PageXMLParser extends AltoParser {
     public AltoPage processPage(Source source, MediaReference ref) {
         try {
             DOMResult result = new DOMResult();
-            _transformer.transform(source, result);
+            transformer.transform(source, result);
             return super.processPage(new DOMSource(result.getNode()), ref);
         } catch (TransformerException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public static  void main (String args[]) throws TransformerConfigurationException, XmlParsingException, IOException {
-        PageXMLParser p = new PageXMLParser();
     }
 }

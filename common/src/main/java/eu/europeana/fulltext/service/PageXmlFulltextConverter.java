@@ -33,7 +33,6 @@ public class PageXmlFulltextConverter  implements FulltextConverter {
             return new AltoToFulltextConverter().getAltoToEDM(altoPage, annotationPreview, reference);
 
         } catch (TransformerConfigurationException | IOException e) {
-            e.printStackTrace();
             throw new XmlParsingException("Error configuring the transformer for type " +annotationPreview.getFulltextType());
         }
 
