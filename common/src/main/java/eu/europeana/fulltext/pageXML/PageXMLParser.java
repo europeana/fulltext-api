@@ -3,6 +3,7 @@ package eu.europeana.fulltext.pageXML;
 import eu.europeana.edm.media.MediaReference;
 import eu.europeana.fulltext.alto.model.AltoPage;
 import eu.europeana.fulltext.alto.parser.AltoParser;
+import eu.europeana.fulltext.exception.XmlParsingException;
 import org.xml.sax.InputSource;
 
 import javax.xml.XMLConstants;
@@ -10,7 +11,9 @@ import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 
 /**
  * @author Hugo
@@ -18,18 +21,19 @@ import java.io.InputStream;
  */
 public class PageXMLParser extends AltoParser {
     private static final String XSLT_PATH = "etc/PageToAlto.xsl";
-    private final Transformer _transformer;
+    private final Transformer transformer;
 
-    public PageXMLParser() throws TransformerConfigurationException {
-        InputStream is = ClassLoader.getSystemClassLoader()
-                .getResourceAsStream(XSLT_PATH);
-        if (is == null) {
-            is = this.getClass().getResourceAsStream(XSLT_PATH);
+    public PageXMLParser() throws TransformerConfigurationException, IOException, XmlParsingException {
+        URL file = PageXMLParser.class.getClassLoader().getResource(XSLT_PATH);
+        if (file == null) {
+            throw new XmlParsingException("Unable to find file " +  XSLT_PATH);
         }
-        TransformerFactory tf = TransformerFactory.newInstance();
-        tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-        tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
-        _transformer = tf.newTransformer(new StreamSource(is));
+        try (InputStream is = file.openStream()) {
+            TransformerFactory tf = TransformerFactory.newInstance();
+            tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
+            transformer = tf.newTransformer(new StreamSource(is));
+        }
     }
 
     public AltoPage processPage(InputSource source, MediaReference ref) {
@@ -39,7 +43,7 @@ public class PageXMLParser extends AltoParser {
     public AltoPage processPage(Source source, MediaReference ref) {
         try {
             DOMResult result = new DOMResult();
-            _transformer.transform(source, result);
+            transformer.transform(source, result);
             return super.processPage(new DOMSource(result.getNode()), ref);
         } catch (TransformerException e) {
             throw new RuntimeException(e);
