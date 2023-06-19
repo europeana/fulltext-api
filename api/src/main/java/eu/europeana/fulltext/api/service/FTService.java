@@ -1,7 +1,5 @@
 package eu.europeana.fulltext.api.service;
 
-import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_ANNOTATION_TYPES;
-import static eu.europeana.fulltext.api.config.FTDefinitions.TEXT_ANNOTATION_TYPES;
 import static eu.europeana.fulltext.api.service.EDM2IIIFMapping.getTextGranularitiesForSummary;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,10 +34,7 @@ import eu.europeana.iiif.IIIFDefinitions;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -56,7 +51,6 @@ public class FTService extends CommonFTService {
     private static final String GENERATED_IN = "Generated in {} ms ";
     private static final String ANNOPAGE_ID_FORMAT = "/%s/%s/annopage/%s";
     private static final String ANNOPAGE_ID_LANG_FORMAT = "/%s/%s/annopage/%s";
-    private static final String FETCHED_AGGREGATED = "Originals fetched in {} ms";
     private static final Logger LOG = LogManager.getLogger(FTService.class);
 
     private final FTSettings ftSettings;
@@ -215,18 +209,17 @@ public class FTService extends CommonFTService {
      * @param localId   identifier of the record that contains the Annopage that refers to Resource
      * @return SummaryManifest
      */
-    public SummaryManifest collectionAnnoPageInfo(String datasetId, String localId) throws AnnoPageDoesNotExistException, AnnoPageGoneException {
+    public SummaryManifest collectionAnnoPageInfo(String datasetId, String localId) {
         Instant start                         = Instant.now();
-        String previousPageId               = null;
         SummaryManifest apInfoSummaryManifest = new SummaryManifest(datasetId, localId);
-        // fetch annopages with dsId and lcId
-        List<AnnoPage> annoPages = annoPageRepository.getAnnoPages(datasetId, localId, null, false);
+        // fetch annopages with dsId and lcId.
+        // fetch the document  with annotations and translation field instead of making queries later for text granularity and original language value
+        List<AnnoPage> annoPages = annoPageRepository.getAnnoPages(datasetId, localId, null, false, true);
         Instant finish = Instant.now();
-        LOG.debug(FETCHED_AGGREGATED, Duration.between(start, finish).toMillis());
+        LOG.debug("Time taken to fetch all the annoPages for {}/{} is - {}", datasetId, localId, Duration.between(start, finish).toMillis());
 
-        // loop through annoPages, populate Map of <pageId, List<AnnoPage>>
+        // there are Annopages with same dsId, lcId and pgId but with different language, hence cluster the annopages with same dsId/lcId/pgID
         Map<String, List<AnnoPage>> annoPerPage = new LinkedHashMap<>();
-
         for (AnnoPage annoPage : annoPages) {
             annoPerPage.computeIfAbsent(annoPage.getPgId(), k -> new ArrayList<>()).add(annoPage);
         }
@@ -234,15 +227,11 @@ public class FTService extends CommonFTService {
         for (Map.Entry<String, List<AnnoPage>> pageList : annoPerPage.entrySet()) {
             SummaryCanvas summaryCanvas = new SummaryCanvas(makeSummaryCanvasID(datasetId, localId, pageList.getKey()));
 
-            // find original language and apply to the summaryCanvas
-            if (annoPageRepository.existsOriginalByPageId(datasetId, localId, pageList.getKey(), true)) {
-                summaryCanvas.setOriginalLanguage(
-                        annoPageRepository.findOrigAPNoGranFilter(
-                                        datasetId,
-                                        localId,
-                                        pageList.getKey(),
-                                        true)
-                        .getLang());
+            // If there is no original Annopage, original lanaguge value should not be set.
+            // if translation is set to false then we have original AnnoPage. (only translation=true values are stored in DB)
+            Optional<AnnoPage> originalAnnoPage = pageList.getValue().stream().filter(annopage-> !annopage.isTranslation()).findFirst();
+            if (originalAnnoPage.isPresent()) {
+                summaryCanvas.setOriginalLanguage(originalAnnoPage.get().getLang());
             }
 
             for (AnnoPage annoPage: pageList.getValue()) {
@@ -251,40 +240,13 @@ public class FTService extends CommonFTService {
                         new SummaryAnnoPage(
                                 makeLangAwareAnnoPageID(datasetId, localId, annoPage.getPgId(), annoPage.getLang()),
                                 annoPage.getLang(),
-                                getTextGranularitiesForSummary(fetchAnnoPageNoFilter(
-                                        datasetId,
-                                        localId,
-                                        annoPage.getPgId(),
-                                        annoPage.getLang())
-                                ),
+                                getTextGranularitiesForSummary(annoPage),
                                 annoPage.getSource()));
             }
             // add SummaryCanvas to SummaryManifest
             apInfoSummaryManifest.addCanvas(summaryCanvas);
         }
         return apInfoSummaryManifest;
-    }
-
-    public AnnoPage fetchAnnoPageNoFilter(String datasetId, String localId, String pageId, String lang) throws AnnoPageDoesNotExistException, AnnoPageGoneException {
-        AnnoPage result;
-        // if no lang is provided, fetch the original AnnoPage (ie. translation=false)
-        if (StringUtils.isEmpty(lang)) {
-            result = annoPageRepository.findOrigAPNoGranFilter(datasetId, localId, pageId, false);
-            if (result == null) {
-                throw new AnnoPageDoesNotExistException(
-                        String.format(ANNOPAGE_ID_FORMAT, datasetId, localId, pageId));
-            }
-        } else {
-            result = annoPageRepository.findAPNoGranFilter(datasetId, localId, pageId, lang, true);
-            if (result == null) {
-                throw new AnnoPageDoesNotExistException(String.format(ANNOPAGE_ID_LANG_FORMAT, datasetId, localId, pageId),
-                        lang);
-            } else if (result.isDeprecated()) {
-                throw new AnnoPageGoneException(String.format(ANNOPAGE_ID_LANG_FORMAT, datasetId, localId, pageId),
-                        lang);
-            }
-        }
-        return result;
     }
 
     @Deprecated
@@ -543,7 +505,7 @@ public class FTService extends CommonFTService {
     }
 
     public List<AnnoPage> getAnnoPages(String datasetId, String localId, String pageId, boolean includeDeprecated) {
-        return annoPageRepository.getAnnoPages(datasetId, localId, pageId, includeDeprecated);
+        return annoPageRepository.getAnnoPages(datasetId, localId, pageId, includeDeprecated, false);
     }
 
 

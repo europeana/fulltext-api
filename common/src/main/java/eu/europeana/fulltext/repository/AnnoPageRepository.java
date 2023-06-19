@@ -253,61 +253,6 @@ public class AnnoPageRepository {
     }
 
     /**
-     * Need to find full AnnoPage without filtering on textGranularity
-     *
-     * @param datasetId ID of the dataset
-     * @param localId   ID of the parent of the Annopage object
-     * @param pageId    index (page number) of the Annopage object
-     * @param lang      language
-     * @param includeDeprecated whether deprecated AnnoPages should be included in result
-     * @return AnnoPage
-     */
-    public AnnoPage findAPNoGranFilter(
-            String datasetId, String localId, String pageId, String lang, boolean includeDeprecated) {
-
-        List<Filter> filters =
-                new ArrayList<>(
-                        Arrays.asList(eq(DATASET_ID, datasetId),
-                                eq(LOCAL_ID, localId),
-                                eq(PAGE_ID, pageId),
-                                eq(LANGUAGE, lang)));
-
-        if (!includeDeprecated){
-            filters.add(eq(DELETED, null));
-        }
-
-        Aggregation<AnnoPage> query = datastore.aggregate(AnnoPage.class)
-                .match(filters.toArray(new Filter[0]));
-        return query.execute(AnnoPage.class).tryNext();
-    }
-
-    /**
-     * Need to find original full AnnoPage without filtering on textGranularity
-     *
-     * @param datasetId ID of the dataset
-     * @param localId   ID of the parent of the Annopage object
-     * @param pageId    index (page number) of the Annopage object
-     * @param includeDeprecated whether deprecated AnnoPages should be included in result
-     * @return AnnoPage
-     */
-    public AnnoPage findOrigAPNoGranFilter(
-            String datasetId, String localId, String pageId, boolean includeDeprecated) {
-        List<Filter> filters =
-                new ArrayList<>(
-                        Arrays.asList(eq(DATASET_ID, datasetId),
-                                eq(LOCAL_ID, localId),
-                                eq(PAGE_ID, pageId),
-                                eq(TRANSLATION, null)));
-
-        if (!includeDeprecated){
-            filters.add(eq(DELETED, null));
-        }
-        Aggregation<AnnoPage> query = datastore.aggregate(AnnoPage.class)
-                .match(filters.toArray(new Filter[0]));
-        return query.execute(AnnoPage.class).tryNext();
-    }
-
-    /**
      * Finds the original AnnoPage with the given parameters.
      * Original means the "translation" field in the database is empty
      * @param datasetId
@@ -353,11 +298,11 @@ public class AnnoPageRepository {
                     eq(LOCAL_ID, localId),
                     eq(ANNOTATIONS_ID, annoId)));
 
+        if(!includeDeprecated){
+            filter.add(eq(DELETED, null));
+        }
 
-
-        return datastore.find(AnnoPage.class).filter(eq(DATASET_ID, datasetId),
-            eq(LOCAL_ID, localId),
-            eq(ANNOTATIONS_ID, annoId)).first();
+        return datastore.find(AnnoPage.class).filter(filter.toArray(new Filter[0])).first();
     }
 
     /**
@@ -514,14 +459,19 @@ public class AnnoPageRepository {
      * @param includeDeprecated
      * @return
      */
-    public List<AnnoPage> getAnnoPages(String datasetId, String localId, String pageId, boolean includeDeprecated) {
+    public List<AnnoPage> getAnnoPages(String datasetId, String localId, String pageId, boolean includeDeprecated, boolean fetchAnnotations) {
+        FindOptions findOptions = new FindOptions()
+                        .projection()
+                        .include(DATASET_ID, LOCAL_ID, PAGE_ID, LANGUAGE, MODIFIED, DELETED, SOURCE); // EA-3216, include source field
+
+        if (fetchAnnotations) {
+            findOptions.projection().include(TRANSLATION, ANNOTATIONS); // EA-3457 add translation and annotations in the projections
+        }
+
         return datastore
                 .find(AnnoPage.class)
                 .filter(createFilterToGetAnnoPage(datasetId, localId, pageId, null, includeDeprecated).toArray(new Filter[0]))
-                .iterator(
-                        new FindOptions()
-                                .projection()
-                                .include(DATASET_ID, LOCAL_ID, PAGE_ID, LANGUAGE, MODIFIED, DELETED, SOURCE)) // EA-3216, include source field
+                .iterator(findOptions)
                 .toList();
     }
 
