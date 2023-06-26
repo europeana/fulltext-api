@@ -1,6 +1,5 @@
 package eu.europeana.fulltext.api;
 
-import eu.europeana.fulltext.api.web.SocksProxyConfigInjector;
 import org.apache.logging.log4j.LogManager;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration;
@@ -15,7 +14,6 @@ import org.springframework.web.filter.CorsFilter;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import java.io.IOException;
 import java.util.Collections;
 
 /**
@@ -47,13 +45,8 @@ public class FTApplication extends SpringBootServletInitializer {
                         System.getenv("CF_INSTANCE_INDEX"),
                         System.getenv("CF_INSTANCE_GUID"),
                         System.getenv("CF_INSTANCE_IP"));
-        try {
-            injectSocksProxySettings();
-            SpringApplication.run(FTApplication.class, args);
-        } catch (IOException e) {
-            LogManager.getLogger(FTApplication.class).fatal("Error reading properties file", e);
-            System.exit(-1);
-        }
+        SpringApplication.run(FTApplication.class, args);
+
     }
 
     /**
@@ -69,28 +62,8 @@ public class FTApplication extends SpringBootServletInitializer {
                         System.getenv("CF_INSTANCE_INDEX"),
                         System.getenv("CF_INSTANCE_GUID"),
                         System.getenv("CF_INSTANCE_IP"));
-        try {
-            injectSocksProxySettings();
-            super.onStartup(servletContext);
-        } catch (IOException e) {
-            throw new ServletException("Error reading properties", e);
-        }
-    }
 
-    /**
-     * Socks proxy settings have to be loaded before anything else, so we check the property files for its settings
-     *
-     * @throws IOException if properties file cannot be read
-     */
-    private static void injectSocksProxySettings() throws IOException {
-        SocksProxyConfigInjector socksConfig = new SocksProxyConfigInjector("fulltext.properties");
-        try {
-            socksConfig.addProperties("fulltext.user.properties");
-        } catch (IOException e) {
-            // user.properties may not be available so only show warning
-            LogManager.getLogger(FTApplication.class).warn("Cannot read fulltext.user.properties file. Reason: ", e.getMessage());
-        }
-        socksConfig.inject();
+        super.onStartup(servletContext);
     }
 
     /**
