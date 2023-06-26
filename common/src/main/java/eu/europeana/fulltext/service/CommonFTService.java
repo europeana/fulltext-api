@@ -145,9 +145,8 @@ public class CommonFTService {
     long resourceCount = resourceRepository.deleteResourcesById(resourceIds);
     long annoPageCount = annoPageRepository.deprecateAnnoPagesWithSources(sources);
     if (LOG.isDebugEnabled()) {
-      LOG.debug("Deprecated {} AnnoPages and deleted {} Resources for for sources {}", annoPageCount, resourceCount, sources);
+      LOG.debug("Deprecated {} AnnoPages and deleted {} Resources for sources {}", annoPageCount, resourceCount, sources);
     }
-
     return annoPageCount;
   }
 
