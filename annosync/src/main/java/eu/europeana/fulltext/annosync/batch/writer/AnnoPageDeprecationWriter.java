@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import eu.europeana.fulltext.util.GeneralUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
@@ -31,9 +32,20 @@ public class AnnoPageDeprecationWriter implements ItemWriter<String> {
     }
   }
 
+  /**
+   * Forms a complete annotation item url to search in Fulltext DB as source values
+   * @param deletedAnnotations
+   * @return
+   */
   private List<String> getSourceIdFromAnnotations(List<? extends String> deletedAnnotations) {
     List<String> sources = new ArrayList<>();
-    deletedAnnotations.stream().forEach(annotation -> sources.add(GeneralUtils.getAnnotationPageURI( "/" + annotation)));
+    deletedAnnotations.stream().forEach(annotation -> {
+      if (StringUtils.startsWith(annotation, "http")) {
+        sources.add(annotation);
+      } else {
+        sources.add(GeneralUtils.getAnnotationPageURI( "/" + annotation));
+      }
+    });
     return sources;
   }
 }
