@@ -20,7 +20,7 @@ import java.net.URL;
  * @since 4 Apr 2023
  */
 public class PageXMLParser extends AltoParser {
-    private static final String XSLT_PATH = "etc/PageToAlto.xsl";
+    private static final String XSLT_PATH = "etc/PageToAltoV2WordLevel.xsl";
     private final Transformer transformer;
 
     public PageXMLParser() throws TransformerConfigurationException, IOException, XmlParsingException {
@@ -33,6 +33,8 @@ public class PageXMLParser extends AltoParser {
             tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
             tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
             transformer = tf.newTransformer(new StreamSource(is));
+            transformer.setParameter("splitIntoWords", true);
+            transformer.setParameter("useWordLayer", false);
         }
     }
 
