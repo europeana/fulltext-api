@@ -6,7 +6,7 @@
     <parent>
         <artifactId>fulltext</artifactId>
         <groupId>eu.europeana</groupId>
-        <version>0.9.6-SNAPSHOT</version>
+        <version>0.9.6</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -20,7 +20,7 @@
 
     <groupId>eu.europeana.fulltext</groupId>
     <artifactId>common</artifactId>
-    <version>0.9.6-SNAPSHOT</version>
+    <version>0.9.6</version>
     <packaging>jar</packaging>
 
     <name>Common functionality (Mongo and Entity definitions)</name>
