@@ -8,8 +8,9 @@ import java.util.List;
 
 /**
  * Created by luthien on 31/05/2018.
+ * setting useDiscriminator to false will not save the classname field in the DB
  */
-@Embedded
+@Embedded(useDiscriminator = false)
 public class Annotation {
 
     private String       anId;
