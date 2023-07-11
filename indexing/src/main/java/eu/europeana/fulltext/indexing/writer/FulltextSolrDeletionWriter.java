@@ -4,7 +4,6 @@ import eu.europeana.fulltext.indexing.model.IndexingAction;
 import eu.europeana.fulltext.indexing.model.IndexingWrapper;
 import eu.europeana.fulltext.indexing.solr.FulltextSolrService;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
@@ -17,9 +16,6 @@ public class FulltextSolrDeletionWriter implements ItemWriter<IndexingWrapper> {
   private static final Logger LOGGER = LogManager.getLogger(FulltextSolrDeletionWriter.class);
   private final FulltextSolrService fulltextSolr;
   private int count = 0;
-
-  private final AtomicLong count = new AtomicLong();
-
 
   public FulltextSolrDeletionWriter(FulltextSolrService fulltextSolr) {
     this.fulltextSolr = fulltextSolr;

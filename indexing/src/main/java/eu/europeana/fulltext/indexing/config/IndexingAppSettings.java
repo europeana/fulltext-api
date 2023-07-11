@@ -130,10 +130,6 @@ public class IndexingAppSettings {
     return commitWithinMs;
   }
 
-  public int getBatchRetryLimit() {
-    return batchRetryLimit;
-  }
-
   public long getProgressLoggingInterval() {
     return progressLoggingInterval;
   }

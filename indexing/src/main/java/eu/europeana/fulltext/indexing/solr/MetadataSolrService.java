@@ -30,7 +30,7 @@ public class MetadataSolrService {
 
   public MetadataSolrService(@Qualifier(METADATA_SOLR_BEAN) SolrClient metadataSolr, IndexingAppSettings settings) {
     this.metadataSolr = metadataSolr;
-    this.retryLimit = settings.getBatchRetryLimit();
+    this.retryLimit = settings.getRetryLimit();
   }
 
   public SolrDocument getDocument(String europeanaId) throws SolrServiceException {

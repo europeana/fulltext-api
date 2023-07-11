@@ -52,12 +52,25 @@ public class SolrSearchCursorIterator implements Iterator<SolrDocumentList> {
   public SolrDocumentList next() {
     solrQuery.set(CursorMarkParams.CURSOR_MARK_PARAM, cursorMark);
     QueryResponse response = null;
-    try {
-      response = client.query(solrQuery);
-    } catch (SolrServerException | IOException ex) {
-      throw new IllegalStateException(
-              String.format("Error while searching Solr q=%s", solrQuery.getQuery()), ex);
+    int attempts = IndexingConstants.ATTEMPTS;
+    while (attempts > 0) {
+      try {
+        response = client.query(solrQuery);
+        break;
+      } catch (SolrServerException | IOException ex) {
+        attempts--;
+        if (attempts <= 0) {
+          throw new IllegalStateException(
+                  String.format("Error while searching Solr q=%s", solrQuery.getQuery()), ex);
+        }
+        try {
+          Thread.sleep(IndexingConstants.SLEEP_MS);
+        } catch (InterruptedException e1) {
+          throw new IllegalStateException("Error while searching Solr", e1);
+        }
+
       }
+    }
     previousCursorMark = cursorMark;
     cursorMark = response.getNextCursorMark();
 
