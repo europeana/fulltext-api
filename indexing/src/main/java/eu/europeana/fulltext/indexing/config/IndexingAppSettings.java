@@ -54,6 +54,9 @@ public class IndexingAppSettings {
   @Value("${batch.skipLimit: 500}")
   private int skipLimit;
 
+  @Value("${batch.retryLimit: 3}")
+  private int retryLimit;
+
   @Value("${batch.fulltext.commitWithinMs: 30000}")
   private int commitWithinMs;
 
@@ -115,6 +118,10 @@ public class IndexingAppSettings {
 
   public int getSkipLimit() {
     return skipLimit;  }
+
+  public int getRetryLimit() {
+    return retryLimit;
+  }
 
   public int getCommitWithinMs() {
     return commitWithinMs;

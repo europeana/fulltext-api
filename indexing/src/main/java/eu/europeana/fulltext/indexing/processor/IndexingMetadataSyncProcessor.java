@@ -21,7 +21,7 @@ import org.springframework.stereotype.Component;
 public class IndexingMetadataSyncProcessor
     extends BaseIndexingWrapperProcessor {
 
-  private static final Logger logger = LogManager.getLogger(IndexingMetadataSyncProcessor.class);
+  private static final Logger LOGGER = LogManager.getLogger(IndexingMetadataSyncProcessor.class);
   private final MetadataSolrService metadataSolr;
   private final FulltextSolrService fulltextSolrService;
 
@@ -38,8 +38,8 @@ public class IndexingMetadataSyncProcessor
     // check if document exists on Metadata Collection.
     SolrDocument metadataSolrDocument = metadataSolr.getDocument(europeanaId);
     if (metadataSolrDocument == null || metadataSolrDocument.isEmpty()) {
-      if(logger.isDebugEnabled()){
-        logger.debug("{} does not exist in metadata collection. Will delete document in fulltext solr", europeanaId);
+      if(LOGGER.isDebugEnabled()){
+        LOGGER.debug("{} does not exist in metadata collection. Will delete document in fulltext solr", europeanaId);
       }
       indexingWrapper.markForDeletion();
       return indexingWrapper;
@@ -53,8 +53,8 @@ public class IndexingMetadataSyncProcessor
         metadataSolrDocument.getFieldValue(TIMESTAMP_UPDATE_METADATA);
 
     if(fulltextSolrTimestamp != null && !metadataSolrTimestamp.after(fulltextSolrTimestamp)){
-      if(logger.isDebugEnabled()){
-        logger.debug("{} timestamp_update in metadata collection not after fulltext collection value; document not updated" , europeanaId);
+      if(LOGGER.isDebugEnabled()){
+        LOGGER.debug("{} timestamp_update in metadata collection not after fulltext collection value; document not updated" , europeanaId);
       }
 
       // This means the record isn't passed on to subsequent processors or writers

@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class FulltextSolrInsertionWriter implements ItemWriter<IndexingWrapper> {
-  private static final Logger log = LogManager.getLogger(FulltextSolrInsertionWriter.class);
+  private static final Logger LOGGER = LogManager.getLogger(FulltextSolrInsertionWriter.class);
 
   private final FulltextSolrService solrService;
   private int count = 0;
@@ -37,7 +37,7 @@ public class FulltextSolrInsertionWriter implements ItemWriter<IndexingWrapper> 
     if (!docsToWrite.isEmpty()) {
       solrService.writeToSolr(docsToWrite);
       count += docsToWrite.size();
-      log.info("Documents written to Solr fulltext: " + count);
+      LOGGER.info("Documents written to Solr fulltext: {} ", count);
     }
   }
 }

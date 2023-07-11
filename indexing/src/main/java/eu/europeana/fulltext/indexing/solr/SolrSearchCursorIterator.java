@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Objects;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrClient;
@@ -24,7 +22,7 @@ import org.springframework.util.StringUtils;
  */
 public class SolrSearchCursorIterator implements Iterator<SolrDocumentList> {
 
-  private final Logger log = LogManager.getLogger(SolrSearchCursorIterator.class);
+  private static final Logger LOGGER = LogManager.getLogger(SolrSearchCursorIterator.class);
 
   private final SolrClient client;
   private final SolrQuery solrQuery;
@@ -54,37 +52,23 @@ public class SolrSearchCursorIterator implements Iterator<SolrDocumentList> {
   public SolrDocumentList next() {
     solrQuery.set(CursorMarkParams.CURSOR_MARK_PARAM, cursorMark);
     QueryResponse response = null;
-    int attempts = IndexingConstants.ATTEMPTS;
-    while (attempts > 0) {
-      try {
-        response = client.query(solrQuery);
-        break;
-      } catch (SolrServerException | IOException ex) {
-        attempts--;
-        if (attempts <= 0) {
-          throw new IllegalStateException(
-                  String.format("Error while searching Solr q=%s", solrQuery.getQuery()), ex);
-        }
-        try {
-          Thread.sleep(IndexingConstants.SLEEP_MS);
-        } catch (InterruptedException e1) {
-          throw new IllegalStateException("Error while searching Solr", e1);
-        }
-
+    try {
+      response = client.query(solrQuery);
+    } catch (SolrServerException | IOException ex) {
+      throw new IllegalStateException(
+              String.format("Error while searching Solr q=%s", solrQuery.getQuery()), ex);
       }
-    }
     previousCursorMark = cursorMark;
     cursorMark = response.getNextCursorMark();
 
-    if (log.isDebugEnabled()) {
-      log.debug(
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug(
               "Performed Solr search query in {}ms: numFound={}, cursorMark={}, q={}",
               response.getElapsedTime(),
               response.getResults().getNumFound(),
               cursorMark,
               solrQuery.getQuery());
     }
-
     return response.getResults();
   }
 

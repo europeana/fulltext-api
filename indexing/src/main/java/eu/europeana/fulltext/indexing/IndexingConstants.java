@@ -4,6 +4,7 @@ import eu.europeana.fulltext.indexing.model.IndexingWrapper;
 import java.util.List;
 
 public class IndexingConstants {
+
   public static final String METADATA_SOLR_BEAN = "metadataSolr";
   public static final String FULLTEXT_SOLR_BEAN = "fulltextSolr";
 
@@ -28,8 +29,6 @@ public class IndexingConstants {
   public static final String SOLR_SORT  = "sort";
   public static final String SOLR_SORT_ASC  = " asc";
   public static final String SOLR_EXPORT  = "/export";
-  public static final Integer ATTEMPTS  = 3;
-  public static final Long SLEEP_MS = 1000l;
 
   // Date formats
   public static final String METADATA_DATE_FORMAT  = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
@@ -38,6 +37,10 @@ public class IndexingConstants {
   // Bean names
   public static final String BATCH_THREAD_EXECUTOR = "batchThreadExecutor";
   public static final String FULLTEXT_INDEX_JOB = "fulltextIndexJob";
+
+  private IndexingConstants() {
+    // private to hide implicit one
+  }
 
   public static String[] getRecordId(List<? extends IndexingWrapper> list) {
     return list.stream().map(a -> a.getRecordId().toEuropeanaId()).toArray(String[]::new);

@@ -3,23 +3,24 @@ package eu.europeana.fulltext.indexing.processor;
 import eu.europeana.fulltext.exception.SolrServiceException;
 import eu.europeana.fulltext.indexing.IndexingConstants;
 
-import java.net.ProxySelector;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import eu.europeana.fulltext.indexing.solr.FulltextSolrService;
-import eu.europeana.fulltext.indexing.solr.MetadataSolrService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrInputDocument;
 
 import static eu.europeana.fulltext.indexing.IndexingConstants.*;
 
 public class ProcessorUtils {
+
+  private static final Logger LOGGER = LogManager.getLogger(ProcessorUtils.class);
 
   private ProcessorUtils() {
     // hide default public constructor
@@ -38,22 +39,26 @@ public class ProcessorUtils {
     return doc;
   }
 
-
   /**
    * Copies fields from the metadataDoc argument to the destinationDoc
-   * @param metadataDoc
-   * @param destinationDoc
-   * @param europeanaId
+   * @param metadataDoc Meatadata document
+   * @param destinationDoc Solr Input document where the values will be stored
+   * @param fulltextSolrService Solr service to fetch data
+   * @param europeanaId europeana Id
+   *
+   * @throws SolrServiceException throws solr exception
    */
-  public static void mergeDocs(SolrDocument metadataDoc, SolrInputDocument destinationDoc, String europeanaId, FulltextSolrService fulltextSolrService) throws SolrServiceException {
+  public static void mergeDocs(SolrDocument metadataDoc, SolrInputDocument destinationDoc,
+                               String europeanaId, FulltextSolrService fulltextSolrService) throws SolrServiceException {
 
     destinationDoc.setField(EUROPEANA_ID, europeanaId);
     HashSet<String> metadataFields = new HashSet<>(metadataDoc.getFieldNames());
     HashSet<String> fulltextFields = new HashSet<>(fulltextSolrService.getDocument(europeanaId).getFieldNames());
 
     fulltextFields.removeAll(metadataFields);
-    for (String field: fulltextFields) { //if metadata field in fulltext was in the metadata but it no longer is, proceeds to remove it from fulltext
-      if (!field.equals(PROXY_ISSUED) && !field.equals(TIMESTAMP_UPDATE_FULLTEXT) && !field.startsWith(FULLTEXT) && !field.equals(IS_FULLTEXT)) {
+    for (String field: fulltextFields) {
+      //if metadata field in fulltext was in the metadata but it no longer is, proceeds to remove it from fulltext
+      if (doAtomicRemoval(field)) {
         destinationDoc.setField(field, Map.of("removeregex", ".*"));         //atomic removal
       }
     }
@@ -64,12 +69,14 @@ public class ProcessorUtils {
         List<String> isoDates = new ArrayList<>();
         for (Object d : listIssuedDates) {
           try {
-            //accepts only ISO-8601 extended local date format (https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html#ISO_LOCAL_DATE)
+            //accepts only ISO-8601 extended local date format
+            // (https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html#ISO_LOCAL_DATE)
             LocalDate localDate = LocalDate.parse(d.toString());
             ZonedDateTime zonedDateTime = localDate.atStartOfDay(ZoneId.of("Z"));
             isoDates.add(zonedDateTime.format(DateTimeFormatter.ISO_INSTANT));
           } catch (DateTimeException e) {
             // do nothing
+            LOGGER.warn("Error while converting date - {} into a ISO Format. {}", d, e);
           }
         }
         if (!isoDates.isEmpty()) {
@@ -96,5 +103,10 @@ public class ProcessorUtils {
       }
     }
   }
+
+  private static boolean doAtomicRemoval(String field) {
+    return (!field.equals(PROXY_ISSUED) && !field.equals(TIMESTAMP_UPDATE_FULLTEXT) && !field.startsWith(FULLTEXT) && !field.equals(IS_FULLTEXT));
+  }
+
 
 }

@@ -1,7 +1,6 @@
 package eu.europeana.fulltext.indexing.solr;
 
 import eu.europeana.fulltext.exception.SolrServiceException;
-import eu.europeana.fulltext.indexing.IndexingApplication;
 import eu.europeana.fulltext.indexing.IndexingConstants;
 import eu.europeana.fulltext.indexing.config.IndexingAppSettings;
 import java.io.IOException;
@@ -30,7 +29,7 @@ import static eu.europeana.fulltext.indexing.IndexingConstants.*;
 
 @Service
 public class FulltextSolrService implements InitializingBean {
-  private static final Logger log = LogManager.getLogger(FulltextSolrService.class);
+  private static final Logger LOGGER = LogManager.getLogger(FulltextSolrService.class);
 
   private final SolrClient fulltextSolr;
   private final int commitWithinMs;
@@ -66,54 +65,27 @@ public class FulltextSolrService implements InitializingBean {
    * @throws IOException
    */
   public boolean existsByEuropeanaId(String europeanaId) throws SolrServiceException {
-    int attempts = IndexingConstants.ATTEMPTS;
     SolrQuery query =
             new SolrQuery(EUROPEANA_ID + ":\"" + europeanaId + "\"").addField(EUROPEANA_ID);
-    while (attempts > 0) {
-      try {
-        QueryResponse response = fulltextSolr.query(query);
-        return response != null && !CollectionUtils.isEmpty(response.getResults());
-      } catch (IOException | SolrServerException ex) {
-        attempts--;
-        if (attempts <= 0) {
-          throw new SolrServiceException(
-                  String.format(
-                          "Error while checking for existing europeanaId. query=%s", query.toString()),
-                  ex);
-        }
-        try {
-          Thread.sleep(IndexingConstants.SLEEP_MS);
-        } catch (InterruptedException e1) {
-          throw new SolrServiceException("Error while checking for existing europeanaId", e1);
-        }
-
+    try {
+      QueryResponse response = fulltextSolr.query(query);
+      return response != null && !CollectionUtils.isEmpty(response.getResults());
+    } catch (IOException | SolrServerException ex) {
+      throw new SolrServiceException(
+              String.format(
+                      "Error while checking for existing europeanaId. query=%s", query.toString()), ex);
       }
-
-    }
-  return false;
   }
 
   public void writeToSolr(List<SolrInputDocument> documents) throws SolrServiceException {
-    int attempts = IndexingConstants.ATTEMPTS;
-    while (attempts > 0) {
-      try {
-        UpdateResponse response = fulltextSolr.add(documents, commitWithinMs);
-        if (log.isDebugEnabled()) {
-          log.debug(
-                  "Wrote {} docs to Fulltext Solr in {}ms; commitWithinMs={}", documents.size(), response.getElapsedTime(), commitWithinMs);
+    try {
+      UpdateResponse response = fulltextSolr.add(documents, commitWithinMs);
+      if (LOGGER.isDebugEnabled()) {
+        LOGGER.debug("Wrote {} docs to Fulltext Solr in {}ms; commitWithinMs={}",
+                documents.size(), response.getElapsedTime(), commitWithinMs);
         }
-        break;
       } catch (SolrServerException | IOException e) {
-        attempts--;
-        if (attempts <= 0) {
           throw new SolrServiceException("Exception during Solr insertion", e);
-        }
-        try {
-          Thread.sleep(IndexingConstants.SLEEP_MS);
-        } catch (InterruptedException e1) {
-          throw new SolrServiceException("Exception during Solr insertion", e1);
-        }
-      }
     }
   }
 
@@ -121,29 +93,15 @@ public class FulltextSolrService implements InitializingBean {
     if (europeanaIds == null || europeanaIds.isEmpty()) {
       return;
     }
-    int attempts = IndexingConstants.ATTEMPTS;
-    while (attempts > 0) {
-
-      try {
-        UpdateResponse response = fulltextSolr.deleteById(europeanaIds, commitWithinMs);
-        if (log.isDebugEnabled()) {
-          log.debug(
-                  "Deleted {} docs from Fulltext Solr in {}ms; commitWithinMs={}",
-                  europeanaIds.size(),
-                  response.getElapsedTime(), commitWithinMs);
-        }
-        break;
-      } catch (SolrServerException | IOException e) {
-        attempts--;
-        if (attempts <= 0) {
-          throw new SolrServiceException("Exception during Solr deletion", e);
-        }
-        try {
-          Thread.sleep(IndexingConstants.SLEEP_MS);
-        } catch (InterruptedException e1) {
-          throw new SolrServiceException("Exception during Solr deletion", e1);
-        }
+    try {
+      UpdateResponse response = fulltextSolr.deleteById(europeanaIds, commitWithinMs);
+      if (LOGGER.isDebugEnabled()) {
+        LOGGER.debug("Deleted {} docs from Fulltext Solr in {}ms; commitWithinMs={}",
+                europeanaIds.size(),
+                response.getElapsedTime(), commitWithinMs);
       }
+    } catch (SolrServerException | IOException e) {
+      throw new SolrServiceException("Exception during Solr deletion", e);
     }
   }
 
@@ -180,8 +138,8 @@ public class FulltextSolrService implements InitializingBean {
 
     try {
       response = fulltextSolr.query(query);
-      if (log.isDebugEnabled()) {
-        log.debug("Performed Fulltext query in {}ms:  query={}", response.getElapsedTime(), query);
+      if (LOGGER.isDebugEnabled()) {
+        LOGGER.debug("Performed Fulltext query in {}ms:  query={}", response.getElapsedTime(), query);
       }
 
       if (response != null && !response.getResults().isEmpty()) {

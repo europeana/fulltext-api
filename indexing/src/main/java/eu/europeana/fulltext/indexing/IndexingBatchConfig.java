@@ -3,6 +3,7 @@ package eu.europeana.fulltext.indexing;
 import static eu.europeana.fulltext.indexing.IndexingConstants.BATCH_THREAD_EXECUTOR;
 import static eu.europeana.fulltext.indexing.IndexingConstants.TIMESTAMP_UPDATE_FULLTEXT;
 
+import eu.europeana.fulltext.exception.SolrServiceException;
 import eu.europeana.fulltext.indexing.listener.FulltextIndexingListener;
 import eu.europeana.fulltext.indexing.listener.MetadataSyncProcessListener;
 import eu.europeana.fulltext.indexing.model.IndexingWrapper;
@@ -50,7 +51,7 @@ import org.springframework.stereotype.Component;
 @Component
 @EnableBatchProcessing
 public class IndexingBatchConfig {
-  private static final Logger logger = LogManager.getLogger(IndexingBatchConfig.class);
+  private static final Logger LOGGER = LogManager.getLogger(IndexingBatchConfig.class);
 
   private final JobLauncher jobLauncher;
   /** Job param used to ensure unique runs */
@@ -187,6 +188,9 @@ public class IndexingBatchConfig {
         .writer(compositeWriter())
         .listener((ItemWriteListener<? super IndexingWrapper>) fulltextIndexingListener)
         .faultTolerant()
+        .processorNonTransactional()
+        .retry(SolrServiceException.class)
+        .retryLimit(appSettings.getRetryLimit())
         // skip all exceptions up to the configurable limit
         .skip(Exception.class)
         .skipLimit(appSettings.getSkipLimit())
@@ -205,6 +209,9 @@ public class IndexingBatchConfig {
         .writer(compositeWriter())
         .listener(fulltextIndexingListener)
         .faultTolerant()
+        .processorNonTransactional()
+        .retry(SolrServiceException.class)
+        .retryLimit(appSettings.getRetryLimit())
         // skip all exceptions up to the configurable limit
         .skip(Exception.class)
         .skipLimit(appSettings.getSkipLimit())
@@ -215,7 +222,7 @@ public class IndexingBatchConfig {
 
   public void indexFulltext(ZonedDateTime modifiedTimestamp) throws Exception {
     Optional<Instant> from = modifiedTimestamp != null ? Optional.of(modifiedTimestamp.toInstant()) : fulltextSolr.getMostRecentValue(TIMESTAMP_UPDATE_FULLTEXT);
-    logger.info("Indexing Fulltext records modified after {}", from);
+    LOGGER.info("Indexing Fulltext records modified after {}", from);
 
     jobLauncher.run(
         this.jobs.get("fulltextIndexJob").start(syncFulltextStep(from)).build(), jobParams);

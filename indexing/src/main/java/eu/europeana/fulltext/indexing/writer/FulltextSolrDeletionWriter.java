@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class FulltextSolrDeletionWriter implements ItemWriter<IndexingWrapper> {
-  private static final Logger log = LogManager.getLogger(FulltextSolrDeletionWriter.class);
+  private static final Logger LOGGER = LogManager.getLogger(FulltextSolrDeletionWriter.class);
   private final FulltextSolrService fulltextSolr;
   private int count = 0;
 
@@ -32,7 +32,7 @@ public class FulltextSolrDeletionWriter implements ItemWriter<IndexingWrapper> {
     if (!europeanaIds.isEmpty()) {
       fulltextSolr.deleteFromSolr(europeanaIds);
       count += europeanaIds.size();
-      log.info("Documents deleted from Solr or not considered to be written in Solr: " + count);
+      LOGGER.info("Documents deleted from Solr or not considered to be written in Solr:  {}", count);
     }
   }
 }
