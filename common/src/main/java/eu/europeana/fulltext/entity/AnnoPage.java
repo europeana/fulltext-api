@@ -1,14 +1,14 @@
 package eu.europeana.fulltext.entity;
 
-import org.bson.types.ObjectId;
 import dev.morphia.annotations.*;
+import org.bson.types.ObjectId;
+import org.springframework.lang.Nullable;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import org.springframework.lang.Nullable;
 
 /**
  * Created by luthien on 31/05/2018.
@@ -188,4 +188,5 @@ public class AnnoPage {
     public void setTranslation(boolean translation) {
         this.translation = translation;
     }
+
 }

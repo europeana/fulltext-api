@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import static eu.europeana.fulltext.api.config.FTDefinitions.EDM_FULLTEXTRESOURCE_TYPE;
-import static eu.europeana.fulltext.api.config.FTDefinitions.MEDIA_TYPE_EDM_JSONLD;
+import static eu.europeana.iiif.IIIFDefinitions.MEDIA_TYPE_EDM_JSONLD;
 
 /**
  * Created by luthien on 14/06/2018.

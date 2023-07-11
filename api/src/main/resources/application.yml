@@ -1,6 +1,10 @@
 # Port for local testing
 server.port: 8084
 
+spring:
+  application:
+    name: Fulltext API
+
 server:
   error:
     include-message: always
@@ -17,3 +21,14 @@ management:
     web:
       exposure:
         include: info
+
+  info:
+    env:
+      enabled: true
+
+# Creates a redirect from /console to /swagger-ui/index.html
+springdoc:
+  swagger-ui:
+    path: /console
+  # Don't include Error controller in API commons
+  paths-to-exclude: /error

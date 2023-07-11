@@ -40,6 +40,20 @@ public enum AnnotationType {
         return null;
     }
 
+    /**
+     * Given the name of the AnnotationType, find the one that matches it ignoring the case
+     * @param findName String, name of the annotation type
+     * @return the AnnotationType that corresponds with the provided name, or null if it is unknown
+     */
+    public static AnnotationType fromName(String findName) {
+        for (AnnotationType annoType : AnnotationType.values()) {
+            if (annoType.name().equalsIgnoreCase(findName)) {
+                return annoType;
+            }
+        }
+        return null;
+    }
+
     public char getAbbreviation() {
         return this.abbreviation;
     }
@@ -49,6 +63,13 @@ public enum AnnotationType {
      */
     public String getDisplayName() {
         return StringUtils.capitalize(this.name().toLowerCase(Locale.GERMAN));
+    }
+
+    /**
+     * @return the name of the annotation type in a public friendly format (capitalized first letter)
+     */
+    public String getLowerCaseName() {
+        return this.name().toLowerCase(Locale.GERMAN);
     }
 
     /**

@@ -5,13 +5,13 @@
     <parent>
         <artifactId>fulltext</artifactId>
         <groupId>eu.europeana</groupId>
-        <version>0.9.1-SNAPSHOT</version>
+        <version>0.9.7-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <groupId>eu.europeana.fulltext</groupId>
     <artifactId>api</artifactId>
-    <version>0.9.1-SNAPSHOT</version>
+    <version>0.9.7-SNAPSHOT</version>
     <packaging>war</packaging>
 
     <name>Europeana Newspapers Fulltext API</name>
@@ -19,13 +19,18 @@
 
     <properties>
         <spring.boot.mainclass>eu.europeana.fulltext.api.FtApplication</spring.boot.mainclass>
+        <solr-solrj.version>8.11.1</solr-solrj.version>
+        <javax-validation.version>2.0.1.Final</javax-validation.version>
+        <apache-commons-text.version>1.10.0</apache-commons-text.version>
+        <spring-boot-starter-data-solr.version>2.4.13</spring-boot-starter-data-solr.version>
+        <maven-surefire.version>2.22.2</maven-surefire.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>eu.europeana.fulltext</groupId>
             <artifactId>common</artifactId>
-            <version>0.9.1-SNAPSHOT</version>
+            <version>0.9.7-SNAPSHOT</version>
         </dependency>
 
         <dependency>
@@ -49,22 +54,6 @@
                     <artifactId>spring-boot-starter-logging</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-mail</artifactId>
-        </dependency>
-
-        <!-- WebClient used for Annotation syncing -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-webflux</artifactId>
-        </dependency>
-
-        <!-- For creating email template -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
 
         <!-- Including non-vulnerable tomcat dependency.
@@ -96,35 +85,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-log4j2</artifactId>
         </dependency>
-        <!-- All log4j components specifically added to override spring-boot-starter-log4j2 version -->
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>${log4j2.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <version>${log4j2.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
-            <version>${log4j2.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-jul</artifactId>
-            <version>${log4j2.version}</version>
-        </dependency>
-
-        <!-- Adds better web container support for log4j  -->
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-web</artifactId>
-            <version>${log4j2.version}</version>
-        </dependency>
-
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -136,7 +96,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-solr</artifactId>
-            <version>2.4.13</version>
+            <version>${spring-boot-starter-data-solr.version}</version>
             <!-- TODO replace spring-boot-started-data-solr with something else (solrj?) because it's deprecated
               See also https://spring.io/blog/2020/04/07/spring-data-for-apache-solr-discontinued -->
         </dependency>
@@ -145,10 +105,16 @@
         <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-solrj</artifactId>
-            <version>8.11.1</version>
+            <version>${solr-solrj.version}</version>
             <!-- SolrJ latest version 9.0.0 still uses the vulnerable version - 9.4.44.v20210927
             for http2 and jetty dependency. Add the dependency separately for
             http2-client, http2-common , http2-http-client-transport and jetty-io -->
+        </dependency>
+
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-ui</artifactId>
+            <version>${springdoc.version}</version>
         </dependency>
 
         <!-- Override the http2-client, http2-common , jetty-io , jetty-http, jetty-util, jetty-client version for CVE-2022-2048-->
@@ -202,7 +168,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-xml</artifactId>
-            <version>${jackson.version}</version>
+            <!-- <version>${jackson.version}</version> For some reason specifying a new version will make SpringDoc fail -->
         </dependency>
 
         <!-- see https://github.com/io-informatics/jackson-jsonld -->
@@ -221,19 +187,7 @@
         <dependency>
             <groupId>javax.validation</groupId>
             <artifactId>validation-api</artifactId>
-            <version>2.0.1.Final</version>
-        </dependency>
-
-        <!-- Override the spring-security-core and crypto to 5.7.2 which does not have any vulnerabilities like CVE-2022-22978 -->
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-crypto</artifactId>
-            <version>5.7.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-core</artifactId>
-            <version>5.7.2</version>
+            <version>${javax-validation.version}</version>
         </dependency>
 
         <!-- StringUtils -->
@@ -246,48 +200,39 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
-            <version>1.9</version>
+            <version>${apache-commons-text.version}</version>
         </dependency>
 
-        <!-- Swagger -->
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-boot-starter</artifactId>
-            <version>${swagger.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger-ui</artifactId>
-            <version>${swagger.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.batch</groupId>
-            <artifactId>spring-batch-core</artifactId>
-            <version>${spring-batch.version}</version>
-        </dependency>
-
-        <!-- Used for subtitle conversion-->
-        <dependency>
-            <groupId>com.dotsub.converter</groupId>
-            <artifactId>subtitle-converter</artifactId>
-            <version>1</version>
-        </dependency>
-
-
-        <!-- Fixes DNS resolution issues on Apple Silicon  -->
-        <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-resolver-dns-native-macos</artifactId>
-            <version>4.1.69.Final</version>
-            <classifier>osx-aarch_64</classifier>
-        </dependency>
 
         <dependency>
             <groupId>eu.europeana.api.commons</groupId>
             <artifactId>commons-web</artifactId>
             <version>${api-commons.version}</version>
+            <exclusions>
+                <!-- version 1.3, also vulnerable. Adding below non-vulnerable version 1.5.1-->
+                <exclusion>
+                    <groupId>org.codehaus.jettison</groupId>
+                    <artifactId>jettison</artifactId>
+                </exclusion>
+                <!-- Excluded for CVE-2022-22978. Added below non-vulnerable version-->
+                <exclusion>
+                    <groupId>org.springframework.security</groupId>
+                    <artifactId>spring-security-web</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework.security</groupId>
+                    <artifactId>spring-security-config</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
+
+        <!--non-vulnerable version -->
+        <dependency>
+            <groupId>org.codehaus.jettison</groupId>
+            <artifactId>jettison</artifactId>
+            <version>${jettison.version}</version>
+        </dependency>
+
 
         <!-- Test stuff -->
         <dependency>
@@ -302,24 +247,9 @@
             </exclusions>
         </dependency>
 
-        <!-- junit 5 -->
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>${junit-jupiter.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-junit-jupiter</artifactId>
-            <version>${mockito.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.unitils</groupId>
-            <artifactId>unitils-core</artifactId>
-            <version>${unitils.version}</version>
-            <scope>test</scope>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-resolver-dns-native-macos</artifactId>
         </dependency>
 
         <!--testcontainers for integration testing-->
@@ -328,6 +258,14 @@
             <artifactId>testcontainers</artifactId>
             <version>${testcontainers.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <!--Excluding common-compress due to CVE-2021-35517, CVE-2021-35516, CVE-2021-35515, CVE-2021-36090.
+                version is 1.20 is vulnerable. Also the dependency is duplicate and coming from commons-web-> jena-core -> jena-base now -->
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-compress</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
@@ -358,7 +296,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <!-- JUnit 5 requires Surefire version 2.22.0 or higher -->
-                <version>2.22.2</version>
+                <version>${maven-surefire.version}</version>
             </plugin>
 
             <plugin>

@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fulltext-api-deployment
+spec:
+  replicas: ${MIN_REPLICAS}
+  template:
+    metadata:
+      annotations:
+        fluentd/include: '${COLLECT_LOGS}'
+        fluentd/multiline: 'true'
+    spec:
+      containers:
+        - name: fulltext-api
+          imagePullPolicy: Always
+          env:
+            - name: CATALINA_OPTS
+              value: "-javaagent:/usr/local/elastic-apm-agent.jar
+                      -Delastic.apm.application_packages=${ELASTIC_APP_PACKAGES}
+                      -Delastic.apm.server_urls=${ELASTIC_APM_SERVERS}
+                      -Delastic.apm.service_name=${API_APP_NAME}
+                      -Delastic.apm.enabled=${COLLECT_APM}
+                      -Delastic.apm.environment=${K8S_NAMESPACE}
+                      -XX:+UseParallelGC -XX:MaxRAMPercentage=75"
+          resources:
+            requests:
+              memory: "${API_MEMORY_REQUEST}M"
+              cpu: "${API_CPU_REQUEST}m"
+            limits:
+              memory: "${API_MEMORY_LIMIT}M"
+              cpu: "${API_CPU_LIMIT}m"

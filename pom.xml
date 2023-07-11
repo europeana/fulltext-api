@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>eu.europeana</groupId>
         <artifactId>europeana-parent-pom</artifactId>
-        <version>2.2</version>
+        <version>2.4</version>
     </parent>
 
     <repositories>
@@ -23,11 +22,11 @@
     </repositories>
 
     <artifactId>fulltext</artifactId>
-    <version>0.9.1-SNAPSHOT</version>
+    <version>0.9.7-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>Europeana Newspapers Fulltext</name>
-    <description>Europeana Newspapers Fulltext API &amp; Loader (Spring Boot applications)</description>
+    <name>Fulltext API</name>
+    <description>Europeana Fulltext API (newspapers, transcriptions and subtitles)</description>
 
     <modules>
         <module>common</module>
@@ -35,6 +34,7 @@
         <module>loader</module>
         <module>migrations</module>
         <module>indexing</module>
+        <module>annosync</module>
     </modules>
 
     <properties>
@@ -43,32 +43,58 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <api-commons.version>0.3.16</api-commons.version>
-        <!-- upgraded to 2.5.9 as 2.6.x is not compatible with swagger (springfox-swagger-ui)-->
+        <!-- upgraded to 2.5.14 as 2.6.x is not compatible with swagger (springfox-swagger-ui)-->
         <!-- org.apache.tomcat.embed version 9.0.56 is included uptill 2.6.3 which is vulnerable. See : CVE-2022-23181  -->
-        <spring-boot.version>2.5.9</spring-boot.version>
-        <jackson.version>2.9.9</jackson.version>
+        <spring-boot.version>2.5.14</spring-boot.version>
+        <spring-batch.version>4.3.6</spring-batch.version>
+        <spring-security.version>5.7.8</spring-security.version>
+        <jackson.version>2.14.0</jackson.version>
         <io-informatics.version>0.1.1</io-informatics.version>
         <morphia.version>2.2.9</morphia.version>
         <mongo-driver.version>4.5.1</mongo-driver.version>
         <snappy.version>1.1.8.4</snappy.version>
         <commons-lang3.version>3.9</commons-lang3.version>
         <commons-io.version>2.4</commons-io.version>
-        <log4j2.version>2.17.1</log4j2.version>
         <!-- Note that upgrading to a newer version of Junit Jupiter may not work with older IntelliJ versions (2019.2.1)
              However for Maven verify goal a newer Jupiter version is no problem-->
         <junit-jupiter.version>5.6.0</junit-jupiter.version>
         <mockito.version>3.7.0</mockito.version>
         <unitils.version>3.4.6</unitils.version>
-        <swagger.version>3.0.0</swagger.version>
+        <springdoc.version>1.6.13</springdoc.version>
         <tomcat.version>9.0.58</tomcat.version>
         <mock-webserver.version>4.9.0</mock-webserver.version>
         <testcontainers.version>1.16.0</testcontainers.version>
         <eclipse-jetty.version>11.0.11</eclipse-jetty.version>
-        <spring-batch.version>4.3.6</spring-batch.version>
+        <build-helper-maven.version>3.0.0</build-helper-maven.version>
+        <maven-failsafe.version>3.0.0-M5</maven-failsafe.version>
+        <dependency-check-maven.version>7.3.0</dependency-check-maven.version>
+
+        <jettison.version>1.5.4</jettison.version>
+        <snakeyaml.version>2.0</snakeyaml.version>
+
     </properties>
 
     <dependencyManagement>
         <dependencies>
+
+            <!-- Override the spring-security-core and crypto to 5.7.5 which does not have any vulnerabilities like CVE-2022-22978 -->
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-crypto</artifactId>
+                <version>${spring-security.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-core</artifactId>
+                <version>${spring-security.version}</version>
+            </dependency>
+            <!-- Non vulnerable version of spring-security-web and config -->
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-web</artifactId>
+                <version>${spring-security.version}</version>
+            </dependency>
+
             <!-- Import dependency management start Spring Boot (because we don't use Spring-Boot as parent pom)-->
             <dependency>
                 <groupId>org.springframework.boot</groupId>
@@ -83,8 +109,7 @@
                 <artifactId>commons-web</artifactId>
                 <version>${api-commons.version}</version>
                 <exclusions>
-                    <!-- exclude Swagger dependency as it clashes with version in project
-                     TODO: remove Swagger from api-commons -->
+                    <!-- exclude Swagger dependency -->
                     <exclusion>
                         <groupId>io.springfox</groupId>
                         <artifactId>springfox-swagger2</artifactId>
@@ -122,7 +147,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>3.0.0-M5</version>
+                <version>${maven-failsafe.version}</version>
                 <executions>
                     <execution>
                         <goals>
@@ -138,7 +163,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.0.0</version>
+                <version>${build-helper-maven.version}</version>
                 <executions>
                     <execution>
                         <id>add-integration-test-source</id>
@@ -174,6 +199,16 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <!-- Tmp added to see compilation errors after upgrading dependencies, see
+            https://stackoverflow.com/questions/62583298/exception-in-thread-main-java-lang-assertionerror-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <forceJavacCompilerUse>true</forceJavacCompilerUse>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
@@ -183,14 +218,12 @@
             <build>
                 <plugins>
                     <plugin>
-                        <!-- This will be active when running the verify or install goal
-                             To skip (e.g. during debugging) use 'mvn clean package')-->
                         <groupId>org.owasp</groupId>
                         <artifactId>dependency-check-maven</artifactId>
-                        <version>6.5.0</version>
+                        <version>${dependency-check-maven.version}</version>
                         <configuration>
                             <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
-                            <failBuildOnCVSS>7</failBuildOnCVSS>
+                            <failBuildOnCVSS>8</failBuildOnCVSS>
                             <suppressionFiles>
                                 <suppressionFile>owasp-suppress.xml</suppressionFile>
                             </suppressionFiles>
@@ -202,16 +235,6 @@
                                 </goals>
                             </execution>
                         </executions>
-                    </plugin>
-
-                    <!-- Tmp added to see compilation errors after upgrading dependencies, see
-                    https://stackoverflow.com/questions/62583298/exception-in-thread-main-java-lang-assertionerror-->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-compiler-plugin</artifactId>
-                        <configuration>
-                            <forceJavacCompilerUse>true</forceJavacCompilerUse>
-                        </configuration>
                     </plugin>
                 </plugins>
             </build>

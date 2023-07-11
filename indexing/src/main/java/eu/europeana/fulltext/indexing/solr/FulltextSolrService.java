@@ -38,11 +38,14 @@ public class FulltextSolrService implements InitializingBean {
 
   private final int metadataSolrSyncPageSize;
 
+  private final int retryLimit;
+
   public FulltextSolrService(
       @Qualifier(FULLTEXT_SOLR_BEAN) SolrClient fulltextSolr, IndexingAppSettings settings) {
     this.fulltextSolr = fulltextSolr;
     this.metadataSolrSyncPageSize = settings.getMetadataSolrSyncPageSize();
     this.commitWithinMs = settings.getCommitWithinMs();
+    this.retryLimit = settings.getBatchRetryLimit();
   }
 
   /**
@@ -65,6 +68,7 @@ public class FulltextSolrService implements InitializingBean {
    * @throws IOException
    */
   public boolean existsByEuropeanaId(String europeanaId) throws SolrServiceException {
+    int attempts = 1;
     SolrQuery query =
             new SolrQuery(EUROPEANA_ID + ":\"" + europeanaId + "\"").addField(EUROPEANA_ID);
     try {
@@ -100,8 +104,6 @@ public class FulltextSolrService implements InitializingBean {
                 europeanaIds.size(),
                 response.getElapsedTime(), commitWithinMs);
       }
-    } catch (SolrServerException | IOException e) {
-      throw new SolrServiceException("Exception during Solr deletion", e);
     }
   }
 

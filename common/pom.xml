@@ -1,17 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <artifactId>fulltext</artifactId>
         <groupId>eu.europeana</groupId>
-        <version>0.9.1-SNAPSHOT</version>
+        <version>0.9.7-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
+    <properties>
+        <netty-resolver-dns-native-macos.version>4.1.86.Final
+        </netty-resolver-dns-native-macos.version>
+        <servlet-api.version>2.5</servlet-api.version>
+        <dom4j.version>2.1.3</dom4j.version>
+        <commons-codec.version>1.15</commons-codec.version>
+    </properties>
+
     <groupId>eu.europeana.fulltext</groupId>
     <artifactId>common</artifactId>
-    <version>0.9.1-SNAPSHOT</version>
+    <version>0.9.7-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Common functionality (Mongo and Entity definitions)</name>
@@ -30,6 +39,10 @@
                     <artifactId>logback-classic</artifactId>
                     <groupId>ch.qos.logback</groupId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.yaml</groupId>
+                    <artifactId>snakeyaml</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
@@ -37,32 +50,25 @@
             <groupId>eu.europeana.api.commons</groupId>
             <artifactId>commons-error</artifactId>
             <version>${api-commons.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.security</groupId>
+                    <artifactId>spring-security-crypto</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework.security</groupId>
+                    <artifactId>spring-security-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-log4j2</artifactId>
-        </dependency>
-        <!-- All log4j components specifically added to override spring-boot-starter-log4j2 -->
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>${log4j2.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <version>${log4j2.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
-            <version>${log4j2.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-jul</artifactId>
-            <version>${log4j2.version}</version>
         </dependency>
 
         <!-- Compression for mongo driver-->
@@ -88,9 +94,116 @@
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>1.15</version>
+            <version>${commons-codec.version}</version>
+        </dependency>
+
+        <!-- WebClient used for Annotation syncing -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.batch</groupId>
+            <artifactId>spring-batch-core</artifactId>
+            <version>${spring-batch.version}</version>
+            <exclusions>
+                <!--Excluding jettison due to CVE-2022-40149, CVE-2022-40150. latest version is 1.2 is vulnerable.
+                Duplicate, coming from commons-web -> annotation-id , version 1.3-->
+                <exclusion>
+                    <groupId>org.codehaus.jettison</groupId>
+                    <artifactId>jettison</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- Http client is used to fetch Image dimension in IIIFImageInfoSupport class-->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.14</version>
+        </dependency>
+
+        <!-- Saxon-HE for Page Xml parser-->
+        <dependency>
+            <groupId>net.sf.saxon</groupId>
+            <artifactId>Saxon-HE</artifactId>
+            <version>12.2</version>
+        </dependency>
+
+
+        <!-- Used for subtitle conversion-->
+        <dependency>
+            <groupId>com.dotsub.converter</groupId>
+            <artifactId>subtitle-converter</artifactId>
+            <version>1</version>
+            <exclusions>
+                <!--Excluding velocity due to CVE-2020-13936. latest version is 1.7 is vulnerable.
+                 For now while converting subtitle this dependency is not being used -->
+                <exclusion>
+                    <groupId>org.apache.velocity</groupId>
+                    <artifactId>velocity</artifactId>
+                </exclusion>
+                <!--Excluding velocity due to CVE-2018-1000632, CVE-2020-10683. latest version is 1.6.1 is vulnerable.
+                Added not vulnerable version below-->
+                <exclusion>
+                    <groupId>dom4j</groupId>
+                    <artifactId>dom4j</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- Adding dom4j with non-vulnerable version. Used in DfxpImportHandler for TTML conversion -->
+        <dependency>
+            <groupId>org.dom4j</groupId>
+            <artifactId>dom4j</artifactId>
+            <version>${dom4j.version}</version>
+        </dependency>
+
+        <!-- For AcceptUtils -->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <version>${servlet-api.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+        </dependency>
+
+        <!-- Fixes DNS resolution issues on Apple Silicon  -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-resolver-dns-native-macos</artifactId>
+            <version>${netty-resolver-dns-native-macos.version}</version>
+            <classifier>osx-aarch_64</classifier>
+        </dependency>
+
+        <!-- junit 5 -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit-jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.unitils</groupId>
+            <artifactId>unitils-core</artifactId>
+            <version>${unitils.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>
-
 </project>

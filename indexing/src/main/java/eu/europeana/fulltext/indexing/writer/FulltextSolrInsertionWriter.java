@@ -1,9 +1,11 @@
 package eu.europeana.fulltext.indexing.writer;
 
+import eu.europeana.fulltext.indexing.config.IndexingAppSettings;
 import eu.europeana.fulltext.indexing.model.IndexingAction;
 import eu.europeana.fulltext.indexing.model.IndexingWrapper;
 import eu.europeana.fulltext.indexing.solr.FulltextSolrService;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
@@ -19,8 +21,15 @@ public class FulltextSolrInsertionWriter implements ItemWriter<IndexingWrapper> 
   private final FulltextSolrService solrService;
   private int count = 0;
 
-  public FulltextSolrInsertionWriter(FulltextSolrService solrService) {
+  private final AtomicLong nextLoggingThreshold;
+  private final AtomicLong insertedCount = new AtomicLong();
+
+  private final long loggingInterval;
+
+  public FulltextSolrInsertionWriter(FulltextSolrService solrService, IndexingAppSettings settings) {
     this.solrService = solrService;
+    this.loggingInterval = settings.getProgressLoggingInterval();
+    this.nextLoggingThreshold = new AtomicLong(loggingInterval);
   }
 
   @Override
@@ -38,6 +47,7 @@ public class FulltextSolrInsertionWriter implements ItemWriter<IndexingWrapper> 
       solrService.writeToSolr(docsToWrite);
       count += docsToWrite.size();
       LOGGER.info("Documents written to Solr fulltext: {} ", count);
+
     }
   }
 }

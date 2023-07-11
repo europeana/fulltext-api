@@ -19,7 +19,7 @@ import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Date;
 
-import static eu.europeana.fulltext.api.config.FTDefinitions.*;
+import static eu.europeana.iiif.IIIFDefinitions.*;
 
 /**
  * Created by luthien on 26/09/2018.
@@ -201,7 +201,7 @@ public class TestUtils {
         if (includeContext) ann.setContext(new String[]{MEDIA_TYPE_IIIF_V2, MEDIA_TYPE_EDM_JSONLD});
         ann.setResource(resource);
         ann.setOn(on);
-        ann.setDcType(dcType);
+        ann.setTextGranularity(dcType);
         ann.setMotivation(MOTIV_2);
         return ann;
     }
@@ -227,7 +227,7 @@ public class TestUtils {
         if (includeContext) ann.setContext(new String[]{MEDIA_TYPE_IIIF_V3, MEDIA_TYPE_EDM_JSONLD});
         ann.setBody(body);
         ann.setTarget(target);
-        ann.setDcType(dcType);
+        ann.setTextGranularity(dcType);
         ann.setMotivation(MOTIV_3);
         return ann;
     }

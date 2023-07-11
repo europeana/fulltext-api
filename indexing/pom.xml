@@ -1,38 +1,63 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
     <artifactId>fulltext</artifactId>
     <groupId>eu.europeana</groupId>
-    <version>0.9.1-SNAPSHOT</version>
+    <version>0.9.7-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>indexing</artifactId>
   <properties>
     <spring.boot.mainclass>eu.europeana.fulltext.indexing.IndexingApplication</spring.boot.mainclass>
+    <solr-solrj.version>7.7.2</solr-solrj.version>
   </properties>
 
   <dependencies>
     <dependency>
       <groupId>eu.europeana.fulltext</groupId>
       <artifactId>common</artifactId>
-      <version>0.9.1-SNAPSHOT</version>
+      <version>0.9.7-SNAPSHOT</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.springframework.security</groupId>
+          <artifactId>spring-security-crypto</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.springframework.security</groupId>
+          <artifactId>spring-security-core</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
+    <!-- Suppressed CVE-2020-13957, CVE-2021-44548, CVE-2019-0193, CVE-2019-17558, CVE-2021-29943, CVE-2020-13941, CVE-2021-27905, CVE-2021-29262, CVE-2019-17558
+         For now we are not upgrading the solrj. Given that we have a patch and a plug-in in place, it may not be easy. Also, the upgrade should be
+         done in fulltext but also in the metadata collection (metis) at least. Also SolrJ should be backwards compatible theoretically.-->
     <dependency>
       <groupId>org.apache.solr</groupId>
       <artifactId>solr-solrj</artifactId>
-      <version>7.7.2</version>
+      <version>${solr-solrj.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.springframework.batch</groupId>
       <artifactId>spring-batch-core</artifactId>
       <version>${spring-batch.version}</version>
+      <exclusions>
+        <!--Excluding jettison due to CVE-2022-40149, CVE-2022-40150. latest version is 1.2 is vulnerable.-->
+        <exclusion>
+          <groupId>org.codehaus.jettison</groupId>
+          <artifactId>jettison</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
+    <!--non-vulnerable version -->
+    <dependency>
+      <groupId>org.codehaus.jettison</groupId>
+      <artifactId>jettison</artifactId>
+      <version>${jettison.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -43,13 +68,26 @@
           <groupId>org.springframework.boot</groupId>
           <artifactId>spring-boot-starter-logging</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.yaml</groupId>
+          <artifactId>snakeyaml</artifactId>
+        </exclusion>
       </exclusions>
+    </dependency>
+
+    <!-- Added non-vulnerable version -->
+    <dependency>
+      <groupId>org.yaml</groupId>
+      <artifactId>snakeyaml</artifactId>
+      <version>${snakeyaml.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-log4j2</artifactId>
     </dependency>
+
+
   </dependencies>
 
   <build>

@@ -1,0 +1,30 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: fulltext-annosync-job
+spec:
+  schedule: "*/2 * * * *"
+  suspend: False
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 60
+      template:
+        spec:
+          containers:
+            - name: fulltext-annosync
+              image: europeana/fulltext-annosync
+              imagePullPolicy: Always
+              env:
+                - name: SPRING_CONFIG_ADDITIONAL_LOCATION
+                  value: "file:/opt/app/config/annosync.user.properties"
+              volumeMounts:
+                - name: annosync-properties
+                  mountPath: "/opt/app/config/annosync.user.properties"
+                  readOnly: true
+                  subPath: annosync.user.properties
+          restartPolicy: OnFailure
+          volumes:
+            - name: annosync-properties
+              configMap:
+                name: fulltext-annosync-config

@@ -5,13 +5,13 @@
     <parent>
         <artifactId>fulltext</artifactId>
         <groupId>eu.europeana</groupId>
-        <version>0.9.1-SNAPSHOT</version>
+        <version>0.9.7-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <groupId>eu.europeana.fulltext</groupId>
     <artifactId>loader</artifactId>
-    <version>0.9.1-SNAPSHOT</version>
+    <version>0.9.7-SNAPSHOT</version>
     <packaging>war</packaging>
 
     <name>Europeana Newspapers Fulltext Loader</name>
@@ -28,7 +28,7 @@
         <dependency>
             <groupId>eu.europeana.fulltext</groupId>
             <artifactId>api</artifactId>
-            <version>0.9.1-SNAPSHOT</version>
+            <version>0.9.7-SNAPSHOT</version>
             <classifier>classes</classifier>
             <exclusions>
                 <exclusion>
@@ -112,7 +112,7 @@
         <dependency>
             <groupId>eu.europeana.fulltext</groupId>
             <artifactId>common</artifactId>
-            <version>0.9.1-SNAPSHOT</version>
+            <version>0.9.7-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
 
@@ -124,8 +124,21 @@
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-starter-logging</artifactId>
                 </exclusion>
+                <!--Non vulnerable version added below -->
+                <exclusion>
+                    <groupId>org.yaml</groupId>
+                    <artifactId>snakeyaml</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
+
+        <!-- Added non-vulnerable version -->
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>1.33</version>
+        </dependency>
+
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -177,27 +190,6 @@
                     <artifactId>jul-to-slf4j</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <!-- All log4j components specifically added to override spring-boot-starter-log4j2 version -->
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>${log4j2.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <version>${log4j2.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
-            <version>${log4j2.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-jul</artifactId>
-            <version>${log4j2.version}</version>
         </dependency>
 
         <dependency>

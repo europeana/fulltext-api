@@ -1,0 +1,6 @@
+# Send only unzipped war directory to Docker
+**
+!/api/target/fulltext/
+!/annosync/target/fulltext-annosync.jar
+!/indexing/target/fulltext-indexing.jar
+**/*.user.properties

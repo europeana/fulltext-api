@@ -45,7 +45,6 @@ public abstract class BaseIntegrationTest {
   @DynamicPropertySource
   static void setProperties(DynamicPropertyRegistry registry) {
     registry.add("auth.enabled", () -> "false");
-    registry.add("annosync.enabled", () -> "false");
     registry.add(
         // add compressor, so we can detect issues during integration tests
         "mongo.connectionUrl", () -> MONGO_CONTAINER.getConnectionUrl() + "?compressors=snappy");

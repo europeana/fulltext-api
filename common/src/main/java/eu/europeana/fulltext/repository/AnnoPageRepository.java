@@ -298,11 +298,11 @@ public class AnnoPageRepository {
                     eq(LOCAL_ID, localId),
                     eq(ANNOTATIONS_ID, annoId)));
 
+        if(!includeDeprecated){
+            filter.add(eq(DELETED, null));
+        }
 
-
-        return datastore.find(AnnoPage.class).filter(eq(DATASET_ID, datasetId),
-            eq(LOCAL_ID, localId),
-            eq(ANNOTATIONS_ID, annoId)).first();
+        return datastore.find(AnnoPage.class).filter(filter.toArray(new Filter[0])).first();
     }
 
     /**
@@ -432,6 +432,7 @@ public class AnnoPageRepository {
             .include(LANGUAGE) // EA-3123 lang, translation and deleted field is needed since multilingual behaviour and deprecation is added.
             .include(TRANSLATION)
             .include(DELETED)
+            .include(SOURCE) // EA-3216, expose source value to differentiate between annotation coming from Annotation API and one submitted via Fullext API
             .include(ANNOTATIONS,
                  filter(field(ANNOTATIONS),
                         ArrayExpressions.in(value("$$annotation.dcType"),
@@ -458,14 +459,19 @@ public class AnnoPageRepository {
      * @param includeDeprecated
      * @return
      */
-    public List<AnnoPage> getAnnoPages(String datasetId, String localId, String pageId, boolean includeDeprecated) {
+    public List<AnnoPage> getAnnoPages(String datasetId, String localId, String pageId, boolean includeDeprecated, boolean fetchAnnotations) {
+        FindOptions findOptions = new FindOptions()
+                        .projection()
+                        .include(DATASET_ID, LOCAL_ID, PAGE_ID, LANGUAGE, MODIFIED, DELETED, SOURCE); // EA-3216, include source field
+
+        if (fetchAnnotations) {
+            findOptions.projection().include(TRANSLATION, ANNOTATIONS); // EA-3457 add translation and annotations in the projections
+        }
+
         return datastore
                 .find(AnnoPage.class)
                 .filter(createFilterToGetAnnoPage(datasetId, localId, pageId, null, includeDeprecated).toArray(new Filter[0]))
-                .iterator(
-                        new FindOptions()
-                                .projection()
-                                .include(DATASET_ID, LOCAL_ID, PAGE_ID, LANGUAGE, MODIFIED, DELETED))
+                .iterator(findOptions)
                 .toList();
     }
 
