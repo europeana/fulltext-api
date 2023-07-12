@@ -55,7 +55,7 @@ public class IndexingAppSettings {
   private int skipLimit;
 
   @Value("${batch.retryLimit: 3}")
-  private int batchRetryLimit;
+  private int retryLimit;
 
   @Value("${batch.fulltext.commitWithinMs: 30000}")
   private int commitWithinMs;
@@ -122,12 +122,12 @@ public class IndexingAppSettings {
   public int getSkipLimit() {
     return skipLimit;  }
 
-  public int getCommitWithinMs() {
-    return commitWithinMs;
+  public int getRetryLimit() {
+    return retryLimit;
   }
 
-  public int getBatchRetryLimit() {
-    return batchRetryLimit;
+  public int getCommitWithinMs() {
+    return commitWithinMs;
   }
 
   public long getProgressLoggingInterval() {

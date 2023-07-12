@@ -7,6 +7,7 @@ import eu.europeana.fulltext.indexing.solr.FulltextSolrService;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.common.SolrInputDocument;
@@ -15,9 +16,11 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class FulltextSolrInsertionWriter implements ItemWriter<IndexingWrapper> {
-  private static final Logger log = LogManager.getLogger(FulltextSolrInsertionWriter.class);
+  private static final Logger LOGGER = LogManager.getLogger(FulltextSolrInsertionWriter.class);
 
   private final FulltextSolrService solrService;
+  private int count = 0;
+
   private final AtomicLong nextLoggingThreshold;
   private final AtomicLong insertedCount = new AtomicLong();
 
@@ -42,13 +45,9 @@ public class FulltextSolrInsertionWriter implements ItemWriter<IndexingWrapper> 
 
     if (!docsToWrite.isEmpty()) {
       solrService.writeToSolr(docsToWrite);
-      long count = insertedCount.addAndGet(docsToWrite.size());
+      count += docsToWrite.size();
+      LOGGER.info("Documents written to Solr fulltext: {} ", count);
 
-      // periodically log progress
-      if (count > nextLoggingThreshold.get()) {
-        log.info("Total documents written to Solr fulltext: {} ", insertedCount);
-        nextLoggingThreshold.set(nextLoggingThreshold.get() + loggingInterval);
-      }
     }
   }
 }

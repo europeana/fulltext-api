@@ -1,6 +1,7 @@
 package eu.europeana.fulltext.indexing;
 
 import static eu.europeana.fulltext.indexing.IndexingConstants.BATCH_THREAD_EXECUTOR;
+import static eu.europeana.fulltext.indexing.IndexingConstants.TIMESTAMP_UPDATE_FULLTEXT;
 
 import eu.europeana.fulltext.indexing.listener.FulltextIndexingListener;
 import eu.europeana.fulltext.indexing.listener.MetadataSyncProcessListener;
@@ -49,7 +50,7 @@ import org.springframework.stereotype.Component;
 @Component
 @EnableBatchProcessing
 public class IndexingBatchConfig {
-  private static final Logger logger = LogManager.getLogger(IndexingBatchConfig.class);
+  private static final Logger LOGGER = LogManager.getLogger(IndexingBatchConfig.class);
 
   private final JobLauncher jobLauncher;
   /** Job param used to ensure unique runs */
@@ -213,8 +214,8 @@ public class IndexingBatchConfig {
   }
 
   public void indexFulltext(ZonedDateTime modifiedTimestamp) throws Exception {
-    Optional<Instant> from = modifiedTimestamp != null ? Optional.of(modifiedTimestamp.toInstant()) : Optional.empty();
-    logger.info("Indexing Fulltext records modified after {}", from);
+    Optional<Instant> from = modifiedTimestamp != null ? Optional.of(modifiedTimestamp.toInstant()) : fulltextSolr.getMostRecentValue(TIMESTAMP_UPDATE_FULLTEXT);
+    LOGGER.info("Indexing Fulltext records modified after {}", from);
 
     jobLauncher.run(
         this.jobs.get("fulltextIndexJob").start(syncFulltextStep(from)).build(), jobParams);
