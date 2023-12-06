@@ -360,9 +360,9 @@ public class FTService extends CommonFTService {
      * @param annoId   String the Annotation idenfifier
      * @return AnnotationV3
      */
-    public AnnotationV3 generateAnnotationV3(AnnoPage annoPage, String annoId) {
+    public AnnotationV3 generateAnnotationV3(AnnoPage annoPage, String annoId, boolean profileText) {
         long start = System.currentTimeMillis();
-        AnnotationV3 result = EDM2IIIFMapping.getSingleAnnotationV3(annoPage, annoId);
+        AnnotationV3 result = EDM2IIIFMapping.getSingleAnnotationV3(annoPage, annoId, profileText);
         if (LOG.isDebugEnabled()) {
             LOG.debug(GENERATED_IN, System.currentTimeMillis() - start);
         }
@@ -378,9 +378,9 @@ public class FTService extends CommonFTService {
      * @param annoId   String the Annotation idenfifier
      * @return AnnotationV2
      */
-    public AnnotationV2 generateAnnotationV2(AnnoPage annoPage, String annoId) {
+    public AnnotationV2 generateAnnotationV2(AnnoPage annoPage, String annoId, boolean profileText) {
         long start = System.currentTimeMillis();
-        AnnotationV2 result = EDM2IIIFMapping.getSingleAnnotationV2(annoPage, annoId);
+        AnnotationV2 result = EDM2IIIFMapping.getSingleAnnotationV2(annoPage, annoId, profileText);
         if (LOG.isDebugEnabled()) {
             LOG.debug(GENERATED_IN, System.currentTimeMillis() - start);
         }
