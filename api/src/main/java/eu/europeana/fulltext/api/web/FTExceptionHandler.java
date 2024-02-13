@@ -2,10 +2,11 @@ package eu.europeana.fulltext.api.web;
 
 import eu.europeana.api.commons.error.EuropeanaApiErrorResponse;
 import eu.europeana.api.commons.error.EuropeanaApiErrorResponse.Builder;
-import eu.europeana.api.commons.error.EuropeanaGlobalExceptionHandler;
 import eu.europeana.api.commons.web.exception.ApplicationAuthenticationException;
 import java.util.Arrays;
 import javax.servlet.http.HttpServletRequest;
+
+import eu.europeana.api.commons.web.exception.EuropeanaGlobalExceptionHandler;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;

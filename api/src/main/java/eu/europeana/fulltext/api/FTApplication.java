@@ -4,9 +4,11 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
@@ -25,6 +27,7 @@ import java.util.Collections;
     // Disabled as we're using our own auth mechanism
     SecurityAutoConfiguration.class,
     ManagementWebSecurityAutoConfiguration.class,
+    WebMvcAutoConfiguration.class,
 })
 @PropertySource(value = "classpath:build.properties")
 public class FTApplication extends SpringBootServletInitializer {
@@ -57,18 +60,19 @@ public class FTApplication extends SpringBootServletInitializer {
      * Configure CORS.
      * This would normally be done via WebMvcConfigurer.addCorsMapping(), but that doesn't set the
      * correct Access-Control-Allow-Origin:* header in the current Spring Boot version (2.1.7)
+     * Now added in WebConfig class via  WebMvcConfigurer.addCorsMapping()
      */
-    @Bean
-    public CorsFilter corsFilter() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(false);
-        config.setAllowedHeaders(Collections.singletonList("*"));
-        config.setAllowedOrigins(Collections.singletonList("*"));
-        config.setAllowedMethods(Collections.singletonList("*"));
-        config.setMaxAge(1000L);
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-        return new CorsFilter(source);
-    }
+//    @Bean
+//    public CorsFilter corsFilter() {
+//        CorsConfiguration config = new CorsConfiguration();
+//        config.setAllowCredentials(false);
+//        config.setAllowedHeaders(Collections.singletonList("*"));
+//        config.setAllowedOrigins(Collections.singletonList("*"));
+//        config.setAllowedMethods(Collections.singletonList("*"));
+//        config.setMaxAge(1000L);
+//
+//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//        source.registerCorsConfiguration("/**", config);
+//        return new CorsFilter(source);
+//    }
 }

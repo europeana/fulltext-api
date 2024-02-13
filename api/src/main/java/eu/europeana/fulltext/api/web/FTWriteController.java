@@ -6,9 +6,9 @@ import eu.europeana.api.commons.web.controller.BaseRestController;
 import eu.europeana.api.commons.web.exception.ApplicationAuthenticationException;
 import eu.europeana.api.commons.web.http.HttpHeaders;
 import eu.europeana.api.commons.web.model.vocabulary.Operations;
-import eu.europeana.api.commons.web.service.AbstractRequestPathMethodService;
 import eu.europeana.fulltext.WebConstants;
 import eu.europeana.fulltext.api.config.FTSettings;
+import eu.europeana.fulltext.api.config.RequestPathServiceConfig;
 import eu.europeana.fulltext.api.model.AnnotationWrapper;
 import eu.europeana.fulltext.service.AnnotationApiRestService;
 import eu.europeana.fulltext.api.service.CacheUtils;
@@ -59,7 +59,8 @@ public class FTWriteController extends BaseRestController {
   private final Predicate<String> annotationIdPattern;
 
   private final AuthorizationService ftAuthorizationService;
-  private final AbstractRequestPathMethodService requestPathMethodService;
+
+  private final RequestPathServiceConfig requestPathMethodService;
 
   private static final Logger LOG = LogManager.getLogger(FTWriteController.class);
 
@@ -68,7 +69,7 @@ public class FTWriteController extends BaseRestController {
       AnnotationApiRestService annotationsApiRestService,
       FTService ftService,
       AuthorizationService ftAuthorizationService,
-      AbstractRequestPathMethodService requestPathMethodService) {
+      RequestPathServiceConfig requestPathMethodService) {
     this.appSettings = appSettings;
     this.annotationsApiRestService = annotationsApiRestService;
     this.ftService = ftService;
