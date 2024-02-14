@@ -45,6 +45,7 @@ public class AuthorizationConfig extends BaseAuthorizationService
     // TODO Auto-generated method stub
     return null;  }
 
+
   @Override
   protected Role getRoleByName(String name) {
     return Roles.getRoleByName(name);
