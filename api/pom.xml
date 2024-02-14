@@ -223,6 +223,15 @@
                     <groupId>org.springframework.security</groupId>
                     <artifactId>spring-security-config</artifactId>
                 </exclusion>
+                <!--Not needed here-->
+                <exclusion>
+                    <groupId>org.apache.jena</groupId>
+                    <artifactId>jena-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.jena</groupId>
+                    <artifactId>jena-arq</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 

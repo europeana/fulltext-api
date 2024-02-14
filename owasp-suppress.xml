@@ -72,27 +72,47 @@
         <cve>CVE-2022-1471</cve>
     </suppress>
 
-    <!-- Suppress temporarily the following 3 Spring Boot dependencies until we migrate to Spring Boot 2.7.x -->
+<!--    we are not deploying to Cloud foundry now so this can be suppressed-->
     <suppress>
         <notes><![CDATA[
-   file name: spring-core-5.3.20.jar
+   file name: spring-boot-starter-data-solr-2.4.13.jar
    ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-core@.*$</packageUrl>
-        <cve>CVE-2023-20861</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-   file name: spring-core-5.3.20.jar
-   ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-core@.*$</packageUrl>
-        <cve>CVE-2023-20863</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-   file name: spring-boot-actuator-autoconfigure-2.5.14.jar
-   ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org\.springframework\.boot/spring\-boot\-actuator\-autoconfigure@.*$</packageUrl>
-        <vulnerabilityName>CVE-2023-20873</vulnerabilityName>
+        <packageUrl regex="true">pkg:maven/org.springframework.boot/spring-boot-starter-data-solr@.*$</packageUrl>
+        <cve>CVE-2023-20873</cve>
     </suppress>
 
+    <suppress>
+        <notes><![CDATA[
+   file name: zookeeper-3.6.2.jar
+   ]]></notes>
+        <packageUrl regex="true">pkg:maven/org.apache.zookeeper/zookeeper@.*$</packageUrl>
+        <cve>CVE-2023-44981</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: zookeeper-jute-3.6.2.jar
+   ]]></notes>
+        <packageUrl regex="true">pkg:maven/org.apache.zookeeper/zookeeper-jute@.*$</packageUrl>
+        <cve>CVE-2023-44981</cve>
+    </suppress>
+
+
+<!--    it is transitive dependency coming from spring boot starter 2.7.18.
+         Using "**" as a pattern in Spring Security configuration for WebFlux creates
+         a mismatch in pattern matching between Spring Security and Spring WebFlux, and the potential for a security bypass.
+ -->
+    <suppress>
+        <notes><![CDATA[
+   file name: spring-security-core-5.7.8.jar
+   ]]></notes>
+        <packageUrl regex="true">pkg:maven/org.springframework.security/spring-security-core@.*$</packageUrl>
+        <cve>CVE-2023-34034</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: spring-security-crypto-5.7.8.jar
+   ]]></notes>
+        <packageUrl regex="true">pkg:maven/org.springframework.security/spring-security-crypto@.*$</packageUrl>
+        <cve>CVE-2023-34034</cve>
+    </suppress>
 </suppressions>
