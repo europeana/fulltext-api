@@ -1,6 +1,7 @@
 package eu.europeana.fulltext.api.config;
 
 import eu.europeana.api.commons.definitions.vocabulary.Role;
+import eu.europeana.api.commons.nosql.service.ApiWriteLockService;
 import eu.europeana.api.commons.oauth2.service.impl.EuropeanaClientDetailsService;
 import eu.europeana.api.commons.service.authorization.BaseAuthorizationService;
 import eu.europeana.fulltext.api.web.Roles;
@@ -37,6 +38,11 @@ public class AuthorizationConfig extends BaseAuthorizationService
   @Override
   protected String getApiName() {
     return appSettings.getAuthorizationApiName();
+  }
+
+  @Override
+  protected ApiWriteLockService getApiWriteLockService() {
+    return null;
   }
 
   @Override
