@@ -32,7 +32,6 @@ public class WebConfig implements WebMvcConfigurer {
     }
 
 
-    // TODO Access-Control-Allow-Origin not coming through
     /**
      * Setup CORS for all GET, HEAD and OPTIONS, requests.
      * Now we are using Spring boot version 2.7.x hence no need to add
