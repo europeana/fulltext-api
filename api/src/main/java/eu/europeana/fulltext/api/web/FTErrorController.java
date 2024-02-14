@@ -14,17 +14,17 @@ import java.util.Map;
 /**
  * Created by luthien on 2019-08-13.
  */
-//@RestController
+@RestController
 public class FTErrorController extends AbstractErrorController {
 
     public FTErrorController(ErrorAttributes errorAttributes) {
         super(errorAttributes);
     }
 
-//
-//    @RequestMapping(value = "/error", produces = {AcceptUtils.MEDIA_TYPE_JSON, AcceptUtils.MEDIA_TYPE_JSONLD})
-//    @ResponseBody
-//    public Map<String, Object> error(final HttpServletRequest request) {
-//        return this.getErrorAttributes(request, ErrorAttributeOptions.defaults());
-//    }
+
+    @RequestMapping(value = "/error", produces = {AcceptUtils.MEDIA_TYPE_JSON, AcceptUtils.MEDIA_TYPE_JSONLD})
+    @ResponseBody
+    public Map<String, Object> error(final HttpServletRequest request) {
+        return this.getErrorAttributes(request, ErrorAttributeOptions.defaults());
+    }
 }

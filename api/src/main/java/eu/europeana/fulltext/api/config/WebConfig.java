@@ -32,16 +32,18 @@ public class WebConfig implements WebMvcConfigurer {
     }
 
 
-    /** Setup CORS for all GET, HEAD and OPTIONS, requests.
+    // TODO Access-Control-Allow-Origin not coming through
+    /**
+     * Setup CORS for all GET, HEAD and OPTIONS, requests.
      * Now we are using Spring boot version 2.7.x hence no need to add
      * WebMvcAutoConfiguration and beans in FTApplication for Cors
-     * */
+     */
     @Override
     @SuppressWarnings({"external_findsecbugs:PERMISSIVE_CORS", "PERMISSIVE_CORS", "java:S5122"}) //the API is public
     public void addCorsMappings(CorsRegistry registry) {
         registry
                 .addMapping("/**")
-                .allowedOrigins("*") //NOSONAR api available for public use//
+                .allowedOrigins("*")
                 .allowedMethods("*")
                 .allowedHeaders("*")
                 .allowCredentials(false)
