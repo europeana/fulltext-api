@@ -67,6 +67,7 @@
         <tomcat.version>9.0.58</tomcat.version>
         <mock-webserver.version>4.9.0</mock-webserver.version>
         <testcontainers.version>1.16.0</testcontainers.version>
+        <apache.common.compress.version>1.25.0</apache.common.compress.version>
         <eclipse-jetty.version>11.0.11</eclipse-jetty.version>
         <build-helper-maven.version>3.0.0</build-helper-maven.version>
         <maven-failsafe.version>3.0.0-M5</maven-failsafe.version>

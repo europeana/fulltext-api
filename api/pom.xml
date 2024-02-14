@@ -276,6 +276,12 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <!-- jena core and arq are excluded due to vulnerability issues. Hence adding commons-compress non-vunberable version for IT-->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>${apache.common.compress.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>junit-jupiter</artifactId>
