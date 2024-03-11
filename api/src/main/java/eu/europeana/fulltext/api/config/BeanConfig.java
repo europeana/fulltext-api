@@ -4,6 +4,7 @@ import eu.europeana.api.commons.oauth2.service.impl.EuropeanaClientDetailsServic
 import eu.europeana.fulltext.CommonBeanConfig;
 import eu.europeana.fulltext.service.AnnotationApiRestService;
 import java.util.Optional;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

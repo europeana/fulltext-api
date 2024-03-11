@@ -223,6 +223,15 @@
                     <groupId>org.springframework.security</groupId>
                     <artifactId>spring-security-config</artifactId>
                 </exclusion>
+                <!--Not needed here-->
+                <exclusion>
+                    <groupId>org.apache.jena</groupId>
+                    <artifactId>jena-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.jena</groupId>
+                    <artifactId>jena-arq</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
@@ -266,6 +275,12 @@
                     <artifactId>commons-compress</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <!-- jena core and arq are excluded due to vulnerability issues. Hence adding commons-compress non-vunberable version for IT-->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>${apache.common.compress.version}</version>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>

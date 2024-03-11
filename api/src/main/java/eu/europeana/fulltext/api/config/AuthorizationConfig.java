@@ -42,8 +42,9 @@ public class AuthorizationConfig extends BaseAuthorizationService
 
   @Override
   protected ApiWriteLockService getApiWriteLockService() {
-    return null;
-  }
+    // TODO Auto-generated method stub
+    return null;  }
+
 
   @Override
   protected Role getRoleByName(String name) {
