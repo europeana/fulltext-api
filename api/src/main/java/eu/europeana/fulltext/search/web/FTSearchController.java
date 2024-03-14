@@ -124,7 +124,7 @@ public class FTSearchController {
         List<String> profiles = extractProfiles(profile);
 
         // start processing
-        String searchId = request.getRequestURI() + "?" + request.getQueryString();
+        String searchId = settings.getSearchBaseUrl() + request.getRequestURI() + "?" + request.getQueryString();
         SearchResult searchResult = searchService.searchIssue(searchId, new EuropeanaId(datasetId, localId), qry,
                 pageSize, annoTypes, requestVersion, profiles.contains(PROFILE_DEBUG));
 

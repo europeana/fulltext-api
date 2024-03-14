@@ -44,6 +44,9 @@ public class FTSettings implements InitializingBean {
     @Value("${resource.baseurl}")
     private String resourceBaseUrl;
 
+    @Value("${search.baseurl}")
+    private String searchBaseUrl;
+
     @Value("${search.textGranularity.default:Word}")
     private String searchTextGranularity;
     private List<AnnotationType> defaultSearchTextGranularity;
@@ -173,6 +176,10 @@ public class FTSettings implements InitializingBean {
 
     public String getResourceBaseUrl() {
         return resourceBaseUrl;
+    }
+
+    public String getSearchBaseUrl() {
+        return searchBaseUrl;
     }
 
     public List<AnnotationType> getDefaultSearchTextGranularity() {
