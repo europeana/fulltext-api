@@ -1,6 +1,7 @@
 package eu.europeana.fulltext.api.model.v3;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import eu.europeana.fulltext.AnnotationType;
@@ -16,6 +17,7 @@ import static eu.europeana.fulltext.api.config.FTDefinitions.V3_ANNOTATION_TYPE;
  * Created by luthien target 14/06/2018.
  */
 @JsonPropertyOrder({"context", "id", "type", "motivation", "textGranularity", "body", "target"})
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class AnnotationV3 extends JsonLdIdType implements Serializable, AnnotationWrapper {
 
     private static final long serialVersionUID = 8849251970656404497L;

@@ -1,5 +1,6 @@
 package eu.europeana.fulltext.search.model.response.v3;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import eu.europeana.fulltext.api.model.v3.AnnotationV3;
 import eu.europeana.fulltext.api.service.EDM2IIIFMapping;
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @JsonPropertyOrder({"id", "type", "debug", "items", "hits"})
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class SearchResultV3 implements Serializable, SearchResult {
 
     private static final long serialVersionUID = -5643549600050178321L;
