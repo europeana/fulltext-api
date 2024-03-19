@@ -72,7 +72,6 @@
         <build-helper-maven.version>3.0.0</build-helper-maven.version>
         <maven-failsafe.version>3.0.0-M5</maven-failsafe.version>
         <dependency-check-maven.version>7.3.0</dependency-check-maven.version>
-
         <jettison.version>1.5.4</jettison.version>
         <snakeyaml.version>2.0</snakeyaml.version>
 
