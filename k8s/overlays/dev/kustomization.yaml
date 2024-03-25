@@ -5,10 +5,14 @@ resources:
 #  - cronjob.yaml
 
 patches:
-  - path: deployment_patch.yaml
+  - target:
+      kind: deployment
+    path: deployment_patch.yaml
 
-commonLabels:
-  app: fulltext-api
+labels:
+  - includeSelectors: true
+    pairs:
+      app: fulltext-api
 
 # Uncomment to run annosync cronjob (also see cronjob.yaml)
 # Requires annosync.user.properties file in the same directory

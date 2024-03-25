@@ -6,12 +6,14 @@ resources:
   - cronjob.yaml
 
 patches:
-  - path: deployment_patch.yaml
+  - target:
+      kind: deployment
+    path: deployment_patch.yaml
 
 configMapGenerator:
-    - name: fulltext-annosync-config
-      files:
-        - annosync.user.properties
-    - name: fulltext-indexing-config
-      files:
-        - indexing.user.properties
+  - name: fulltext-annosync-config
+    files:
+      - annosync.user.properties
+  - name: fulltext-indexing-config
+    files:
+      - indexing.user.properties

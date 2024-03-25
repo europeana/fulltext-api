@@ -1,8 +1,10 @@
 resources:
   - deployment.yaml
 
-commonLabels:
-  app: fulltext-api
+labels:
+  - includeSelectors: true
+    pairs:
+      app: fulltext-api
 
 configMapGenerator:
   - name: fulltext-api-config
