@@ -5,8 +5,8 @@ resources:
   - hpa.yaml
   - cronjob.yaml
 
-patchesStrategicMerge:
-  - deployment_patch.yaml
+patches:
+  - path: deployment_patch.yaml
 
 configMapGenerator:
     - name: fulltext-annosync-config
