@@ -6,9 +6,7 @@ resources:
   - cronjob.yaml
 
 patches:
-  - target:
-      kind: deployment
-    path: deployment_patch.yaml
+  - path: deployment_patch.yaml
 
 configMapGenerator:
   - name: fulltext-annosync-config
