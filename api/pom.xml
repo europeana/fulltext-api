@@ -19,7 +19,7 @@
 
     <properties>
         <spring.boot.mainclass>eu.europeana.fulltext.api.FtApplication</spring.boot.mainclass>
-        <solr-solrj.version>8.11.1</solr-solrj.version>
+        <solr-solrj.version>8.11.3</solr-solrj.version>
         <javax-validation.version>2.0.1.Final</javax-validation.version>
         <apache-commons-text.version>1.10.0</apache-commons-text.version>
         <spring-boot-starter-data-solr.version>2.4.13</spring-boot-starter-data-solr.version>
@@ -223,6 +223,15 @@
                     <groupId>org.springframework.security</groupId>
                     <artifactId>spring-security-config</artifactId>
                 </exclusion>
+                <!--Not needed here-->
+                <exclusion>
+                    <groupId>org.apache.jena</groupId>
+                    <artifactId>jena-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.jena</groupId>
+                    <artifactId>jena-arq</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
@@ -266,6 +275,12 @@
                     <artifactId>commons-compress</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <!-- jena core and arq are excluded due to vulnerability issues. Hence adding commons-compress non-vunberable version for IT-->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>${apache.common.compress.version}</version>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>

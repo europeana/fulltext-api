@@ -42,10 +42,12 @@
         <maven.compiler.release>${java.version}</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <api-commons.version>0.3.16</api-commons.version>
+        <api-commons.version>0.3.23-SNAPSHOT</api-commons.version>
         <!-- upgraded to 2.5.14 as 2.6.x is not compatible with swagger (springfox-swagger-ui)-->
         <!-- org.apache.tomcat.embed version 9.0.56 is included uptill 2.6.3 which is vulnerable. See : CVE-2022-23181  -->
-        <spring-boot.version>2.5.14</spring-boot.version>
+<!--        <spring-boot.version>2.5.14</spring-boot.version>-->
+<!--        spring doc 1.7.0 is coampatible with 2.7.10 spring boot See - https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-ui/1.7.0-->
+        <spring-boot.version>2.7.18</spring-boot.version>
         <spring-batch.version>4.3.6</spring-batch.version>
         <spring-security.version>5.7.8</spring-security.version>
         <jackson.version>2.14.0</jackson.version>
@@ -60,15 +62,16 @@
         <junit-jupiter.version>5.6.0</junit-jupiter.version>
         <mockito.version>3.7.0</mockito.version>
         <unitils.version>3.4.6</unitils.version>
-        <springdoc.version>1.6.13</springdoc.version>
+<!--        <springdoc.version>1.6.13</springdoc.version>-->
+        <springdoc.version>1.7.0</springdoc.version>
         <tomcat.version>9.0.58</tomcat.version>
         <mock-webserver.version>4.9.0</mock-webserver.version>
         <testcontainers.version>1.16.0</testcontainers.version>
+        <apache.common.compress.version>1.25.0</apache.common.compress.version>
         <eclipse-jetty.version>11.0.11</eclipse-jetty.version>
         <build-helper-maven.version>3.0.0</build-helper-maven.version>
         <maven-failsafe.version>3.0.0-M5</maven-failsafe.version>
-        <dependency-check-maven.version>7.3.0</dependency-check-maven.version>
-
+        <dependency-check-maven.version>8.4.3</dependency-check-maven.version>
         <jettison.version>1.5.4</jettison.version>
         <snakeyaml.version>2.0</snakeyaml.version>
 

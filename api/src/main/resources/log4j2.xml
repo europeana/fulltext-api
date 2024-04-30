@@ -27,5 +27,10 @@
         <!--Suppress unhelpful Spring Batch warnings:
 See     https://stackoverflow.com/questions/23780587/spring-batch-reader-in-multi-threader-job -->
         <Logger name="org.springframework.batch.core.step" level="ERROR"/>
+
+        <!--Suppress Morphia warning for multiple collections being mapped - "Found more than one class mapped to collection"
+         There is nothing much we can do about this now. this gets logged in the latest version of morphia as well.
+         Code - dev.morphia.mapping.Mapper#getClassFromCollection() L#130  -->
+        <Logger name="dev.morphia.mapping.Mapper" level="ERROR"/>
     </Loggers>
 </Configuration>

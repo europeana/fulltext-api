@@ -2,10 +2,11 @@ package eu.europeana.fulltext.api.web;
 
 import eu.europeana.api.commons.error.EuropeanaApiErrorResponse;
 import eu.europeana.api.commons.error.EuropeanaApiErrorResponse.Builder;
-import eu.europeana.api.commons.error.EuropeanaGlobalExceptionHandler;
 import eu.europeana.api.commons.web.exception.ApplicationAuthenticationException;
 import java.util.Arrays;
 import javax.servlet.http.HttpServletRequest;
+
+import eu.europeana.api.commons.web.exception.EuropeanaGlobalExceptionHandler;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -15,11 +16,13 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 /**
  * Handles all uncaught exceptions thrown by the application.
  */
 @ControllerAdvice
+@EnableWebMvc
 public class FTExceptionHandler extends EuropeanaGlobalExceptionHandler {
 
   @ExceptionHandler(HttpMessageNotReadableException.class)

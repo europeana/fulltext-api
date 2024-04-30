@@ -308,8 +308,9 @@ public class FTRetrievalController {
         @PathVariable String localId,
         @PathVariable String annoID,
         @RequestParam(value = "format", required = false) String versionParam,
+        @RequestParam(value = "profile", required = false) String profileParam,
         HttpServletRequest request) throws EuropeanaApiException {
-        return annotation(datasetId, localId, annoID, versionParam, request, true);
+        return annotation(datasetId, localId, annoID, versionParam, profileParam, request, true);
     }
 
     /**
@@ -329,8 +330,9 @@ public class FTRetrievalController {
         @PathVariable String lcId,
         @PathVariable String annoID,
         @RequestParam(value = "format", required = false) String versionParam,
+        @RequestParam(value = "profile", required = false) String profileParam,
         HttpServletRequest request) throws EuropeanaApiException {
-        return annotation(dsId, lcId, annoID, versionParam, request, false);
+        return annotation(dsId, lcId, annoID, versionParam, profileParam, request, false);
     }
 
     private ResponseEntity<String> annotation(
@@ -338,6 +340,7 @@ public class FTRetrievalController {
         String localId,
         String annoID,
         String versionParam,
+        String profileParam,
         HttpServletRequest request,
         boolean isJson) throws EuropeanaApiException {
         LOG.debug("Retrieve Annotation: {}/{}/{}", datasetId, localId, annoID);
@@ -346,6 +349,8 @@ public class FTRetrievalController {
         if (StringUtils.isEmpty(requestVersion)) {
             throw new InvalidVersionException(ACCEPT_VERSION_INVALID);
         }
+
+        List<String> profiles = extractProfiles(profileParam);
 
         HttpHeaders headers;
         AnnotationWrapper annotation;
@@ -364,9 +369,9 @@ public class FTRetrievalController {
         AcceptUtils.addContentTypeToResponseHeader(headers, requestVersion, isJson);
 
         if ("3".equalsIgnoreCase(requestVersion)) {
-            annotation = fts.generateAnnotationV3(annoPage, annoID);
+            annotation = fts.generateAnnotationV3(annoPage, annoID, profiles.contains(PROFILE_TEXT));
         } else {
-            annotation = fts.generateAnnotationV2(annoPage, annoID);
+            annotation = fts.generateAnnotationV2(annoPage, annoID, profiles.contains(PROFILE_TEXT));
         }
 
         if (isJson) {

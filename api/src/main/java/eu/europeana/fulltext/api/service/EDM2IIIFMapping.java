@@ -117,10 +117,11 @@ public final class EDM2IIIFMapping {
         return ann;
     }
 
-    static AnnotationV2 getSingleAnnotationV2(AnnoPage annoPage, String annoId){
+    static AnnotationV2 getSingleAnnotationV2(AnnoPage annoPage, String annoId, boolean profileText){
         Optional<Annotation> maybe = annoPage.getAns().stream().filter(o -> o.getAnId().equals(annoId)).findFirst();
         // NOTE this shouldn't fail because in that case the annoPage would not have been found in the first place
-        return maybe.map(annotation1 -> getAnnotationV2(annoPage, annotation1, true,false)).orElse(null);
+        // Dereference resource only if annotation is top Level and profile text is requested
+        return maybe.map(annotation1 -> getAnnotationV2(annoPage, annotation1, true, (profileText && annotation1.isTopLevel()))).orElse(null);
     }
 
     /**
@@ -290,10 +291,11 @@ public final class EDM2IIIFMapping {
         return foundGranularities.toArray(new String[0]);
     }
 
-    static AnnotationV3 getSingleAnnotationV3(AnnoPage annoPage, String annoId){
+    static AnnotationV3 getSingleAnnotationV3(AnnoPage annoPage, String annoId, boolean profileText){
         Optional<Annotation> maybe = annoPage.getAns().stream().filter(o -> o.getAnId().equals(annoId)).findFirst();
         // NOTE this shouldn't fail because in that case the annoPage would not have been found in the first place
-        return maybe.map(annotation1 -> getAnnotationV3(annoPage, annotation1, true, false)).orElse(null);
+        // Derefrence resource only if annotation is top Level and profile text is requested
+        return maybe.map(annotation1 -> getAnnotationV3(annoPage, annotation1, true, (profileText && annotation1.isTopLevel()))).orElse(null);
     }
 
 

@@ -111,15 +111,15 @@ public class FTServiceTest {
     public void testGetAnnotationsV2() throws EuropeanaApiException {
         prepareAnnotationsV2();
         AnnotationV2 an = ftService.generateAnnotationV2(ftService.fetchAPAnnotation(
-                "ds1", "lc1", "an1"), "an1");
+                "ds1", "lc1", "an1"), "an1", false);
         //assertReflectionEquals(annv2_1, an);
 
         an = ftService.generateAnnotationV2(ftService.fetchAPAnnotation(
-                "ds1", "lc1", "an2"), "an2");
+                "ds1", "lc1", "an2"), "an2", false);
         //assertReflectionEquals(annv2_2, an);
 
         an = ftService.generateAnnotationV2(ftService.fetchAPAnnotation(
-                "ds1", "lc1", "an3"), "an3");
+                "ds1", "lc1", "an3"), "an3", false);
         //assertReflectionEquals(annv2_3, an);
     }
 
@@ -127,15 +127,15 @@ public class FTServiceTest {
     public void testGetAnnotationsV3() throws EuropeanaApiException {
         prepareAnnotationsV3();
         AnnotationV3 an = ftService.generateAnnotationV3(ftService.fetchAPAnnotation(
-                "ds1", "lc1", "an1"), "an1");
+                "ds1", "lc1", "an1"), "an1", false);
         //assertReflectionEquals(annv3_1, an);
 
         an = ftService.generateAnnotationV3(ftService.fetchAPAnnotation(
-                "ds1", "lc1", "an2"), "an2");
+                "ds1", "lc1", "an2"), "an2", false);
         //assertReflectionEquals(annv3_2, an);
 
         an = ftService.generateAnnotationV3(ftService.fetchAPAnnotation(
-                "ds1", "lc1", "an3"), "an3");
+                "ds1", "lc1", "an3"), "an3", false);
         //assertReflectionEquals(annv3_3, an);
     }
 
