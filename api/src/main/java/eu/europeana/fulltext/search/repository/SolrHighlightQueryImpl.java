@@ -4,6 +4,7 @@ import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.fulltext.search.config.SearchConfig;
 import eu.europeana.fulltext.search.model.query.EuropeanaId;
 import eu.europeana.fulltext.search.model.response.Debug;
+import eu.europeana.fulltext.util.RequestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -41,7 +42,6 @@ public class SolrHighlightQueryImpl implements SolrHighlightQuery {
 
     @Autowired
     private SolrTemplate solrTemplate;
-
     @Value("${spring.data.solr.core:}")
     private String solrCore;
     @Value("${spring.data.solr.hl.maxAnalyzedChars:}")
@@ -56,7 +56,6 @@ public class SolrHighlightQueryImpl implements SolrHighlightQuery {
         if (debug != null) {
             debug.setSolrQuery(q.toQueryString());
         }
-
         // do query
         QueryResponse response;
         try {
@@ -67,7 +66,6 @@ public class SolrHighlightQueryImpl implements SolrHighlightQuery {
         } catch (SolrServerException | IOException e) {
             throw new EuropeanaApiException("Error querying Solr", e);
         }
-
         // process results
         SolrDocumentList list = response.getResults();
         if (list.getNumFound() == 0) {
@@ -83,7 +81,6 @@ public class SolrHighlightQueryImpl implements SolrHighlightQuery {
         sq.setRows(1);  // we expect 1 issue to return anyway
         sq.setTimeAllowed(SearchConfig.QUERY_TIME_ALLOWED);
         sq.setFields(EUROPEANA_ID_FIELD); // just 1 field, so we limit the amount of data that is returned
-
         sq.setHighlight(true)
                 .setHighlightSnippets(maxSnippets)
                 .setHighlightFragsize(0) // we need to entire fragment because that includes the imageId
@@ -99,11 +96,12 @@ public class SolrHighlightQueryImpl implements SolrHighlightQuery {
         return sq;
     }
 
+
     @NotNull
     private static String filterAndUpdateQueryChars(String query) {
+        //EA- https://europeana.atlassian.net/browse/EA-3787
          if(StringUtils.isNotEmpty(query))
              query =query.replaceAll(REGEX_FOR_CHARS_TO_FILTER, "") ;
-         return ClientUtils.escapeQueryChars(query);
+         return  RequestUtils.escapeQueryChars(query);
     }
-
 }
