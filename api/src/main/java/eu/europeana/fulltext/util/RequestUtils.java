@@ -41,7 +41,7 @@ public class RequestUtils {
     public static String escapeQueryChars(String s) {
         StringBuilder stringBuilder = new StringBuilder();
         for (char c : s.toCharArray()) {
-            if (Character.isWhitespace(c) || Set.of('\\','+', '-', '!', '(', ')', ':',
+            if (Set.of('\\','+', '-', '!', '(', ')', ':',
                 '^', '[', ']', '{', '}', '~', '*', '?', '|', '&', ';', '/').contains(c)) {
                 stringBuilder.append('\\');
             }
