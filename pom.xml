@@ -66,7 +66,7 @@
         <springdoc.version>1.7.0</springdoc.version>
         <tomcat.version>9.0.58</tomcat.version>
         <mock-webserver.version>4.9.0</mock-webserver.version>
-        <testcontainers.version>1.16.0</testcontainers.version>
+        <testcontainers.version>1.19.8</testcontainers.version>
         <apache.common.compress.version>1.25.0</apache.common.compress.version>
         <eclipse-jetty.version>11.0.11</eclipse-jetty.version>
         <build-helper-maven.version>3.0.0</build-helper-maven.version>
@@ -225,6 +225,7 @@
                         <artifactId>dependency-check-maven</artifactId>
                         <version>${dependency-check-maven.version}</version>
                         <configuration>
+                            <knownExploitedUrl>http://artifactory.eanadev.org/artifactory/ext-release-local/gov/cisa/www/known_exploited_vulnerabilities-14-05-2024.json</knownExploitedUrl>
                             <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
                             <failBuildOnCVSS>8</failBuildOnCVSS>
                             <suppressionFiles>
