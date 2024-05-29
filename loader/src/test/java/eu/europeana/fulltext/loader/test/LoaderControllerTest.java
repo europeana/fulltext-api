@@ -42,6 +42,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
       SecurityAutoConfiguration.class,
       ManagementWebSecurityAutoConfiguration.class
     })
+@Deprecated
 public class LoaderControllerTest {
 
     private static final String ZIP_PROCESSED_OK = "Finished ok";

@@ -11,7 +11,9 @@ import static eu.europeana.fulltext.util.MorphiaUtils.MULTI_DELETE_OPTS;
 
 /**
  * Created by luthien on 31/05/2018.
+ * @deprecated since 2023
  */
+@Deprecated
 @Repository
 public class LoaderResourceRepository extends ResourceRepository {
 

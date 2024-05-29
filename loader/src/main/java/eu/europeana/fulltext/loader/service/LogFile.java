@@ -10,8 +10,10 @@ import java.time.format.DateTimeFormatter;
  * Utility class for writing results to a logfile each time we process a dataset
  * Note that anything that is sent to the OUT is also visible in the console
  * @author Patrick Ehlert
+ * @deprecated since 2023
  * Created on 22-08-2018
  */
+@Deprecated
 public class LogFile {
 
     public static final Logger OUT = LogManager.getLogger("logFile");

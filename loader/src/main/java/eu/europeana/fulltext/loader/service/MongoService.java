@@ -14,8 +14,10 @@ import java.util.List;
 
 /**
  * @author Lúthien
+ * @deprecated since 2023
  * Created on 27-02-2018
  */
+@Deprecated
 @Service
 public class MongoService {
 

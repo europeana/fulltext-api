@@ -15,8 +15,10 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * Rest controller that handles incoming requests to parse full text xml files and load them into a database
  * @author Lúthien
+ * @deprecated since 2023
  * Created on 27-02-2018
  */
+@Deprecated
 @RestController
 @RequestMapping("/fulltext")
 public class LoaderController {

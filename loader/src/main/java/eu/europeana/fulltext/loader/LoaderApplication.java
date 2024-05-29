@@ -10,8 +10,10 @@ import org.springframework.context.annotation.PropertySource;
  * Main application and configuration.
  *
  * @author Lúthien
+ * @deprecated since 2023
  * Created on 27-02-2018
  */
+@Deprecated
 @SpringBootApplication(scanBasePackages = {"eu.europeana.fulltext.loader", "eu.europeana.fulltext.repository"},
                        exclude = RepositoryRestMvcAutoConfiguration.class)
 

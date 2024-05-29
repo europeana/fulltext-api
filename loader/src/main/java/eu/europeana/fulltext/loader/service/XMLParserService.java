@@ -36,7 +36,9 @@ import java.util.Locale;
  * Note that during parsing warnings (non-fatal problems) are logged using LogFile.OUT which is prepared in advance to
  * collect parsing output. Fatal errors are thrown exceptions, but we can recover from some of these errors for example,
  * when parsing an individual annotation fails we simply skip that annotation.
+ * @deprecated since 2023
  */
+@Deprecated
 @Service
 public class XMLParserService {
 

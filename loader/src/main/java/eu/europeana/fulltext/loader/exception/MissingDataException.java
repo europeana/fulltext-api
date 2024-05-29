@@ -6,9 +6,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 /**
  * Exception that is thrown when required data is missing / not present
  * @author Patrick Ehlert
+ * @deprecated since 2023
  * <p>
  * Created on 23-08-2018
  */
+@Deprecated
 @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 public class MissingDataException extends LoaderException {
 
