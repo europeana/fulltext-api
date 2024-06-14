@@ -30,8 +30,5 @@ public class SerializationConfig {
                 .visibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY).build();
     }
 
-    @Bean
-    public com.fasterxml.jackson.databind.Module jsonldModule() {
-        return new JsonldModule();
-    }
+   // @Bean public com.fasterxml.jackson.databind.Module jsonldModule() {   return new JsonldModule(); }
 }
