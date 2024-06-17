@@ -61,7 +61,7 @@ in the [k8s](k8s) folder
 
 4. Deploy to Kubernetes infrastructure
 
-5. Follow the same steps for running a 'Sync' with Annoation API or generating a Solr index (cron deployments) using
+5. Follow the same steps for running a 'Sync' with Annotation API or generating a Solr index (cron deployments) using
 the project's [AnnoSync Dockerfile](annosync.Dockerfile) and [Indexing Dockerfile](indexing.Dockerfile). 
 
 
