@@ -50,12 +50,12 @@
         <spring-boot.version>2.7.18</spring-boot.version>
         <spring-batch.version>4.3.6</spring-batch.version>
         <spring-security.version>5.7.8</spring-security.version>
-        <jackson.version>2.14.0</jackson.version>
-        <io-informatics.version>0.1.1</io-informatics.version>
+<!--        <jackson.version>2.14.0</jackson.version>-->
+<!--        <io-informatics.version>0.1.1</io-informatics.version>-->
         <morphia.version>2.2.9</morphia.version>
         <mongo-driver.version>4.5.1</mongo-driver.version>
-        <snappy.version>1.1.8.4</snappy.version>
-        <commons-lang3.version>3.9</commons-lang3.version>
+        <snappy.version>1.1.10.5</snappy.version>
+        <commons-lang3.version>3.14.0</commons-lang3.version>
         <commons-io.version>2.4</commons-io.version>
         <!-- Note that upgrading to a newer version of Junit Jupiter may not work with older IntelliJ versions (2019.2.1)
              However for Maven verify goal a newer Jupiter version is no problem-->
