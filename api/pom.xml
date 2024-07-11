@@ -21,7 +21,7 @@
         <spring.boot.mainclass>eu.europeana.fulltext.api.FtApplication</spring.boot.mainclass>
         <solr-solrj.version>8.11.3</solr-solrj.version>
         <javax-validation.version>2.0.1.Final</javax-validation.version>
-        <apache-commons-text.version>1.10.0</apache-commons-text.version>
+        <apache-commons-text.version>1.12.0</apache-commons-text.version>
         <spring-boot-starter-data-solr.version>2.4.13</spring-boot-starter-data-solr.version>
         <maven-surefire.version>2.22.2</maven-surefire.version>
     </properties>
@@ -169,19 +169,6 @@
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-xml</artifactId>
             <!-- <version>${jackson.version}</version> For some reason specifying a new version will make SpringDoc fail -->
-        </dependency>
-
-        <!-- see https://github.com/io-informatics/jackson-jsonld -->
-        <dependency>
-            <groupId>com.io-informatics.oss</groupId>
-            <artifactId>jackson-jsonld</artifactId>
-            <version>${io-informatics.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>jcl-over-slf4j</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
@@ -332,7 +319,6 @@
                     <attachClasses>true</attachClasses>
                 </configuration>
             </plugin>
-
         </plugins>
     </build>
 </project>
