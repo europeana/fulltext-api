@@ -71,7 +71,7 @@
         <eclipse-jetty.version>11.0.11</eclipse-jetty.version>
         <build-helper-maven.version>3.0.0</build-helper-maven.version>
         <maven-failsafe.version>3.0.0-M5</maven-failsafe.version>
-        <dependency-check-maven.version>9.2.0</dependency-check-maven.version>
+        <dependency-check-maven.version>10.0.2</dependency-check-maven.version>
         <jettison.version>1.5.4</jettison.version>
         <snakeyaml.version>2.0</snakeyaml.version>
 
