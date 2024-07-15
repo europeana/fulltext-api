@@ -10,59 +10,6 @@
         <cve>CVE-2024-22243</cve>
         <cve>CVE-2016-1000027</cve>
     </suppress>
-    <suppress>
-        <notes><![CDATA[
-      file name: tomcat-embed-core-9.0.58.jar
-      ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org.apache.tomcat.embed/tomcat-embed-core@.*$</packageUrl>
-        <cve>CVE-2022-29885</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-      file name: tomcat-embed-websocket-9.0.58.jar
-      ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org.apache.tomcat.embed/tomcat-embed-websocket@.*$</packageUrl>
-        <cve>CVE-2022-29885</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-      file name: commons-rdf-jena-0.5.0.jar
-      ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org.apache.commons/commons-rdf-jena@.*$</packageUrl>
-        <cve>CVE-2021-39239</cve>
-        <cve>CVE-2022-28890</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-      file name: solr-solrj-7.7.2.jar
-      ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org.apache.solr/solr-solrj@.*$</packageUrl>
-        <cve>CVE-2020-13957</cve>
-        <cve>CVE-2021-44548</cve>
-        <cve>CVE-2019-0193</cve>
-        <cve>CVE-2019-1755</cve>
-        <cve>CVE-2021-29943</cve>
-        <cve>CVE-2020-13941</cve>
-        <cve>CVE-2021-27905</cve>
-        <cve>CVE-2021-29262</cve>
-        <cve>CVE-2019-17558</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-      file name: spring-security-oauth2-2.5.1.RELEASE.jar
-      ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org.springframework.security.oauth/spring-security-oauth2@.*$</packageUrl>
-        <cve>CVE-2022-22978</cve>
-    </suppress>
-
-    <!-- Bug doesn't relate to functionality we are using -->
-    <suppress>
-        <notes><![CDATA[
-   file name: spring-security-jwt-1.1.1.RELEASE.jar
-   ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring\-security\-jwt@.*$</packageUrl>
-        <cve>CVE-2021-22112</cve>
-    </suppress>
 
     <!-- present even in the latest version - 1.33  -->
     <suppress>
