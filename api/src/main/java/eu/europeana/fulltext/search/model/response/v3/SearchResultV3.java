@@ -22,6 +22,7 @@ public class SearchResultV3 implements Serializable, SearchResult {
 
     private static final String TYPE = "AnnotationPage";
 
+    private String[] context;
     private String id;
     private Debug debug;
     private List<AnnotationV3> items = new ArrayList<>();
@@ -36,7 +37,7 @@ public class SearchResultV3 implements Serializable, SearchResult {
 
     @Override
     public String[] getContext() {
-        return new String[0];
+        return this.context;
     }
 
     public String getId() {

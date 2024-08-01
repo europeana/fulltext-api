@@ -23,6 +23,7 @@ public class SearchResultV2 implements Serializable, SearchResult {
 
     private static final String TYPE = "sc:AnnotationList";
 
+    private String[] context;
     private final String id;
     private Debug debug;
     private final List<AnnotationV2> items = new ArrayList<>();
@@ -38,7 +39,7 @@ public class SearchResultV2 implements Serializable, SearchResult {
 
     @Override
     public String[] getContext() {
-        return new String[0];
+        return context;
     }
 
     @Override
@@ -85,6 +86,6 @@ public class SearchResultV2 implements Serializable, SearchResult {
 
     @Override
     public void setContext(String[] context) {
-
+      this.context=context;
     }
 }
