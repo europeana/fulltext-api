@@ -1,6 +1,7 @@
 package eu.europeana.fulltext.api.model.v2;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.io.Serializable;
 
@@ -41,6 +42,7 @@ public class AnnotationBodyV2 extends JsonLdId implements Serializable{
         this.language = language;
     }
 
+    @JsonProperty("@type")
     public String getType() { return this.type; }
 
     public void setType(String type) { this.type = type; }

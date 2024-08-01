@@ -30,12 +30,10 @@ import static eu.europeana.iiif.IIIFDefinitions.*;
 
 /**
  * This class contains the methods for mapping Annotation / AnnoPage Mongo bean objects to IIIF v2 / v3 fulltext
- * resource objects.
- *
+ * resource objects. *
  * NOTE while a given value for the 'motivation' field in the Annotation class will be stored as such in Mongo, it is
  * for now not displayed in the output. Instead, the values as specified in the EDM 2 IIIF mapping document are used;
  * they are for now hard-coded in this class for both the V2 and V3 version of the output JSON.
- *
  * Created by luthien on 18/06/2018.
  */
 @Component
@@ -87,7 +85,7 @@ public final class EDM2IIIFMapping {
         String       resourceIdUrl  = getResourceIdUrl(annoPage, annotation);
         AnnotationV2 ann            = new AnnotationV2(getAnnotationIdUrl(annoPage, annotation));
         if (includeContext){
-            ann.setContext(new String[]{MEDIA_TYPE_IIIF_V2, MEDIA_TYPE_EDM_JSONLD});
+            ann.setContext(new String[]{MEDIA_TYPE_IIIF_V2, TEXT_GRANULARITY_CONTEXT,MEDIA_TYPE_EDM_JSONLD});
         }
         ann.setMotivation(StringUtils.isNotBlank(annotation.getMotiv()) ? annotation.getMotiv() : V2_MOTIVATION);
         ann.setTextGranularity(dcTypeToTextGranularity(annotation.getDcType()));
@@ -206,7 +204,7 @@ public final class EDM2IIIFMapping {
         AnnotationV3 ann  = new AnnotationV3(getAnnotationIdUrl(annoPage, annotation));
         AnnotationBodyV3 anb;
         if (includeContext) {
-            ann.setContext(new String[]{MEDIA_TYPE_IIIF_V3, MEDIA_TYPE_EDM_JSONLD});
+            ann.setContext(new String[]{MEDIA_TYPE_IIIF_V3, TEXT_GRANULARITY_CONTEXT,MEDIA_TYPE_EDM_JSONLD});
         }
 
         ann.setMotivation(StringUtils.isNotBlank(annotation.getMotiv()) ? annotation.getMotiv() : V3_MOTIVATION);
@@ -378,8 +376,8 @@ public final class EDM2IIIFMapping {
     /**
      * Returns the Resource Id url
      *
-     * @param annoPage
-     * @return
+     * @param annoPage -
+     * @return url -
      */
   private static String getResourceIdBaseUrl(AnnoPage annoPage) {
     String url =
@@ -388,7 +386,7 @@ public final class EDM2IIIFMapping {
             + "/"
             + annoPage.getLcId()
             + "/";
-      /**
+      /*
        *  there are cases when we don't fetch the full annoPage OR Resource due to performance issues. Example - annopageInfo
        *  the pgId and lang is same for the annopage and resource. If resource is not available get the pgID and language from anooPage
        */

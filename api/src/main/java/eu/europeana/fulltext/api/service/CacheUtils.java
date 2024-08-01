@@ -33,7 +33,7 @@ public final class CacheUtils {
     private static final String  ANY             = "*";
     private static final String  ALLOWED         = "GET, HEAD";
     private static final String  ALLOWHEADERS    = "If-Match, If-None-Match, If-Modified-Since";
-    private static final String  EXPOSEHEADERS   = "Allow, ETag, Last-Modified, Link";
+    private static final String  EXPOSEHEADERS   = "Allow, ETag, Last-Modified, Vary";
     private static final String  CACHE_CONTROL   = "public, max-age=";
     private static final String  DEFAULT_MAX_AGE = "86400"; // 1 day
     private static final String  ACCEPT          = "Accept";
