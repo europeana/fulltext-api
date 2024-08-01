@@ -15,7 +15,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-@JsonPropertyOrder({"id", "type", "debug", "resources", "hits"})
+@JsonPropertyOrder({"context","id", "type", "debug", "resources", "hits"})
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class SearchResultV2 implements Serializable, SearchResult {
 
@@ -34,6 +34,11 @@ public class SearchResultV2 implements Serializable, SearchResult {
         if (debug) {
             this.debug = new Debug();
         }
+    }
+
+    @Override
+    public String[] getContext() {
+        return new String[0];
     }
 
     @Override
@@ -76,5 +81,10 @@ public class SearchResultV2 implements Serializable, SearchResult {
     @Override
     public List<Hit> getHits() {
         return hits;
+    }
+
+    @Override
+    public void setContext(String[] context) {
+
     }
 }
