@@ -1,5 +1,6 @@
 package eu.europeana.fulltext.api.service;
 
+import io.netty.handler.codec.http2.Http2Headers;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.DateUtils;
 import org.apache.logging.log4j.LogManager;
@@ -26,7 +27,7 @@ import java.util.Objects;
  */
 public final class CacheUtils {
 
-    private static final Logger  LOG             = LogManager.getLogger(CacheUtils.class);
+     private static final Logger  LOG             = LogManager.getLogger(CacheUtils.class);
     private static final String  IFNONEMATCH     = "If-None-Match";
     private static final String  IFMATCH         = "If-Match";
     private static final String  IFMODIFIEDSINCE = "If-Modified-Since";
@@ -154,9 +155,9 @@ public final class CacheUtils {
     public static HttpHeaders generateHeaders(HttpServletRequest request, String eTag, String modified, Integer maxAge) {
         HttpHeaders headers = new HttpHeaders();
         if (StringUtils.isNotBlank(request.getHeader("Origin"))){
-            headers.add("Access-Control-Allow-Methods", ALLOWED);
-            headers.add("Access-Control-Allow-Headers", ALLOWHEADERS);
-            headers.add("Access-Control-Expose-Headers", EXPOSEHEADERS);
+            headers.add(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, ALLOWED);
+            headers.add(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS, ALLOWHEADERS);
+            headers.add(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, EXPOSEHEADERS);
         }
         if (StringUtils.isNotBlank(eTag)) {
             headers.add("ETag", eTag);
@@ -272,5 +273,11 @@ public final class CacheUtils {
             return null;
         }
         return dateToZonedUTC(date);
+    }
+
+    public static void updateCorsExposeHeader(HttpServletRequest request, HttpHeaders headers) {
+        if (StringUtils.isNotBlank(request.getHeader(HttpHeaders.ORIGIN))){
+            headers.add(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS,HttpHeaders.VARY);
+        }
     }
 }
