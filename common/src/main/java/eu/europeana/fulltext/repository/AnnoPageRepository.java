@@ -100,9 +100,19 @@ public class AnnoPageRepository {
      * @param localId   ID of the parent of the Annopage object
      * @return AnnoPage
      */
-    public AnnoPage findPage(String datasetId, String localId) {
+    public AnnoPage findPage(String datasetId, String localId, boolean fectchFullDoc) {
+        FindOptions findOptions = new FindOptions().limit(1);
+        /**
+         * EA-3994 for performance we will fetch only few fields
+         */
+        if (!fectchFullDoc) {
+            findOptions
+                    .projection()
+                    .include(DATASET_ID, LOCAL_ID, PAGE_ID, MODIFIED);
+        }
         return datastore.find(AnnoPage.class)
-            .filter(eq(DATASET_ID, datasetId), eq(LOCAL_ID, localId)).first();
+                .filter(eq(DATASET_ID, datasetId), eq(LOCAL_ID, localId))
+                .iterator(findOptions).tryNext();
     }
 
     /**

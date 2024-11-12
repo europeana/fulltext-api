@@ -190,8 +190,8 @@ public class FTService extends CommonFTService {
 
     // = = [ collect summary information ]= = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
-    public AnnoPage getSingleAnnoPage(String datasetId, String localId) throws AnnoPageDoesNotExistException {
-        AnnoPage annoPage = annoPageRepository.findPage(datasetId, localId);
+    public AnnoPage getSingleAnnoPage(String datasetId, String localId, boolean fetchFullDoc) throws AnnoPageDoesNotExistException {
+        AnnoPage annoPage = annoPageRepository.findPage(datasetId, localId, fetchFullDoc);
         if (annoPage == null) {
             throw new AnnoPageDoesNotExistException(datasetId + "/" + localId);
         }
