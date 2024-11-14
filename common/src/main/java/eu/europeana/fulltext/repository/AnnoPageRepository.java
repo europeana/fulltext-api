@@ -1,6 +1,7 @@
 package eu.europeana.fulltext.repository;
 
 import static dev.morphia.aggregation.experimental.expressions.ArrayExpressions.filter;
+import static dev.morphia.aggregation.experimental.expressions.ArrayExpressions.reduce;
 import static dev.morphia.aggregation.experimental.expressions.Expressions.field;
 import static dev.morphia.aggregation.experimental.expressions.Expressions.value;
 import static dev.morphia.query.experimental.filters.Filters.eq;
@@ -19,8 +20,11 @@ import com.mongodb.client.result.UpdateResult;
 import dev.morphia.Datastore;
 import dev.morphia.aggregation.experimental.Aggregation;
 import dev.morphia.aggregation.experimental.expressions.ArrayExpressions;
+import dev.morphia.aggregation.experimental.expressions.Expressions;
+import dev.morphia.aggregation.experimental.expressions.SetExpressions;
 import dev.morphia.aggregation.experimental.stages.Projection;
 import dev.morphia.query.FindOptions;
+import dev.morphia.query.Sort;
 import dev.morphia.query.experimental.filters.Filter;
 import dev.morphia.query.internal.MorphiaCursor;
 import eu.europeana.fulltext.AnnotationType;
@@ -104,12 +108,15 @@ public class AnnoPageRepository {
         FindOptions findOptions = new FindOptions().limit(1);
         /**
          * EA-3994 for performance we will fetch only few fields
+         * and Fetch the most recent AnooPage for generating etag for caching
          */
         if (!fectchFullDoc) {
             findOptions
                     .projection()
                     .include(DATASET_ID, LOCAL_ID, PAGE_ID, MODIFIED);
         }
+        findOptions.sort(Sort.descending(MODIFIED));
+
         return datastore.find(AnnoPage.class)
                 .filter(eq(DATASET_ID, datasetId), eq(LOCAL_ID, localId))
                 .iterator(findOptions).tryNext();
@@ -484,6 +491,70 @@ public class AnnoPageRepository {
                 .iterator(findOptions)
                 .toList();
     }
+
+    /**
+     * fetches annopages with unique set of dcTypes that exists in all the annotations
+     * EA- 3994 : This is done improve the performance of the query. We do not want to load
+     *            all the annotations in memory to just process the unique dcType values.
+     * @param datasetId
+     * @param localId
+     * @param pageId
+     * @param includeDeprecated
+     * @return
+     */
+    public List<AnnoPage> getAnnoPagesWithAnnotationsDcType(String datasetId, String localId, String pageId, boolean includeDeprecated) {
+        Projection projection = Projection.project()
+                .include(DATASET_ID)
+                .include(LOCAL_ID)
+                .include(PAGE_ID)
+                .include(LANGUAGE)
+                .include(MODIFIED)
+                .include(DELETED)
+                .include(SOURCE) // EA-3216, include source field
+                .include(TRANSLATION); // EA-3457 add translation
+
+        // add projection to fetch unique set of dctypes available in all the annotations
+        projection.include(TEXT_GRANULARITY,
+                    reduce(
+                            Expressions.value(MONGO_ANNOTATIONS),
+                            Expressions.value(Arrays.asList()),
+                            SetExpressions.setUnion(
+                                    Expressions.value("$$value"),
+                                    Expressions.value(Arrays.asList("$$this.dcType")))));
+
+        Aggregation<AnnoPage> query = datastore.aggregate(AnnoPage.class)
+                .match(createFilterToGetAnnoPage(datasetId, localId, pageId, null, includeDeprecated).toArray(new Filter[0]))
+                .project(projection);
+        List<Document> ann1 = query.execute(Document.class).toList();
+
+
+        // ugly solution to map TEXT_GRANULARITY
+        List<AnnoPage> annopages = new ArrayList<>();
+        for(Document annoPageDoc : ann1) {
+            AnnoPage annoPage = new AnnoPage();
+            annoPage.setDsId(annoPageDoc.getString(DATASET_ID));
+            annoPage.setLcId(annoPageDoc.getString(LOCAL_ID));
+            annoPage.setPgId(annoPageDoc.getString(PAGE_ID));
+            annoPage.setLang(annoPageDoc.getString(LANGUAGE));
+            annoPage.setModified(annoPageDoc.getDate(MODIFIED));
+            // set optional fields
+            if (annoPageDoc.containsKey(DELETED)) {
+                annoPage.setDeleted(annoPageDoc.getDate(DELETED));
+            }
+            if (annoPageDoc.containsKey(SOURCE)) {
+                annoPage.setSource(annoPageDoc.getString(SOURCE));
+            }
+            if (annoPageDoc.containsKey(TRANSLATION)) {
+                annoPage.setTranslation(annoPageDoc.getBoolean(TRANSLATION));
+            }
+            annoPage.setTextGranularity(annoPageDoc.getList(TEXT_GRANULARITY, String.class));
+            annopages.add(annoPage);
+        }
+
+      //  List<AnnoPage> annopages =  query.execute(AnnoPage.class).toList();
+        return annopages;
+    }
+
 
     private UpdateOneModel<AnnoPage> createAnnoPageUpdate(
         Instant now, AnnoPage annoPage) throws DatabaseQueryException {
