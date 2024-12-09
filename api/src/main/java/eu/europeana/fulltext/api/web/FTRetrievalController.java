@@ -99,7 +99,9 @@ public class FTRetrievalController {
 
     private ResponseEntity<String> getAnnoPageInfo(String datasetId, String localId, HttpServletRequest request, boolean isJson)
         throws EuropeanaApiException {
-        AnnoPage annoPage = fts.getSingleAnnoPage(datasetId, localId);
+        // EA-3994 As we are just checking if annopage exists and use the modified to generate the etag
+        // No need to fetch the full anno page
+        AnnoPage annoPage = fts.getSingleAnnoPage(datasetId, localId, false);
         ZonedDateTime modified = CacheUtils.dateToZonedUTC(annoPage.getModified());
         String eTag = generateETag(datasetId + localId,
             modified,

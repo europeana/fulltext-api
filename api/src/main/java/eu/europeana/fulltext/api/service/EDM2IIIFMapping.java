@@ -237,7 +237,12 @@ public final class EDM2IIIFMapping {
     static String[] getTextGranularitiesForSummary(AnnoPage annoPage){
         AnnotationPageV3 annPage = new AnnotationPageV3(getAnnoPageIdUrl(annoPage));
         annPage.setItems(getAnnotationV3Array(annoPage, false));
-        return findTextGranularitiesV3(null, annPage);
+
+        List<String> foundGranularities = new ArrayList<>();
+        for(String foundGranularity : annoPage.getTextGranularity()) {
+            foundGranularities.add(AnnotationType.fromAbbreviationOrName(foundGranularity).getLowerCaseName());
+        }
+        return foundGranularities.toArray(new String[0]);
     }
 
     /**

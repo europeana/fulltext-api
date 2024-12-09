@@ -150,8 +150,21 @@
                     <groupId>dom4j</groupId>
                     <artifactId>dom4j</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>commons-io</groupId>
+                    <artifactId>commons-io</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
+
+        <!-- commons-io-2.4.jar is included in com.dotsub.converter and has vulnerability: CVE-2024-47554(8.699999809265137)
+             Hence overriding with stable version -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commons-io.version}</version>
+        </dependency>
+
 
         <!-- Adding dom4j with non-vulnerable version. Used in DfxpImportHandler for TTML conversion -->
         <dependency>

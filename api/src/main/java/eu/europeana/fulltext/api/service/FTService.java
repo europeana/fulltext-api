@@ -190,8 +190,8 @@ public class FTService extends CommonFTService {
 
     // = = [ collect summary information ]= = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
-    public AnnoPage getSingleAnnoPage(String datasetId, String localId) throws AnnoPageDoesNotExistException {
-        AnnoPage annoPage = annoPageRepository.findPage(datasetId, localId);
+    public AnnoPage getSingleAnnoPage(String datasetId, String localId, boolean fetchFullDoc) throws AnnoPageDoesNotExistException {
+        AnnoPage annoPage = annoPageRepository.findPage(datasetId, localId, fetchFullDoc);
         if (annoPage == null) {
             throw new AnnoPageDoesNotExistException(datasetId + "/" + localId);
         }
@@ -213,8 +213,9 @@ public class FTService extends CommonFTService {
         Instant start                         = Instant.now();
         SummaryManifest apInfoSummaryManifest = new SummaryManifest(datasetId, localId);
         // fetch annopages with dsId and lcId.
-        // fetch the document  with annotations and translation field instead of making queries later for text granularity and original language value
-        List<AnnoPage> annoPages = annoPageRepository.getAnnoPages(datasetId, localId, null, false, true);
+        // fetch the document  with unique dctypes list and translation field instead of making queries later for text granularity and original language value
+        List<AnnoPage> annoPages = annoPageRepository.getAnnoPagesWithAnnotationsDcType(datasetId, localId, null, false);
+
         Instant finish = Instant.now();
         LOG.debug("Time taken to fetch all the annoPages for {}/{} is - {}", datasetId, localId, Duration.between(start, finish).toMillis());
 

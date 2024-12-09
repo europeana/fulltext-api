@@ -1,5 +1,6 @@
 package eu.europeana.fulltext.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import dev.morphia.annotations.*;
 import org.bson.types.ObjectId;
 import org.springframework.lang.Nullable;
@@ -40,6 +41,29 @@ public class AnnoPage {
     @Reference
     private Resource res;
 
+    /**
+     * This field used during AnooPage info method. While fetching the annopages all the unique Dc types of
+     * all the annotations (ans) are fetched via a mongo query and are mapped explicitly to this field.
+     *
+     * See {@link eu.europeana.fulltext.repository.AnnoPageRepository#getAnnoPagesWithAnnotationsDcType(String, String, String, boolean)} 
+     *
+     * @Transient - This field doesn't exists in MongoDB and we must NOT save it in the DB as well.
+     * @JsonIgnore - The field should not be serialised in the responses as well.
+     *
+     */
+    @Transient
+    @JsonIgnore
+    private List<String> textGranularity;
+
+
+    @JsonIgnore
+    public List<String> getTextGranularity() {
+        return textGranularity;
+    }
+
+    public void setTextGranularity(List<String> textGranularity) {
+        this.textGranularity = textGranularity;
+    }
 
     /**
      * Empty constructor required for serialisation

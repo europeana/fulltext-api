@@ -110,7 +110,6 @@
             for http2 and jetty dependency. Add the dependency separately for
             http2-client, http2-common , http2-http-client-transport and jetty-io -->
         </dependency>
-
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-ui</artifactId>

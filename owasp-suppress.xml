@@ -64,4 +64,44 @@
         <packageUrl regex="true">pkg:maven/org.springframework.security/spring-security-crypto@.*$</packageUrl>
         <cve>CVE-2023-34034</cve>
     </suppress>
+
+ <!-- CVE-2024-38828 - Spring MVC controller methods with an @RequestBody byte[] method parameter are vulnerable to a DoS attack.
+      CVE-2024-38809 - Applications that parse ETags from "If-Match" or "If-None-Match" request headers are vulnerable to DoS attack.
+      CVE-2024-38816 - Applications serving static resources through the functional web frameworks WebMvc.fn or WebFlux.fn are vulnerable to path traversal attacks
+      suppressing it as not sure if we want to update spring boot right now. Even if we update it spring version 6 is also affected with these vulnerabilities-->
+    <suppress>
+        <notes><![CDATA[
+   file name: spring-web-5.3.31.jar
+   ]]></notes>
+        <packageUrl regex="true">pkg:maven/org.springframework/spring-web@.*$</packageUrl>
+        <cve>CVE-2024-38828</cve>
+        <cve>CVE-2024-38809</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: spring-webflux-5.3.31.jar
+   ]]></notes>
+        <packageUrl regex="true">pkg:maven/org.springframework/spring-webflux@.*$</packageUrl>
+        <cve>CVE-2024-38816</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: spring-webmvc-5.3.31.jar
+   ]]></notes>
+        <packageUrl regex="true">pkg:maven/org.springframework/spring-webmvc@.*$</packageUrl>
+        <cve>CVE-2024-38816</cve>
+    </suppress>
+  <!-- the latest version 1.8.0 also has the same vulnerabilities
+       swagger-ui-4.18.2.jar: swagger-ui-bundle.js: CVE-2024-45801(10.0), CVE-2024-47875(10.0)
+       swagger-ui-4.18.2.jar: swagger-ui-es-bundle.js: CVE-2024-45801(10.0), CVE-2024-47875(10.0) -->
+    <suppress>
+        <notes><![CDATA[
+   file name: swagger-ui-5.11.8.jar
+   ]]></notes>
+        <packageUrl regex="true">pkg:javascript/DOMPurify@.*$</packageUrl>
+        <cve>CVE-2024-45801</cve>
+        <cve>CVE-2024-47875</cve>
+        <cve>CVE-2024-45801</cve>
+        <cve>CVE-2024-47875</cve>
+    </suppress>
 </suppressions>
