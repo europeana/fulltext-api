@@ -11,7 +11,7 @@ import eu.europeana.fulltext.api.config.FTSettings;
 import eu.europeana.fulltext.api.config.RequestPathServiceConfig;
 import eu.europeana.fulltext.api.model.AnnotationWrapper;
 import eu.europeana.fulltext.service.AnnotationApiRestService;
-import eu.europeana.fulltext.api.service.CacheUtils;
+import eu.europeana.fulltext.api.caching.CachingUtils;
 import eu.europeana.fulltext.api.service.FTService;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.exception.*;
@@ -346,18 +346,14 @@ public class FTWriteController extends BaseRestController {
 
     AnnotationWrapper annotationWrapper = ftService.generateAnnoPageV2(annoPage, null, profiles.contains(PROFILE_TEXT));
 
-    ZonedDateTime modified = CacheUtils.dateToZonedUTC(annoPage.getModified());
+    ZonedDateTime modified = CachingUtils.dateToZonedUTC(annoPage.getModified());
     String requestVersion = REQUEST_VERSION_2;
 
     String eTag =
-        CacheUtils.generateETag(
-            annoPage.getDsId() + annoPage.getLcId() + annoPage.getPgId(),
-            modified,
-            requestVersion + appSettings.getAppVersion(),
-            true);
+        CachingUtils.generateETag(modified, requestVersion + appSettings.getAppVersion(), true);
 
     org.springframework.http.HttpHeaders headers =
-        CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
+        CachingUtils.generateHeaders(request, eTag, CachingUtils.zonedDateTimeToString(modified));
     addContentTypeToResponseHeader(headers, requestVersion, false);
     // overwrite Allow header populated in CacheUtils.generateHeaders
     headers.set(HttpHeaders.ALLOW, getMethodsForRequestPattern(request, requestPathMethodService));
