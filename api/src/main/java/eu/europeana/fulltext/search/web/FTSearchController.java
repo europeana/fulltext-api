@@ -3,7 +3,7 @@ package eu.europeana.fulltext.search.web;
 import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.api.config.FTSettings;
-import eu.europeana.fulltext.api.service.CacheUtils;
+import eu.europeana.fulltext.api.caching.CachingUtils;
 import eu.europeana.fulltext.api.service.ControllerUtils;
 import eu.europeana.fulltext.api.service.exception.InvalidVersionException;
 import eu.europeana.fulltext.search.config.SearchConfig;
@@ -131,7 +131,7 @@ public class FTSearchController {
 
         HttpHeaders headers = new HttpHeaders();
         AcceptUtils.addContentTypeToResponseHeader(headers, requestVersion, isJson);
-        CacheUtils.updateCorsExposeHeader(request, headers);
+        CachingUtils.updateCorsExposeHeader(request, headers);
         return new ResponseEntity(searchResult, headers, HttpStatus.OK);
     }
 
