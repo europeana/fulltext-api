@@ -105,7 +105,9 @@ public class FTRetrievalController {
         if (cachingHeadersPresent(request)) {
             ResponseEntity<String> cached = checkCached(request, modified, eTag);
             if (cached != null) {
-                LOG.info("Returning cached object for {}, {}", datasetId, localId);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Returning cached object for {}, {}", datasetId, localId);
+                }
                 return cached;
             }
         }
@@ -433,12 +435,7 @@ public class FTRetrievalController {
 
         resource = fts.fetchFTResource(datasetId, localId, pageId, lang);
         ZonedDateTime modified = januarificator();
-        String eTag = generateSimpleETag(datasetId
-            + localId
-            + pageId
-            + resource.getLanguage()
-            + resource.getValue()
-            + fts.getSettings().getAppVersion(), true);
+        String eTag = generateETag(modified, fts.getSettings().getAppVersion(), true);
 
         if (cachingHeadersPresent(request)) {
             ResponseEntity<String> cached = checkCached(request, modified, eTag);

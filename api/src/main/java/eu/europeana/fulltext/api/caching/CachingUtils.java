@@ -72,21 +72,6 @@ public class CachingUtils implements CachingHeaders {
         return eTag;
     }
 
-    /**
-     * Generates an eTag surrounded with double quotes - alternate version for the resource
-     *
-     * @param data     concatenated: datasetID + localID + resID + language (2-letter code) of the text resource
-     *                 plus version of this API as defined in the pom.xml
-     * @param weakETag if True, then the eTag will start with W/
-     * @return eTag     generated eTag (String)
-     */
-    public static String generateSimpleETag(String data, boolean weakETag) {
-        String eTag = "\"" + getSHA256Hash(data) + "\"";
-        if (weakETag) {
-            return "W/" + eTag;
-        }
-        return eTag;
-    }
 
     /**
      * Formats the given date according to the RFC 1123 pattern (e.g. Thu, 4 Oct 2018 10:34:20 GMT)
