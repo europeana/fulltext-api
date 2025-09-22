@@ -8,6 +8,7 @@ spec:
   concurrencyPolicy: Forbid
   jobTemplate:
     spec:
+      backoffLimit: 1
       ttlSecondsAfterFinished: ${CRON_TTL_AFTER_FINISHED}
       template:
         metadata:
@@ -61,6 +62,7 @@ spec:
   concurrencyPolicy: Forbid
   jobTemplate:
     spec:
+      backoffLimit: 1
       ttlSecondsAfterFinished: ${CRON_TTL_AFTER_FINISHED}
       template:
         metadata:
@@ -119,6 +121,7 @@ spec:
   concurrencyPolicy: Forbid
   jobTemplate:
     spec:
+      backoffLimit: 1
       ttlSecondsAfterFinished: ${CRON_TTL_AFTER_FINISHED}
       template:
         metadata:

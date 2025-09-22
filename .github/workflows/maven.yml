@@ -23,7 +23,7 @@ jobs:
         repositories: '[{ "id": "europeana-libs-release", "url": "https://artifactory.eanadev.org/artifactory/libs-release"}, { "id": "europeana-libs-snapshot", "url": "https://artifactory.eanadev.org/artifactory/libs-snapshot", "snapshots": { "enabled": "true" }}]'
         plugin_repositories: '[{ "id": "europeana-plugins-release", "url": "https://artifactory.eanadev.org/artifactory/plugins-release" }, { "id": "europeana-plugins-snapshot", "url": "https://artifactory.eanadev.org/artifactory/plugins-snapshot", "snapshots": { "enabled": "true" }}]'  
     - name: Cache Maven packages
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: ~/.m2
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}

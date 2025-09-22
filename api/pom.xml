@@ -24,6 +24,7 @@
         <apache-commons-text.version>1.12.0</apache-commons-text.version>
         <spring-boot-starter-data-solr.version>2.4.13</spring-boot-starter-data-solr.version>
         <maven-surefire.version>2.22.2</maven-surefire.version>
+        <maven.resource.version>3.1.0</maven.resource.version>
     </properties>
 
     <dependencies>
@@ -298,6 +299,16 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <!-- JUnit 5 requires Surefire version 2.22.0 or higher -->
                 <version>${maven-surefire.version}</version>
+            </plugin>
+
+            <!-- For version above Spring-boot 2.4.x - counter to error
+             Failed to execute goal org.apache.maven.plugins:maven-resources-plugin:3.2.0:resources (default-resources)
+             on project application Input length = 1
+             See : https://stackoverflow.com/questions/65910112/maven-clean-install-failed-to-execute-goal-org-apache-maven-pluginsmaven-resou-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>${maven.resource.version}</version>
             </plugin>
 
             <plugin>
