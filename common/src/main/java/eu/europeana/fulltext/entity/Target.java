@@ -4,8 +4,9 @@ import dev.morphia.annotations.Embedded;
 
 /**
  * Created by luthien on 26/06/2018.
+ * setting useDiscriminator to false will not save the classname field in the DB
  */
-@Embedded
+@Embedded(useDiscriminator = false)
 public class Target {
 
     private Integer x;
