@@ -4,7 +4,8 @@ server.port: 8084
 spring:
   application:
     name: Fulltext API
-
+  mvc:
+    throw-exception-if-no-handler-found : true
 server:
   error:
     include-message: always

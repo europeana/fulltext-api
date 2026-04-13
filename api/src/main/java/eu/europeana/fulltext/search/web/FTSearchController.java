@@ -3,6 +3,7 @@ package eu.europeana.fulltext.search.web;
 import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.api.config.FTSettings;
+import eu.europeana.fulltext.api.caching.CachingUtils;
 import eu.europeana.fulltext.api.service.ControllerUtils;
 import eu.europeana.fulltext.api.service.exception.InvalidVersionException;
 import eu.europeana.fulltext.search.config.SearchConfig;
@@ -27,6 +28,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
+import static eu.europeana.fulltext.util.RequestUtils.*;
 import static eu.europeana.iiif.AcceptUtils.*;
 
 /**
@@ -62,7 +64,7 @@ public class FTSearchController {
      * @param q               alternative search query (will override query if specified both
      * @param pageSize        maximum number of hits
      * @param textGranularity one-letter abbreviation or name of an Annotation type
-     * @param debug           if specified then include debug information in the response
+     * @param profile           if profile debug is requested then include debug information in the response
      * @throws EuropeanaApiException when there is an error processing the request
      */
     @GetMapping(value = "/{datasetId}/{localId}/search", headers = ACCEPT_JSON)
@@ -72,9 +74,9 @@ public class FTSearchController {
                                       @RequestParam(required = false, defaultValue = "12") int pageSize,
                                       @RequestParam(required = false) String textGranularity,
                                       @RequestParam(value = "format", required = false) String versionParam,
-                                      @RequestParam(required = false) String debug,
+                                      @RequestParam(value = "profile", required = false) String profile,
                                       HttpServletRequest request) throws EuropeanaApiException {
-        return searchIssue(datasetId, localId, query, q, pageSize, textGranularity, versionParam, debug, request, true);
+        return searchIssue(datasetId, localId, query, q, pageSize, textGranularity, versionParam, profile, request, true);
     }
 
     /**
@@ -86,7 +88,7 @@ public class FTSearchController {
      * @param q               alternative search query (will override query if specified both
      * @param pageSize        maximum number of hits
      * @param textGranularity one-letter abbreviation or name of an Annotation type
-     * @param debug           if specified then include debug information in the response
+     * @param profile           if profile debug is requested then include debug information in the response
      * @throws EuropeanaApiException when there is an error processing the request
      */
     @GetMapping(value = "/{dsId}/{lcId}/search", headers = ACCEPT_JSONLD)
@@ -96,13 +98,13 @@ public class FTSearchController {
                                             @RequestParam(required = false, defaultValue = "12") int pageSize,
                                             @RequestParam(required = false) String textGranularity,
                                             @RequestParam(value = "format", required = false) String versionParam,
-                                            @RequestParam(required = false) String debug,
+                                            @RequestParam(value = "profile", required = false) String profile,
                                             HttpServletRequest request) throws EuropeanaApiException {
-        return searchIssue(dsId, lcId, query, q, pageSize, textGranularity, versionParam, debug, request, false);
+        return searchIssue(dsId, lcId, query, q, pageSize, textGranularity, versionParam, profile, request, false);
     }
 
     private ResponseEntity searchIssue(String datasetId, String localId, String query, String q, int pageSize, String textGranularity,
-                                       String versionParam, String debug, HttpServletRequest request, boolean isJson) throws EuropeanaApiException {
+                                       String versionParam, String profile, HttpServletRequest request, boolean isJson) throws EuropeanaApiException {
         // validate the format
         if (!settings.isSolrEnabled()){
             throw new SearchDisabledException();
@@ -120,15 +122,20 @@ public class FTSearchController {
         }
         List<AnnotationType> annoTypes = validateTextGranularity(textGranularity);
 
+        List<String> profiles = extractProfiles(profile);
+
         // start processing
-        String searchId = request.getRequestURI() + "?" + request.getQueryString();
+        String searchId = settings.getSearchBaseUrl() + request.getRequestURI() + "?" + request.getQueryString();
         SearchResult searchResult = searchService.searchIssue(searchId, new EuropeanaId(datasetId, localId), qry,
-                pageSize, annoTypes, requestVersion, (debug != null));
+                pageSize, annoTypes, requestVersion, profiles.contains(PROFILE_DEBUG));
 
         HttpHeaders headers = new HttpHeaders();
         AcceptUtils.addContentTypeToResponseHeader(headers, requestVersion, isJson);
+        CachingUtils.updateCorsExposeHeader(request, headers);
         return new ResponseEntity(searchResult, headers, HttpStatus.OK);
     }
+
+
 
     private String validateQuery(String query, String q) throws EuropeanaApiException {
         if (StringUtils.isEmpty(query) && StringUtils.isEmpty(q)) {

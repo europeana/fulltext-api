@@ -6,9 +6,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 /**
  * Exception that's thrown when there is a problem reading an archive (zip file)
  * @author Patrick Ehlert
+ * @deprecated since 2023
  * <p>
  * Created on 23-08-2018
  */
+@Deprecated
 @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 public class ArchiveReadException extends LoaderException {
 

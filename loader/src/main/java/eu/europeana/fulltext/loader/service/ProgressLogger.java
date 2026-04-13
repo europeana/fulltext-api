@@ -8,8 +8,10 @@ import org.joda.time.Period;
 /**
  * Utility class to log progress of long processes
  * @author Patrick Ehlert
+ * @deprecated since 2023
  * Created on 30-03-2018
  */
+@Deprecated
 public class ProgressLogger {
 
     private static final Logger LOG = LogManager.getLogger(ProgressLogger.class);

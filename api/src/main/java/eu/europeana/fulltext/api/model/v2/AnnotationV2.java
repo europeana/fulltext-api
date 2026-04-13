@@ -1,5 +1,6 @@
 package eu.europeana.fulltext.api.model.v2;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -14,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 //@JsonldType(value = "oa:Annotation") // commenting this out works for property ordering #EA-1310
 @JsonPropertyOrder({"context", "id", "type", "motivation", "textGranularity", "resource", "on"})
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class AnnotationV2 extends JsonLdId implements Serializable, AnnotationWrapper {
 
     private static final long serialVersionUID = 7120324589144279826L;

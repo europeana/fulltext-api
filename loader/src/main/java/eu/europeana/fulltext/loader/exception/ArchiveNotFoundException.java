@@ -6,9 +6,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 /**
  * Exception that's thrown when an archive file was not found
  * @author Patrick Ehlert
+ * @deprecated since 2023
  * <p>
  * Created on 12-01-2019
  */
+@Deprecated
 @ResponseStatus(HttpStatus.NOT_FOUND)
 public class ArchiveNotFoundException extends LoaderException {
 

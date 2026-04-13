@@ -26,7 +26,9 @@ import java.util.zip.ZipFile;
 
 /**
  * Created by luthien on 26/07/2018.
+ * @deprecated since 2023
  */
+@Deprecated
 @Service
 public class LoadArchiveService extends SimpleFileVisitor<Path> {
 

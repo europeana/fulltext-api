@@ -9,9 +9,12 @@ import org.springframework.batch.item.data.AbstractPaginatedDataItemReader;
 import eu.europeana.fulltext.service.AnnotationApiRestService;
 import eu.europeana.fulltext.subtitles.external.AnnotationItem;
 
+/**
+ * Reads pages of items from Annotation API based on "from" and "to" date
+ */
 public class AnnotationItemReader extends AbstractPaginatedDataItemReader<AnnotationItem> {
 
-  private static final Logger logger = LogManager.getLogger(AnnotationItemReader.class);
+  private static final Logger LOG = LogManager.getLogger(AnnotationItemReader.class);
 
   private final AnnotationApiRestService annotationsRestService;
   private final Instant from;
@@ -34,16 +37,16 @@ public class AnnotationItemReader extends AbstractPaginatedDataItemReader<Annota
 
   @Override
   protected Iterator<AnnotationItem> doPageRead() {
-    // page is incremented in parent class every time this method is invoked
-    List<AnnotationItem> searchResponse =
-        annotationsRestService.getAnnotations(page, pageSize, from, to);
+    // Page is incremented in parent class every time this method is invoked. By default it starts with 0 but in
+    // Annotation API it starts with 1 so we add 1
+    List<AnnotationItem> searchResponse = annotationsRestService.getAnnotations(page + 1, pageSize, from, to);
 
     if (searchResponse == null || searchResponse.isEmpty()) {
-      logger.info("No results found in page:{} , pageSize:{}, from: {}, to: {} ", page, pageSize, from, to);
+      LOG.info("No results found in page:{} , pageSize:{}, from: {}, to: {} ", page + 1, pageSize, from, to);
       return null;
     }
     
-    logger.info("Fetched Annotations ids - {} ", searchResponse.size());
+    LOG.info("Fetched Annotations ids - {} ", searchResponse.size());
 
     return searchResponse.iterator();
   }

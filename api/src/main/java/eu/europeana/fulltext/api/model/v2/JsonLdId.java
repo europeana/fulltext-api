@@ -1,7 +1,7 @@
 package eu.europeana.fulltext.api.model.v2;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import ioinformarics.oss.jackson.module.jsonld.annotation.JsonldId;
 
 import java.io.Serializable;
 
@@ -13,7 +13,7 @@ public class JsonLdId implements Serializable {
 
     private static final long serialVersionUID = 8639654567514332458L;
 
-    @JsonldId
+    @JsonProperty("@id")
     private String id;
 
     JsonLdId() {

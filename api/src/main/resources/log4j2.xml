@@ -15,6 +15,10 @@
             <AppenderRef ref="Console"/>
         </Root>
         <logger name="eu.europeana.fulltext.api" level="INFO"/>
+
+        <!-- Suppress Mongo connection openend/closed INFO logs -->
+        <Logger name="org.mongodb.driver.connection" level="WARN"/>
+        <logger name="com.mongodb.diagnostics" level="WARN"/>
 <!--        <logger name="dev.morphia" level="TRACE"/>-->
 <!--        <logger name="org.mongodb.driver" level="DEBUG"/>-->
         <logger name="eu.europeana.fulltext.search" level="INFO"/>

@@ -5,13 +5,13 @@ resources:
   - hpa.yaml
   - cronjob.yaml
 
-patchesStrategicMerge:
-  - deployment_patch.yaml
+patches:
+  - path: deployment_patch.yaml
 
 configMapGenerator:
-    - name: fulltext-annosync-config
-      files:
-        - annosync.user.properties
-    - name: fulltext-indexing-config
-      files:
-        - indexing.user.properties
+  - name: fulltext-annosync-config
+    files:
+      - annosync.user.properties
+  - name: fulltext-indexing-config
+    files:
+      - indexing.user.properties

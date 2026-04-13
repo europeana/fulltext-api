@@ -3,64 +3,12 @@
     <!-- Deserialization of untrusted data is unsafe, but we only do that from trusted sources -->
     <suppress>
         <notes><![CDATA[
-      file name: spring-web-5.3.20.jar
+      file name: spring-web-5.3.31.jar
       ]]></notes>
         <packageUrl regex="true">^pkg:maven/org.springframework/spring-web@.*$</packageUrl>
+        <cve>CVE-2024-22262</cve>
+        <cve>CVE-2024-22243</cve>
         <cve>CVE-2016-1000027</cve>
-        <cve>CVE-2022-22965</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-      file name: tomcat-embed-core-9.0.58.jar
-      ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org.apache.tomcat.embed/tomcat-embed-core@.*$</packageUrl>
-        <cve>CVE-2022-29885</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-      file name: tomcat-embed-websocket-9.0.58.jar
-      ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org.apache.tomcat.embed/tomcat-embed-websocket@.*$</packageUrl>
-        <cve>CVE-2022-29885</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-      file name: commons-rdf-jena-0.5.0.jar
-      ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org.apache.commons/commons-rdf-jena@.*$</packageUrl>
-        <cve>CVE-2021-39239</cve>
-        <cve>CVE-2022-28890</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-      file name: solr-solrj-7.7.2.jar
-      ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org.apache.solr/solr-solrj@.*$</packageUrl>
-        <cve>CVE-2020-13957</cve>
-        <cve>CVE-2021-44548</cve>
-        <cve>CVE-2019-0193</cve>
-        <cve>CVE-2019-1755</cve>
-        <cve>CVE-2021-29943</cve>
-        <cve>CVE-2020-13941</cve>
-        <cve>CVE-2021-27905</cve>
-        <cve>CVE-2021-29262</cve>
-        <cve>CVE-2019-17558</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-      file name: spring-security-oauth2-2.5.1.RELEASE.jar
-      ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org.springframework.security.oauth/spring-security-oauth2@.*$</packageUrl>
-        <cve>CVE-2022-22978</cve>
-    </suppress>
-
-    <!-- Bug doesn't relate to functionality we are using -->
-    <suppress>
-        <notes><![CDATA[
-   file name: spring-security-jwt-1.1.1.RELEASE.jar
-   ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring\-security\-jwt@.*$</packageUrl>
-        <cve>CVE-2021-22112</cve>
     </suppress>
 
     <!-- present even in the latest version - 1.33  -->
@@ -106,6 +54,7 @@
    file name: spring-security-core-5.7.8.jar
    ]]></notes>
         <packageUrl regex="true">pkg:maven/org.springframework.security/spring-security-core@.*$</packageUrl>
+        <cve>CVE-2024-22257</cve>
         <cve>CVE-2023-34034</cve>
     </suppress>
     <suppress>
@@ -114,5 +63,45 @@
    ]]></notes>
         <packageUrl regex="true">pkg:maven/org.springframework.security/spring-security-crypto@.*$</packageUrl>
         <cve>CVE-2023-34034</cve>
+    </suppress>
+
+ <!-- CVE-2024-38828 - Spring MVC controller methods with an @RequestBody byte[] method parameter are vulnerable to a DoS attack.
+      CVE-2024-38809 - Applications that parse ETags from "If-Match" or "If-None-Match" request headers are vulnerable to DoS attack.
+      CVE-2024-38816 - Applications serving static resources through the functional web frameworks WebMvc.fn or WebFlux.fn are vulnerable to path traversal attacks
+      suppressing it as not sure if we want to update spring boot right now. Even if we update it spring version 6 is also affected with these vulnerabilities-->
+    <suppress>
+        <notes><![CDATA[
+   file name: spring-web-5.3.31.jar
+   ]]></notes>
+        <packageUrl regex="true">pkg:maven/org.springframework/spring-web@.*$</packageUrl>
+        <cve>CVE-2024-38828</cve>
+        <cve>CVE-2024-38809</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: spring-webflux-5.3.31.jar
+   ]]></notes>
+        <packageUrl regex="true">pkg:maven/org.springframework/spring-webflux@.*$</packageUrl>
+        <cve>CVE-2024-38816</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: spring-webmvc-5.3.31.jar
+   ]]></notes>
+        <packageUrl regex="true">pkg:maven/org.springframework/spring-webmvc@.*$</packageUrl>
+        <cve>CVE-2024-38816</cve>
+    </suppress>
+  <!-- the latest version 1.8.0 also has the same vulnerabilities
+       swagger-ui-4.18.2.jar: swagger-ui-bundle.js: CVE-2024-45801(10.0), CVE-2024-47875(10.0)
+       swagger-ui-4.18.2.jar: swagger-ui-es-bundle.js: CVE-2024-45801(10.0), CVE-2024-47875(10.0) -->
+    <suppress>
+        <notes><![CDATA[
+   file name: swagger-ui-5.11.8.jar
+   ]]></notes>
+        <packageUrl regex="true">pkg:javascript/DOMPurify@.*$</packageUrl>
+        <cve>CVE-2024-45801</cve>
+        <cve>CVE-2024-47875</cve>
+        <cve>CVE-2024-45801</cve>
+        <cve>CVE-2024-47875</cve>
     </suppress>
 </suppressions>

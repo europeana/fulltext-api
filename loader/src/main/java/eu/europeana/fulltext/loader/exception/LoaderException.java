@@ -5,8 +5,10 @@ package eu.europeana.fulltext.loader.exception;
 /**
  * Base error class for this application (needs work)
  * @author Lúthien
+ * @deprecated since 2023
  * Created on 27-02-2018
  */
+@Deprecated
 public class LoaderException extends Exception {
 
     private static final long serialVersionUID = 1975175733718282374L;

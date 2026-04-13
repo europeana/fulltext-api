@@ -22,7 +22,7 @@
     </repositories>
 
     <artifactId>fulltext</artifactId>
-    <version>0.9.7-SNAPSHOT</version>
+    <version>0.9.10-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Fulltext API</name>
@@ -38,11 +38,11 @@
     </modules>
 
     <properties>
-        <java.version>11</java.version>
+        <java.version>17</java.version>
         <maven.compiler.release>${java.version}</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <api-commons.version>0.3.23-SNAPSHOT</api-commons.version>
+        <api-commons.version>0.4.6</api-commons.version>
         <!-- upgraded to 2.5.14 as 2.6.x is not compatible with swagger (springfox-swagger-ui)-->
         <!-- org.apache.tomcat.embed version 9.0.56 is included uptill 2.6.3 which is vulnerable. See : CVE-2022-23181  -->
 <!--        <spring-boot.version>2.5.14</spring-boot.version>-->
@@ -50,13 +50,13 @@
         <spring-boot.version>2.7.18</spring-boot.version>
         <spring-batch.version>4.3.6</spring-batch.version>
         <spring-security.version>5.7.12</spring-security.version>
-        <jackson.version>2.14.0</jackson.version>
-        <io-informatics.version>0.1.1</io-informatics.version>
+<!--        <jackson.version>2.14.0</jackson.version>-->
+<!--        <io-informatics.version>0.1.1</io-informatics.version>-->
         <morphia.version>2.2.9</morphia.version>
         <mongo-driver.version>4.5.1</mongo-driver.version>
-        <snappy.version>1.1.8.4</snappy.version>
-        <commons-lang3.version>3.9</commons-lang3.version>
-        <commons-io.version>2.4</commons-io.version>
+        <snappy.version>1.1.10.5</snappy.version>
+        <commons-lang3.version>3.14.0</commons-lang3.version>
+        <commons-io.version>2.17.0</commons-io.version>
         <!-- Note that upgrading to a newer version of Junit Jupiter may not work with older IntelliJ versions (2019.2.1)
              However for Maven verify goal a newer Jupiter version is no problem-->
         <junit-jupiter.version>5.6.0</junit-jupiter.version>
@@ -66,13 +66,12 @@
         <springdoc.version>1.7.0</springdoc.version>
         <tomcat.version>9.0.58</tomcat.version>
         <mock-webserver.version>4.9.0</mock-webserver.version>
-        <testcontainers.version>1.16.0</testcontainers.version>
+        <testcontainers.version>1.19.8</testcontainers.version>
         <apache.common.compress.version>1.25.0</apache.common.compress.version>
         <eclipse-jetty.version>11.0.11</eclipse-jetty.version>
         <build-helper-maven.version>3.0.0</build-helper-maven.version>
         <maven-failsafe.version>3.0.0-M5</maven-failsafe.version>
-        <dependency-check-maven.version>7.3.0</dependency-check-maven.version>
-
+        <dependency-check-maven.version>10.0.2</dependency-check-maven.version>
         <jettison.version>1.5.4</jettison.version>
         <snakeyaml.version>2.0</snakeyaml.version>
 
@@ -226,6 +225,9 @@
                         <artifactId>dependency-check-maven</artifactId>
                         <version>${dependency-check-maven.version}</version>
                         <configuration>
+                            <nvdApiKeyEnvironmentVariable>NVD_APIKEY</nvdApiKeyEnvironmentVariable>
+                            <!-- see EA-3505 why we host the known exploited vulnerabilties file ourselves -->
+                            <knownExploitedUrl>https://artifactory.eanadev.org/artifactory/ext-release-local/gov/cisa/www/known_exploited_vulnerabilities.json</knownExploitedUrl>
                             <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
                             <failBuildOnCVSS>8</failBuildOnCVSS>
                             <suppressionFiles>

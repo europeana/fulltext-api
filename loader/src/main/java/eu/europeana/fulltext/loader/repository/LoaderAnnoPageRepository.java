@@ -13,7 +13,9 @@ import static eu.europeana.fulltext.util.MorphiaUtils.MULTI_DELETE_OPTS;
 /**
  * Repository for retrieving AnnoPage objects / data
  * Created by luthien on 31/05/2018.
+ * @deprecated since 2023
  */
+@Deprecated
 @Repository
 public class LoaderAnnoPageRepository extends AnnoPageRepository {
 

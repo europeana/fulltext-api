@@ -1,5 +1,9 @@
 package eu.europeana.fulltext.search.service;
 
+import static eu.europeana.iiif.IIIFDefinitions.MEDIA_TYPE_EDM_JSONLD;
+import static eu.europeana.iiif.IIIFDefinitions.MEDIA_TYPE_IIIF_V2;
+import static eu.europeana.iiif.IIIFDefinitions.TEXT_GRANULARITY_CONTEXT;
+
 import dev.morphia.query.internal.MorphiaCursor;
 import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.fulltext.AnnotationType;
@@ -89,6 +93,7 @@ public class FTSearchService {
             findAnnopageAndAnnotations(result, solrResult, europeanaId, pageSize, annoTypes, requestVersion);
         }
         LOG.debug("Search done in {} ms. Found {} annotations", (System.currentTimeMillis() - start), result.itemSize());
+        result.setContext(new String[]{MEDIA_TYPE_IIIF_V2, TEXT_GRANULARITY_CONTEXT,MEDIA_TYPE_EDM_JSONLD});
         return result;
     }
 

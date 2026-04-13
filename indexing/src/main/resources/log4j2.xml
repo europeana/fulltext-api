@@ -26,5 +26,7 @@
     <!--Suppress unhelpful Spring Batch warnings:
 See     https://stackoverflow.com/questions/23780587/spring-batch-reader-in-multi-threader-job -->
     <Logger name="org.springframework.batch.core.step" level="ERROR"/>
+    <Logger name="eu.europeana.fulltext.indexing.processor.ProcessorUtils" level="ERROR"/>
+
   </Loggers>
 </Configuration>

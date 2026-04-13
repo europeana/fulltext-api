@@ -8,8 +8,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 /**
  * Global exception handler that catches all errors and logs the interesting ones
  * @author Patrick Ehlert
+ * @deprecated 2023
  * Created on 20-02-2018
  */
+@Deprecated
 @ControllerAdvice
 public class GlobalExceptionHandler {
 

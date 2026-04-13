@@ -5,17 +5,17 @@
     <parent>
         <artifactId>fulltext</artifactId>
         <groupId>eu.europeana</groupId>
-        <version>0.9.7-SNAPSHOT</version>
+        <version>0.9.10-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <groupId>eu.europeana.fulltext</groupId>
     <artifactId>loader</artifactId>
-    <version>0.9.7-SNAPSHOT</version>
+    <version>0.9.10-SNAPSHOT</version>
     <packaging>war</packaging>
 
-    <name>Europeana Newspapers Fulltext Loader</name>
-    <description>Europeana Newspapers Fulltext Loader (Spring Boot application)</description>
+    <name>Europeana Newspapers Fulltext Loader - DEPRECATED</name>
+    <description>Europeana Newspapers Fulltext Loader (Spring Boot application) - DEPRECATED</description>
 
     <properties>
         <spring.boot.mainclass>eu.europeana.fulltext.loader.LoaderApplication</spring.boot.mainclass>
@@ -28,7 +28,7 @@
         <dependency>
             <groupId>eu.europeana.fulltext</groupId>
             <artifactId>api</artifactId>
-            <version>0.9.7-SNAPSHOT</version>
+            <version>0.9.10-SNAPSHOT</version>
             <classifier>classes</classifier>
             <exclusions>
                 <exclusion>
@@ -107,13 +107,27 @@
                     <groupId>org.springframework.security</groupId>
                     <artifactId>spring-security-config</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>eu.europeana.api.commons</groupId>
+                    <artifactId>commons-nosql</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
             <groupId>eu.europeana.fulltext</groupId>
             <artifactId>common</artifactId>
-            <version>0.9.7-SNAPSHOT</version>
+            <version>0.9.10-SNAPSHOT</version>
             <scope>compile</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>dev.morphia.morphia</groupId>
+                    <artifactId>core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -136,7 +150,7 @@
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
-            <version>2.0</version>
+            <version>${snakeyaml.version}</version>
         </dependency>
 
 

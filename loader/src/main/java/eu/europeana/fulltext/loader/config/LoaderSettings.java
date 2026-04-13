@@ -8,8 +8,10 @@ import org.springframework.stereotype.Component;
 /**
  * Contains settings from loader.properties and loader.user.properties files
  * @author Lúthien
+ * @deprecated since 2023
  * Created on 31/05/2018
  */
+@Deprecated
 @Configuration
 @Component
 @PropertySource("classpath:loader.properties")

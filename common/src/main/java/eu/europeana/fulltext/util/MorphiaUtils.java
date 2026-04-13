@@ -76,6 +76,7 @@ public final class MorphiaUtils {
         public static final String AN_ID        = "anId";
         public static final String DC_TYPE      = "dcType";
         public static final String MOTIV      = "motiv";
+
         //Mongo Fields
         public static final String MONGO_AND         = "$and";
         public static final String MONGO_ANNOTATIONS = "$" + ANNOTATIONS;
@@ -102,6 +103,7 @@ public final class MorphiaUtils {
         public static final String ANNOTATIONS_ID     = ANNOTATIONS + ".anId";
         public static final String MONGO_FILTER_ANS_DCTYPE  = " $$ans.dcType";
 
+
         public static final String MONGO_LOCAL_FIELD = "localField";
         public static final String MONGO_FOREIGN_FIELD = "foreignField";
         public static final String MONGO_RESOURCE_REF_ID = "res.$id";
@@ -109,6 +111,9 @@ public final class MorphiaUtils {
         public static final String VALUE = "value";
         public static final String CONTRIBUTED = "contributed";
         public static final String TRANSLATION = "translation";
+
+        // others
+        public static  final String TEXT_GRANULARITY = "textGranularity";
 
 
         private Fields() {

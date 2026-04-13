@@ -1,4 +1,4 @@
-FROM eclipse-temurin:11-jre-ubi9-minimal
+FROM eclipse-temurin:17-jre-ubi9-minimal
 LABEL Author="Europeana Foundation <development@europeana.eu>"
 
 #ARG APM_VERSION=1.34.1

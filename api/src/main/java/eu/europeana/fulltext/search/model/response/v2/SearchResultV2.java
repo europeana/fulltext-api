@@ -1,5 +1,6 @@
 package eu.europeana.fulltext.search.model.response.v2;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import eu.europeana.fulltext.api.model.v2.AnnotationV2;
@@ -14,13 +15,15 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-@JsonPropertyOrder({"id", "type", "debug", "resources", "hits"})
+@JsonPropertyOrder({"context","id", "type", "debug", "resources", "hits"})
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class SearchResultV2 implements Serializable, SearchResult {
 
     private static final long serialVersionUID = 5755904077393708504L;
 
     private static final String TYPE = "sc:AnnotationList";
 
+    private String[] context;
     private final String id;
     private Debug debug;
     private final List<AnnotationV2> items = new ArrayList<>();
@@ -32,6 +35,11 @@ public class SearchResultV2 implements Serializable, SearchResult {
         if (debug) {
             this.debug = new Debug();
         }
+    }
+
+    @Override
+    public String[] getContext() {
+        return context;
     }
 
     @Override
@@ -74,5 +82,10 @@ public class SearchResultV2 implements Serializable, SearchResult {
     @Override
     public List<Hit> getHits() {
         return hits;
+    }
+
+    @Override
+    public void setContext(String[] context) {
+      this.context=context;
     }
 }

@@ -35,6 +35,7 @@ import static org.junit.Assert.assertNotNull;
  * @author Patrick Ehlert
  * Created on 20-08-2018
  */
+@Deprecated
 @RunWith(SpringJUnit4ClassRunner.class)
 @TestPropertySource(locations = "classpath:loader-test.properties")
 @SpringBootTest(classes = {LoaderSettings.class})

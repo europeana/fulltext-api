@@ -6,7 +6,7 @@
     <parent>
         <artifactId>fulltext</artifactId>
         <groupId>eu.europeana</groupId>
-        <version>0.9.7-SNAPSHOT</version>
+        <version>0.9.10-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -20,7 +20,7 @@
 
     <groupId>eu.europeana.fulltext</groupId>
     <artifactId>common</artifactId>
-    <version>0.9.7-SNAPSHOT</version>
+    <version>0.9.10-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Common functionality (Mongo and Entity definitions)</name>
@@ -124,6 +124,13 @@
             <version>4.5.14</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api -->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>4.0.1</version>
+        </dependency>
+
         <!-- Saxon-HE for Page Xml parser-->
         <dependency>
             <groupId>net.sf.saxon</groupId>
@@ -150,8 +157,21 @@
                     <groupId>dom4j</groupId>
                     <artifactId>dom4j</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>commons-io</groupId>
+                    <artifactId>commons-io</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
+
+        <!-- commons-io-2.4.jar is included in com.dotsub.converter and has vulnerability: CVE-2024-47554(8.699999809265137)
+             Hence overriding with stable version -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commons-io.version}</version>
+        </dependency>
+
 
         <!-- Adding dom4j with non-vulnerable version. Used in DfxpImportHandler for TTML conversion -->
         <dependency>

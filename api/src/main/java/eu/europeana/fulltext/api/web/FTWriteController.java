@@ -7,11 +7,11 @@ import eu.europeana.api.commons.web.exception.ApplicationAuthenticationException
 import eu.europeana.api.commons.web.http.HttpHeaders;
 import eu.europeana.api.commons.web.model.vocabulary.Operations;
 import eu.europeana.fulltext.WebConstants;
+import eu.europeana.fulltext.api.caching.CachingUtils;
 import eu.europeana.fulltext.api.config.FTSettings;
 import eu.europeana.fulltext.api.config.RequestPathServiceConfig;
 import eu.europeana.fulltext.api.model.AnnotationWrapper;
 import eu.europeana.fulltext.service.AnnotationApiRestService;
-import eu.europeana.fulltext.api.service.CacheUtils;
 import eu.europeana.fulltext.api.service.FTService;
 import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.exception.*;
@@ -47,6 +47,7 @@ import static eu.europeana.fulltext.util.RequestUtils.PROFILE_TEXT;
 import static eu.europeana.fulltext.util.RequestUtils.extractProfiles;
 import static eu.europeana.iiif.AcceptUtils.REQUEST_VERSION_2;
 import static eu.europeana.iiif.AcceptUtils.addContentTypeToResponseHeader;
+import static eu.europeana.fulltext.api.caching.CachingUtils.*;
 
 @RestController
 @Validated
@@ -346,18 +347,13 @@ public class FTWriteController extends BaseRestController {
 
     AnnotationWrapper annotationWrapper = ftService.generateAnnoPageV2(annoPage, null, profiles.contains(PROFILE_TEXT));
 
-    ZonedDateTime modified = CacheUtils.dateToZonedUTC(annoPage.getModified());
+    ZonedDateTime modified = dateToZonedUTC(annoPage.getModified());
     String requestVersion = REQUEST_VERSION_2;
 
-    String eTag =
-        CacheUtils.generateETag(
-            annoPage.getDsId() + annoPage.getLcId() + annoPage.getPgId(),
-            modified,
-            requestVersion + appSettings.getAppVersion(),
-            true);
+    String eTag = CachingUtils.generateETag(modified, requestVersion + appSettings.getAppVersion(), true);
 
     org.springframework.http.HttpHeaders headers =
-        CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
+        generateHeaders(request, eTag, zonedDateTimeToString(modified));
     addContentTypeToResponseHeader(headers, requestVersion, false);
     // overwrite Allow header populated in CacheUtils.generateHeaders
     headers.set(HttpHeaders.ALLOW, getMethodsForRequestPattern(request, requestPathMethodService));

@@ -15,8 +15,9 @@ import static eu.europeana.fulltext.util.MorphiaUtils.MAPPER_OPTIONS;
 
 /**
  * Created by luthien on 01/10/2018.
+ * @deprecated since 2023
  */
-
+@Deprecated
 @Configuration
 @PropertySource("classpath:loader.properties")
 @PropertySource(value = "classpath:loader.user.properties", ignoreResourceNotFound = true)

@@ -1,6 +1,7 @@
 package eu.europeana.fulltext.util;
 
 import eu.europeana.fulltext.exception.InvalidRequestParamException;
+import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -11,6 +12,9 @@ public class RequestUtils {
 
     public static final String PROFILE_TEXT           = "text";
     public static final String PROFILE_DEBUG          = "debug";
+
+    public RequestUtils() {
+    }
 
     public static List<String> extractProfiles(String profileParam) throws InvalidRequestParamException {
         // Now profile can be profile=text OR
@@ -26,6 +30,24 @@ public class RequestUtils {
             }
         }
         return profiles;
+    }
+
+    /** Method is similar to ClientUtils.escapeQueryChars
+     * Method does not escape the '"' character
+     * See EA-3787
+     * @param
+     * @return
+     */
+    public static String escapeQueryChars(String s) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (char c : s.toCharArray()) {
+            if (Character.isWhitespace(c) || Set.of('\\','+', '-', '!', '(', ')', ':',
+                '^', '[', ']', '{', '}', '~', '*', '?', '|', '&', ';', '/').contains(c)) {
+                stringBuilder.append('\\');
+            }
+            stringBuilder.append(c);
+        }
+        return stringBuilder.toString();
     }
 
 }

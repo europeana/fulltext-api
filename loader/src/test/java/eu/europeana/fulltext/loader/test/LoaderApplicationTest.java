@@ -4,6 +4,7 @@ import eu.europeana.fulltext.loader.LoaderApplication;
 import org.junit.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
+@Deprecated
 @SpringBootTest(classes = LoaderApplication.class)
 public class LoaderApplicationTest {
 
